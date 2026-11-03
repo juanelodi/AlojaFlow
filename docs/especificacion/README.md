@@ -25,7 +25,7 @@ Producto: [../producto.md](../producto.md) · decisiones: [../decisiones.md](../
 | 07 | `idiomas-formatos.md` | Seis idiomas, traducción y revisión, formatos por propiedad, zonas horarias, monedas | 1 | medium | pendiente |
 | 08 | `comunicacion-eventos.md` | Eventos derivados de la sincronización, plantillas, correo, WhatsApp, webhooks, OTP | 1 | high | pendiente |
 | 09 | `ical.md` | Exportar e importar, bloqueos propios, choques, convivencia con el plugin `ical` de la principal | 1 | high | pendiente |
-| 10 | `instalacion-actualizaciones.md` | Paquete para hosting compartido, instalador, cron, actualizaciones desde el panel, enlace «Código fuente» | 1 | high | pendiente |
+| 10 | [`instalacion-actualizaciones.md`](instalacion-actualizaciones.md) | Paquete para hosting compartido, instalador, cron, actualizaciones desde el panel, enlace «Código fuente» | 1 | high | borrador 2026-11-03 |
 | 11 | `pruebas.md` | Estrategia, base MySQL de pruebas, copias sintéticas, copias reales fuera del repositorio, CI | 1 | medium | pendiente |
 | 12 | `convivencia-principal.md` | Qué plugin de la principal 1.2.x apagar al activar cada módulo de AlojaFlow | 1 | medium | pendiente |
 | — | `reservas-tarifas-disponibilidad.md`, `motor-reservas.md`, `migracion-hoteldruid.md` | Núcleo propio | 2 | xhigh | más adelante |

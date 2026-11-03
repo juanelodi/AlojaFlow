@@ -20,7 +20,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Las dos fases de una actualización corren con la aplicación en mantenimiento. La cookie
+        // que deja pasar al administrador durante el mantenimiento va sin cifrar: la lee
+        // storage/framework/maintenance.php antes de arrancar Laravel (y ya va firmada).
+        $middleware->preventRequestsDuringMaintenance(except: ['actualizaciones/*/aplicar', 'actualizaciones/*/finalizar']);
+        $middleware->encryptCookies(except: ['laravel_maintenance']);
+        // Sin sesión, al inicio de sesión del panel.
+        $middleware->redirectGuestsTo(fn () => route('filament.app.auth.login'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

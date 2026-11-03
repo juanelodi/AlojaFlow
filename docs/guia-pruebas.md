@@ -1,4 +1,4 @@
-# Guía para probar AlojaFlow 1.0.1 (entrega Base)
+# Guía para probar AlojaFlow 1.0.2 (entrega Base)
 
 Versión de prueba para usar en tu equipo con Windows. Es la **fase 1**: AlojaFlow lee los datos
 de HotelDruid (o AlojaFlow 1.2.x) y **nunca escribe en él**.
@@ -15,13 +15,14 @@ de HotelDruid (o AlojaFlow 1.2.x) y **nunca escribe en él**.
 | **Reservas / Huéspedes** | Listados con búsqueda y filtros, y ficha de cada uno (solo consulta) |
 | **Propiedades** | Alta de propiedades y de su principal de HotelDruid; probar la conexión, sincronizar ahora y reanudar; historial de sincronizaciones |
 | **Usuarios** | Usuarios con un rol en cada propiedad (gerente, recepción, limpieza, mantenimiento, contador) o administrador |
+| **Actualizaciones** | Subir el zip de una versión nueva, revisarlo e instalarlo; historial con la copia de la base de datos de cada actualización |
 | **Perfil** | Idioma, zona horaria, contraseña y verificación en dos pasos con app de códigos |
 | **Acerca de / Código fuente** | Licencia, créditos y descarga del código de la versión instalada |
 
 **Todavía no trae:**
 - limpieza y mantenimiento, llegada en línea, mensajes, iCal y facturación (entregas Operación, Huéspedes y Dinero);
 - pantalla de cierre del día;
-- instalador para hosting compartido ni copias de seguridad desde el panel.
+- instalador web para hosting compartido ni copias de seguridad completas desde el panel.
 
 La interfaz está completa en español e inglés; en francés, italiano, portugués y alemán solo
 están traducidos los textos de Filament.
@@ -119,7 +120,50 @@ En AlojaFlow, la principal es `http://127.0.0.1:8090/`, con «Permitir red local
   se pausa con `SUB-003` sin reintentar, para no bloquear la cuenta de HotelDruid. Al guardar la
   contraseña buena, se reanuda.
 
-## 5. Comprobaciones de calidad
+## 5. Probar las actualizaciones
+
+Desde la 1.0.2, AlojaFlow se actualiza en **Sistema → Actualizaciones**: se sube el zip de la
+versión nueva (`alojaflow-x.y.z.zip`), se revisa y se instala con tu contraseña. Antes de cambiar
+nada se comprueban la firma del paquete y cada archivo, y se copia la base de datos. Si algo
+falla, todo vuelve a como estaba. Detalles: `docs/especificacion/instalacion-actualizaciones.md`.
+
+Tu copia `E:\AlojaFlow` es la de desarrollo (tiene git): ahí la pantalla avisa de que se actualiza
+con git y no instala nada. Las actualizaciones se prueban en una **instalación hecha desde el
+zip**, `E:\AlojaFlow-prueba`, con su propia base de datos `alojaflow_prueba`.
+
+**Una sola vez:** crea esa base con el usuario `root` de MySQL. Puedes hacerlo en phpMyAdmin
+(http://localhost/phpmyadmin) o en la consola de MySQL del menú de WampServer:
+
+```sql
+CREATE DATABASE alojaflow_prueba CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+GRANT ALL PRIVILEGES ON alojaflow_prueba.* TO 'alojaflow'@'127.0.0.1';
+```
+
+**Para probar:**
+
+1. Arranca la instalación de prueba en PowerShell, dentro de `E:\AlojaFlow`, y deja la ventana
+   abierta:
+
+   ```powershell
+   C:\wamp64\bin\php\php8.3.28\php.exe -d xdebug.mode=off -d upload_max_filesize=512M -d post_max_size=512M -S 127.0.0.1:8001 -t E:\AlojaFlow-prueba\public desarrollo\servidor-instalacion.php
+   ```
+
+2. Abre **http://localhost:8001** y entra con los mismos usuarios que en tu copia: su base es una
+   copia de la de desarrollo.
+3. En **Sistema → Actualizaciones**, sube el zip (o cópialo a
+   `E:\AlojaFlow-prueba\storage\app\private\actualizaciones\entrada\`). Pulsa **Revisar** y
+   después **Actualizar a la …**.
+4. Para repetir la prueba con la misma versión, marca **Reinstalar si es la misma versión**.
+
+**Qué conviene probar:**
+- que un zip alterado (por ejemplo, con un archivo cambiado dentro) se rechaza sin cambiar nada;
+- cerrar el navegador justo al pulsar **Actualizar** y volver a entrar: aparece «Terminar la
+  actualización»;
+- descargar la copia de la base de datos desde el historial.
+
+El zip de cada versión lo genera `artisan alojaflow:empaquetar` en `E:\AlojaFlow\dist\`.
+
+## 6. Comprobaciones de calidad
 
 ```powershell
 C:\wamp64\bin\php\php8.3.28\php.exe -d xdebug.mode=off vendor\bin\pest
@@ -127,9 +171,9 @@ C:\wamp64\bin\php\php8.3.28\php.exe -d xdebug.mode=off vendor\bin\phpstan analys
 C:\wamp64\bin\php\php8.3.28\php.exe -d xdebug.mode=off vendor\bin\pint --test
 ```
 
-Estado al entregar: **54 pruebas en verde**; Larastan (nivel 6) y Pint sin errores.
+Estado al entregar: **97 pruebas en verde**; Larastan (nivel 6) y Pint sin errores.
 
-## 6. Lo que se comprobó y lo que falta
+## 7. Lo que se comprobó y lo que falta
 
 **Comprobado contra un AlojaFlow 1.2.3 real** (instalación nueva con la copia ficticia de la
 demo):
@@ -145,10 +189,14 @@ demo):
 
 Las demás preguntas abiertas están al final de `docs/especificacion/subordinacion.md`.
 
-## 7. Si algo falla
+## 8. Si algo falla
 
 - **Página de error:** el detalle queda en `storage/logs/laravel.log`.
 - **«Esta página no existe» o 403:** el usuario no tiene rol en esa propiedad, o la pantalla es
   solo para administradores.
+- **La aplicación se quedó en mantenimiento** después de actualizar:
+  - espera 2 minutos: la termina el programador si está en marcha (`artisan schedule:work`);
+  - o entra como administrador: verás «Terminar la actualización»;
+  - o ejecuta `artisan alojaflow:finalizar-actualizacion` en esa instalación.
 - **Estilos raros tras actualizar:** ejecuta
   `C:\wamp64\bin\php\php8.3.28\php.exe artisan filament:assets`.

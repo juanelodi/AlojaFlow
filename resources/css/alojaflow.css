@@ -44,6 +44,7 @@
 .dark .af-enlaces a { color: var(--primary-400); }
 
 /* Avisos */
+.af-aviso-global { margin-bottom: 1.5rem; }
 .af-aviso {
     border-radius: .5rem; padding: .625rem .75rem; font-size: .8125rem; line-height: 1.4;
     border: 1px solid var(--warning-300); background: color-mix(in oklab, var(--warning-50) 80%, transparent); color: var(--warning-900);

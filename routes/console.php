@@ -13,3 +13,7 @@ use Illuminate\Support\Facades\Schedule;
 // Un solo cron por minuto lanza el programador (hosting compartido; CLAUDE.md).
 Schedule::command('alojaflow:sincronizar')->everyMinute()->withoutOverlapping(60);
 Schedule::command('alojaflow:limpiar')->dailyAt('03:30');
+
+// Una actualización que se quedó sin terminar (se cerró el navegador entre las dos fases) o que
+// se cortó a medias: se termina o se deshace aquí, también en mantenimiento.
+Schedule::command('alojaflow:finalizar-actualizacion --pendientes')->everyMinute()->evenInMaintenanceMode()->withoutOverlapping(60);

@@ -181,6 +181,11 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
     y `LectorCopia` (formato);
   - `CargadorEspejo` (`hd_filas`), `Proyector` (modelo propio y eventos) y `Sincronizador`
     (ciclo completo).
+- `app/Actualizacion/` — paquetes de versión y actualizaciones
+  (`docs/especificacion/instalacion-actualizaciones.md`):
+  - `Empaquetador` (construye el zip firmado) y `Revisor` (lo comprueba sin cambiar nada);
+  - `Aplicador` (extrae e intercambia los archivos con diario) y `Actualizador` (las dos fases);
+  - `CopiaBaseDatos`, `Firma`, `Manifiesto` y `Rutas` (qué no toca nunca una actualización).
 - `app/Models/` — modelos en español sobre `ModeloBase` (`creado_en`/`actualizado_en`). Las
   filas con `sincronizada = true` solo las cambia la sincronización
   (`Concerns/ProtegidaPorSincronizacion`).
@@ -191,8 +196,11 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 - `app/Filament/Pages/` (pantallas propias, vistas en `resources/views/filament/pages/`) y
   `app/Filament/Resources/` (administración y listados).
 - `lang/es` (fuente) y `lang/en`; `resources/css/alojaflow.css` (estilos propios).
-- `tests/Support/ConstructorCopia.php` — genera copias sintéticas de HotelDruid para las pruebas.
-- `desarrollo/principal-simulada/` — principal falsa para demostraciones; no se instala.
+- `tests/Support/ConstructorCopia.php` — genera copias sintéticas de HotelDruid para las pruebas;
+  `ConstructorPaquete.php`, paquetes de versión firmados con una clave de prueba.
+- `desarrollo/` — no se instala ni va en los paquetes:
+  - `principal-simulada/`: principal falsa para demostraciones;
+  - `servidor-instalacion.php`: sirve una instalación hecha desde el zip con límites de subida altos.
 
 ## Comandos
 
@@ -213,6 +221,8 @@ PHP vendor/bin/pest                       # pruebas, contra la base MySQL alojaf
 PHP vendor/bin/pint --test                # formato PSR-12 + cabecera de licencia + strict_types
 PHP vendor/bin/phpstan analyse --memory-limit=1G   # Larastan nivel 6
 PHP artisan filament:assets               # tras cambiar resources/css/alojaflow.css
+PHP artisan alojaflow:empaquetar          # dist/alojaflow-x.y.z.zip firmado (git sin cambios)
+PHP artisan alojaflow:actualizar ruta.zip # actualizar una instalación desde la consola
 PHP .herramientas/composer.phar licenses  # licencias PHP
 npx license-checker --summary             # licencias npm
 ```
@@ -223,6 +233,11 @@ npx license-checker --summary             # licencias npm
 - Blade no admite `use` dentro de `@php`: se usa `@use('Clase')`.
 - Con `ONLY_FULL_GROUP_BY` y `DISTINCT`, MySQL exige que el `ORDER BY` esté en el `SELECT`.
 - Las pruebas de pantallas deben entrar también con usuarios que no son administradores.
+- En comillas dobles, un carácter no ASCII pegado a una variable forma parte de su nombre
+  (`"$version»"` busca la variable `$version»`): escribir `{$version}`.
+- En Windows, `ZipArchive::addFile()` no admite rutas de más de 260 caracteres y devuelve
+  `false`: comprobar siempre lo que devuelve.
+- La batería de pruebas pasa de 128 MB de memoria: `phpunit.xml` sube `memory_limit`.
 
 ## Referencias locales (solo lectura)
 
@@ -251,6 +266,16 @@ npx license-checker --summary             # licencias npm
   marca con la etiqueta de git `v1.0.x`.
 - Las entregas de la fase 1 tienen nombre (Base, Operación, Huéspedes, Dinero), no número
   (D-031).
+- **Publicar una versión** (D-033):
+  1. subir `version` y escribir su entrada en `CAMBIOS.md`;
+  2. commit y etiqueta `v1.0.x`;
+  3. `PHP artisan alojaflow:empaquetar`: deja `dist/alojaflow-1.0.x.zip` firmado y revisado;
+  4. probarlo en la instalación de prueba `E:\AlojaFlow-prueba` (Sistema → Actualizaciones).
+- La **clave secreta de firma** (`.herramientas/clave-actualizaciones.secreta`) nunca se sube y
+  necesita una copia de seguridad fuera del equipo: sin ella, las instalaciones no aceptan
+  versiones nuevas.
+- Lo que une las dos fases de una actualización no cambia entre versiones
+  (`instalacion-actualizaciones.md` §4.2).
 
 ## Marca
 

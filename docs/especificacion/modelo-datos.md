@@ -233,8 +233,16 @@ En cada tabla: **(P)** proyección, **(O)** propia, **(E)** espejo.
 
   Índices: (`propiedad_id`, `creado_en`) y (`modelo_tipo`, `modelo_id`).
 - **`ajustes` (O):** ajustes de la instalación, en `clave` (única) y `valor` (JSON).
-- **`actualizaciones` (O):** versión, instalada en, por quién, la copia previa (`archivo_id`) y
-  notas.
+- **`actualizaciones` (O):** cada actualización desde el panel o la consola
+  ([instalacion-actualizaciones.md](instalacion-actualizaciones.md)). Columnas:
+  - `version_anterior`, `version_nueva`, `reinstalar`;
+  - `estado` (preparada, aplicando, archivos_aplicados, completada, fallida, revertida), con índice;
+  - `paquete` y `paquete_sha256` (el zip revisado no puede cambiar antes de aplicarse);
+  - `resumen` JSON (archivos nuevos, sustituidos, borrados…), `detalle` del error y `user_id`;
+  - `iniciada_en` y `terminada_en`.
+
+  La copia de la base de datos y de los archivos va en `storage/app/private/actualizaciones/{id}/`,
+  no en `archivos`.
 - **`avisos` (O):** avisos persistentes de cada propiedad, como sincronización fallida, principal
   sin inicio de sesión o choques sin resolver. Columnas:
   - `propiedad_id`, `tipo`, `nivel` (información, advertencia, error) y `datos` JSON;
@@ -860,6 +868,7 @@ auditoría.
 | Espejo | Solo la ejecución vigente y la que esté en curso |
 | Códigos OTP | 24 h tras usarse o caducar |
 | Exportaciones de privacidad | 7 días |
+| Copias de las actualizaciones (base de datos y archivos) | Las de las 3 últimas actualizaciones |
 
 **Anonimizar** (datos propios): los datos personales se sustituyen por «Anonimizado #id» y se
 borran sus archivos. Se conservan importes y fechas para los informes.

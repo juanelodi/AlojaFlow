@@ -10,8 +10,11 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Actualizacion\Actualizador;
+use App\Filament\Pages\Actualizaciones;
 use App\Filament\Pages\EditarPerfil;
 use App\Http\Middleware\AplicarIdioma;
+use App\Seguridad\Acceso;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -24,11 +27,13 @@ use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\View\PanelsRenderHook;
+use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\URL;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 /**
@@ -74,6 +79,7 @@ class PanelAplicacionProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->sidebarCollapsibleOnDesktop()
             ->renderHook(PanelsRenderHook::FOOTER, fn () => view('componentes.pie'))
+            ->renderHook(PanelsRenderHook::CONTENT_START, fn (): View|string => self::avisoActualizacionSinTerminar())
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -89,5 +95,22 @@ class PanelAplicacionProvider extends PanelProvider
                 Authenticate::class,
                 AplicarIdioma::class,
             ]);
+    }
+
+    /**
+     * Durante el mantenimiento de una actualización solo entra el administrador que la empezó (con
+     * su cookie): si la segunda fase no terminó, ve en todas las pantallas el enlace para terminarla.
+     */
+    public static function avisoActualizacionSinTerminar(): View|string
+    {
+        if (! app()->isDownForMaintenance() || ! Acceso::usuarioActual()?->es_administrador
+            || request()->routeIs(Actualizaciones::getRouteName())) {
+            return '';
+        }
+        $pendiente = app(Actualizador::class)->pendienteDeFinalizar();
+
+        return $pendiente === null ? '' : view('filament.avisos.actualizacion-sin-terminar', [
+            'enlace' => URL::temporarySignedRoute('actualizaciones.finalizar', now()->addHour(), ['actualizacion' => $pendiente->id]),
+        ]);
     }
 }

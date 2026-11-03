@@ -37,7 +37,7 @@ class CodigoFuenteController extends Controller
     public function __invoke(): BinaryFileResponse
     {
         $version = (string) config('alojaflow.version');
-        $ruta = storage_path('app/privado/codigo-fuente/alojaflow-'.$version.'.zip');
+        $ruta = storage_path('app/private/codigo-fuente/alojaflow-'.$version.'.zip');
 
         // En desarrollo el código cambia sin cambiar de versión: se vuelve a generar siempre.
         if (! is_file($ruta) || app()->isLocal()) {

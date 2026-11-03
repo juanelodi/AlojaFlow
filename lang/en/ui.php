@@ -275,6 +275,12 @@ return [
         'terceros' => 'Third-party components',
     ],
 
+    'mantenimiento' => [
+        'titulo' => 'AlojaFlow is being updated',
+        'texto' => 'The application is unavailable for a few moments while a new version is installed or maintenance is done.',
+        'recarga' => 'This page reloads by itself; if it takes more than a few minutes, tell the administrator.',
+    ],
+
     'pie' => [
         'licencia' => 'Free software AGPL v3',
         'codigo_fuente' => 'Source code',

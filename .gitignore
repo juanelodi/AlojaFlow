@@ -26,6 +26,11 @@ hoteld_backup.php
 hoteld_doc_backup.php
 *.php.gz
 
+# Paquetes de versiones (alojaflow:empaquetar) y manifiesto de una instalación desde el zip
+/dist/
+/manifiesto.json
+/manifiesto.firma
+
 # Herramientas locales
 .claude/settings.local.json
 .playwright-mcp/

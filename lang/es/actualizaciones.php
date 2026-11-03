@@ -1,0 +1,97 @@
+<?php
+
+/*
+ * AlojaFlow — sistema de gestión de alojamientos
+ * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+declare(strict_types=1);
+
+return [
+    'titulo' => 'Actualizaciones',
+    'version_instalada' => 'Versión instalada: :version',
+    'explicacion' => 'Sube el zip de una versión de AlojaFlow. Antes de cambiar nada se comprueban su firma y cada archivo; se hace una copia de la base de datos y de los archivos que se sustituyen, y si algo falla todo vuelve a como estaba. Tus datos, el archivo .env y la carpeta storage nunca se tocan.',
+    'paso_subir' => '1. Subir el paquete',
+    'subir' => 'Zip de la versión (alojaflow-x.y.z.zip)',
+    'subir_ayuda' => 'Este servidor acepta subidas de hasta :subida (y envíos de hasta :envio). Si el zip es más grande, súbelo por FTP a la carpeta indicada abajo.',
+    'subir_boton' => 'Subir',
+    'subido' => 'Paquete subido: :paquete',
+    'ftp' => 'También puedes copiar el zip por FTP o desde el administrador de archivos del hosting a la carpeta :carpeta; aparecerá en la lista de abajo.',
+    'paso_revisar' => '2. Revisar e instalar',
+    'paquete' => 'Paquete',
+    'sin_paquetes' => 'Todavía no hay ningún paquete subido.',
+    'elige_paquete' => 'Elige un paquete de la lista.',
+    'reinstalar' => 'Reinstalar si es la misma versión',
+    'revisar' => 'Revisar',
+    'de_a' => 'Versión',
+    'nuevos' => 'Archivos nuevos',
+    'cambiados' => 'Archivos que cambian',
+    'borrar' => 'Archivos obsoletos que se borran',
+    'iguales' => 'Archivos sin cambios',
+    'tamano' => 'Tamaño',
+    'que_hara' => 'Al actualizar: copia de la base de datos, la aplicación en mantenimiento unos momentos, archivos nuevos, migraciones y vuelta a la normalidad. Puede tardar unos minutos; no cierres la página.',
+    'actualizar' => 'Actualizar a la :version',
+    'confirmar_titulo' => '¿Actualizar AlojaFlow?',
+    'confirmar_texto' => 'La aplicación estará en mantenimiento durante la actualización. Escribe tu contraseña para confirmar.',
+    'contrasena' => 'Tu contraseña',
+    'completada' => 'AlojaFlow se actualizó a la versión :version.',
+    'fallo' => 'La actualización no se completó',
+    'pendiente_finalizar' => 'Hay una actualización con los archivos ya puestos que no terminó (por ejemplo, porque se cerró la página). Termínala para salir del modo mantenimiento.',
+    'finalizar_ahora' => 'Terminar la actualización',
+    'historial' => 'Historial',
+    'sin_historial' => 'Todavía no se ha hecho ninguna actualización desde el panel.',
+    'fecha' => 'Fecha',
+    'estado' => 'Estado',
+    'usuario' => 'Usuario',
+    'detalle' => 'Detalle',
+    'copia_bd' => 'Copia de la base de datos',
+    'descargar' => 'Descargar',
+    'eliminar' => 'Eliminar',
+    'eliminar_titulo' => '¿Eliminar el paquete :paquete?',
+    'eliminar_texto' => 'Se borra el zip del servidor; no cambia nada de la instalación.',
+    'eliminado' => 'Paquete eliminado: :paquete',
+
+    'consola' => [
+        'aplicando' => 'Aplicando los archivos…',
+        'terminando' => 'Terminando la actualización con el código nuevo…',
+        'nada_pendiente' => 'No hay ninguna actualización pendiente.',
+    ],
+
+    'error' => [
+        'no_existe' => 'No se encuentra el paquete.',
+        'no_es_zip' => 'El archivo no es un zip válido.',
+        'zip_danado' => 'El zip está dañado.',
+        'demasiado_grande' => 'El paquete es demasiado grande.',
+        'demasiados_archivos' => 'El paquete trae demasiados archivos.',
+        'varias_bases' => 'El paquete trae más de una versión.',
+        'sin_manifiesto' => 'No es un paquete de AlojaFlow: le falta el manifiesto. Usa el zip oficial de la versión (alojaflow-x.y.z.zip).',
+        'enlace' => 'El paquete trae un enlace simbólico (:ruta); no se admite.',
+        'firma' => 'La firma del paquete no es válida. Solo se instalan los zips oficiales de AlojaFlow, sin modificar. No se ha cambiado nada.',
+        'manifiesto' => 'El manifiesto del paquete no es válido (:detalle).',
+        'anterior' => 'El paquete es de la versión :version, anterior a la instalada (:actual). No se instalan versiones anteriores.',
+        'misma' => 'La versión :version ya está instalada. Marca «Reinstalar» si quieres instalarla otra vez.',
+        'archivo_de_mas' => 'El paquete trae un archivo que no está en su manifiesto (:ruta).',
+        'archivo_alterado' => 'El archivo :ruta del paquete no coincide con el manifiesto. No se ha cambiado nada.',
+        'es_carpeta' => ':ruta es una carpeta en este servidor y el paquete trae un archivo con ese nombre.',
+        'sin_permiso' => 'No se puede escribir en :cuantos archivos o carpetas (por ejemplo :ejemplo). Revisa los permisos en el hosting. No se ha cambiado nada.',
+        'sin_espacio' => 'No hay espacio libre suficiente en el servidor para actualizar.',
+        'extension' => 'PHP no tiene la extensión :extension.',
+        'php' => 'Esta versión necesita PHP :minimo o superior; el servidor tiene :actual.',
+        'copia_git' => 'Esta instalación es una copia de desarrollo (tiene .git): se actualiza con git, no desde el panel.',
+        'en_curso' => 'Ya hay una actualización en marcha.',
+        'estado' => 'La actualización no está en el paso esperado.',
+        'paquete_cambiado' => 'El paquete cambió desde que se revisó. Revísalo otra vez.',
+        'no_escribe' => 'No se pudo escribir :ruta.',
+        'no_copia' => 'No se pudo hacer la copia de :ruta.',
+        'no_borra' => 'No se pudo borrar el archivo obsoleto :ruta.',
+        'interrumpida' => 'La actualización se cortó a medias (se detuvo el proceso) y se volvieron a poner los archivos anteriores.',
+        'migraciones' => 'Las migraciones de la base de datos fallaron y se volvieron a poner los archivos anteriores. Si la aplicación da errores, restaura la copia de la base de datos de esta actualización. Detalle: :detalle',
+    ],
+
+    'aviso' => [
+        'modificados' => ':cuantos archivos de esta instalación tenían cambios locales y se sustituirán (se guarda una copia).',
+        'conservados' => ':cuantos archivos que ya no usa AlojaFlow tienen cambios locales: no se borran.',
+        'sin_manifiesto_instalado' => 'No se conoce el manifiesto de la versión instalada: esta vez no se borrarán archivos obsoletos.',
+    ],
+];

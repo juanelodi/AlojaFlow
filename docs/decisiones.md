@@ -196,12 +196,42 @@ La primera versión que se entrega es la **1.0.1**: es la versión de prueba que
 la **1.2**. Cada versión queda en `CAMBIOS.md`, en `config/alojaflow.php` (`version`) y en una
 etiqueta de git `v1.0.x`. **Ojo:** la AlojaFlow anterior ya usa los números 1.2.x (está en la
 1.2.3); hay que decidir antes de llegar a la 1.0.99 si el salto a la 1.2 continúa esa serie o
-empieza otra. Decidió: usuario.
+empieza otra. Decidió: usuario. **Resuelto en D-032.**
 
 ### D-031 · 2026-11-03 · Entregas con nombre, no con número
 Las entregas de la fase 1 se llaman **Base, Operación, Huéspedes y Dinero** (producto.md §9).
 Sustituye a los nombres «1.0, 1.1, 1.2, 1.3» de D-015, que se confundían con las versiones.
 **Por qué:** con D-030, «1.2» es un número de versión.
+
+### D-032 · 2026-11-03 · La AlojaFlow 1.2.x queda parada; la numeración nueva es independiente
+El usuario dio por parada definitivamente la AlojaFlow anterior (1.2.x): esta empieza desde cero.
+Su numeración (D-030) es independiente, y la 1.2 a la que se llegue después de la 1.0.99 no
+continúa aquella serie. La subordinación a HotelDruid y a instalaciones 1.2.x como principal
+sigue igual. Decidió: usuario.
+
+### D-033 · 2026-11-03 · Actualizaciones con un paquete firmado y en dos fases
+Cada versión se publica como un zip con un manifiesto (el SHA-256 de cada archivo) firmado con
+Ed25519. Las instalaciones solo aceptan paquetes firmados con la clave de quien publica; la
+pública va en `config/alojaflow.php` y la secreta, fuera del repositorio. La actualización se
+aplica en dos fases, en peticiones o procesos distintos:
+- **aplicar**, con el código viejo: extrae y comprueba los archivos antes del mantenimiento, copia
+  la base de datos e intercambia los archivos anotando cada paso en un diario;
+- **finalizar**, ya con el código nuevo: migraciones y cachés.
+
+**Por qué:**
+- en hosting compartido sin SSH, el zip por el panel o por FTP es el único camino;
+- la firma impide instalar código alterado;
+- las dos fases evitan migrar con código a medio cambiar;
+- el diario permite volver atrás aunque el proceso muera.
+
+Detalle: [especificacion/instalacion-actualizaciones.md](especificacion/instalacion-actualizaciones.md).
+
+### D-034 · 2026-11-03 · Una copia de desarrollo (git) no se actualiza con el zip
+Si la instalación tiene `.git`, ni el panel ni `alojaflow:actualizar` instalan paquetes (salvo con
+`ALOJAFLOW_ACTUALIZAR_COPIA_GIT=true`): ese código se actualiza con git. Las actualizaciones se
+prueban en una instalación hecha desde el zip (`E:\AlojaFlow-prueba`). **Por qué:** sustituir
+archivos desde un zip dejaría cambios en el árbol de git y quitaría las dependencias de
+desarrollo de `vendor/`.
 
 ---
 

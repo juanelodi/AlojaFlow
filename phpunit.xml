@@ -18,6 +18,9 @@
         </include>
     </source>
     <php>
+        <!-- Cada prueba arranca la aplicación entera y la memoria se acumula; el lector de copias
+             de HotelDruid reserva además hasta 32 MB por línea. -->
+        <ini name="memory_limit" value="512M"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="APP_LOCALE" value="es"/>

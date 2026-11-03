@@ -1,0 +1,97 @@
+<?php
+
+/*
+ * AlojaFlow — sistema de gestión de alojamientos
+ * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+declare(strict_types=1);
+
+return [
+    'titulo' => 'Updates',
+    'version_instalada' => 'Installed version: :version',
+    'explicacion' => 'Upload the zip of an AlojaFlow version. Before anything changes, its signature and every file are checked; the database and the files being replaced are backed up, and if anything fails everything goes back as it was. Your data, the .env file and the storage folder are never touched.',
+    'paso_subir' => '1. Upload the package',
+    'subir' => 'Version zip (alojaflow-x.y.z.zip)',
+    'subir_ayuda' => 'This server accepts uploads of up to :subida (and requests of up to :envio). If the zip is bigger, upload it by FTP to the folder below.',
+    'subir_boton' => 'Upload',
+    'subido' => 'Package uploaded: :paquete',
+    'ftp' => 'You can also copy the zip by FTP or with the hosting file manager into :carpeta; it will appear in the list below.',
+    'paso_revisar' => '2. Review and install',
+    'paquete' => 'Package',
+    'sin_paquetes' => 'No package has been uploaded yet.',
+    'elige_paquete' => 'Choose a package from the list.',
+    'reinstalar' => 'Reinstall if it is the same version',
+    'revisar' => 'Review',
+    'de_a' => 'Version',
+    'nuevos' => 'New files',
+    'cambiados' => 'Changed files',
+    'borrar' => 'Obsolete files to delete',
+    'iguales' => 'Unchanged files',
+    'tamano' => 'Size',
+    'que_hara' => 'Updating: database backup, the application in maintenance for a moment, new files, migrations and back to normal. It may take a few minutes; do not close the page.',
+    'actualizar' => 'Update to :version',
+    'confirmar_titulo' => 'Update AlojaFlow?',
+    'confirmar_texto' => 'The application will be in maintenance during the update. Enter your password to confirm.',
+    'contrasena' => 'Your password',
+    'completada' => 'AlojaFlow was updated to version :version.',
+    'fallo' => 'The update did not complete',
+    'pendiente_finalizar' => 'An update with its files already in place did not finish (for example, because the page was closed). Finish it to leave maintenance mode.',
+    'finalizar_ahora' => 'Finish the update',
+    'historial' => 'History',
+    'sin_historial' => 'No update has been made from the panel yet.',
+    'fecha' => 'Date',
+    'estado' => 'Status',
+    'usuario' => 'User',
+    'detalle' => 'Detail',
+    'copia_bd' => 'Database backup',
+    'descargar' => 'Download',
+    'eliminar' => 'Delete',
+    'eliminar_titulo' => 'Delete the package :paquete?',
+    'eliminar_texto' => 'The zip is removed from the server; nothing in the installation changes.',
+    'eliminado' => 'Package deleted: :paquete',
+
+    'consola' => [
+        'aplicando' => 'Applying the files…',
+        'terminando' => 'Finishing the update with the new code…',
+        'nada_pendiente' => 'There is no pending update.',
+    ],
+
+    'error' => [
+        'no_existe' => 'The package cannot be found.',
+        'no_es_zip' => 'The file is not a valid zip.',
+        'zip_danado' => 'The zip is damaged.',
+        'demasiado_grande' => 'The package is too big.',
+        'demasiados_archivos' => 'The package has too many files.',
+        'varias_bases' => 'The package contains more than one version.',
+        'sin_manifiesto' => 'This is not an AlojaFlow package: its manifest is missing. Use the official version zip (alojaflow-x.y.z.zip).',
+        'enlace' => 'The package contains a symbolic link (:ruta); this is not allowed.',
+        'firma' => 'The package signature is not valid. Only official, unmodified AlojaFlow zips are installed. Nothing was changed.',
+        'manifiesto' => 'The package manifest is not valid (:detalle).',
+        'anterior' => 'The package is version :version, older than the installed one (:actual). Older versions are not installed.',
+        'misma' => 'Version :version is already installed. Tick “Reinstall” to install it again.',
+        'archivo_de_mas' => 'The package contains a file that is not in its manifest (:ruta).',
+        'archivo_alterado' => 'The file :ruta in the package does not match the manifest. Nothing was changed.',
+        'es_carpeta' => ':ruta is a folder on this server and the package has a file with that name.',
+        'sin_permiso' => ':cuantos files or folders cannot be written (for example :ejemplo). Check the permissions on the hosting. Nothing was changed.',
+        'sin_espacio' => 'There is not enough free space on the server to update.',
+        'extension' => 'PHP is missing the :extension extension.',
+        'php' => 'This version needs PHP :minimo or later; the server has :actual.',
+        'copia_git' => 'This installation is a development copy (it has .git): update it with git, not from the panel.',
+        'en_curso' => 'An update is already running.',
+        'estado' => 'The update is not at the expected step.',
+        'paquete_cambiado' => 'The package changed since it was reviewed. Review it again.',
+        'no_escribe' => ':ruta could not be written.',
+        'no_copia' => 'A backup of :ruta could not be made.',
+        'no_borra' => 'The obsolete file :ruta could not be deleted.',
+        'interrumpida' => 'The update was cut off halfway (the process stopped) and the previous files were put back.',
+        'migraciones' => 'The database migrations failed and the previous files were put back. If the application shows errors, restore this update’s database backup. Detail: :detalle',
+    ],
+
+    'aviso' => [
+        'modificados' => ':cuantos files in this installation had local changes and will be replaced (a backup is kept).',
+        'conservados' => ':cuantos files no longer used by AlojaFlow have local changes: they will not be deleted.',
+        'sin_manifiesto_instalado' => 'The manifest of the installed version is unknown: no obsolete files will be deleted this time.',
+    ],
+];

@@ -68,7 +68,7 @@ class Sincronizador
             return $ejecucion;
         }
 
-        $carpeta = storage_path('app/privado/subordinacion/'.$principal->id);
+        $carpeta = storage_path('app/private/subordinacion/'.$principal->id);
         File::ensureDirectoryExists($carpeta, 0700);
         $descarga = $carpeta.'/descarga-'.$ejecucion->id.'.tmp';
         $texto = $carpeta.'/copia-'.$ejecucion->id.'.tmp';

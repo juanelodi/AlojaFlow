@@ -21,4 +21,5 @@ return [
     'NivelAviso' => ['informacion' => 'Información', 'advertencia' => 'Advertencia', 'error' => 'Error'],
     'TipoContacto' => ['telefono' => 'Teléfono', 'correo' => 'Correo', 'fax' => 'Fax'],
     'OrigenFila' => ['hoteldruid' => 'HotelDruid', 'alojaflow' => 'AlojaFlow'],
+    'EstadoActualizacion' => ['preparada' => 'Preparada', 'aplicando' => 'Aplicando', 'archivos_aplicados' => 'Sin terminar', 'completada' => 'Completada', 'fallida' => 'Fallida', 'revertida' => 'Revertida'],
 ];

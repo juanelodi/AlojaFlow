@@ -275,6 +275,12 @@ return [
         'terceros' => 'Componentes de terceros',
     ],
 
+    'mantenimiento' => [
+        'titulo' => 'AlojaFlow se está actualizando',
+        'texto' => 'La aplicación no está disponible durante unos momentos mientras se instala una nueva versión o se hace mantenimiento.',
+        'recarga' => 'Esta página se recarga sola; si tarda más de unos minutos, avisa al administrador.',
+    ],
+
     'pie' => [
         'licencia' => 'Software libre AGPL v3',
         'codigo_fuente' => 'Código fuente',

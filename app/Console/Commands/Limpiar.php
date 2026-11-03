@@ -10,9 +10,12 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Actualizacion\Actualizador;
+use App\Models\Actualizacion;
 use App\Models\EjecucionSincronizacion;
 use App\Models\Principal;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 
 /**
  * Borra lo vencido según los plazos de conservación (modelo-datos.md §8).
@@ -21,9 +24,9 @@ class Limpiar extends Command
 {
     protected $signature = 'alojaflow:limpiar';
 
-    protected $description = 'Borra los registros vencidos (ejecuciones de sincronización…)';
+    protected $description = 'Borra los registros vencidos (ejecuciones de sincronización, copias de actualizaciones…)';
 
-    public function handle(): int
+    public function handle(Actualizador $actualizador): int
     {
         $vigentes = Principal::query()->whereNotNull('ejecucion_vigente_id')->pluck('ejecucion_vigente_id');
         $borradas = EjecucionSincronizacion::query()
@@ -32,6 +35,18 @@ class Limpiar extends Command
             ->delete();
 
         $this->info("Ejecuciones de sincronización borradas: $borradas");
+
+        // Las copias de cada actualización (base de datos y archivos sustituidos) llevan datos
+        // personales: solo se guardan las de las últimas.
+        $conservar = Actualizacion::query()->latest('id')->limit((int) config('alojaflow.actualizaciones.copias_conservadas'))->pluck('id')->all();
+        $copias = 0;
+        foreach (glob($actualizador->carpeta().'/*', GLOB_ONLYDIR) ?: [] as $carpeta) {
+            if (ctype_digit(basename($carpeta)) && ! in_array((int) basename($carpeta), $conservar, true)) {
+                File::deleteDirectory($carpeta);
+                $copias++;
+            }
+        }
+        $this->info("Copias de actualizaciones borradas: $copias");
 
         return self::SUCCESS;
     }
