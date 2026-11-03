@@ -1,6 +1,6 @@
 # Especificación de AlojaFlow — índice
 
-**Estado:** propuesta para aprobación · 2026-11-03
+**Estado:** índice aprobado · 2026-11-03
 Producto: [../producto.md](../producto.md) · decisiones: [../decisiones.md](../decisiones.md)
 
 ## Convenciones
@@ -17,7 +17,7 @@ Producto: [../producto.md](../producto.md) · decisiones: [../decisiones.md](../
 |---|---|---|---|---|---|
 | 00 | `glosario.md` | Términos (principal, subordinada, copia, espejo, proyección, propiedad, unidad, reserva, estancia…) y equivalencias italiano → español de HotelDruid | 1 | medium | pendiente |
 | 01 | `arquitectura.md` | Módulos M1–M11 en Laravel, capas, paquetes de país, eventos, colas y programador en hosting compartido, archivos, correo | 1 | high | pendiente |
-| 02 | `subordinacion.md` | Protocolo con la principal, **formato de la copia** y correspondencia de tablas (regla 10) | 1 | high | pendiente |
+| 02 | [`subordinacion.md`](subordinacion.md) | Protocolo con la principal, **formato de la copia** y correspondencia de tablas (regla 10) | 1 | high | borrador 2026-11-03 |
 | 03 | `modelo-datos.md` | Modelo de datos propio de las fases 1 y 2 | 1–2 | xhigh | pendiente |
 | 04 | `pantallas-fase-1.md` | Mapa de navegación y ficha de cada pantalla de la fase 1 | 1 | medium | pendiente |
 | 05 | `paises/` | `mexico.md`, `espana.md`, `estados-unidos.md`, `generico.md` | 1 | high | pendiente |
@@ -36,80 +36,11 @@ cierra cuando el modelo está claro.
 
 ---
 
-## 02 · `subordinacion.md` (detalle)
+## 02 · `subordinacion.md`
 
-### Parte A — Protocolo
-
-1. **Alcance.** Principales admitidas: HotelDruid 3.0.8 y AlojaFlow 1.2.x, esquema **3.081**
-   (congelado, D-011). La versión se lee de `<versione>` en la copia; una versión desconocida se
-   rechaza sin cargar nada.
-2. **Configuración de una principal:** URL base (solo `https://`), usuario y contraseña
-   (cifrados), compresión, frecuencia (15 min a 1 día), zona horaria y moneda de la propiedad.
-3. **Llamadas HTTP** **[visto: `interconnessioni.php`, `plugins/multipropiedad/funciones.php`]**.
-   Todas a `crea_backup.php` con `nome_utente_phpr` y `password_phpr`:
-
-   | Paso | Parámetros |
-   |---|---|
-   | Comprobar acceso | solo las credenciales |
-   | Crear la copia | `anno=AAAA&azione=SI&crea_backup=SI` |
-   | Descargar | `anno=AAAA&azione=SI&mostra_header=NO&salva_backup=SI&compresso=SI\|NO` |
-   | Borrar la copia | `anno=AAAA&azione=SI&cancella_backup=SI` |
-
-   Para cada paso: método, respuesta correcta, respuestas de error **[por verificar]**
-   (credenciales, espera de 5 s tras un inicio de sesión fallido, falta de privilegios, año
-   inexistente, copia en curso), tiempo de espera y tamaño máximo. Qué significa `anno` cuando
-   la copia incluye varios años **[por verificar]**.
-4. **Seguridad.** La principal recibe la contraseña en la URL: queda en los registros del
-   servidor y de proxies. Debe usarse HTTPS con certificado válido y sin seguir redirecciones a
-   otro host; comprobar si la principal acepta los mismos parámetros por POST **[por verificar]**;
-   recomendar un usuario dedicado con los mínimos privilegios. Nunca se llama a
-   `mostra_sorgente.php`.
-5. **Ciclo de sincronización:** programación, bloqueo por principal (una sola a la vez),
-   descarga a un archivo temporal, verificaciones (completa, versión, tamaño), lectura por
-   partes, carga del espejo en una transacción o por tabla sombra con intercambio, proyección al
-   modelo propio, detección de eventos, borrado de la copia en la principal, registro de la
-   ejecución (duración, filas, errores) y limpieza de temporales.
-6. **Errores y recuperación:** principal caída, credenciales malas, copia truncada o corrupta,
-   versión desconocida, disco lleno, tiempo agotado. Siempre se conserva la última carga buena;
-   los avisos llegan al administrador.
-
-### Parte B — Formato de la copia
-
-1. **Estructura general** **[visto: copia de demostración 3.081]**: empieza con
-   `<?php exit(); ?>` (para que no se pueda leer por web), sigue con comentarios con la fecha y
-   una raíz `<backup>` con `<versione>`, `<log>`, bloques `<file>` (`<nomefile>`, `<contenuto>`)
-   con archivos de configuración de `dati/` escritos en PHP, y bloques `<tabella>` con
-   `<righetabella>` y `<riga>`.
-2. **No es XML válido** **[por verificar]**: el contenido trae PHP y HTML sin escapar. Se lee con
-   un analizador propio por partes; **nunca se incluye ni se ejecuta** (regla 11).
-3. **Tablas:** globales y por año, columnas, nulos, tipos, prefijo de tablas.
-4. **Escapes y codificación:** UTF-8, caracteres especiales, saltos de línea, separadores.
-5. **Compresión** (`compresso=SI`): algoritmo **[por verificar]**.
-6. **Valores de configuración** que se sacan de los `<file>` (idioma, nombre de la unidad,
-   moneda…) y cómo se leen sin ejecutar PHP.
-7. **Copia de documentos** (`hoteld_doc_backup.php`, contratos): si hace falta y cómo.
-8. **Copias sintéticas** para las pruebas versionadas.
-
-### Parte C — Correspondencia HotelDruid 3.081 → modelo propio
-
-1. **Tablas globales** **[visto: `docs/architecture/database.md` de 1.2.x]**: `appartamenti` →
-   unidades; `clienti`, `relclienti` → huéspedes; `nazioni`, `regioni`, `citta`, `parentele`,
-   `documentiid` → catálogos; `personalizza` → configuración de la propiedad; `casse`,
-   `transazioni` → caja (lectura); `contratti`, `descrizioni`; `anni`, `versioni`.
-   No se importan: `utenti`, `privilegi`, `sessioni`, `cache`, `interconnessioni`,
-   `transazioniweb`.
-2. **Tablas por año** **[visto: `creadb.php`]**: `prenota` → reservas; `prenotacanc` →
-   cancelaciones; `rclientiprenota` → huéspedes de la reserva; `costi`, `costiprenota` →
-   cargos (de aquí salen las limpiezas); `soldi` → pagos; `periodi`, `ntariffe`, `regole` →
-   tarifas y reglas (solo lectura en la fase 1).
-3. **Claves estables:** el identificador de reserva es por año → clave (propiedad, año, id).
-   Una reserva que aparece en dos tablas de año cuenta una vez **[visto: plugin `kpi`]**.
-   Qué pasa si la principal reutiliza un identificador borrado **[por verificar]**.
-4. **Casos especiales:** campos personalizados de cliente (tipo de cliente), costo «Limpieza»
-   (`associasett_ca`, `numsett_ca`), bloqueos iCal creados por el plugin de la principal
-   (cliente «Bloqueo iCal», comentario `[ical]`), reservas de grupo de 1.2.x.
-5. **Conversiones:** fechas y periodos, importes decimales → enteros en centavos, moneda, zona
-   horaria.
+Redactado: [subordinacion.md](subordinacion.md) (borrador 2026-11-03). Partes: A protocolo, B formato
+de la copia, C correspondencia con el modelo propio, D pruebas, y la lista de preguntas abiertas
+que se resuelven con una principal real antes de programar.
 
 ---
 

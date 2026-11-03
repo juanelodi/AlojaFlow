@@ -1,6 +1,6 @@
 # AlojaFlow — documento de producto
 
-**Estado:** borrador para aprobación · versión 0.1 · 2026-11-03
+**Estado:** aprobado · versión 1.0 · 2026-11-03
 Decisiones citadas como D-NNN: [decisiones.md](decisiones.md). Especificación:
 [especificacion/README.md](especificacion/README.md).
 

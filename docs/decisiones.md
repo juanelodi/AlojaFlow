@@ -63,7 +63,9 @@ fase 1 necesita una base fija que leer. Decidió: usuario.
 
 ---
 
-## Propuestas pendientes de aprobación
+## Aprobadas con el documento de producto (2026-11-03)
+
+Las propuso Claude y el usuario las aprobó junto con los borradores del producto y del índice.
 
 ### D-012 · 2026-11-03 · Reglas 11 a 13 de seguridad y datos personales
 La copia nunca se ejecuta (es un `.php`); los datos personales reales no entran al repositorio;
@@ -82,6 +84,26 @@ servicios externos y no envía datos de navegación a terceros (mismo principio 
 ### D-015 · 2026-11-03 · Fase 1 en cuatro entregas (1.0 Base, 1.1 Operación, 1.2 Huéspedes, 1.3 Dinero)
 **Por qué:** la fase 1 es grande; cada entrega se instala y sirve por sí misma. Detalle:
 [producto.md](producto.md) §9.
+
+---
+
+## Propuestas pendientes de aprobación
+
+### D-016 · 2026-11-03 · Licencia de HotelDruid citada con su redacción exacta
+La cabecera de HotelDruid dice AGPL v3 «o cualquier versión posterior aceptada por Marco Maria
+Francesco De Santis», que actúa como apoderado según la sección 14. No dice «o posterior» a
+secas, como anotaba INICIO.md. AlojaFlow reescribe la lógica sin copiar código y sigue siendo
+AGPL-3.0-or-later; `THIRD-PARTY-NOTICES.md` cita la licencia de HotelDruid con esa redacción.
+**Por qué:** exactitud en los créditos; lo encontró Claude al leer `crea_backup.php`.
+
+### D-017 · 2026-11-03 · Reglas del cliente de subordinación
+Peticiones por POST; lista blanca de parámetros (imposible enviar `upload_backup`,
+`ripristina_backup` u otros que cambien la principal); ningún reintento automático tras un
+rechazo de credenciales; se descartan al leer `utenti`, `sessioni`, `transazioni*`, `contratti`
+e `interconnessioni`; el archivo descargado se borra siempre. **Por qué:** la principal manda la
+contraseña en la URL si se usa GET, bloquea la cuenta con 7 intentos fallidos y su copia trae
+hashes de contraseñas, sesiones (en 3.0.8) y claves de API. Detalle:
+[especificacion/subordinacion.md](especificacion/subordinacion.md).
 
 ---
 

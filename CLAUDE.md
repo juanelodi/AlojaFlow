@@ -4,8 +4,9 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-03): especificación.** Todavía no hay código. No escribir código hasta que
-  el usuario apruebe el documento de producto y la especificación.
+- **Estado (2026-11-03): especificación.** Documento de producto e índice de la especificación
+  aprobados; los documentos de la especificación están en redacción. Todavía no hay código: no
+  escribirlo hasta que el usuario apruebe la especificación.
 - **Idioma:** español de México en la conversación, la documentación, el código
   (identificadores y comentarios) y los mensajes de commit. Interfaz en español y en los
   idiomas de la regla 7.
@@ -79,7 +80,7 @@ de la copia no cambia mientras se construye la fase 1.
     prueba con copias reales. **Nunca** se pide ni se instala el código fuente de la principal
     (`mostra_sorgente.php`).
 
-### Seguridad y datos personales (propuestas 2026-11-03, pendientes de aprobación)
+### Seguridad y datos personales (aprobadas 2026-11-03)
 
 11. **La copia de HotelDruid es un archivo `.php` y nunca se incluye, evalúa ni ejecuta.** Se lee
     como texto con un analizador propio. Sus bloques `<file>` traen código PHP de configuración
