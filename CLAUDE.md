@@ -1,0 +1,209 @@
+# AlojaFlow — guía para Claude
+
+AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequeños, escrito
+**desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
+(AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
+
+- **Estado (2026-11-03): especificación.** Todavía no hay código. No escribir código hasta que
+  el usuario apruebe el documento de producto y la especificación.
+- **Idioma:** español de México en la conversación, la documentación, el código
+  (identificadores y comentarios) y los mensajes de commit. Interfaz en español y en los
+  idiomas de la regla 7.
+- **Uso mundial** con paquetes de país. Fase 1: México, España, Estados Unidos y un paquete
+  genérico (resto de Latinoamérica y otros países).
+- **Una instalación por cliente** (también en el servicio alojado): una base de datos por
+  cliente, con una o varias propiedades dentro.
+- Contexto y razones: [docs/INICIO.md](docs/INICIO.md) · producto: [docs/producto.md](docs/producto.md) ·
+  especificación: [docs/especificacion/README.md](docs/especificacion/README.md) ·
+  decisiones con fecha: [docs/decisiones.md](docs/decisiones.md).
+
+## Fases
+
+1. **Fase 1 — subordinada de solo lectura.** HotelDruid 3.0.8 (esquema 3.081) o AlojaFlow 1.2.x
+   es la instalación principal. AlojaFlow descarga su copia de respaldo, la carga y ofrece
+   encima las funciones nuevas. **AlojaFlow nunca escribe en la principal.** Los datos propios
+   de AlojaFlow van en tablas que la sincronización no toca. Alcance: los 11 módulos de
+   [docs/producto.md](docs/producto.md) §8.
+2. **Fase 2 — núcleo propio.** Reservas, tarifas y clientes propios para funcionar sin
+   HotelDruid, más todo lo que escribe reservas (grupos, cupones, fusionar clientes, motor de
+   reservas…). Se construye después, pero el modelo de datos lo contempla desde la fase 1.
+
+AlojaFlow 1.2.x queda **congelada** (solo correcciones de seguridad y errores): el esquema 3.081
+de la copia no cambia mientras se construye la fase 1.
+
+## Reglas
+
+1. **Licencia AGPL-3.0-or-later.** Archivo `LICENSE` en la raíz y cabecera breve en cada archivo
+   fuente (ver «Cabecera de licencia»).
+2. **Todo nuevo.** Arquitectura, nombres y estructura nuevos sobre Laravel. Los nombres
+   italianos de HotelDruid (`prenota`, `clienti`, `appartamenti`…) solo existen dentro del
+   módulo de sincronización.
+3. **Dependencias solo con licencia compatible con la AGPL v3:** MIT, BSD, Apache 2.0,
+   LGPL v2.1+/v3, GPL v3, AGPL v3. **Prohibidas:** GPL v2 «solo» (sin «o posterior»), OSL
+   (p. ej. QloApps), licencias propietarias o de pago y código sin licencia. Comprobar la
+   licencia antes de añadir cualquier dependencia; antes de cada versión, revisarlas todas
+   (`composer licenses` y `npx license-checker --summary`).
+4. **La lógica sí, el código viejo no.** De HotelDruid, AlojaFlow 1.2.x u otro proyecto con
+   licencia compatible se aprovecha la lógica, reescrita. Ningún archivo viejo entra tal cual.
+   Mínimos de todo lo que entra:
+   - PHP 8.3 con `declare(strict_types=1)`, tipos en parámetros, propiedades y retornos, enums;
+     clases con una sola responsabilidad; sin funciones ni variables globales.
+   - Base de datos solo con Eloquent o el query builder, y esquema solo con migraciones.
+     Nunca SQL armado concatenando cadenas.
+   - Validación con Form Requests (o reglas de validación de Livewire), permisos con Policies,
+     HTML solo en vistas Blade o componentes Livewire (nada de `echo` de HTML desde la lógica).
+   - PSR-12 con Laravel Pint, Larastan sin errores y pruebas que cubran la lógica adaptada.
+   - Interfaz responsiva y accesible (contraste AA, foco visible, objetivos táctiles cómodos).
+
+   Si un fragmento no puede cumplirlo sin reescribirse entero, se reescribe entero. Cuando la
+   lógica venga de otro proyecto, conservar su aviso de copyright y anotarlo en
+   `THIRD-PARTY-NOTICES.md` (origen, licencia, archivos afectados).
+5. **Contribuciones** bajo la misma AGPL, con DCO: cada commit lleva `Signed-off-by`
+   (`git commit -s`). No hace falta CLA.
+6. **Cada cambio** con pruebas (Pest) y análisis estático (Larastan) en verde.
+7. **Español primero, en varios idiomas.** Ningún texto visible escrito directamente en el
+   código: todo pasa por los archivos de traducción (`lang/<idioma>/…`). El español es la
+   fuente; idiomas de la fase 1: español, inglés, francés, italiano, portugués y alemán. Cada
+   usuario y cada huésped ven su idioma. Fechas, números, monedas y zonas horarias según la
+   propiedad y el idioma, nunca con formatos fijos en el código.
+8. **Enlace «Código fuente»** visible en la aplicación (obligación de la AGPL por uso en red),
+   que descarga el código exacto de la versión instalada.
+9. **Créditos.** Mientras haya lógica derivada de HotelDruid, mencionar a Marco M. F. De Santis
+   en `THIRD-PARTY-NOTICES.md` y en la pantalla «Acerca de». Se puede decir «compatible con
+   HotelDruid»; no usar su logo ni sugerir que es un producto oficial.
+10. **Subordinación** documentada en
+    [docs/especificacion/subordinacion.md](docs/especificacion/subordinacion.md): las llamadas
+    HTTP a `crea_backup.php` (crear, descargar —comprimida o no— y borrar la copia) con sus
+    respuestas y errores; el formato del archivo de copia; la correspondencia entre las tablas
+    de HotelDruid 3.081 y el modelo propio. Se programa con código moderno (regla 4) y se
+    prueba con copias reales. **Nunca** se pide ni se instala el código fuente de la principal
+    (`mostra_sorgente.php`).
+
+### Seguridad y datos personales (propuestas 2026-11-03, pendientes de aprobación)
+
+11. **La copia de HotelDruid es un archivo `.php` y nunca se incluye, evalúa ni ejecuta.** Se lee
+    como texto con un analizador propio. Sus bloques `<file>` traen código PHP de configuración
+    de la principal: se extraen solo los valores conocidos, sin ejecutar nada.
+12. **Los datos personales reales no entran al repositorio.** Las copias reales (p. ej. las de
+    `E:\HotelDruid\respaldos\`) se leen desde su ubicación, indicada por variable de entorno;
+    nunca se copian al repositorio, a `docs/`, a las pruebas versionadas ni a los mensajes. Las
+    pruebas versionadas usan copias sintéticas o anonimizadas.
+13. **Las credenciales de la principal** se guardan cifradas (cast `encrypted`), nunca aparecen
+    en registros ni en mensajes de error, y solo viajan por HTTPS (salvo `localhost` en
+    desarrollo).
+
+## Tecnología
+
+Versiones exactas: las estables al crear el esqueleto; se fijan en `composer.json` y
+`package.json` y se anotan en `docs/decisiones.md`.
+
+| Capa | Elección | Licencia |
+|---|---|---|
+| Lenguaje | PHP 8.3 | PHP License |
+| Framework | Laravel (estable actual) | MIT |
+| Base de datos | MySQL 8.4 / MariaDB 11.4. **Sin SQLite, tampoco en las pruebas** | — |
+| Interfaz interactiva | Livewire | MIT |
+| Detalles de interfaz | Alpine.js | MIT |
+| Estilos | Tailwind CSS | MIT |
+| Panel de administración | Filament (gratuito) para catálogos y configuración; las pantallas operativas (calendario, «Hoy», limpieza…) y las públicas, propias con Livewire | MIT |
+| Autenticación y 2FA | Laravel Fortify | MIT |
+| Roles y permisos | spatie/laravel-permission | MIT |
+| Copias de seguridad | spatie/laravel-backup | MIT |
+| Calendarios iCal (Airbnb, Booking, Vrbo) | sabre/vobject | BSD-3 |
+| PDF (facturas, contratos) | barryvdh/laravel-dompdf (dompdf) | MIT / LGPL-2.1 |
+| Pagos (más adelante) | SDK oficiales de Stripe / Mercado Pago (verificar licencia) | — |
+| Facturación electrónica México (si aplica) | paquetes de phpcfdi | MIT |
+| Colas y tareas | driver `database` + programador de Laravel con un solo cron por minuto (sin Redis ni Supervisor) | — |
+| Pruebas | Pest | MIT |
+| Análisis estático | Larastan (PHPStan) | MIT |
+| Formato de código | Laravel Pint | MIT |
+| Integración continua | GitHub Actions | — |
+| Entorno local | Laravel Herd (Windows) + MySQL/MariaDB de WampServer | — |
+
+Se construye en casa: calendario por habitaciones (*tape chart*), motor de reservas,
+sincronización iCal, informes. Descartado por ahora: React/Vue separado, Docker,
+microservicios, app nativa (más adelante una PWA), FullCalendar Premium, channel manager de pago.
+
+Destino de instalación: hosting compartido (`public_html`). El paquete incluye `vendor/` y los
+recursos ya compilados; un solo cron dispara el programador de tareas. Sin CDN en tiempo de
+ejecución: todos los recursos se sirven desde la instalación.
+
+**Paquetes de país.** Lo que cambia por país (facturación, registro de viajeros, impuestos al
+hospedaje, privacidad, documentos de identidad, formatos) va detrás de interfaces con una
+implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nada de
+`if ($pais === …)` repartidos por el código.
+
+## Convenciones
+
+- **Código en español:** clases, métodos, variables, tablas, columnas y rutas en español, sin
+  acentos ni ñ (`Habitacion`, `anio`, `crearFactura()`, tabla `reservas`). Lo que imponen
+  Laravel y los paquetes se queda como viene (`users`, `jobs`, `roles`, `handle()`,
+  `render()`…).
+- **Modelos Eloquent con `$table` explícito:** el pluralizador de Laravel es inglés
+  (`Habitacion` daría `habitacions`). Las claves foráneas siguen el patrón `<modelo>_id`
+  (`habitacion_id`).
+- Los nombres italianos de HotelDruid solo aparecen en el módulo de sincronización (regla 2).
+- **Cabecera de licencia** en cada archivo fuente, justo después de `<?php` y antes de
+  `declare(strict_types=1);` (en Blade con `{{-- --}}`, en JS/CSS con `/* */`):
+
+  ```php
+  /*
+   * AlojaFlow — sistema de gestión de alojamientos
+   * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+   * SPDX-License-Identifier: AGPL-3.0-or-later
+   */
+  ```
+
+## Cómo trabajar
+
+- **Una sesión por módulo** (esqueleto, sincronización, calendario, tarifas…) para no mezclar
+  contexto.
+- **Pasos pequeños:** cada paso termina con pruebas en verde, Pint y Larastan limpios, y un
+  commit firmado (`git commit -s`).
+- **Cada decisión** se anota en `docs/decisiones.md` (fecha, qué, por qué). Si cambia una regla
+  o la tecnología, se actualiza también este archivo.
+- Revisar los cambios importantes antes de integrarlos con `/code-review high`.
+- Esfuerzo recomendado (modelo Opus 5.5):
+
+  | Trabajo | Esfuerzo |
+  |---|---|
+  | Especificación, arquitectura, sincronización con HotelDruid, tarifas, seguridad | high |
+  | Modelo de datos y lógica de disponibilidad / overbooking | xhigh |
+  | Pantallas y CRUD normales, traducciones, ajustes de diseño | medium |
+  | Cambios pequeños y preguntas rápidas | low |
+
+## Comandos
+
+Se completan al crear el esqueleto. Previstos:
+
+```bash
+php artisan test                 # Pest, contra una base MySQL/MariaDB de pruebas
+vendor/bin/pint --test           # formato PSR-12
+vendor/bin/phpstan analyse       # Larastan
+composer licenses                # licencias PHP
+npx license-checker --summary    # licencias npm
+```
+
+Entorno: Windows 10. En este equipo el `PATH` tiene primero PHP 8.2: usar el PHP 8.3 de Herd y
+comprobarlo con `php -v` antes de trabajar.
+
+## Referencias locales (solo lectura)
+
+- `E:\HotelDruid\` — repositorio local de AlojaFlow 1.2.3 (derivado de HotelDruid 3.0.8).
+  Sirve para **entender la lógica**, nunca para copiar código (regla 4):
+  - `alojaflow/crea_backup.php` (genera la copia), `alojaflow/interconnessioni.php` (cliente de
+    subordinación original), `alojaflow/plugins/multipropiedad/` (descarga copias de varias
+    principales), `alojaflow/creadb.php` (esquema), `alojaflow/includes/funzioni_aggiorna.php`
+    (migraciones del esquema).
+  - `upstream/` — HotelDruid 3.0.8 original y su documentación oficial.
+  - `docs/`, `PRODUCT.md`, `DESIGN.md` — wiki, análisis (seguridad, foro, proyectos similares)
+    y sistema visual del tema anterior.
+  - `respaldos/` — copias reales con datos personales: aplica la regla 12.
+- `branding/` — logos SVG finales.
+
+## Marca
+
+- Verde azulado `#0F766E` (color principal, cuadro del logo), ámbar `#F59E0B` (ola), tinta
+  `#0B1F2A` (texto). Logos en `branding/logo-final-*.svg`.
+- Aspecto serio y moderno; el acabado de Google Workspace como referencia (claro, muy legible,
+  botones cómodos y familiares). Nada lúdico.
