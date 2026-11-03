@@ -87,7 +87,9 @@ servicios externos y no envía datos de navegación a terceros (mismo principio 
 
 ---
 
-## Propuestas pendientes de aprobación
+## Aprobadas con la especificación de subordinación (2026-11-03)
+
+Las propuso Claude en `subordinacion.md` y el usuario las aprobó.
 
 ### D-016 · 2026-11-03 · Licencia de HotelDruid citada con su redacción exacta
 La cabecera de HotelDruid dice AGPL v3 «o cualquier versión posterior aceptada por Marco Maria
