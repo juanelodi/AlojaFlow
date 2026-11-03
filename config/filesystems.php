@@ -41,7 +41,7 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            'serve' => false, // AlojaFlow: los archivos privados solo se sirven tras comprobar permisos
             'throw' => false,
             'report' => false,
         ],

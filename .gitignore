@@ -46,3 +46,5 @@ desktop.ini
 /public/js/filament/
 /public/css/filament/
 /public/fonts/filament/
+.claude/launch.json
+/public/css/alojaflow/

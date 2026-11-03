@@ -44,7 +44,7 @@ final class Dinero
 
     public static function formatear(int $importe, string $moneda, ?string $locale = null): string
     {
-        $formato = new NumberFormatter($locale ?? self::locale(), NumberFormatter::CURRENCY);
+        $formato = new NumberFormatter($locale ?? self::locale($moneda), NumberFormatter::CURRENCY);
         $texto = $formato->formatCurrency($importe / (10 ** self::decimales($moneda)), $moneda);
 
         return $texto === false ? $moneda.' '.$importe : $texto;
@@ -73,8 +73,25 @@ final class Dinero
         return $resultado;
     }
 
-    private static function locale(): string
+    /**
+     * Idioma del usuario con la región de la moneda (es + MXN → es_MX: «$99,300.00»), para que
+     * cada moneda se escriba como en su país.
+     */
+    private static function locale(?string $moneda = null): string
     {
-        return str_replace('-', '_', app()->getLocale());
+        $idioma = str_replace('-', '_', app()->getLocale());
+        if (str_contains($idioma, '_') || $moneda === null) {
+            return $idioma;
+        }
+        $region = self::REGION_POR_MONEDA[$moneda] ?? null;
+
+        return $region === null ? $idioma : $idioma.'_'.$region;
     }
+
+    /** Región habitual de cada moneda, para su formato. */
+    private const REGION_POR_MONEDA = [
+        'MXN' => 'MX', 'USD' => 'US', 'EUR' => 'ES', 'COP' => 'CO', 'ARS' => 'AR', 'CLP' => 'CL', 'PEN' => 'PE',
+        'UYU' => 'UY', 'GTQ' => 'GT', 'CRC' => 'CR', 'DOP' => 'DO', 'BOB' => 'BO', 'PYG' => 'PY', 'BRL' => 'BR',
+        'CAD' => 'CA', 'GBP' => 'GB', 'CHF' => 'CH',
+    ];
 }

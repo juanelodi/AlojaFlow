@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\EstadoPrincipal;
 use App\Enums\MetodoPeticion;
+use App\Sincronizacion\HotelDruid\CodigoError;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
@@ -72,10 +73,34 @@ class Principal extends ModeloBase
         ];
     }
 
+    protected static function booted(): void
+    {
+        // Con credenciales o dirección nuevas, una principal pausada por ellas vuelve a intentarlo (A5).
+        static::saving(function (Principal $principal): void {
+            $reanudables = [CodigoError::Credenciales->value, CodigoError::DestinoNoPermitido->value, CodigoError::AnioInexistente->value];
+            if ($principal->exists && $principal->estado === EstadoPrincipal::Pausada
+                && in_array($principal->codigo_pausa, $reanudables, true)
+                && $principal->isDirty(['url_base', 'usuario', 'contrasena', 'metodo', 'permitir_red_local'])) {
+                $principal->forceFill([
+                    'estado' => EstadoPrincipal::Activa, 'codigo_pausa' => null, 'pausada_hasta' => null,
+                    'fallos_consecutivos' => 0, 'proxima_en' => now()->addSeconds(10),
+                ]);
+            }
+        });
+    }
+
     /** @return BelongsTo<Propiedad, $this> */
     public function propiedad(): BelongsTo
     {
         return $this->belongsTo(Propiedad::class);
+    }
+
+    public function reanudar(): void
+    {
+        $this->forceFill([
+            'estado' => EstadoPrincipal::Activa, 'codigo_pausa' => null, 'pausada_hasta' => null,
+            'fallos_consecutivos' => 0, 'proxima_en' => now(),
+        ])->save();
     }
 
     /** @return HasMany<EjecucionSincronizacion, $this> */

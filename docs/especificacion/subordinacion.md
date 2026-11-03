@@ -216,6 +216,7 @@ Las pantallas muestran «Datos de la principal al …» con esa hora convertida 
 | SUB-013 | No se pudo borrar la copia en la principal | Solo aviso: la copia queda en `dati/` de la principal |
 | SUB-014 | Ya hay una sincronización en marcha | Nada |
 | SUB-015 | Tiempo agotado | Como SUB-001 |
+| SUB-016 | Dirección no permitida: http sin red local, IP privada, credenciales o consulta en la URL (D-029) | **Pausa** y avisa |
 | SUB-099 | Respuesta no reconocida | Avisa con el extracto; reintenta |
 
 - **Siempre se conserva la última carga buena.** Un fallo nunca vacía ni deja a medias el espejo
@@ -631,7 +632,19 @@ Son la base de la migración de la fase 2.
 
 # Preguntas abiertas [por verificar]
 
-1. Que una principal real acepte POST (A3), incluso detrás del cortafuegos del hosting.
+**Comprobado el 2026-11-03** contra AlojaFlow 1.2.3 real (instalación nueva con SQLite y la
+copia ficticia de la demo, sin inicio de sesión):
+
+- La principal **acepta POST** en los tres pasos.
+- El marcador `<!-- Backup_created -->` aparece al crear la copia.
+- Con `compresso=SI` llega gzip.
+- `cancella_backup` borra `dati/hoteld_backup.php`. Queda un `hoteld_backup.php.lock` vacío que
+  crea la propia 1.2.x; no tiene datos.
+- La proyección es correcta: 17 unidades, 974 huéspedes, 1122 reservas y 4237 noches.
+- Se detectan una reserva modificada y otra eliminada.
+
+1. Que el POST pase también con el inicio de sesión activado y detrás del cortafuegos de un
+   hosting (A3).
 2. Respuesta exacta cuando el año no existe y el inicio de sesión está activado (A3).
 3. Textos del límite diario y del error de escritura en cada idioma de la principal (A3).
 4. Reutilización de `id_sessione` entre los pasos (A3).

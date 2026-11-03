@@ -167,6 +167,29 @@ instalado. El motor de tablas se fija en InnoDB en la configuración, porque el 
 pone MyISAM por omisión. **Por qué:** es lo que hay en el equipo y no necesita permisos de
 administrador.
 
+### D-026 · 2026-11-03 · Inicio de sesión y 2FA con Filament, no con Fortify
+Filament 5 ya trae inicio de sesión, perfil y verificación en dos pasos (app de códigos con
+códigos de recuperación). Las pantallas operativas son páginas propias dentro del mismo panel.
+**Por qué:** un solo inicio de sesión y una sola sesión para toda la aplicación, y una dependencia
+menos. Las páginas públicas para huéspedes (fase 1.2) irán fuera del panel.
+
+### D-027 · 2026-11-03 · Espejo genérico: una tabla `hd_filas` con las columnas en JSON
+Sustituye a «una tabla `hd_*` por cada tabla de HotelDruid» (modelo-datos.md §4.3). Cada fila
+de la copia se guarda con su tabla, su año y sus columnas en JSON. **Por qué:** no depende de las
+columnas de cada versión de HotelDruid (3.08 y 3.081 difieren), es mucho menos código y la
+proyección lee tabla por tabla en orden.
+
+### D-028 · 2026-11-03 · Identidad de una reserva = su fecha de alta en la principal; la primera carga no genera eventos
+La huella de identidad es solo `datainserimento`, y no el cliente más la fecha (modelo-datos.md
+§6): cambiar el titular de una reserva es una modificación, no una reserva nueva. La primera
+sincronización de una principal no genera eventos. **Por qué:** si no, las automatizaciones de la
+fase 1.1 escribirían a todos los huéspedes antiguos.
+
+### D-029 · 2026-11-03 · Código SUB-016 «dirección no permitida»
+Error propio para las URL que rechaza la validación SSRF (http sin red local, IP privada,
+credenciales o consulta en la URL). Pausa la principal, como SUB-003. **Por qué:** distinguirlo
+de un fallo de conexión.
+
 ---
 
 ## Pendientes

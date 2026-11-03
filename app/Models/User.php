@@ -35,6 +35,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property bool $es_administrador
  * @property string|null $app_authentication_secret
  * @property array<string>|null $app_authentication_recovery_codes
+ * @property \Illuminate\Support\Carbon|null $ultimo_acceso_en
  */
 #[Fillable(['name', 'email', 'password', 'idioma', 'zona_horaria', 'activo', 'es_administrador'])]
 #[Hidden(['password', 'remember_token', 'app_authentication_secret', 'app_authentication_recovery_codes'])]

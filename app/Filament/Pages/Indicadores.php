@@ -1,0 +1,146 @@
+<?php
+
+/*
+ * AlojaFlow — sistema de gestión de alojamientos
+ * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+declare(strict_types=1);
+
+namespace App\Filament\Pages;
+
+use App\Filament\Concerns\ConPropiedadSeleccionada;
+use App\Seguridad\Acceso;
+use App\Servicios\Indicadores as ServicioIndicadores;
+use App\Servicios\Operacion;
+use App\Support\Dinero;
+use BackedEnum;
+use Carbon\CarbonImmutable;
+use Filament\Pages\Page;
+use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Support\Htmlable;
+use Livewire\Attributes\Url;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
+
+/**
+ * Ocupación, ADR, RevPAR e ingresos por origen y por mes (M9).
+ */
+class Indicadores extends Page
+{
+    use ConPropiedadSeleccionada;
+
+    protected string $view = 'filament.pages.indicadores';
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
+
+    protected static ?int $navigationSort = 4;
+
+    #[Url]
+    public string $desde = '';
+
+    #[Url]
+    public string $hasta = '';
+
+    protected static function permiso(): string
+    {
+        return Acceso::INDICADORES;
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('ui.nav.operacion');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('ui.indicadores.titulo');
+    }
+
+    public function getTitle(): string|Htmlable
+    {
+        return __('ui.indicadores.titulo');
+    }
+
+    public function mount(): void
+    {
+        $hoy = Operacion::hoyDe($this->propiedadUnica());
+        $this->desde = $this->desde !== '' ? $this->desde : $hoy->startOfMonth()->format('Y-m-d');
+        $this->hasta = $this->hasta !== '' ? $this->hasta : $hoy->endOfMonth()->format('Y-m-d');
+    }
+
+    /**
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}|null
+     */
+    public function rango(): ?array
+    {
+        try {
+            $desde = CarbonImmutable::createFromFormat('!Y-m-d', $this->desde);
+            $hasta = CarbonImmutable::createFromFormat('!Y-m-d', $this->hasta);
+        } catch (Throwable) {
+            return null;
+        }
+        if (! $desde || ! $hasta || $hasta->lt($desde) || $desde->diffInDays($hasta) > 731) {
+            return null;
+        }
+
+        return [$desde, $hasta];
+    }
+
+    public function periodo(string $cual): void
+    {
+        $hoy = Operacion::hoyDe($this->propiedadUnica());
+        [$desde, $hasta] = match ($cual) {
+            'mes_anterior' => [$hoy->subMonthNoOverflow()->startOfMonth(), $hoy->subMonthNoOverflow()->endOfMonth()],
+            'anio' => [$hoy->startOfYear(), $hoy->endOfYear()],
+            'proximos_90' => [$hoy, $hoy->addDays(89)],
+            default => [$hoy->startOfMonth(), $hoy->endOfMonth()],
+        };
+        $this->desde = $desde->format('Y-m-d');
+        $this->hasta = $hasta->format('Y-m-d');
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function datos(): array
+    {
+        $rango = $this->rango();
+
+        return $rango === null ? [] : ServicioIndicadores::porPropiedad($this->propiedadesElegidas(), $rango[0], $rango[1]);
+    }
+
+    public function descargarCsv(): ?StreamedResponse
+    {
+        $datos = $this->datos();
+        if ($datos === []) {
+            return null;
+        }
+        $nombre = 'indicadores-'.$this->desde.'-'.$this->hasta.'.csv';
+
+        return response()->streamDownload(function () use ($datos): void {
+            $salida = fopen('php://output', 'w');
+            if ($salida === false) {
+                return;
+            }
+            fwrite($salida, "\xEF\xBB\xBF");
+            fputcsv($salida, array_map(fn (string $c): string => __('ui.indicadores.csv.'.$c), [
+                'propiedad', 'moneda', 'unidades', 'disponibles', 'ocupadas', 'ocupacion', 'ingresos', 'adr', 'revpar', 'reservas', 'estancia_media', 'canceladas',
+            ]), ';');
+            foreach ($datos as $fila) {
+                $decimales = Dinero::decimales($fila['moneda']);
+                $importe = fn (?int $v): string => $v === null ? '' : number_format($v / (10 ** $decimales), $decimales, '.', '');
+                fputcsv($salida, [
+                    // Sin fórmulas: una celda que empieza por = + - @ se marca como texto.
+                    preg_replace('/^([=+\-@])/', "'$1", $fila['propiedad']->nombre),
+                    $fila['moneda'], $fila['unidades'], $fila['disponibles'], $fila['ocupadas'],
+                    $fila['ocupacion'] === null ? '' : number_format($fila['ocupacion'] * 100, 1, '.', ''),
+                    $importe($fila['ingresos']), $importe($fila['adr']), $importe($fila['revpar']),
+                    $fila['reservas'], $fila['estancia_media'] ?? '', $fila['canceladas'],
+                ], ';');
+            }
+            fclose($salida);
+        }, $nombre, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+}

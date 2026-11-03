@@ -1,0 +1,83 @@
+<?php
+
+/*
+ * AlojaFlow — sistema de gestión de alojamientos
+ * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+declare(strict_types=1);
+
+namespace App\Servicios;
+
+use App\Enums\EstadoReserva;
+use App\Enums\TipoReserva;
+use App\Models\Reserva;
+use App\Models\Unidad;
+use Carbon\CarbonImmutable;
+
+/**
+ * Calendario por habitaciones de un mes, en modo consulta (M2).
+ */
+final class Calendario
+{
+    /**
+     * @param  list<int>  $propiedades
+     * @return array{dias: list<CarbonImmutable>, filas: list<array{unidad: Unidad, barras: list<array<string, mixed>>}>}
+     */
+    public static function mes(array $propiedades, CarbonImmutable $inicio): array
+    {
+        $inicio = $inicio->startOfMonth();
+        $fin = $inicio->addMonth(); // exclusivo
+        $dias = [];
+        for ($dia = $inicio; $dia->lt($fin); $dia = $dia->addDay()) {
+            $dias[] = $dia;
+        }
+
+        $unidades = Unidad::query()->with('propiedad')
+            ->whereIn('unidades.propiedad_id', $propiedades)->where('unidades.activa', true)
+            ->join('propiedades', 'propiedades.id', '=', 'unidades.propiedad_id')
+            ->orderBy('propiedades.nombre')->orderBy('unidades.orden')->orderBy('unidades.nombre')
+            ->select('unidades.*')->get();
+
+        $reservas = Reserva::query()->vigentes()->with('titular')
+            ->whereIn('propiedad_id', $propiedades)
+            ->whereDate('llegada', '<', $fin->format('Y-m-d'))
+            ->whereDate('salida', '>', $inicio->format('Y-m-d'))
+            ->orderBy('llegada')
+            ->get()
+            ->groupBy('unidad_id');
+
+        $filas = [];
+        foreach ($unidades as $unidad) {
+            $barras = [];
+            foreach ($reservas->get($unidad->id, collect()) as $reserva) {
+                /** @var Reserva $reserva */
+                $desde = $reserva->llegada->max($inicio);
+                $hasta = $reserva->salida->min($fin);
+                $barras[] = [
+                    'reserva' => $reserva,
+                    'columna' => (int) $inicio->diffInDays($desde) + 1,
+                    'ancho' => max(1, (int) $desde->diffInDays($hasta)),
+                    'sigue_antes' => $reserva->llegada->lt($inicio),
+                    'sigue_despues' => $reserva->salida->gt($fin),
+                    'clase' => self::clase($reserva),
+                ];
+            }
+            $filas[] = ['unidad' => $unidad, 'barras' => $barras];
+        }
+
+        return ['dias' => $dias, 'filas' => $filas];
+    }
+
+    private static function clase(Reserva $reserva): string
+    {
+        return match (true) {
+            $reserva->tipo === TipoReserva::Bloqueo => 'af-barra--bloqueo',
+            $reserva->salida_registrada_en !== null => 'af-barra--salio',
+            $reserva->estaEnCasa() => 'af-barra--en-casa',
+            $reserva->estado === EstadoReserva::SinConfirmar => 'af-barra--sin-confirmar',
+            default => 'af-barra--confirmada',
+        };
+    }
+}

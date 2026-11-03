@@ -8,8 +8,12 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\CodigoFuenteController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// La aplicación vive en el panel de Filament (raíz «/»). Aquí solo van las rutas públicas.
+
+// Código fuente de la versión instalada, también sin iniciar sesión (AGPL; regla 8).
+Route::get('/codigo-fuente', CodigoFuenteController::class)
+    ->middleware('throttle:10,1')
+    ->name('codigo-fuente');

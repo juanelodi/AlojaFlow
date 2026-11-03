@@ -26,6 +26,18 @@ use Illuminate\Support\Carbon;
  * @property string|null $apellido2
  * @property string|null $idioma
  * @property string|null $nacionalidad_texto
+ * @property \Illuminate\Support\Carbon|null $fecha_nacimiento
+ * @property string|null $lugar_nacimiento
+ * @property string|null $documento_tipo_texto
+ * @property string|null $id_fiscal_personal
+ * @property string|null $id_fiscal_empresa
+ * @property string|null $domicilio_calle
+ * @property string|null $domicilio_numero
+ * @property string|null $domicilio_ciudad
+ * @property string|null $domicilio_region
+ * @property string|null $domicilio_codigo_postal
+ * @property string|null $domicilio_pais_texto
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, CampoHuesped> $campos
  * @property string|null $documento_numero
  * @property string|null $notas
  * @property Carbon|null $eliminado_en_principal_en

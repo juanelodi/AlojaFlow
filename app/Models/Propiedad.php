@@ -14,6 +14,7 @@ use App\Enums\ModoPropiedad;
 use App\Enums\PaquetePais;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
@@ -77,6 +78,12 @@ class Propiedad extends ModeloBase
     public function avisos(): HasMany
     {
         return $this->hasMany(Aviso::class);
+    }
+
+    /** @return HasManyThrough<EjecucionSincronizacion, Principal, $this> */
+    public function ejecuciones(): HasManyThrough
+    {
+        return $this->hasManyThrough(EjecucionSincronizacion::class, Principal::class);
     }
 
     /**

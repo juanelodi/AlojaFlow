@@ -4,9 +4,9 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-03): construcción de la entrega 1.0 Base.** Producto aprobado; la
-  especificación sigue en redacción. El usuario autorizó seguir sin esperar sus aprobaciones
-  hasta tener una versión que pueda probar (D-024).
+- **Estado (2026-11-03): versión de prueba 0.1.0 (entrega 1.0 Base)**, a la espera de que el
+  usuario la pruebe (`docs/guia-pruebas.md`). Producto aprobado; la especificación sigue en
+  redacción. Las decisiones tomadas por delegación (D-024 a D-029) se revisan con él.
 - **Idioma:** español de México en la conversación, la documentación, el código
   (identificadores y comentarios) y los mensajes de commit. Interfaz en español y en los
   idiomas de la regla 7.
@@ -95,19 +95,19 @@ de la copia no cambia mientras se construye la fase 1.
 
 ## Tecnología
 
-Versiones exactas: las estables al crear el esqueleto; se fijan en `composer.json` y
-`package.json` y se anotan en `docs/decisiones.md`.
+Versiones fijadas en `composer.json` (2026-11-03): Laravel 13, Filament 5 (con Livewire 4),
+spatie/laravel-permission 8, Pest 4, Larastan 3.
 
 | Capa | Elección | Licencia |
 |---|---|---|
 | Lenguaje | PHP 8.3 | PHP License |
-| Framework | Laravel (estable actual) | MIT |
+| Framework | Laravel 13 | MIT |
 | Base de datos | MySQL 8.4 / MariaDB 11.4. **Sin SQLite, tampoco en las pruebas** | — |
 | Interfaz interactiva | Livewire | MIT |
 | Detalles de interfaz | Alpine.js | MIT |
 | Estilos | Tailwind CSS | MIT |
 | Panel de administración | Filament (gratuito) para catálogos y configuración; las pantallas operativas (calendario, «Hoy», limpieza…) y las públicas, propias con Livewire | MIT |
-| Autenticación y 2FA | Laravel Fortify | MIT |
+| Autenticación y 2FA | La de Filament (inicio de sesión, perfil, app de códigos con códigos de recuperación). Sustituye a Fortify (D-026) | MIT |
 | Roles y permisos | spatie/laravel-permission | MIT |
 | Copias de seguridad | spatie/laravel-backup | MIT |
 | Calendarios iCal (Airbnb, Booking, Vrbo) | sabre/vobject | BSD-3 |
@@ -119,7 +119,7 @@ Versiones exactas: las estables al crear el esqueleto; se fijan en `composer.jso
 | Análisis estático | Larastan (PHPStan) | MIT |
 | Formato de código | Laravel Pint | MIT |
 | Integración continua | GitHub Actions | — |
-| Entorno local | Laravel Herd (Windows) + MySQL/MariaDB de WampServer | — |
+| Entorno local | PHP 8.3 y MySQL 8.4 de WampServer (D-025) | — |
 
 Se construye en casa: calendario por habitaciones (*tape chart*), motor de reservas,
 sincronización iCal, informes. Descartado por ahora: React/Vue separado, Docker,
@@ -173,20 +173,56 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   | Pantallas y CRUD normales, traducciones, ajustes de diseño | medium |
   | Cambios pequeños y preguntas rápidas | low |
 
+## Estructura del código
+
+- `app/Sincronizacion/HotelDruid/` — módulo de subordinación: el único lugar con nombres
+  italianos. Contiene:
+  - `ValidadorDestino` (SSRF), `ClientePrincipal` (protocolo, con lista blanca), `Descompresor`
+    y `LectorCopia` (formato);
+  - `CargadorEspejo` (`hd_filas`), `Proyector` (modelo propio y eventos) y `Sincronizador`
+    (ciclo completo).
+- `app/Models/` — modelos en español sobre `ModeloBase` (`creado_en`/`actualizado_en`). Las
+  filas con `sincronizada = true` solo las cambia la sincronización
+  (`Concerns/ProtegidaPorSincronizacion`).
+- `app/Seguridad/Acceso.php` — permisos por propiedad (roles de spatie con equipo =
+  propiedad); el administrador ve todo.
+- `app/Servicios/` — consultas de las pantallas operativas (Operacion, Calendario,
+  Disponibilidad, Indicadores).
+- `app/Filament/Pages/` (pantallas propias, vistas en `resources/views/filament/pages/`) y
+  `app/Filament/Resources/` (administración y listados).
+- `lang/es` (fuente) y `lang/en`; `resources/css/alojaflow.css` (estilos propios).
+- `tests/Support/ConstructorCopia.php` — genera copias sintéticas de HotelDruid para las pruebas.
+- `desarrollo/principal-simulada/` — principal falsa para demostraciones; no se instala.
+
 ## Comandos
 
-Se completan al crear el esqueleto. Previstos:
+Entorno: Windows 10. El `php` del `PATH` es el 8.2 de WinGet y el 8.3 de WinGet no tiene
+`php.ini`. Usar el **PHP 8.3 de Wamp** (`C:\wamp64\bin\php\php8.3.28\php.exe`, abreviado `PHP`
+abajo) con Xdebug apagado (`XDEBUG_MODE=off` o `-d xdebug.mode=off`). Composer está en
+`.herramientas/composer.phar`, fuera del repositorio. MySQL 8.4 de Wamp: abrir WampServer, o
+arrancar `mysqld.exe` como indica `docs/guia-pruebas.md`.
 
 ```bash
-php artisan test                 # Pest, contra una base MySQL/MariaDB de pruebas
-vendor/bin/pint --test           # formato PSR-12
-vendor/bin/phpstan analyse       # Larastan
-composer licenses                # licencias PHP
-npx license-checker --summary    # licencias npm
+PHP .herramientas/composer.phar install   # dependencias (publica también los recursos de Filament)
+PHP artisan migrate --seed                # tablas y roles
+PHP artisan serve                         # http://127.0.0.1:8000
+PHP artisan schedule:work                 # sincronización periódica en local
+PHP artisan alojaflow:sincronizar --principal=ID
+PHP artisan alojaflow:crear-administrador correo@ejemplo.com
+PHP vendor/bin/pest                       # pruebas, contra la base MySQL alojaflow_pruebas
+PHP vendor/bin/pint --test                # formato PSR-12 + cabecera de licencia + strict_types
+PHP vendor/bin/phpstan analyse --memory-limit=1G   # Larastan nivel 6
+PHP artisan filament:assets               # tras cambiar resources/css/alojaflow.css
+PHP .herramientas/composer.phar licenses  # licencias PHP
+npx license-checker --summary             # licencias npm
 ```
 
-Entorno: Windows 10. En este equipo el `PATH` tiene primero PHP 8.2: usar el PHP 8.3 de Herd y
-comprobarlo con `php -v` antes de trabajar.
+**Trampas conocidas:**
+- Filament inyecta los parámetros de los *closures* **por nombre**: hay que usar `$query`,
+  `$data`, `$search`, `$state`, `$record`…, nunca `$q` ni `$datos`.
+- Blade no admite `use` dentro de `@php`: se usa `@use('Clase')`.
+- Con `ONLY_FULL_GROUP_BY` y `DISTINCT`, MySQL exige que el `ORDER BY` esté en el `SELECT`.
+- Las pruebas de pantallas deben entrar también con usuarios que no son administradores.
 
 ## Referencias locales (solo lectura)
 

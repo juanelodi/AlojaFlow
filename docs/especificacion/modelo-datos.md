@@ -332,22 +332,15 @@ La zona horaria y la moneda de la principal son las de su propiedad.
 
 Se conserva 90 días.
 
-**Espejo (E):** una tabla por tipo de tabla de HotelDruid que se conserva (C1 de
-`subordinacion.md`):
+**Espejo (E): `hd_filas`** (D-027, sustituye a una tabla `hd_*` por cada tabla de HotelDruid).
+Una fila por cada fila conservada de la copia (C1 de `subordinacion.md`):
 
-- `hd_anni`, `hd_versioni`, `hd_appartamenti`, `hd_clienti`, `hd_relclienti`, `hd_personalizza`;
-- `hd_nazioni`, `hd_regioni`, `hd_citta`, `hd_documentiid`, `hd_parentele`;
-- `hd_descrizioni`, `hd_casse`, `hd_beniinventario`, `hd_magazzini`, `hd_relinventario`;
-- `hd_prenota`, `hd_prenotacanc`, `hd_costiprenota`, `hd_rclientiprenota`;
-- `hd_periodi`, `hd_ntariffe`, `hd_regole`, `hd_soldi`, `hd_costi`.
-
-Reglas del espejo:
-
-- **Columnas:** `id`, `principal_id`, `ejecucion_id`, `anio` (solo en las tablas por año) y las
-  columnas de HotelDruid **como texto nulo**, sin convertir. Las conversiones se hacen al
-  proyectar.
-- **Índices:** (`ejecucion_id`, clave de HotelDruid). Por ejemplo, (`ejecucion_id`, `anio`,
-  `idprenota`).
+- **Columnas:** `id`, `principal_id`, `ejecucion_id`, `tabla` (nombre base: `prenota`,
+  `clienti`…), `anio` (solo en las tablas por año) y `datos` (JSON con las columnas de HotelDruid
+  **como texto**, sin convertir). Las conversiones se hacen al proyectar.
+- **Índice:** (`ejecucion_id`, `tabla`, `anio`). La proyección lee tabla por tabla, en el orden de
+  la copia.
+- No depende de las columnas de cada versión de HotelDruid (3.08 y 3.081 difieren).
 - **Carga:** las filas nuevas entran con su `ejecucion_id`. Al terminar, `ejecucion_vigente_id`
   cambia en una transacción corta y se borran las filas de ejecuciones anteriores. Así se puede
   **volver a proyectar** desde el espejo (tras corregir un error) sin descargar otra vez.
@@ -817,7 +810,7 @@ Por cada entidad proyectada, en cada sincronización:
 
 | Entidad | `huella_identidad` | `huella_datos` |
 |---|---|---|
-| Reserva | SHA-256 de `idclienti` + `datainserimento` | SHA-256 de los campos proyectados en orden fijo |
+| Reserva | SHA-256 de `datainserimento` (D-028: cambiar el titular es una modificación, no una reserva nueva) | SHA-256 de los campos proyectados y los acompañantes, en orden fijo |
 | Huésped | `datainserimento` | Campos proyectados |
 | Unidad | El propio código | Campos proyectados |
 
@@ -827,6 +820,8 @@ Por cada entidad proyectada, en cada sincronización:
   y la ejecución queda fallida.
 - **Los eventos se publican después de confirmar la transacción.** Así ninguna automatización
   manda un mensaje por un cambio que luego se deshizo.
+- **La primera carga de una principal no genera eventos** (D-028). Si los generara, todas las
+  reservas históricas parecerían nuevas.
 
 ---
 
