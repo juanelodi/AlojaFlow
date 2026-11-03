@@ -18,7 +18,7 @@ Producto: [../producto.md](../producto.md) · decisiones: [../decisiones.md](../
 | 00 | `glosario.md` | Términos (principal, subordinada, copia, espejo, proyección, propiedad, unidad, reserva, estancia…) y equivalencias italiano → español de HotelDruid | 1 | medium | pendiente |
 | 01 | `arquitectura.md` | Módulos M1–M11 en Laravel, capas, paquetes de país, eventos, colas y programador en hosting compartido, archivos, correo | 1 | high | pendiente |
 | 02 | [`subordinacion.md`](subordinacion.md) | Protocolo con la principal, **formato de la copia** y correspondencia de tablas (regla 10) | 1 | high | borrador 2026-11-03 |
-| 03 | `modelo-datos.md` | Modelo de datos propio de las fases 1 y 2 | 1–2 | xhigh | pendiente |
+| 03 | [`modelo-datos.md`](modelo-datos.md) | Modelo de datos propio de las fases 1 y 2 | 1–2 | xhigh | borrador 2026-11-03 |
 | 04 | `pantallas-fase-1.md` | Mapa de navegación y ficha de cada pantalla de la fase 1 | 1 | medium | pendiente |
 | 05 | `paises/` | `mexico.md`, `espana.md`, `estados-unidos.md`, `generico.md` | 1 | high | pendiente |
 | 06 | `seguridad-privacidad.md` | Autenticación, 2FA, permisos por propiedad, auditoría, cifrado, retención de datos personales | 1 | high | pendiente |
@@ -44,40 +44,11 @@ que se resuelven con una principal real antes de programar.
 
 ---
 
-## 03 · `modelo-datos.md` (detalle)
+## 03 · `modelo-datos.md`
 
-1. **Principios:** claves foráneas e índices siempre; dinero en enteros (centavos) con moneda
-   ISO 4217; noches como fechas (`date`); fecha y hora en UTC con la zona horaria de la
-   propiedad; nombres en español (convenciones del `CLAUDE.md`); borrado lógico solo donde haga
-   falta, no por costumbre.
-2. **Tres capas de datos** (propuesta, D-013):
-   - **Espejo:** tablas `hd_*` con los nombres de HotelDruid; solo las escribe y lee la
-     sincronización.
-   - **Proyección:** tablas del modelo propio (`propiedades`, `unidades`, `reservas`,
-     `huespedes`…) con `origen = hoteldruid`; solo lectura en la fase 1. En la fase 2 se añaden
-     filas con `origen = alojaflow` sin reescribir los módulos.
-   - **Propios:** limpieza, check-in, contratos, facturas, plantillas, bloqueos iCal…; la
-     sincronización nunca los toca. Se ligan a la proyección por la clave estable.
-3. **Entidades por dominio:**
-   - Plataforma: usuarios, roles y permisos por propiedad, auditoría, ajustes, idioma.
-   - Propiedades: propiedad (en la fase 1, una por principal), tipo de unidad, unidad, plano.
-   - Sincronización: principal, ejecución, espejo.
-   - Reservas: reserva, noches, huéspedes de la reserva, estado, origen o canal, cancelación.
-   - Huéspedes: huésped, documento de identidad, preferencias, consentimientos.
-   - Llegada en línea y documentos legales: pre-check-in, plantilla legal (versión, huella),
-     aceptación (fecha, IP, navegador, OTP).
-   - Limpieza y mantenimiento: estado de la unidad, tarea, incidencia, regla de limpieza fija,
-     asignación.
-   - Comunicación: plantilla por idioma, regla de automatización, envío, webhook.
-   - Canales: calendario exportado, fuente importada, bloqueo, choque.
-   - Dinero: estado de cuenta (proyección), política, factura, serie y folio, impuesto, paquete
-     de país.
-   - **Fase 2** (se diseñan ahora, se construyen después): tarifa, temporada, plan tarifario,
-     restricción, disponibilidad, cobro, grupo, cupón.
-4. **Diagrama entidad-relación.**
-5. **Integridad y concurrencia:** sobre todo disponibilidad y doble reserva, pensando ya en la
-   fase 2.
-6. **Retención y borrado** de datos personales por país.
+Redactado: [modelo-datos.md](modelo-datos.md) (borrador 2026-11-03). Convenciones, tres capas y
+quién escribe, tablas de la fase 1 por módulo, tablas de la fase 2, reglas de identidad de la
+proyección, concurrencia, conservación de datos y decisiones D-018 a D-023.
 
 ---
 

@@ -109,6 +109,45 @@ hashes de contraseñas, sesiones (en 3.0.8) y claves de API. Detalle:
 
 ---
 
+## Propuestas pendientes de aprobación (modelo de datos)
+
+Detalle y razones: [especificacion/modelo-datos.md](especificacion/modelo-datos.md).
+
+### D-018 · 2026-11-03 · Convenciones de datos
+`creado_en` y `actualizado_en` en DATETIME y UTC (las tablas del framework conservan
+`created_at`); importes en BIGINT en la unidad menor de la moneda, con su código ISO 4217;
+enumeraciones como VARCHAR con enum de PHP; `id` BIGINT y códigos aleatorios para todo lo que
+ven personas de fuera. **Por qué:** código en español, sin errores de redondeo, sin el límite de
+2038 y sin exponer números secuenciales.
+
+### D-019 · 2026-11-03 · Ocupación por noches con índice único
+`reservas_noches` guarda una fila por noche, con un índice único sobre (`unidad_id`, `fecha`,
+`exclusiva`). **Por qué:** en la fase 2 la base de datos rechaza la doble reserva aunque lleguen
+dos peticiones a la vez; en la fase 1 (`exclusiva` nula) admite los solapes que ya traiga la
+principal; además sirve para ocupación, ADR y RevPAR.
+
+### D-020 · 2026-11-03 · Huéspedes por propiedad en la fase 1
+Cada ficha de huésped pertenece a una propiedad. **Por qué:** cada principal tiene sus propios
+clientes, y así los permisos por propiedad son simples. Una ficha común se estudia en la fase 2.
+
+### D-021 · 2026-11-03 · Traducciones y catálogos
+Textos traducibles en columnas JSON con `spatie/laravel-translatable` (MIT); documentos legales,
+una fila por idioma y versión; países, monedas e idiomas sin tabla, con `symfony/intl` (MIT).
+**Por qué:** menos tablas, y los documentos legales necesitan una huella por texto aceptado.
+Añade dos dependencias.
+
+### D-022 · 2026-11-03 · Tokens y documentos de identidad cifrados con índice HMAC
+Los tokens de enlaces públicos y los números de documento se guardan cifrados, con un HMAC
+aparte para buscarlos. **Por qué:** se pueden mostrar o buscar sin guardar nada en claro.
+
+### D-023 · 2026-11-03 · `origen` separado de `sincronizada`; reservas siempre en una unidad
+`origen` dice de dónde vino una fila; `sincronizada`, si hoy la controla la principal. En la
+fase 2 toda reserva nativa va asignada a una unidad (reasignable), como en HotelDruid. **Por
+qué:** migrar una propiedad a la fase 2 no mueve filas, y el índice único de D-019 basta para
+garantizar la disponibilidad.
+
+---
+
 ## Pendientes
 
 - Precios y modelo de venta.
