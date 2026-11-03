@@ -109,9 +109,12 @@ hashes de contraseñas, sesiones (en 3.0.8) y claves de API. Detalle:
 
 ---
 
-## Propuestas pendientes de aprobación (modelo de datos)
+## Aprobadas por delegación (modelo de datos, 2026-11-03)
 
-Detalle y razones: [especificacion/modelo-datos.md](especificacion/modelo-datos.md).
+El 2026-11-03 el usuario pidió seguir sin esperar sus aprobaciones hasta tener una versión que
+pueda probar (D-024). Estas decisiones se dan por aprobadas con esa autorización y se revisan
+con la versión de prueba. Detalle y razones:
+[especificacion/modelo-datos.md](especificacion/modelo-datos.md).
 
 ### D-018 · 2026-11-03 · Convenciones de datos
 `creado_en` y `actualizado_en` en DATETIME y UTC (las tablas del framework conservan
@@ -145,6 +148,24 @@ aparte para buscarlos. **Por qué:** se pueden mostrar o buscar sin guardar nada
 fase 2 toda reserva nativa va asignada a una unidad (reasignable), como en HotelDruid. **Por
 qué:** migrar una propiedad a la fase 2 no mueve filas, y el índice único de D-019 basta para
 garantizar la disponibilidad.
+
+---
+
+## Construcción de la versión de prueba (2026-11-03)
+
+### D-024 · 2026-11-03 · Seguir sin aprobaciones hasta una versión de prueba
+El usuario pidió continuar sin esperar sus aprobaciones hasta tener una versión usable para
+probarla él. Se construye la **entrega 1.0 Base** ([producto.md](producto.md) §9): plataforma
+(inicio de sesión, usuarios, roles), propiedades y sincronización con HotelDruid, calendario,
+«Hoy» e indicadores básicos. La especificación restante se escribe a medida que cada módulo
+la necesita. Decidió: usuario.
+
+### D-025 · 2026-11-03 · Entorno local con Wamp
+PHP 8.3.28 de Wamp (trae todas las extensiones; el PHP 8.3 de WinGet no tiene `php.ini`),
+MySQL 8.4.7 de Wamp y Composer en `.herramientas/` (fuera del repositorio). Laravel Herd no está
+instalado. El motor de tablas se fija en InnoDB en la configuración, porque el `my.ini` de Wamp
+pone MyISAM por omisión. **Por qué:** es lo que hay en el equipo y no necesita permisos de
+administrador.
 
 ---
 
