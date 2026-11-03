@@ -81,7 +81,7 @@ módulos. Detalle: [especificacion/README.md](especificacion/README.md) §03.
 Todos los recursos se compilan y se sirven desde la instalación. **Por qué:** funciona igual sin
 servicios externos y no envía datos de navegación a terceros (mismo principio que en 1.2.x).
 
-### D-015 · 2026-11-03 · Fase 1 en cuatro entregas (1.0 Base, 1.1 Operación, 1.2 Huéspedes, 1.3 Dinero)
+### D-015 · 2026-11-03 · Fase 1 en cuatro entregas (Base, Operación, Huéspedes, Dinero; nombres de D-031)
 **Por qué:** la fase 1 es grande; cada entrega se instala y sirve por sí misma. Detalle:
 [producto.md](producto.md) §9.
 
@@ -155,7 +155,7 @@ garantizar la disponibilidad.
 
 ### D-024 · 2026-11-03 · Seguir sin aprobaciones hasta una versión de prueba
 El usuario pidió continuar sin esperar sus aprobaciones hasta tener una versión usable para
-probarla él. Se construye la **entrega 1.0 Base** ([producto.md](producto.md) §9): plataforma
+probarla él. Se construye la **entrega Base** ([producto.md](producto.md) §9): plataforma
 (inicio de sesión, usuarios, roles), propiedades y sincronización con HotelDruid, calendario,
 «Hoy» e indicadores básicos. La especificación restante se escribe a medida que cada módulo
 la necesita. Decidió: usuario.
@@ -171,7 +171,7 @@ administrador.
 Filament 5 ya trae inicio de sesión, perfil y verificación en dos pasos (app de códigos con
 códigos de recuperación). Las pantallas operativas son páginas propias dentro del mismo panel.
 **Por qué:** un solo inicio de sesión y una sola sesión para toda la aplicación, y una dependencia
-menos. Las páginas públicas para huéspedes (fase 1.2) irán fuera del panel.
+menos. Las páginas públicas para huéspedes (entrega Huéspedes) irán fuera del panel.
 
 ### D-027 · 2026-11-03 · Espejo genérico: una tabla `hd_filas` con las columnas en JSON
 Sustituye a «una tabla `hd_*` por cada tabla de HotelDruid» (modelo-datos.md §4.3). Cada fila
@@ -183,12 +183,25 @@ proyección lee tabla por tabla en orden.
 La huella de identidad es solo `datainserimento`, y no el cliente más la fecha (modelo-datos.md
 §6): cambiar el titular de una reserva es una modificación, no una reserva nueva. La primera
 sincronización de una principal no genera eventos. **Por qué:** si no, las automatizaciones de la
-fase 1.1 escribirían a todos los huéspedes antiguos.
+entrega Operación escribirían a todos los huéspedes antiguos.
 
 ### D-029 · 2026-11-03 · Código SUB-016 «dirección no permitida»
 Error propio para las URL que rechaza la validación SSRF (http sin red local, IP privada,
 credenciales o consulta en la URL). Pausa la principal, como SUB-003. **Por qué:** distinguirlo
 de un fallo de conexión.
+
+### D-030 · 2026-11-03 · Numeración de versiones: 1.0.1, 1.0.2 … 1.0.99 y después 1.2
+La primera versión que se entrega es la **1.0.1**: es la versión de prueba que antes se llamaba
+0.1.0. Desde ahí solo sube el último número (1.0.2, 1.0.3 … 1.0.10 … 1.0.99) y después se pasa a
+la **1.2**. Cada versión queda en `CAMBIOS.md`, en `config/alojaflow.php` (`version`) y en una
+etiqueta de git `v1.0.x`. **Ojo:** la AlojaFlow anterior ya usa los números 1.2.x (está en la
+1.2.3); hay que decidir antes de llegar a la 1.0.99 si el salto a la 1.2 continúa esa serie o
+empieza otra. Decidió: usuario.
+
+### D-031 · 2026-11-03 · Entregas con nombre, no con número
+Las entregas de la fase 1 se llaman **Base, Operación, Huéspedes y Dinero** (producto.md §9).
+Sustituye a los nombres «1.0, 1.1, 1.2, 1.3» de D-015, que se confundían con las versiones.
+**Por qué:** con D-030, «1.2» es un número de versión.
 
 ---
 

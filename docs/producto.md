@@ -174,14 +174,15 @@ cómo se reconocen los bloqueos iCal que ya creó la principal.
 ## 9. Entregas propuestas dentro de la fase 1
 
 La fase 1 es grande. Se propone entregarla en cuatro partes, cada una instalable y útil por sí
-misma:
+misma. Las entregas tienen nombre y no número, para no confundirlas con las versiones (D-031).
+Cada entrega sale en varias versiones 1.0.x (D-030).
 
 | Entrega | Módulos | Resultado |
 |---|---|---|
-| **1.0 Base** | M11 (sin facturación), M1, M2, M3, M9 básico (ocupación, ADR, RevPAR, ingresos por canal) | Ver todas las propiedades, su calendario, el día y los indicadores principales |
-| **1.1 Operación** | M4, M6, M7 | Limpieza desde el móvil, mensajes y correos automáticos, iCal con aviso de choques |
-| **1.2 Huéspedes** | M5, M10 | Llegada en línea, contrato con OTP, registro de viajeros, privacidad |
-| **1.3 Dinero** | M8, M9 completo | Facturación por país, políticas, exportación contable, todos los informes |
+| **Base** | M11 (sin facturación), M1, M2, M3, M9 básico (ocupación, ADR, RevPAR, ingresos por canal) | Ver todas las propiedades, su calendario, el día y los indicadores principales |
+| **Operación** | M4, M6, M7 | Limpieza desde el móvil, mensajes y correos automáticos, iCal con aviso de choques |
+| **Huéspedes** | M5, M10 | Llegada en línea, contrato con OTP, registro de viajeros, privacidad |
+| **Dinero** | M8, M9 completo | Facturación por país, políticas, exportación contable, todos los informes |
 
 ## 10. Métricas de éxito (propuestas)
 

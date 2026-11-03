@@ -1,4 +1,4 @@
-# Guía para probar AlojaFlow 0.1.0 (entrega 1.0 Base)
+# Guía para probar AlojaFlow 1.0.1 (entrega Base)
 
 Versión de prueba para usar en tu equipo con Windows. Es la **fase 1**: AlojaFlow lee los datos
 de HotelDruid (o AlojaFlow 1.2.x) y **nunca escribe en él**.
@@ -19,7 +19,7 @@ de HotelDruid (o AlojaFlow 1.2.x) y **nunca escribe en él**.
 | **Acerca de / Código fuente** | Licencia, créditos y descarga del código de la versión instalada |
 
 **Todavía no trae:**
-- limpieza y mantenimiento, llegada en línea, mensajes, iCal y facturación (entregas 1.1 a 1.3);
+- limpieza y mantenimiento, llegada en línea, mensajes, iCal y facturación (entregas Operación, Huéspedes y Dinero);
 - pantalla de cierre del día;
 - instalador para hosting compartido ni copias de seguridad desde el panel.
 
@@ -93,6 +93,12 @@ C:\wamp64\bin\php\php8.3.28\php.exe -S 127.0.0.1:8090 -t desarrollo\principal-si
 ```
 
 En AlojaFlow, la principal es `http://127.0.0.1:8090/`, con «Permitir red local».
+
+**Sobre la copia de la demo:**
+- Es la del hotel **ficticio de Zihuatanejo**: 17 unidades y 974 huéspedes con correos
+  `@example.com`.
+- Es idéntica a la que trae `dist/AlojaFlow-1.1.4-demo.zip` y la genera `tools/demo_genera.py`.
+- **No uses `respaldos/demo/`:** aunque se llame así, contiene los datos reales del alojamiento.
 
 ## 4. Qué conviene probar
 

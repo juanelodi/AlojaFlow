@@ -4,7 +4,7 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-03): versión de prueba 0.1.0 (entrega 1.0 Base)**, a la espera de que el
+- **Estado (2026-11-03): versión de prueba 1.0.1 (entrega Base)**, a la espera de que el
   usuario la pruebe (`docs/guia-pruebas.md`). Producto aprobado; la especificación sigue en
   redacción. Las decisiones tomadas por delegación (D-024 a D-029) se revisan con él.
 - **Idioma:** español de México en la conversación, la documentación, el código
@@ -235,8 +235,22 @@ npx license-checker --summary             # licencias npm
   - `upstream/` — HotelDruid 3.0.8 original y su documentación oficial.
   - `docs/`, `PRODUCT.md`, `DESIGN.md` — wiki, análisis (seguridad, foro, proyectos similares)
     y sistema visual del tema anterior.
-  - `respaldos/` — copias reales con datos personales: aplica la regla 12.
+  - `respaldos/` — copias **reales** con datos personales (también `respaldos/demo/`, aunque se
+    llame así): aplica la regla 12.
+  - **Demo ficticia de Zihuatanejo** para probar y enseñar:
+    - `respaldos/demo-alojaflow-2026-respaldo-original.php` (copia 3.081: 17 unidades, 974
+      huéspedes `@example.com`, 1040 reservas y 82 canceladas de 2026);
+    - es idéntica al `dati/hoteld_backup.php` de `dist/AlojaFlow-1.1.4-demo.zip`;
+    - la genera `tools/demo_genera.py`.
 - `branding/` — logos SVG finales.
+
+## Versiones
+
+- Numeración (D-030): **1.0.1**, 1.0.2 … 1.0.99, y después 1.2.
+- Cada versión sube `version` en `config/alojaflow.php`, añade su entrada en `CAMBIOS.md` y se
+  marca con la etiqueta de git `v1.0.x`.
+- Las entregas de la fase 1 tienen nombre (Base, Operación, Huéspedes, Dinero), no número
+  (D-031).
 
 ## Marca
 

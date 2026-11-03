@@ -11,7 +11,7 @@ declare(strict_types=1);
 return [
 
     // Versión instalada; la usa el enlace «Código fuente» (regla 8).
-    'version' => '0.1.0',
+    'version' => '1.0.1',
 
     // Idiomas de la interfaz (regla 7). El español es la fuente.
     'idiomas' => ['es', 'en', 'fr', 'it', 'pt', 'de'],
