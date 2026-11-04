@@ -9,6 +9,10 @@
 // No se instala ni va en los paquetes, y no necesita dependencias: habla con Chrome por su protocolo de depuración.
 //
 //   node desarrollo/rendimiento/visita-repetida.mjs --base=http://127.0.0.1:8014 --cookie=cookie.txt --rutas=/hoy,/calendario
+//
+// Con --recorrido=/hoy,/calendario,/reservas,atras, ya con todo en caché, pulsa el enlace a cada pantalla y mide el cambio, tanto si
+// carga la página entera como si Livewire solo cambia el cuerpo (modo SPA). Con --sin-recargar, no vuelve a cargar la página entera
+// entre una vuelta y otra, y dice cuánta memoria va usando. Con --red-rapida limita solo la CPU.
 
 import { spawn } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -24,6 +28,7 @@ const opciones = Object.fromEntries(process.argv.slice(2).map((a) => {
 const base = String(opciones.base ?? 'http://127.0.0.1:8014').replace(/\/$/, '');
 const rutas = String(opciones.rutas ?? '/hoy').split(',');
 const veces = Number(opciones.veces ?? 3);
+const recorrido = opciones.recorrido ? String(opciones.recorrido).split(',') : null;
 const cookie = opciones.cookie ? readFileSync(opciones.cookie, 'utf8').trim() : null;
 const chrome = process.env.CHROME_PATH ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const puerto = Number(opciones.puerto ?? 9333);
@@ -105,6 +110,54 @@ class Pestana {
             total: peticiones.size,
         };
     }
+
+    async evaluar(expresion) {
+        const { result } = await this.enviar('Runtime.evaluate', { returnByValue: true, expression: expresion });
+
+        return result?.value;
+    }
+
+    // Pulsa el enlace a otra pantalla (o vuelve atrás) y espera a que todo responda.
+    async cambiarA(destino) {
+        const peticiones = [];
+        const oyente = ({ method, params }) => {
+            if (method === 'Network.loadingFinished' && params.encodedDataLength > 0) {
+                peticiones.push(params.encodedDataLength);
+            }
+        };
+        this.oyentes.add(oyente);
+        const accion = destino === 'atras' ? 'history.back()' : `document.querySelector('a[href$="${destino}"]').click()`;
+        const t0 = await this.evaluar(`(() => { const t0 = Date.now(); sessionStorage.setItem('__t0', t0); window.__reiniciarCambio(t0); ${accion}; return t0; })()`);
+        let cambio = null;
+        for (let i = 0; i < 300 && cambio === null; i++) {
+            await esperar(100);
+            const leido = JSON.parse(await this.evaluar('JSON.stringify(window.__cambio ?? null)') ?? 'null');
+            cambio = leido !== null && leido.t0 === t0 && (leido.alpine || leido.navegado) ? leido : null;
+        }
+        if (cambio === null) {
+            throw new Error(`${destino}: no terminó de cambiar: ${await this.evaluar('location.href')}`);
+        }
+        // Lo último en llegar: el pintado y las tareas largas.
+        await esperar(1500);
+        cambio = JSON.parse(await this.evaluar('JSON.stringify(window.__cambio)'));
+        this.oyentes.delete(oyente);
+
+        return {
+            contenido: (cambio.alpine ? cambio.lcp : cambio.pintado) - t0,
+            responde: Math.max(cambio.alpine ?? 0, cambio.navegado ?? 0) - t0,
+            bloqueo: cambio.largas.reduce((suma, [inicio, duracion]) => suma + (inicio >= t0 ? Math.max(0, duracion - 50) : 0), 0),
+            kb: peticiones.reduce((suma, bytes) => suma + bytes, 0) / 1024,
+            peticiones: peticiones.length,
+            final: await this.evaluar('location.pathname'),
+        };
+    }
+
+    async memoria() {
+        await this.enviar('HeapProfiler.collectGarbage');
+        const { usedSize } = await this.enviar('Runtime.getHeapUsage');
+
+        return usedSize / 1048576;
+    }
 }
 
 const mediana = (valores) => [...valores].sort((a, b) => a - b)[Math.floor(valores.length / 2)];
@@ -123,7 +176,9 @@ async function abrirPestana() {
     await pestana.enviar('Runtime.enable');
     await pestana.enviar('Emulation.setDeviceMetricsOverride', { width: 412, height: 823, deviceScaleFactor: 1.75, mobile: true });
     await pestana.enviar('Emulation.setCPUThrottlingRate', { rate: CPU });
-    await pestana.enviar('Network.emulateNetworkConditions', RED);
+    if (!opciones['red-rapida']) {
+        await pestana.enviar('Network.emulateNetworkConditions', RED);
+    }
     if (cookie) {
         await pestana.enviar('Network.setExtraHTTPHeaders', { headers: { Cookie: cookie } });
     }
@@ -132,7 +187,21 @@ async function abrirPestana() {
             new PerformanceObserver((lista) => { for (const e of lista.getEntries()) { if (e.name === 'first-contentful-paint') { window.__medidas.fcp = e.startTime; } } }).observe({ type: 'paint', buffered: true });
             new PerformanceObserver((lista) => { const e = lista.getEntries().at(-1); window.__medidas.lcp = e.startTime; window.__medidas.elemento = e.element?.tagName; }).observe({ type: 'largest-contentful-paint', buffered: true });
             new PerformanceObserver((lista) => { for (const e of lista.getEntries()) { if (!e.hadRecentInput) { window.__medidas.cls = (window.__medidas.cls ?? 0) + e.value; } } }).observe({ type: 'layout-shift', buffered: true });
-            document.addEventListener('alpine:initialized', () => { window.__medidas.alpine = performance.now(); });`,
+            document.addEventListener('alpine:initialized', () => { window.__medidas.alpine = performance.now(); });
+
+            const ahora = () => performance.timeOrigin + performance.now();
+            window.__cambio = { t0: Number(sessionStorage.getItem('__t0') ?? 0), largas: [] };
+            window.__reiniciarCambio = (t0) => { window.__cambio = { t0, largas: [] }; };
+            new PerformanceObserver((lista) => { window.__cambio.lcp = performance.timeOrigin + lista.getEntries().at(-1).startTime; }).observe({ type: 'largest-contentful-paint', buffered: true });
+            new PerformanceObserver((lista) => { for (const e of lista.getEntries()) { window.__cambio.largas.push([performance.timeOrigin + e.startTime, e.duration]); } }).observe({ type: 'longtask', buffered: true });
+            document.addEventListener('alpine:initialized', () => { window.__cambio.alpine = ahora(); });
+            // Sin página nueva no hay LCP. Livewire cambia el cuerpo y arranca Alpine sin dejar pintar en medio, así que lo más
+            // cercano es el segundo fotograma después de terminar.
+            document.addEventListener('livewire:navigated', () => {
+                const cambio = window.__cambio;
+                cambio.navegado = ahora();
+                requestAnimationFrame(() => requestAnimationFrame(() => { cambio.pintado = ahora(); }));
+            });`,
     });
 
     return pestana;
@@ -151,7 +220,37 @@ try {
         }
     }
 
-    for (const ruta of rutas) {
+    if (recorrido !== null) {
+        const pestana = await abrirPestana();
+        const paginas = [...new Set(recorrido.filter((destino) => destino !== 'atras'))];
+        for (let i = 0; i < 2; i++) {
+            for (const pagina of paginas) {
+                await pestana.visitar(base + pagina);
+            }
+        }
+        const saltos = new Map();
+        for (let i = 0; i < veces; i++) {
+            if (i === 0 || !opciones['sin-recargar']) {
+                await pestana.visitar(base + recorrido[0]);
+            }
+            let origen = recorrido[0];
+            for (const destino of recorrido.slice(1)) {
+                const clave = `${origen} → ${destino}`;
+                saltos.set(clave, [...(saltos.get(clave) ?? []), await pestana.cambiarA(destino)]);
+                origen = destino === 'atras' ? '(atrás)' : destino;
+            }
+            if (opciones['sin-recargar']) {
+                console.log(`vuelta ${i + 1}: ${(await pestana.memoria()).toFixed(1)} MB de memoria de JavaScript, ${await pestana.evaluar('document.querySelectorAll("*").length')} elementos`);
+            }
+        }
+        for (const [clave, medidas] of saltos) {
+            const m = (dato) => mediana(medidas.map((c) => c[dato]));
+            console.log(`${clave}: contenido ${(m('contenido') / 1000).toFixed(2)} s · responde ${(m('responde') / 1000).toFixed(2)} s · bloqueo ${Math.round(m('bloqueo'))} ms · ${Math.round(m('kb'))} KB en ${m('peticiones')} peticiones`);
+        }
+        pestana.socket.close();
+    }
+
+    for (const ruta of recorrido === null ? rutas : []) {
         const primeras = [];
         const segundas = [];
         for (let i = 0; i < veces; i++) {

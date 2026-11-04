@@ -141,8 +141,69 @@ interpreta todo el JavaScript. Por eso el contenido tardaba el doble que el prim
 - **Comprimir de antemano con Brotli al empaquetar.** Ahorraría unos 45 KB en la primera visita de cada versión, pero exige Node para
   empaquetar y más reglas en `.htaccess`.
 - **Comprimir desde PHP** para los hostings sin `mod_deflate`. Los recursos estáticos, que es lo que más pesa, seguirían sin comprimir.
-- **Modo SPA de Filament** (`->spa()`). Ahorraría reinterpretar estilos y scripts en cada cambio de pantalla, pero cambia cómo se navega en
-  todo el panel. Hay que probarlo aparte.
+- **Modo SPA de Filament** (`->spa()`). Se midió y se descartó: ver la sección siguiente.
+
+## Modo SPA de Filament: medido y descartado
+
+`->spa()` cambia solo el cuerpo de la página y no vuelve a interpretar estilos ni scripts, así que parecía la siguiente mejora. No lo es
+(D-068). Son cambios de pantalla con todo ya en caché, en un teléfono de 412 px y la CPU cuatro veces más lenta, mediana de cinco. Cada
+celda dice sin SPA → con SPA.
+
+**Con mala red** (1.47 Mbps, 562 ms por petición):
+
+| Cambio | Se ve el contenido | Responde | Bloqueo del hilo principal |
+|---|---|---|---|
+| Hoy → Calendario | 0.76 → 1.12 s | 1.11 → 0.98 s | 191 → 278 ms |
+| Calendario → Reservas | 0.71 → 1.34 s | 1.28 → 1.14 s | 324 → 440 ms |
+| Reservas → Hoy | 0.74 → 1.12 s | 1.07 → 0.98 s | 187 → 294 ms |
+| Hoy → Crear reserva | 1.30 → 1.14 s | 1.17 → 0.98 s | 284 → 281 ms |
+| Atrás | 0.73 → 0.39 s | 1.07 → 0.27 s | 197 → 319 ms |
+
+**Con buena red**, la misma CPU:
+
+| Cambio | Se ve el contenido | Responde | Bloqueo del hilo principal |
+|---|---|---|---|
+| Hoy → Calendario | 0.36 → 0.58 s | 0.63 → 0.42 s | 192 → 289 ms |
+| Calendario → Reservas | 0.34 → 0.70 s | 0.78 → 0.52 s | 330 → 432 ms |
+| Reservas → Hoy | 0.33 → 0.48 s | 0.58 → 0.36 s | 216 → 263 ms |
+| Hoy → Crear reserva | 0.76 → 0.55 s | 0.59 → 0.36 s | 265 → 235 ms |
+| Atrás | 0.31 → 0.36 s | 0.58 → 0.23 s | 220 → 282 ms |
+
+Sin SPA, el contenido es el LCP y «responde» es cuando Alpine arrancó. Con SPA no hay LCP, porque no hay página nueva: el contenido es el
+segundo fotograma después de `livewire:navigated`, y responde en ese evento. Para no comparar medidas distintas, en Reservas → Hoy se midió
+además con Element Timing, igual en los dos modos: da 0.74 y 1.09 s con mala red, y 0.33 y 0.49 s con buena, lo mismo que la tabla.
+
+**Por qué no conviene:**
+
+- **La pantalla nueva aparece más tarde, unos 0.4 s con mala red.** Con la página entera, el navegador pinta conforme llega el HTML, porque
+  los estilos ya están en caché y no espera al JavaScript. Con SPA, Livewire baja todo el HTML, lo interpreta, cambia el cuerpo y arranca Alpine
+  sin dejar pintar en medio. Por eso también bloquea más. Solo mejoran los formularios, que ya esperaban a Alpine. La pantalla responde antes,
+  pero solo unos 0.13 s: casi todo el tiempo es la red.
+- **Una petición de PHP de más en cada cambio.** Con SPA, Filament no recoge las notificaciones al cargar y las pide después
+  (`pullNotifications`). En un hosting compartido, es el doble de procesos por cada pantalla.
+- **Atrás enseña una copia vieja.** Es lo que más gana, porque no pregunta al servidor, y por eso mismo se comprobó esto: otra persona canceló
+  una reserva, y al volver a Hoy seguía contando «Llegan (4)» y ofreciendo «Registrar entrada». El servidor rechazó la acción y refrescó la
+  lista, así que no daña nada, pero en recepción engaña. Hoy, `no-store` obliga a pedirla otra vez.
+
+`hasPrefetching` tampoco ayuda en un teléfono: adelanta la descarga al pasar el ratón por encima.
+
+**Lo que no se rompe.** Con SPA activo, sin errores en la consola, funcionaron:
+
+- entrar, salir (atrás lleva al inicio de sesión) y una sesión vencida (el enlace siguiente lleva al inicio de sesión y luego a la pantalla
+  pedida);
+- activar la verificación en dos pasos y entrar con el código;
+- arrastrar en el calendario, una acción de Livewire justo después de entrar, y los enlaces propios sin `wire:navigate`, que cargan la página
+  entera;
+- crear un plano con imagen y mover sus unidades;
+- descargar una copia de seguridad y un CSV. Según el código, `spaUrlExceptions` no hace falta: las descargas de archivos abren en otra pestaña
+  o son enlaces normales;
+- el idioma, que como sin SPA se aplica en la pantalla siguiente, con su `lang`;
+- en el teléfono, abrir y cerrar el menú y la regla que deja ver el contenido antes de Alpine;
+- la memoria: de 21.8 a 25.9 MB en 36 cambios seguidos, y ahí se queda.
+
+No se probó crear un registro entero ni los idiomas distintos del español y el inglés. Si cambia algo de lo anterior, basta con una línea en
+`PanelAplicacionProvider`, más `wire:navigate` en los enlaces propios que valgan la pena. En las celdas del calendario, no: serían cientos de
+elementos más para Alpine.
 
 ## Riesgo aceptado: comprimir páginas con un token
 
@@ -180,6 +241,12 @@ LIGHTHOUSE_CLI=carpeta-temporal/node_modules/lighthouse/cli/index.js node desarr
 
 ```bash
 node desarrollo/rendimiento/visita-repetida.mjs --base=http://127.0.0.1:8004 --cookie=cookie.txt --rutas=/hoy,/calendario
+```
+
+Para los cambios de pantalla, con `--red-rapida` si solo se quiere limitar la CPU:
+
+```bash
+node desarrollo/rendimiento/visita-repetida.mjs --base=http://127.0.0.1:8004 --cookie=cookie.txt --recorrido=/hoy,/calendario,/reservas,/hoy,/reservas/create,atras --veces=5
 ```
 
 En Git Bash, antepón `MSYS_NO_PATHCONV=1`, o convertirá `/hoy` en una ruta de Windows. Antes de correr las pruebas, `php artisan

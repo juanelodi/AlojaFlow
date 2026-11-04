@@ -129,7 +129,8 @@ spatie/laravel-permission 8, Pest 4, Larastan 3.
 
 Se construye en casa: calendario por habitaciones (*tape chart*), motor de reservas,
 sincronización iCal, informes. Descartado por ahora: React/Vue separado, Docker,
-microservicios, app nativa (más adelante una PWA), FullCalendar Premium, channel manager de pago.
+microservicios, app nativa (más adelante una PWA), FullCalendar Premium, channel manager de pago,
+modo SPA de Filament (D-068).
 
 Destino de instalación: hosting compartido (`public_html`). El paquete incluye `vendor/` y los
 recursos ya compilados; un solo cron dispara el programador de tareas. Sin CDN en tiempo de

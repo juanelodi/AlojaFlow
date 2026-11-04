@@ -488,6 +488,14 @@ la puerta a BREACH, pero hace falta espiar el tráfico y forzar miles de peticio
 pequeño salto al llegar la primera vez; y no se ha comprobado en DreamHost si `mod_deflate` está disponible. Cifras, lo que se
 descartó y cómo comprobarlo, en `docs/rendimiento-movil.md`.
 
+### D-068 · 2026-11-04 · Sin modo SPA en el panel
+Se midió `->spa()` en los cambios de pantalla, con mala red y CPU lenta. La pantalla nueva aparece unos 0.4 s más tarde, porque Livewire no
+deja pintar hasta terminar, y responde solo unos 0.13 s antes. Cada cambio hace además una petición más a PHP, para recoger notificaciones.
+Volver atrás es mucho más rápido (de 1.07 a 0.27 s), pero enseña una copia vieja: una reserva que otra persona canceló sigue en Hoy hasta que
+algo la refresca. **Por qué no:** en un teléfono con mala red se pierde lo que más se nota, y en recepción una pantalla vieja engaña. **Lo
+que no es el motivo:** no se rompió nada de lo que se probó, y se activa con una línea si esto cambia. Cifras y pruebas en
+`docs/rendimiento-movil.md`.
+
 ---
 
 ## Pendientes
