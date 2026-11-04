@@ -42,6 +42,17 @@ final class Disponibilidad
     }
 
     /**
+     * La primera unidad libre según su orden, la que tenga cabida; así se llenan primero las que
+     * el alojamiento prefiere (la prioridad de la 1.2.x).
+     */
+    public static function primeraLibre(int $propiedadId, string $llegada, string $salida, int $personas, ?int $tarifaId = null): ?Unidad
+    {
+        $libres = self::libres([$propiedadId], $llegada, $salida, $personas);
+
+        return $libres->first(fn (Unidad $u): bool => $tarifaId === null || $u->tarifa_id === $tarifaId);
+    }
+
+    /**
      * Unidades de una propiedad con alguna noche ocupada entre dos fechas, sin contar una reserva.
      *
      * @return list<int>

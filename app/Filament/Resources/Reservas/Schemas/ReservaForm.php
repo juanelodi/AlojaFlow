@@ -15,20 +15,25 @@ use App\Enums\TipoContacto;
 use App\Enums\TipoReserva;
 use App\Filament\Campos\CampoDinero;
 use App\Filament\Resources\Reservas\ReservaResource;
+use App\Models\Canal;
+use App\Models\ConceptoCargo;
 use App\Models\Huesped;
 use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Unidad;
-use App\Reservas\Cotizacion;
 use App\Reservas\Cotizador;
+use App\Reservas\Cupones;
+use App\Reservas\Presupuesto;
 use App\Servicios\Disponibilidad;
 use App\Support\Contactos;
 use App\Support\Dinero;
 use App\Support\Formato;
 use Carbon\CarbonImmutable;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -42,14 +47,17 @@ use Throwable;
 
 /**
  * Alta y cambio de reservas y bloqueos de una propiedad independiente. Las reglas de verdad están
- * en GestorReservas; aquí se guía a quien escribe: unidades ocupadas desactivadas y precio de la
- * tarifa ya puesto. El calendario y la disponibilidad traen datos por la dirección.
+ * en GestorReservas; aquí se guía a quien escribe: unidades ocupadas desactivadas, y el total ya
+ * calculado con la tarifa, los cargos y los impuestos. El calendario y la disponibilidad traen
+ * datos por la dirección.
  */
 class ReservaForm
 {
     public static function configure(Schema $schema): Schema
     {
         $esReserva = fn (Get $get): bool => self::tipo($get) === TipoReserva::Reserva;
+        // Al crear, el total sigue a los datos; al editar solo cambia con el botón, para no pisar
+        // un precio ya acordado.
         $alCambiar = function (Get $get, Set $set, string $operation): void {
             if ($operation === 'create') {
                 self::aplicarTarifa($get, $set);
@@ -69,6 +77,7 @@ class ReservaForm
                             $set('unidad_id', null);
                             $set('titular_id', null);
                             $set('total', null);
+                            $set('cargos', []);
                         }),
                     Select::make('tipo')->label(__('ui.reservas.tipo'))->options(TipoReserva::opciones())->required()->native(false)->live()
                         ->default(TipoReserva::Reserva->value)
@@ -85,9 +94,11 @@ class ReservaForm
                         ->afterStateUpdated($alCambiar),
                     DatePicker::make('salida')->label(__('ui.comun.salida'))->required()->live(onBlur: true)->after('llegada')
                         ->default(fn (): ?string => self::fechaDeLaDireccion('salida'))
+                        ->helperText(fn (Get $get): ?string => self::avisoEstancia($get))
                         ->afterStateUpdated($alCambiar),
-                    TextInput::make('personas')->label(__('ui.comun.personas'))->numeric()->minValue(1)->maxValue(100)
+                    TextInput::make('personas')->label(__('ui.comun.personas'))->numeric()->minValue(1)->maxValue(100)->live(onBlur: true)
                         ->default(fn (): int => max(1, request()->integer('personas', 2)))
+                        ->afterStateUpdated($alCambiar)
                         ->required($esReserva)->visible($esReserva),
                     Select::make('unidad_id')->label(__('ui.comun.unidad'))->required()->native(false)->searchable()->live()
                         ->helperText(__('ui.reservas.unidad_ayuda'))
@@ -96,10 +107,25 @@ class ReservaForm
                         ->default(fn (): ?int => self::unidadDeLaDireccion()?->id)
                         ->validationMessages(['in' => __('ui.reservas.error_ocupada')])
                         ->afterStateUpdated($alCambiar)
+                        ->hintAction(
+                            Action::make('primeraLibre')->label(__('ui.reservas.primera_libre'))->icon(Heroicon::OutlinedSparkles)
+                                ->action(function (Get $get, Set $set, string $operation): void {
+                                    [$llegada, $salida] = self::fechas($get);
+                                    if ($llegada === null || $salida === null || blank($get('propiedad_id'))) {
+                                        return;
+                                    }
+                                    $unidad = Disponibilidad::primeraLibre((int) $get('propiedad_id'), $llegada->format('Y-m-d'), $salida->format('Y-m-d'), max(1, (int) $get('personas')));
+                                    $set('unidad_id', $unidad?->id);
+                                    if ($operation === 'create') {
+                                        self::aplicarTarifa($get, $set);
+                                    }
+                                })
+                        )
                         ->columnSpan(['lg' => 2]),
-                    TextInput::make('origen_texto')->maxLength(100)
+                    TextInput::make('origen_texto')->maxLength(100)->live(onBlur: true)
                         ->label(fn (Get $get): string => $esReserva($get) ? __('ui.comun.origen') : __('ui.reservas.motivo'))
-                        ->datalist(fn (Get $get): array => $esReserva($get) ? ['Directo', 'Booking', 'Airbnb', 'Expedia', 'Teléfono'] : []),
+                        ->datalist(fn (Get $get): array => $esReserva($get) ? self::canales($get('propiedad_id')) : [])
+                        ->afterStateUpdated($alCambiar),
                 ]),
             Section::make(__('ui.comun.huesped'))->columnSpanFull()
                 ->visible($esReserva)
@@ -119,22 +145,55 @@ class ReservaForm
                         ])
                         ->createOptionUsing(fn (array $data, Get $get): int => self::crearHuesped((int) $get('propiedad_id'), $data)),
                 ]),
+            Section::make(__('ui.cargos.modelos'))->columnSpanFull()
+                ->visible(fn (Get $get): bool => $esReserva($get) && self::hayConceptosOpcionales($get('propiedad_id')))
+                ->collapsible()
+                ->schema([
+                    Repeater::make('cargos')->hiddenLabel()->defaultItems(0)
+                        ->addActionLabel(__('ui.reservas.anadir_cargo'))
+                        ->columns(['default' => 1, 'md' => 2])
+                        ->live()
+                        ->afterStateUpdated($alCambiar)
+                        ->schema([
+                            Select::make('concepto_cargo_id')->label(__('ui.cargos.modelo_campo'))->required()->native(false)->live()
+                                ->options(fn (Get $get): array => self::opcionesCargo($get('../../propiedad_id')))
+                                ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                ->afterStateUpdated(self::recalcularDesdeLinea()),
+                            TextInput::make('cantidad')->label(__('ui.reservas.cantidad'))->numeric()->minValue(0.01)->default(1)->required()->live(onBlur: true)
+                                ->afterStateUpdated(self::recalcularDesdeLinea()),
+                        ]),
+                ]),
             Section::make(__('ui.reservas.dinero'))->columnSpanFull()
                 ->visible($esReserva)
                 ->columns(['default' => 1, 'md' => 2, 'lg' => 4])
                 ->schema([
                     CampoDinero::make('total')->label(__('ui.comun.total'))->required()->default(0)
-                        ->helperText(fn (Get $get, ?Reserva $record): string => self::textoTarifa($get, $record))
+                        ->helperText(fn (Get $get, ?Reserva $record): string => self::textoPresupuesto($get, $record))
                         ->suffixAction(
                             Action::make('aplicarTarifa')->label(__('ui.reservas.aplicar_tarifa'))->tooltip(__('ui.reservas.aplicar_tarifa'))
                                 ->icon(Heroicon::OutlinedCalculator)
                                 ->action(fn (Get $get, Set $set) => self::aplicarTarifa($get, $set))
                         )
                         ->columnSpan(['lg' => 2]),
-                    CampoDinero::make('descuento')->label(__('ui.reservas.descuento'))->default(0)->live(onBlur: true)
-                        ->afterStateUpdated($alCambiar),
                     CampoDinero::make('deposito')->label(__('ui.reservas.deposito'))->default(0),
                     CampoDinero::make('comision')->label(__('ui.reservas.comision'))->default(0),
+                    TextInput::make('cupon_codigo')->label(__('ui.cupones.modelo_campo'))->maxLength(40)->live(onBlur: true)
+                        ->rules([
+                            fn (Get $get, ?Reserva $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
+                                $motivo = self::motivoCupon($get, (string) $value, $record);
+                                if ($motivo !== null) {
+                                    $fail($motivo);
+                                }
+                            },
+                        ])
+                        ->afterStateUpdated(function (Get $get, Set $set, string $operation): void {
+                            self::aplicarCupon($get, $set);
+                            if ($operation === 'create') {
+                                self::aplicarTarifa($get, $set);
+                            }
+                        }),
+                    CampoDinero::make('descuento')->label(__('ui.reservas.descuento'))->default(0)->live(onBlur: true)
+                        ->afterStateUpdated($alCambiar),
                 ]),
             Section::make(__('ui.reservas.comentario'))->columnSpanFull()
                 ->collapsible()
@@ -145,17 +204,22 @@ class ReservaForm
     }
 
     /**
-     * Pone en «Total» el precio de la tarifa menos el descuento, si la unidad tiene tarifa.
+     * Pone en «Total» lo que sale de la tarifa, los cargos y los impuestos que se suman, menos el
+     * descuento; y en «Comisión», lo del canal. Si la unidad no tiene tarifa, no toca el total.
      */
-    public static function aplicarTarifa(Get $get, Set $set): void
+    public static function aplicarTarifa(Get $get, Set $set, string $ruta = ''): void
     {
-        $cotizacion = self::cotizacion($get);
-        if ($cotizacion === null) {
+        $presupuesto = self::presupuesto($get, $ruta);
+        if ($presupuesto === null || $presupuesto->cotizacion === null) {
             return;
         }
-        $moneda = CampoDinero::moneda($get('propiedad_id'));
-        $descuento = Dinero::aUnidadMenor(is_numeric($get('descuento')) ? (string) $get('descuento') : null, $moneda);
-        $set('total', Dinero::aDecimal(max(0, $cotizacion->total - $descuento), $moneda));
+        $moneda = CampoDinero::moneda($get($ruta.'propiedad_id'));
+        $set($ruta.'total', Dinero::aDecimal($presupuesto->total(), $moneda));
+
+        $canal = Canal::query()->where('propiedad_id', (int) $get($ruta.'propiedad_id'))->where('nombre', (string) $get($ruta.'origen_texto'))->first();
+        if ($canal !== null && $canal->comision_porcentaje !== null) {
+            $set($ruta.'comision', Dinero::aDecimal((int) round($presupuesto->total() * (float) $canal->comision_porcentaje / 100), $moneda));
+        }
     }
 
     /**
@@ -169,9 +233,45 @@ class ReservaForm
         if ($unidad === null || $llegada === null || $salida === null) {
             return null;
         }
-        $cotizacion = Cotizador::cotizar($unidad, CarbonImmutable::parse($llegada), CarbonImmutable::parse($salida));
+        $presupuesto = Cotizador::presupuesto($unidad, CarbonImmutable::parse($llegada), CarbonImmutable::parse($salida), max(1, request()->integer('personas', 2)));
 
-        return $cotizacion === null ? null : Dinero::aDecimal($cotizacion->total, $unidad->propiedad->moneda);
+        return $presupuesto->cotizacion === null ? null : Dinero::aDecimal($presupuesto->total(), $unidad->propiedad->moneda);
+    }
+
+    private static function recalcularDesdeLinea(): Closure
+    {
+        return function (Get $get, Set $set, string $operation): void {
+            if ($operation === 'create') {
+                self::aplicarTarifa($get, $set, '../../');
+            }
+        };
+    }
+
+    private static function aplicarCupon(Get $get, Set $set): void
+    {
+        $presupuesto = self::presupuesto($get, '', sinDescuento: true);
+        $cupon = Cupones::buscar((int) $get('propiedad_id'), (string) $get('cupon_codigo'));
+        if ($presupuesto === null || $cupon === null) {
+            return;
+        }
+        $set('descuento', Dinero::aDecimal(Cupones::descuento($cupon, $presupuesto->alojamiento), CampoDinero::moneda($get('propiedad_id'))));
+    }
+
+    private static function motivoCupon(Get $get, string $codigo, ?Reserva $record): ?string
+    {
+        if (trim($codigo) === '') {
+            return null;
+        }
+        $cupon = Cupones::buscar((int) $get('propiedad_id'), $codigo);
+        if ($cupon === null) {
+            return __('ui.cupones.error_no_existe');
+        }
+        [$llegada, $salida] = self::fechas($get);
+        if ($llegada === null || $salida === null) {
+            return null;
+        }
+
+        return Cupones::motivoRechazo($cupon, $llegada, (int) $llegada->diffInDays($salida), $record?->id);
     }
 
     private static function tipo(Get $get): TipoReserva
@@ -231,6 +331,34 @@ class ReservaForm
     }
 
     /**
+     * @return array<int, string>
+     */
+    private static function opcionesCargo(mixed $propiedadId): array
+    {
+        if (blank($propiedadId)) {
+            return [];
+        }
+
+        return ConceptoCargo::query()->where('propiedad_id', (int) $propiedadId)->where('activo', true)->where('obligatorio', false)
+            ->orderBy('orden')->orderBy('nombre')->pluck('nombre', 'id')->all();
+    }
+
+    private static function hayConceptosOpcionales(mixed $propiedadId): bool
+    {
+        return self::opcionesCargo($propiedadId) !== [];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function canales(mixed $propiedadId): array
+    {
+        $canales = blank($propiedadId) ? [] : Canal::query()->where('propiedad_id', (int) $propiedadId)->where('activo', true)->orderBy('nombre')->pluck('nombre')->all();
+
+        return $canales !== [] ? array_values($canales) : ['Directo', 'Booking', 'Airbnb', 'Expedia', 'Teléfono'];
+    }
+
+    /**
      * @return list<int>
      */
     private static function ocupadas(Get $get, ?Reserva $record): array
@@ -246,11 +374,11 @@ class ReservaForm
     /**
      * @return array{0: CarbonImmutable|null, 1: CarbonImmutable|null}
      */
-    private static function fechas(Get $get): array
+    private static function fechas(Get $get, string $ruta = ''): array
     {
         try {
-            $llegada = blank($get('llegada')) ? null : CarbonImmutable::parse((string) $get('llegada'))->startOfDay();
-            $salida = blank($get('salida')) ? null : CarbonImmutable::parse((string) $get('salida'))->startOfDay();
+            $llegada = blank($get($ruta.'llegada')) ? null : CarbonImmutable::parse((string) $get($ruta.'llegada'))->startOfDay();
+            $salida = blank($get($ruta.'salida')) ? null : CarbonImmutable::parse((string) $get($ruta.'salida'))->startOfDay();
         } catch (Throwable) {
             return [null, null];
         }
@@ -258,28 +386,61 @@ class ReservaForm
         return $llegada !== null && $salida !== null && $salida->gt($llegada) ? [$llegada, $salida] : [null, null];
     }
 
-    private static function cotizacion(Get $get): ?Cotizacion
+    private static function presupuesto(Get $get, string $ruta = '', bool $sinDescuento = false): ?Presupuesto
     {
-        [$llegada, $salida] = self::fechas($get);
-        if ($llegada === null || $salida === null || blank($get('unidad_id'))) {
+        [$llegada, $salida] = self::fechas($get, $ruta);
+        if ($llegada === null || $salida === null || blank($get($ruta.'unidad_id'))) {
             return null;
         }
-        $unidad = Unidad::query()->where('propiedad_id', (int) $get('propiedad_id'))->find((int) $get('unidad_id'));
+        $unidad = Unidad::query()->where('propiedad_id', (int) $get($ruta.'propiedad_id'))->find((int) $get($ruta.'unidad_id'));
+        if ($unidad === null) {
+            return null;
+        }
+        $elegidos = [];
+        foreach ((array) $get($ruta.'cargos') as $linea) {
+            $concepto = (int) ($linea['concepto_cargo_id'] ?? 0);
+            if ($concepto > 0) {
+                $elegidos[$concepto] = max(0.01, (float) ($linea['cantidad'] ?? 1));
+            }
+        }
+        $moneda = CampoDinero::moneda($get($ruta.'propiedad_id'));
+        $descuento = $sinDescuento ? 0 : Dinero::aUnidadMenor(is_numeric($get($ruta.'descuento')) ? (string) $get($ruta.'descuento') : null, $moneda);
 
-        return $unidad === null ? null : Cotizador::cotizar($unidad, $llegada, $salida);
+        return Cotizador::presupuesto($unidad, $llegada, $salida, max(1, (int) $get($ruta.'personas')), $elegidos, null, $descuento);
     }
 
-    private static function textoTarifa(Get $get, ?Reserva $record): string
+    private static function avisoEstancia(Get $get): ?string
     {
-        $cotizacion = self::cotizacion($get);
-        if ($cotizacion === null) {
-            return __('ui.reservas.sin_tarifa');
+        $presupuesto = self::presupuesto($get);
+        if ($presupuesto?->cotizacion === null || $presupuesto->cotizacion->cumpleEstanciaMinima()) {
+            return null;
         }
 
-        return __('ui.reservas.precio_tarifa', [
-            'tarifa' => $cotizacion->tarifa,
-            'precio' => Formato::dinero($cotizacion->total, $record->moneda ?? CampoDinero::moneda($get('propiedad_id'))),
+        return __('ui.reservas.aviso_estancia_minima', ['noches' => $presupuesto->cotizacion->estanciaMinima]);
+    }
+
+    private static function textoPresupuesto(Get $get, ?Reserva $record): string
+    {
+        $presupuesto = self::presupuesto($get);
+        if ($presupuesto === null || $presupuesto->cotizacion === null) {
+            return __('ui.reservas.sin_tarifa');
+        }
+        $moneda = $record->moneda ?? CampoDinero::moneda($get('propiedad_id'));
+        $texto = __('ui.reservas.precio_tarifa', [
+            'tarifa' => $presupuesto->cotizacion->tarifa,
+            'precio' => Formato::dinero($presupuesto->total(), $moneda),
         ]);
+        if ($presupuesto->totalCargos() > 0) {
+            $texto .= ' '.__('ui.reservas.incluye_cargos', ['importe' => Formato::dinero($presupuesto->totalCargos(), $moneda)]);
+        }
+        if ($presupuesto->impuestosAdicionales() > 0) {
+            $texto .= ' '.__('ui.reservas.mas_impuestos', ['importe' => Formato::dinero($presupuesto->impuestosAdicionales(), $moneda)]);
+        }
+        if ($presupuesto->impuestosIncluidos() > 0) {
+            $texto .= ' '.__('ui.reservas.impuestos_incluidos', ['importe' => Formato::dinero($presupuesto->impuestosIncluidos(), $moneda)]);
+        }
+
+        return $texto;
     }
 
     /**

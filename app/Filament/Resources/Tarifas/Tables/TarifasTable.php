@@ -31,6 +31,7 @@ class TarifasTable
                     ->visible(fn (): bool => count(TarifaResource::propiedadesGestionables()) > 1),
                 TextColumn::make('precio_noche')->label(__('ui.tarifas.precio_base'))->alignEnd()->sortable()
                     ->formatStateUsing(fn (Tarifa $record): string => Formato::dinero($record->precio_noche, $record->propiedad->moneda)),
+                TextColumn::make('modo')->label(__('ui.tarifas.modo'))->formatStateUsing(fn (Tarifa $record): string => $record->modo->etiqueta())->toggleable(),
                 TextColumn::make('temporadas_count')->label(__('ui.tarifas.temporadas'))->alignEnd(),
                 TextColumn::make('unidades_count')->label(__('ui.unidades.modelos'))->alignEnd(),
                 IconColumn::make('activa')->label(__('ui.tarifas.activa'))->boolean(),

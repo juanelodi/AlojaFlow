@@ -11,6 +11,10 @@ declare(strict_types=1);
 return [
     'ModoPropiedad' => ['nativa' => 'Independent', 'subordinada' => 'Subordinate to HotelDruid'],
     'MetodoPago' => ['efectivo' => 'Cash', 'tarjeta' => 'Card', 'transferencia' => 'Transfer', 'otro' => 'Other'],
+    'ModoTarifa' => ['por_noche' => 'Per night (with extra person)', 'por_persona' => 'Per person'],
+    'BaseCargo' => ['por_estancia' => 'Per stay', 'por_noche' => 'Per night', 'por_persona' => 'Per person', 'por_persona_noche' => 'Per person per night', 'porcentaje_alojamiento' => 'Percentage of lodging'],
+    'TipoMovimiento' => ['gasto' => 'Expense', 'ingreso' => 'Income'],
+    'TipoCupon' => ['porcentaje' => 'Percentage', 'importe' => 'Fixed amount'],
     'PaquetePais' => ['mexico' => 'Mexico', 'espana' => 'Spain', 'estados_unidos' => 'United States', 'generico' => 'Generic'],
     'EstadoPrincipal' => ['activa' => 'Active', 'pausada' => 'Paused'],
     'MetodoPeticion' => ['post' => 'POST (recommended)', 'get' => 'GET (compatibility mode)'],

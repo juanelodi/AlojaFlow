@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ModoTarifa;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -19,7 +20,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property int $propiedad_id
  * @property string $nombre
+ * @property ModoTarifa $modo
  * @property int $precio_noche
+ * @property int $personas_incluidas
+ * @property int $precio_persona_extra
+ * @property int|null $precio_fin_semana
+ * @property int $estancia_minima
  * @property bool $activa
  * @property-read Propiedad $propiedad
  * @property-read \Illuminate\Database\Eloquent\Collection<int, TemporadaTarifa> $temporadas
@@ -33,7 +39,12 @@ class Tarifa extends ModeloBase
     protected function casts(): array
     {
         return [
+            'modo' => ModoTarifa::class,
             'precio_noche' => 'integer',
+            'personas_incluidas' => 'integer',
+            'precio_persona_extra' => 'integer',
+            'precio_fin_semana' => 'integer',
+            'estancia_minima' => 'integer',
             'activa' => 'boolean',
         ];
     }

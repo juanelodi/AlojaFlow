@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $propiedad_id
  * @property int $reserva_id
+ * @property int|null $caja_id
  * @property CarbonImmutable $fecha
  * @property MetodoPago $metodo
  * @property int $importe
@@ -48,6 +49,12 @@ class Pago extends ModeloBase
     public function reserva(): BelongsTo
     {
         return $this->belongsTo(Reserva::class);
+    }
+
+    /** @return BelongsTo<Caja, $this> */
+    public function caja(): BelongsTo
+    {
+        return $this->belongsTo(Caja::class);
     }
 
     /** @return BelongsTo<User, $this> */

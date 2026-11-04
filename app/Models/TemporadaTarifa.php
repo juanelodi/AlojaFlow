@@ -22,6 +22,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable $desde
  * @property CarbonImmutable $hasta
  * @property int $precio_noche
+ * @property int|null $precio_persona_extra
+ * @property int|null $precio_fin_semana
+ * @property int|null $estancia_minima
  */
 class TemporadaTarifa extends ModeloBase
 {
@@ -35,6 +38,9 @@ class TemporadaTarifa extends ModeloBase
             'desde' => 'immutable_date',
             'hasta' => 'immutable_date',
             'precio_noche' => 'integer',
+            'precio_persona_extra' => 'integer',
+            'precio_fin_semana' => 'integer',
+            'estancia_minima' => 'integer',
         ];
     }
 

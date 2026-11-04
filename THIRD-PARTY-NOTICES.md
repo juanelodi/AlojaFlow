@@ -45,3 +45,12 @@ aplicación. Sus versiones exactas están en `composer.lock` y `package.json`.
 
 Antes de cada versión se revisan todas las licencias con `composer licenses` y
 `npx license-checker --summary` (regla 3 del `CLAUDE.md`).
+
+## Generación de PDF
+
+- [dompdf/dompdf](https://github.com/dompdf/dompdf) — LGPL-2.1, con `dompdf/php-font-lib` (LGPL-2.1-or-later) y `dompdf/php-svg-lib` (LGPL-3.0-or-later).
+- [barryvdh/laravel-dompdf](https://github.com/barryvdh/laravel-dompdf) — MIT.
+
+## Calendarios iCal
+
+- [sabre/vobject](https://github.com/sabre-io/vobject) — BSD-3-Clause.

@@ -322,7 +322,7 @@ it('crea y edita una reserva desde el formulario, con el importe en la unidad me
     Livewire::withQueryParams(['unidad' => $this->unidad->id, 'llegada' => $llegada, 'salida' => $salida])
         ->test(CreateReserva::class)
         ->assertFormSet(['propiedad_id' => $this->propiedad->id, 'unidad_id' => $this->unidad->id, 'total' => '2000.00'])
-        ->fillForm(['titular_id' => $this->huesped->id, 'total' => '1800.50', 'personas' => 2])
+        ->fillForm(['titular_id' => $this->huesped->id, 'total' => '1800.50'])
         ->call('create')->assertHasNoFormErrors();
 
     $reserva = Reserva::query()->firstOrFail();

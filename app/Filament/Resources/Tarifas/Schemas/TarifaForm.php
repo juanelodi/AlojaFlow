@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Tarifas\Schemas;
 
+use App\Enums\ModoTarifa;
 use App\Filament\Campos\CampoDinero;
 use App\Filament\Resources\Tarifas\TarifaResource;
 use App\Models\Propiedad;
@@ -27,6 +28,8 @@ class TarifaForm
 {
     public static function configure(Schema $schema): Schema
     {
+        $porNoche = fn (Get $get): bool => self::modo($get) === ModoTarifa::PorNoche;
+
         return $schema->components([
             Section::make()->columnSpanFull()
                 ->columns(['default' => 1, 'md' => 2])
@@ -41,7 +44,17 @@ class TarifaForm
                         ->disabledOn('edit'),
                     TextInput::make('nombre')->label(__('ui.tarifas.nombre'))->required()->maxLength(100)
                         ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', (int) $get('propiedad_id'))),
-                    CampoDinero::make('precio_noche')->label(__('ui.tarifas.precio_base'))->helperText(__('ui.tarifas.precio_base_ayuda'))->required(),
+                    Select::make('modo')->label(__('ui.tarifas.modo'))->helperText(__('ui.tarifas.modo_ayuda'))->options(ModoTarifa::opciones())->required()->native(false)->live()
+                        ->default(ModoTarifa::PorNoche->value),
+                    CampoDinero::make('precio_noche')
+                        ->label(fn (Get $get): string => $porNoche($get) ? __('ui.tarifas.precio_base') : __('ui.tarifas.precio_persona'))
+                        ->helperText(__('ui.tarifas.precio_base_ayuda'))->required(),
+                    TextInput::make('personas_incluidas')->label(__('ui.tarifas.personas_incluidas'))->helperText(__('ui.tarifas.personas_incluidas_ayuda'))->numeric()->minValue(1)->default(2)
+                        ->required($porNoche)->visible($porNoche),
+                    CampoDinero::make('precio_persona_extra')->label(__('ui.tarifas.persona_extra'))->default(0)->visible($porNoche),
+                    CampoDinero::make('precio_fin_semana')->label(__('ui.tarifas.fin_semana'))->helperText(__('ui.tarifas.fin_semana_ayuda'))
+                        ->dehydrateStateUsing(fn (mixed $state, Get $get): ?int => blank($state) ? null : \App\Support\Dinero::aUnidadMenor((string) $state, CampoDinero::moneda($get('propiedad_id')))),
+                    TextInput::make('estancia_minima')->label(__('ui.tarifas.estancia_minima'))->numeric()->minValue(1)->default(1)->required(),
                     Toggle::make('activa')->label(__('ui.tarifas.activa'))->helperText(__('ui.tarifas.activa_ayuda'))->default(true),
                 ]),
             Section::make(__('ui.tarifas.temporadas'))->columnSpanFull()
@@ -50,14 +63,24 @@ class TarifaForm
                     Repeater::make('temporadas')->hiddenLabel()->relationship()
                         ->defaultItems(0)
                         ->addActionLabel(__('ui.tarifas.anadir_temporada'))
-                        ->columns(['default' => 1, 'md' => 4])
+                        ->columns(['default' => 1, 'md' => 3])
                         ->schema([
                             TextInput::make('nombre')->label(__('ui.tarifas.temporada'))->required()->maxLength(100),
                             DatePicker::make('desde')->label(__('ui.tarifas.desde'))->required(),
                             DatePicker::make('hasta')->label(__('ui.tarifas.hasta'))->required()->afterOrEqual('desde'),
                             CampoDinero::make('precio_noche', '../../propiedad_id')->label(__('ui.tarifas.precio_noche'))->required(),
+                            CampoDinero::make('precio_fin_semana', '../../propiedad_id')->label(__('ui.tarifas.fin_semana'))
+                                ->dehydrateStateUsing(fn (mixed $state, Get $get): ?int => blank($state) ? null : \App\Support\Dinero::aUnidadMenor((string) $state, CampoDinero::moneda($get('../../propiedad_id')))),
+                            TextInput::make('estancia_minima')->label(__('ui.tarifas.estancia_minima'))->numeric()->minValue(1),
                         ]),
                 ]),
         ]);
+    }
+
+    private static function modo(Get $get): ModoTarifa
+    {
+        $modo = $get('modo');
+
+        return $modo instanceof ModoTarifa ? $modo : (ModoTarifa::tryFrom((string) $modo) ?? ModoTarifa::PorNoche);
     }
 }

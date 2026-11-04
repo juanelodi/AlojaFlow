@@ -13,6 +13,7 @@ namespace App\Filament\Resources\Reservas\RelationManagers;
 use App\Enums\MetodoPago;
 use App\Enums\TipoReserva;
 use App\Filament\Resources\Reservas\ReservaResource;
+use App\Models\Caja;
 use App\Models\Pago;
 use App\Models\Reserva;
 use App\Reservas\GestorReservas;
@@ -104,6 +105,8 @@ class PagosRelationManager extends RelationManager
                     ->required()->numeric()->step('any')->prefix(fn (): string => $this->reserva()->moneda),
                 DatePicker::make('fecha')->label(__('ui.pagos.fecha'))->required(),
                 Select::make('metodo')->label(__('ui.pagos.metodo'))->options(MetodoPago::opciones())->required()->native(false),
+                Select::make('caja_id')->label(__('ui.cajas.modelo_campo'))->native(false)
+                    ->options(fn (): array => Caja::query()->where('propiedad_id', $this->reserva()->propiedad_id)->where('activa', true)->orderBy('nombre')->pluck('nombre', 'id')->all()),
                 TextInput::make('referencia')->label(__('ui.pagos.referencia'))->maxLength(100),
             ])
             ->action(function (array $data): void {
@@ -115,6 +118,7 @@ class PagosRelationManager extends RelationManager
                         MetodoPago::from((string) $data['metodo']),
                         CarbonImmutable::parse((string) $data['fecha']),
                         $data['referencia'] ?? null,
+                        filled($data['caja_id'] ?? null) ? (int) $data['caja_id'] : null,
                     );
                 } catch (ReservaRechazada $e) {
                     Notification::make()->danger()->title($e->getMessage())->send();

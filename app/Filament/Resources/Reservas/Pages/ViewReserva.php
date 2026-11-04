@@ -31,6 +31,7 @@ class ViewReserva extends ViewRecord
             EditAction::make()->visible(fn (Reserva $record): bool => ReservaResource::canEdit($record)),
             AccionesReserva::reactivar(),
             ActionGroup::make([
+                AccionesReserva::confirmacionPdf(),
                 AccionesReserva::deshacerRegistro(),
                 AccionesReserva::cancelar(),
             ])->label(__('ui.reservas.mas_acciones'))->button()->color('gray'),

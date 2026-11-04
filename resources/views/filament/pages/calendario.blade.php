@@ -39,14 +39,14 @@
                 <span class="af-nota">{{ __('ui.comun.solo_consulta') }}</span>
             @endif
             @if ($gestionables !== [])
-                <span class="af-nota">{{ __('ui.calendario.ayuda_nueva') }}</span>
+                <span class="af-nota">{{ __('ui.calendario.ayuda_nueva') }} {{ __('ui.calendario.ayuda_mover') }}</span>
             @endif
         </div>
 
         @if ($datos['filas'] === [])
             <x-filament::empty-state :heading="__('ui.calendario.sin_unidades')" icon="heroicon-o-calendar-days" />
         @else
-            <div class="af-calendario" style="--af-dias: {{ count($dias) }}" role="region" aria-label="{{ __('ui.calendario.titulo') }} {{ Formato::fecha($this->inicioMes(), 'MMMM YYYY') }}" tabindex="0">
+            <div class="af-calendario" x-data="{ moviendo: null }" :class="moviendo && 'af-arrastrando'" style="--af-dias: {{ count($dias) }}" role="region" aria-label="{{ __('ui.calendario.titulo') }} {{ Formato::fecha($this->inicioMes(), 'MMMM YYYY') }}" tabindex="0">
                 <div class="af-cal-fila af-cal-fila--cabecera">
                     <div class="af-cal-unidad">{{ Formato::fecha($this->inicioMes(), 'MMMM YYYY') }}</div>
                     @foreach ($dias as $i => $dia)
@@ -71,6 +71,9 @@
                             @if (in_array($unidad->propiedad_id, $gestionables, true))
                                 {{-- Las barras van encima, así que solo se puede pulsar en lo que está libre. --}}
                                 <a href="{{ \App\Filament\Resources\Reservas\ReservaResource::getUrl('create', ['unidad' => $unidad->id, 'llegada' => $dia->format('Y-m-d'), 'salida' => $dia->addDay()->format('Y-m-d')]) }}"
+                                   draggable="false"
+                                   x-on:dragover.prevent=""
+                                   x-on:drop.prevent="if (moviendo) { $wire.moverReserva(moviendo, {{ $unidad->id }}, '{{ $dia->format('Y-m-d') }}'); moviendo = null; }"
                                    @class(['af-cal-dia', 'af-cal-dia--libre', 'af-cal-dia--finde' => $dia->isWeekend(), 'af-cal-dia--hoy' => $dia->format('Y-m-d') === $hoy])
                                    style="grid-column: {{ $i + 2 }}"
                                    title="{{ __('ui.calendario.nueva_en', ['unidad' => $unidad->nombre, 'fecha' => Formato::fechaCorta($dia)]) }}"
@@ -83,6 +86,11 @@
                             @php($reserva = $barra['reserva'])
                             @php($texto = $reserva->tipo === \App\Enums\TipoReserva::Bloqueo ? ($reserva->origen_texto ?? __('ui.calendario.bloqueo')) : ($reserva->titular?->nombreCompleto() ?? $reserva->numero))
                             <a href="{{ \App\Filament\Resources\Reservas\ReservaResource::getUrl('view', ['record' => $reserva]) }}"
+                               @if (! $reserva->sincronizada && in_array($reserva->propiedad_id, $gestionables, true) && $reserva->salida_registrada_en === null)
+                                   draggable="true"
+                                   x-on:dragstart="$event.dataTransfer.effectAllowed = 'move'; $event.dataTransfer.setData('text/plain', '{{ $reserva->id }}'); setTimeout(() => moviendo = {{ $reserva->id }}, 0)"
+                                   x-on:dragend="moviendo = null"
+                               @endif
                                @class(['af-barra', $barra['clase'], 'af-barra--sigue-antes' => $barra['sigue_antes'], 'af-barra--sigue-despues' => $barra['sigue_despues']])
                                style="grid-column: {{ $barra['columna'] + 1 }} / span {{ $barra['ancho'] }}"
                                title="{{ __('ui.calendario.detalle', ['huesped' => $texto, 'noches' => $reserva->noches, 'llegada' => Formato::fechaCorta($reserva->llegada), 'salida' => Formato::fechaCorta($reserva->salida)]) }}"

@@ -12,12 +12,16 @@ namespace App\Filament\Pages;
 
 use App\Filament\Concerns\ConPropiedadSeleccionada;
 use App\Filament\Resources\Reservas\ReservaResource;
+use App\Models\Reserva;
+use App\Reservas\GestorReservas;
+use App\Reservas\ReservaRechazada;
 use App\Seguridad\Acceso;
 use App\Servicios\Calendario as ServicioCalendario;
 use App\Servicios\Operacion;
 use BackedEnum;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
@@ -103,6 +107,20 @@ class Calendario extends Page
                 ->url(fn (): string => ReservaResource::getUrl('create'))
                 ->visible(fn (): bool => ReservaResource::canCreate()),
         ];
+    }
+
+    /**
+     * Arrastrar y soltar: la reserva empieza el día donde se soltó, con las mismas noches.
+     */
+    public function moverReserva(int $reservaId, int $unidadId, string $llegada): void
+    {
+        $reserva = Reserva::query()->whereIn('propiedad_id', $this->propiedadesGestionables())->where('sincronizada', false)->findOrFail($reservaId);
+        try {
+            app(GestorReservas::class)->mover($reserva, $unidadId, CarbonImmutable::createFromFormat('!Y-m-d', $llegada) ?: throw new ReservaRechazada(__('ui.reservas.error_fechas')));
+            Notification::make()->success()->title(__('ui.calendario.movida'))->send();
+        } catch (ReservaRechazada $e) {
+            Notification::make()->danger()->title($e->getMessage())->send();
+        }
     }
 
     public function hoy(): CarbonImmutable

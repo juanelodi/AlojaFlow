@@ -17,11 +17,18 @@ final readonly class Cotizacion
 {
     /**
      * @param  list<int>  $noches  precio de cada noche
+     * @param  int  $estanciaMinima  noches mínimas que pide la tarifa o la temporada de la llegada
      */
     public function __construct(
         public string $tarifa,
         public int $total,
         public array $noches,
+        public int $estanciaMinima = 1,
     ) {
+    }
+
+    public function cumpleEstanciaMinima(): bool
+    {
+        return count($this->noches) >= $this->estanciaMinima;
     }
 }

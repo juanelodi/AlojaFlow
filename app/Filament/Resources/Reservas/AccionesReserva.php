@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Reservas;
 
+use App\Documentos\GeneradorPdf;
 use App\Enums\EstadoReserva;
 use App\Enums\TipoReserva;
 use App\Models\Reserva;
@@ -18,6 +19,7 @@ use App\Reservas\ReservaRechazada;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Cancelar, reactivar y registrar la entrada y la salida de una reserva propia.
@@ -43,6 +45,18 @@ final class AccionesReserva
             ->color('info')
             ->visible(fn (Reserva $record): bool => self::gestionable($record) && $record->estaEnCasa())
             ->action(fn (Reserva $record) => self::ejecutar($record, fn (GestorReservas $g) => $g->registrarSalida($record), __('ui.reservas.salida_ok')));
+    }
+
+    public static function confirmacionPdf(): Action
+    {
+        return Action::make('confirmacionPdf')
+            ->label(__('documentos.descargar_confirmacion'))
+            ->icon(Heroicon::OutlinedDocumentArrowDown)
+            ->color('gray')
+            ->visible(fn (Reserva $record): bool => $record->tipo === TipoReserva::Reserva)
+            ->action(fn (Reserva $record): StreamedResponse => response()->streamDownload(function () use ($record): void {
+                echo app(GeneradorPdf::class)->confirmacion($record);
+            }, 'reserva-'.str_replace('/', '-', $record->numero).'.pdf', ['Content-Type' => 'application/pdf']));
     }
 
     public static function deshacerRegistro(): Action

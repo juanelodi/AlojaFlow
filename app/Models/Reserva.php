@@ -50,6 +50,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $salida_registrada_en
  * @property string|null $comentario
  * @property int $version
+ * @property int|null $grupo_id
+ * @property int|null $cupon_id
+ * @property Carbon|null $expira_en
+ * @property string|null $idioma
  * @property Carbon|null $creada_en_origen
  * @property Carbon|null $eliminada_en_principal_en
  * @property OrigenFila $origen
@@ -92,6 +96,7 @@ class Reserva extends ModeloBase
             'origen' => OrigenFila::class,
             'sincronizada' => 'boolean',
             'version' => 'integer',
+            'expira_en' => 'datetime',
         ];
     }
 
@@ -129,6 +134,30 @@ class Reserva extends ModeloBase
     public function huespedes(): BelongsToMany
     {
         return $this->belongsToMany(Huesped::class, 'reservas_huespedes')->withPivot(['orden', 'parentesco_texto']);
+    }
+
+    /** @return BelongsTo<Grupo, $this> */
+    public function grupo(): BelongsTo
+    {
+        return $this->belongsTo(Grupo::class);
+    }
+
+    /** @return BelongsTo<Cupon, $this> */
+    public function cupon(): BelongsTo
+    {
+        return $this->belongsTo(Cupon::class);
+    }
+
+    /** @return HasMany<CargoReserva, $this> */
+    public function cargos(): HasMany
+    {
+        return $this->hasMany(CargoReserva::class);
+    }
+
+    /** @return HasMany<NotaReserva, $this> */
+    public function notas(): HasMany
+    {
+        return $this->hasMany(NotaReserva::class);
     }
 
     /** @return HasMany<Pago, $this> */

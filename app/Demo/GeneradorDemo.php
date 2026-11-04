@@ -10,13 +10,23 @@ declare(strict_types=1);
 
 namespace App\Demo;
 
+use App\Enums\BaseCargo;
 use App\Enums\EstadoReserva;
 use App\Enums\MetodoPago;
 use App\Enums\ModoPropiedad;
+use App\Enums\ModoTarifa;
 use App\Enums\PaquetePais;
 use App\Enums\TipoContacto;
+use App\Enums\TipoCupon;
+use App\Enums\TipoMovimiento;
 use App\Enums\TipoReserva;
+use App\Models\Caja;
+use App\Models\Canal;
+use App\Models\ConceptoCargo;
+use App\Models\Cupon;
 use App\Models\Huesped;
+use App\Models\Impuesto;
+use App\Models\Movimiento;
 use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
 use App\Models\Reserva;
@@ -102,6 +112,7 @@ final class GeneradorDemo
                 'es_demo' => true,
             ]);
             $unidades = $this->crearCatalogo($propiedad);
+            $this->crearCatalogosExtra($propiedad);
             $huespedes = $this->crearHuespedes($propiedad);
             foreach ($unidades as $indice => $unidad) {
                 $this->llenarUnidad($propiedad, $unidad, $indice, $huespedes);
@@ -145,7 +156,10 @@ final class GeneradorDemo
         $unidades = [];
         $orden = 0;
         foreach (self::CATALOGO as $nombre => [$pesos, $filas]) {
-            $tarifa = Tarifa::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => $nombre, 'precio_noche' => $pesos * 100, 'activa' => true]);
+            $tarifa = Tarifa::query()->create([
+                'propiedad_id' => $propiedad->id, 'nombre' => $nombre, 'modo' => ModoTarifa::PorNoche, 'precio_noche' => $pesos * 100, 'activa' => true,
+                'personas_incluidas' => 2, 'precio_persona_extra' => 25000, 'precio_fin_semana' => $this->conAumento($pesos, 15),
+            ]);
             foreach ([$anio - 1, $anio, $anio + 1] as $a) {
                 $tarifa->temporadas()->createMany([
                     ['nombre' => __('ui.demo.temporada_primavera'), 'desde' => $a.'-03-20', 'hasta' => $a.'-04-10', 'precio_noche' => $this->conAumento($pesos, 40)],
@@ -162,6 +176,31 @@ final class GeneradorDemo
         }
 
         return $unidades;
+    }
+
+    /**
+     * Lo demás que usa un alojamiento: impuestos de México, cargos, canales, una caja y un cupón.
+     */
+    private function crearCatalogosExtra(Propiedad $propiedad): void
+    {
+        Impuesto::query()->create(['propiedad_id' => $propiedad->id, 'codigo' => 'IVA', 'nombre' => 'IVA', 'base' => BaseCargo::PorcentajeAlojamiento, 'tasa' => 16, 'incluido_en_precio' => true, 'orden' => 1]);
+        Impuesto::query()->create(['propiedad_id' => $propiedad->id, 'codigo' => 'ISH', 'nombre' => 'Impuesto sobre hospedaje', 'base' => BaseCargo::PorcentajeAlojamiento, 'tasa' => 3, 'incluido_en_precio' => true, 'orden' => 2]);
+        ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Cama extra', 'base' => BaseCargo::PorNoche, 'importe' => 30000, 'orden' => 1]);
+        ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Desayuno', 'base' => BaseCargo::PorPersonaNoche, 'importe' => 15000, 'orden' => 2]);
+        ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Traslado al aeropuerto', 'base' => BaseCargo::PorEstancia, 'importe' => 45000, 'orden' => 3]);
+        foreach (['Directo' => null, 'Booking' => 15, 'Airbnb' => 3, 'Teléfono' => null] as $nombre => $comision) {
+            Canal::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => $nombre, 'comision_porcentaje' => $comision]);
+        }
+        Caja::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.caja')]);
+        Cupon::query()->create(['propiedad_id' => $propiedad->id, 'codigo' => 'BIENVENIDA10', 'descripcion' => __('ui.demo.cupon'), 'tipo' => TipoCupon::Porcentaje, 'porcentaje' => 10]);
+
+        $hoy = $propiedad->hoy();
+        foreach ([['Luz', 'Servicios', 185000, 12], ['Agua', 'Servicios', 62000, 9], ['Artículos de limpieza', 'Limpieza', 48000, 5], ['Reparación de aire acondicionado', 'Mantenimiento', 120000, 2]] as [$concepto, $categoria, $importe, $dias]) {
+            Movimiento::query()->create([
+                'propiedad_id' => $propiedad->id, 'fecha' => $hoy->subDays($dias), 'tipo' => TipoMovimiento::Gasto, 'categoria' => $categoria,
+                'concepto' => $concepto, 'metodo' => MetodoPago::Transferencia, 'importe' => $importe, 'moneda' => $propiedad->moneda,
+            ]);
+        }
     }
 
     /**
@@ -249,7 +288,8 @@ final class GeneradorDemo
         }
 
         [$origen, $porcentajeComision] = $this->origen();
-        $total = Cotizador::cotizar($unidad, $llegada, $salida)->total ?? 0;
+        $personas = $this->azar->getInt(1, max(1, $unidad->capacidad));
+        $total = Cotizador::cotizar($unidad, $llegada, $salida, $personas)->total ?? 0;
         $futura = $llegada->gt($hoy);
         $estado = $futura && $this->azar->getInt(1, 100) <= 20 ? EstadoReserva::SinConfirmar : EstadoReserva::Confirmada;
         $reserva = $this->gestor->crear($propiedad, [
@@ -258,7 +298,7 @@ final class GeneradorDemo
             'titular_id' => $huespedes[$this->azar->getInt(0, count($huespedes) - 1)],
             'llegada' => $llegada->format('Y-m-d'),
             'salida' => $salida->format('Y-m-d'),
-            'personas' => $this->azar->getInt(1, max(1, $unidad->capacidad)),
+            'personas' => $personas,
             'estado' => $estado->value,
             'total' => $total,
             'deposito' => (int) round($total * 0.3),

@@ -57,7 +57,7 @@ final class GestorReservas
         $tipo = TipoReserva::tryFrom((string) ($datos['tipo'] ?? '')) ?? TipoReserva::Reserva;
         $fila = $this->preparar($propiedad, $tipo, $datos);
 
-        return DB::transaction(function () use ($propiedad, $fila, $tipo): Reserva {
+        return DB::transaction(function () use ($propiedad, $fila, $tipo, $datos): Reserva {
             // El candado sobre la propiedad reparte el consecutivo sin huecos ni repetidos.
             $bloqueada = Propiedad::query()->whereKey($propiedad->id)->lockForUpdate()->firstOrFail();
             $numero = $bloqueada->consecutivo_reserva + 1;
@@ -75,6 +75,7 @@ final class GestorReservas
             $reserva->save();
             $this->ocuparNoches($reserva);
             $this->asignarTitular($reserva);
+            $this->guardarCargos($reserva, $datos);
             $reserva->refresh();
 
             $this->anotar($reserva, TipoEventoReserva::Creada, 'reserva.crear', ['despues' => $this->resumen($reserva)]);
@@ -105,9 +106,43 @@ final class GestorReservas
             $actual->save();
             $this->ocuparNoches($actual);
             $this->asignarTitular($actual);
+            $this->guardarCargos($actual, $datos);
             $actual->refresh();
 
             $this->anotar($actual, TipoEventoReserva::Modificada, 'reserva.modificar', ['antes' => $antes, 'despues' => $this->resumen($actual)]);
+
+            return $actual;
+        });
+    }
+
+    /**
+     * Mueve la reserva a otra unidad o a otras fechas, con las mismas noches (arrastrar en el
+     * calendario). El total no cambia: se revisa aparte si hace falta.
+     */
+    public function mover(Reserva $reserva, int $unidadId, CarbonImmutable $llegada): Reserva
+    {
+        return DB::transaction(function () use ($reserva, $unidadId, $llegada): Reserva {
+            $actual = $this->bloquear($reserva);
+            if ($actual->estado === EstadoReserva::Cancelada) {
+                throw new ReservaRechazada(__('ui.reservas.error_cancelada'));
+            }
+            $unidad = Unidad::query()->where('propiedad_id', $actual->propiedad_id)->where('activa', true)->find($unidadId);
+            if ($unidad === null) {
+                throw new ReservaRechazada(__('ui.reservas.error_unidad'));
+            }
+            if ($actual->tipo === TipoReserva::Reserva && $unidad->capacidad > 0 && $actual->personas > $unidad->capacidad) {
+                throw new ReservaRechazada(__('ui.reservas.error_capacidad', ['capacidad' => $unidad->capacidad]));
+            }
+            $noches = (int) $actual->llegada->diffInDays($actual->salida);
+            $antes = $this->resumen($actual);
+            $actual->unidad_id = $unidad->id;
+            $actual->llegada = $llegada->startOfDay();
+            $actual->salida = $llegada->startOfDay()->addDays($noches);
+            $actual->version++;
+            $actual->save();
+            $this->ocuparNoches($actual);
+            $actual->refresh();
+            $this->anotar($actual, TipoEventoReserva::Modificada, 'reserva.mover', ['antes' => $antes, 'despues' => $this->resumen($actual)]);
 
             return $actual;
         });
@@ -211,13 +246,13 @@ final class GestorReservas
     /**
      * @param  int  $importe  en la unidad menor; negativo = devolución
      */
-    public function registrarPago(Reserva $reserva, int $importe, MetodoPago $metodo, CarbonImmutable $fecha, ?string $referencia = null): Pago
+    public function registrarPago(Reserva $reserva, int $importe, MetodoPago $metodo, CarbonImmutable $fecha, ?string $referencia = null, ?int $cajaId = null): Pago
     {
         if ($importe === 0) {
             throw new ReservaRechazada(__('ui.pagos.error_importe'), 'importe');
         }
 
-        return DB::transaction(function () use ($reserva, $importe, $metodo, $fecha, $referencia): Pago {
+        return DB::transaction(function () use ($reserva, $importe, $metodo, $fecha, $referencia, $cajaId): Pago {
             $actual = $this->bloquear($reserva);
             if ($actual->tipo !== TipoReserva::Reserva) {
                 throw new ReservaRechazada(__('ui.pagos.error_bloqueo'), 'importe');
@@ -225,6 +260,7 @@ final class GestorReservas
             $pago = new Pago([
                 'propiedad_id' => $actual->propiedad_id,
                 'reserva_id' => $actual->id,
+                'caja_id' => $cajaId,
                 'fecha' => $fecha,
                 'metodo' => $metodo,
                 'importe' => $importe,
@@ -309,12 +345,68 @@ final class GestorReservas
             $estado = EstadoReserva::SinConfirmar;
         }
 
-        return $base + $importes + [
+        $fila = $base + $importes + [
             'titular_id' => $titular->id,
             'estado' => $estado,
             'personas' => $personas,
-            'tarifa_nombre' => Cotizador::cotizar($unidad, $llegada, $salida)?->tarifa,
+            'tarifa_nombre' => Cotizador::cotizar($unidad, $llegada, $salida, $personas)?->tarifa,
         ];
+        if (array_key_exists('grupo_id', $datos)) {
+            $fila['grupo_id'] = $datos['grupo_id'] === null ? null : (int) $datos['grupo_id'];
+        }
+        if (array_key_exists('idioma', $datos)) {
+            $fila['idioma'] = $datos['idioma'];
+        }
+        if (array_key_exists('expira_en', $datos)) {
+            $fila['expira_en'] = $datos['expira_en'];
+        }
+        if (array_key_exists('cupon_codigo', $datos)) {
+            $fila['cupon_id'] = $this->cuponValido($propiedad, (string) $datos['cupon_codigo'], $llegada, (int) $llegada->diffInDays($salida), isset($datos['reserva_id']) ? (int) $datos['reserva_id'] : null);
+        }
+
+        return $fila;
+    }
+
+    private function cuponValido(Propiedad $propiedad, string $codigo, CarbonImmutable $llegada, int $noches, ?int $reservaId): ?int
+    {
+        if (trim($codigo) === '') {
+            return null;
+        }
+        $cupon = Cupones::buscar($propiedad->id, $codigo);
+        if ($cupon === null) {
+            throw new ReservaRechazada(__('ui.cupones.error_no_existe'), 'cupon_codigo');
+        }
+        $motivo = Cupones::motivoRechazo($cupon, $llegada, $noches, $reservaId);
+        if ($motivo !== null) {
+            throw new ReservaRechazada($motivo, 'cupon_codigo');
+        }
+
+        return $cupon->id;
+    }
+
+    /**
+     * Las líneas de cargos adicionales: las obligatorias del catálogo y las elegidas en el
+     * formulario. Solo si el formulario las manda: otros caminos, como el demo, no las tocan.
+     *
+     * @param  array<string, mixed>  $datos
+     */
+    private function guardarCargos(Reserva $reserva, array $datos): void
+    {
+        if (! array_key_exists('cargos', $datos) || $reserva->tipo !== TipoReserva::Reserva) {
+            return;
+        }
+        $elegidos = [];
+        foreach ((array) $datos['cargos'] as $linea) {
+            $concepto = (int) ($linea['concepto_cargo_id'] ?? 0);
+            if ($concepto > 0) {
+                $elegidos[$concepto] = max(0.01, (float) ($linea['cantidad'] ?? 1));
+            }
+        }
+        $presupuesto = Cotizador::presupuesto($reserva->unidad, $reserva->llegada, $reserva->salida, $reserva->personas, $elegidos);
+        $reserva->cargos()->delete();
+        foreach ($presupuesto->cargos as $cargo) {
+            $reserva->cargos()->create($cargo);
+        }
     }
 
     /**

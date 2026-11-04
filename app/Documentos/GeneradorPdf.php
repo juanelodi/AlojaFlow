@@ -1,0 +1,69 @@
+<?php
+
+/*
+ * AlojaFlow — sistema de gestión de alojamientos
+ * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+declare(strict_types=1);
+
+namespace App\Documentos;
+
+use App\Models\Pago;
+use App\Models\Reserva;
+use App\Reservas\Cotizador;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+/**
+ * Documentos en PDF de una reserva: confirmación y recibos. Sin recursos externos, para que se
+ * generen igual en cualquier hosting.
+ */
+final class GeneradorPdf
+{
+    public function confirmacion(Reserva $reserva): string
+    {
+        return $this->pdf('documentos.confirmacion', $this->datos($reserva), $reserva->idioma);
+    }
+
+    public function recibo(Pago $pago): string
+    {
+        $reserva = $pago->reserva;
+
+        return $this->pdf('documentos.recibo', $this->datos($reserva) + ['pago' => $pago], $reserva->idioma);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function datos(Reserva $reserva): array
+    {
+        $reserva->loadMissing(['propiedad', 'unidad', 'titular.contactos', 'cargos', 'pagos']);
+        $presupuesto = Cotizador::presupuesto($reserva->unidad, $reserva->llegada, $reserva->salida, max(1, $reserva->personas));
+        // Impuestos con los datos de hoy: en la reserva solo se guarda el total.
+        $alojamiento = $reserva->total - (int) $reserva->cargos->sum('importe');
+
+        return [
+            'reserva' => $reserva,
+            'propiedad' => $reserva->propiedad,
+            'alojamiento' => $alojamiento,
+            'impuestos' => $presupuesto->impuestos,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $datos
+     */
+    private function pdf(string $vista, array $datos, ?string $idioma): string
+    {
+        $anterior = app()->getLocale();
+        if ($idioma !== null && in_array($idioma, (array) config('alojaflow.idiomas'), true)) {
+            app()->setLocale($idioma);
+        }
+        try {
+            return Pdf::loadView($vista, $datos)->setPaper('letter')->setOption(['isRemoteEnabled' => false, 'isPhpEnabled' => false])->output();
+        } finally {
+            app()->setLocale($anterior);
+        }
+    }
+}

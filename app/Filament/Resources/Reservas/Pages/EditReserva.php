@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Reservas\Pages;
 
 use App\Filament\Resources\Reservas\ReservaResource;
+use App\Models\CargoReserva;
 use App\Models\Reserva;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
@@ -24,10 +25,29 @@ class EditReserva extends EditRecord
 
     /**
      * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        /** @var Reserva $reserva */
+        $reserva = $this->record;
+        $data['cupon_codigo'] = $reserva->cupon?->codigo;
+        // Las obligatorias se añaden solas: en el formulario solo van las elegidas.
+        $data['cargos'] = $reserva->cargos()->with('concepto')->get()
+            ->filter(fn (CargoReserva $c): bool => $c->concepto !== null && ! $c->concepto->obligatorio)
+            ->map(fn (CargoReserva $c): array => ['concepto_cargo_id' => $c->concepto_cargo_id, 'cantidad' => (float) $c->cantidad])
+            ->values()->all();
+
+        return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
      */
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
         /** @var Reserva $record */
+        $data['reserva_id'] = $record->id;
         try {
             return app(GestorReservas::class)->modificar($record, $data, isset($data['version']) ? (int) $data['version'] : null);
         } catch (ReservaRechazada $e) {
