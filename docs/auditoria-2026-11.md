@@ -95,6 +95,19 @@ hostiles de una principal que agotaban la memoria.
 - Abrir Limpieza intentaba insertar 37 tareas en cada visita.
 - La configuración y las rutas se armaban en cada visita; ahora quedan en caché (D-060).
 
+Lighthouse sobre una instalación nueva, con accesibilidad y buenas prácticas en 100 en todas las páginas medidas:
+
+| Página | Rendimiento | Tiempo hasta el contenido principal |
+|---|---|---|
+| Motor de reservas, móvil | 100 | 0.8 s |
+| Inicio de sesión, móvil | 71 | 4.7 s |
+| Hoy, escritorio | 92 | 1.7 s |
+| Hoy, móvil | 56 | 9.8 s |
+
+La prueba móvil simula un teléfono lento con mala red. **Queda sin resolver** el peso del panel en esas condiciones: viene
+sobre todo de los recursos de Filament y el servidor de prueba no los comprimía. En SEO, las páginas privadas y la demo
+salen bajo porque piden no indexarse, a propósito.
+
 ## Accesibilidad
 
 Contraste en el tema oscuro y en el menú activo, objetivos táctiles de menos de 24 px, tablas con desplazamiento que no se
