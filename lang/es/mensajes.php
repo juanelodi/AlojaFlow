@@ -12,6 +12,7 @@ return [
     'omitido_sin_destino' => 'No tiene un correo al que escribir o la plantilla está desactivada.',
     'correo_sin_configurar' => 'El correo de salida no está configurado.',
     'webhook_borrado' => 'El aviso a otro sistema ya no existe.',
+    'error_tamano' => 'La respuesta es demasiado grande.',
     'error_redirecciones' => 'La dirección redirige demasiadas veces.',
     'aviso_motor' => [
         'asunto' => 'Nueva reserva {numero} en el motor de reservas',
@@ -125,6 +126,7 @@ return [
         'host' => 'Servidor SMTP',
         'puerto' => 'Puerto',
         'cifrado' => 'Cifrado',
+        'cifrado_ayuda' => 'Sin cifrado, la contraseña de la cuenta y los mensajes viajan a la vista de cualquiera en el camino. Usa TLS o SSL salvo que tu proveedor no los ofrezca.',
         'cifrado_tls' => 'TLS (puerto 587)',
         'cifrado_ssl' => 'SSL (puerto 465)',
         'cifrado_ninguno' => 'Ninguno',

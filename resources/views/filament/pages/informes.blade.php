@@ -33,7 +33,7 @@
             @if ($datos['filas'] === [])
                 <p class="af-vacio">{{ __('informes.vacio') }}</p>
             @else
-                <div class="af-tabla-contenedor">
+                <div class="af-tabla-contenedor" tabindex="0" role="region" aria-label="{{ $this->getTitle() }}">
                     <table class="af-tabla">
                         <thead>
                             <tr>

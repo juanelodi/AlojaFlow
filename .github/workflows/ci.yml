@@ -1,0 +1,55 @@
+# AlojaFlow — sistema de gestión de alojamientos
+# Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: Pruebas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    services:
+      # La base de las pruebas es la misma que en producción: sin SQLite, tampoco aquí.
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: alojaflow_pruebas
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: bcmath, curl, dom, fileinfo, intl, mbstring, openssl, pdo_mysql, sodium, tokenizer, xml, zip
+          coverage: none
+      - name: Dependencias
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Configuración
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+      - name: Formato
+        run: vendor/bin/pint --test
+      - name: Análisis estático
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+      - name: Pruebas
+        run: vendor/bin/pest
+      - name: Dependencias con avisos de seguridad
+        run: composer audit --no-dev

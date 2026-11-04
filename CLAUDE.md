@@ -4,7 +4,7 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-04): versión de prueba 1.0.7**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-04): versión de prueba 1.0.8**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
   D-029) y D-036 se revisan con el usuario.
@@ -55,8 +55,9 @@ de la copia no cambia mientras se construye la fase 1.
      clases con una sola responsabilidad; sin funciones ni variables globales.
    - Base de datos solo con Eloquent o el query builder, y esquema solo con migraciones.
      Nunca SQL armado concatenando cadenas.
-   - Validación con Form Requests (o reglas de validación de Livewire), permisos con Policies,
-     HTML solo en vistas Blade o componentes Livewire (nada de `echo` de HTML desde la lógica).
+   - Validación con reglas de Livewire o Form Requests; `Validator` solo en las páginas públicas que responden en la
+     misma página (D-056). Permisos con `App\Seguridad\Acceso` y los `can*` de Filament. HTML solo en vistas Blade
+     o componentes Livewire (nada de `echo` de HTML desde la lógica).
    - PSR-12 con Laravel Pint, Larastan sin errores y pruebas que cubran la lógica adaptada.
    - Interfaz responsiva y accesible (contraste AA, foco visible, objetivos táctiles cómodos).
 
@@ -210,7 +211,10 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   filas con `sincronizada = true` solo las cambia la sincronización
   (`Concerns/ProtegidaPorSincronizacion`).
 - `app/Seguridad/Acceso.php` — permisos por propiedad (roles de spatie con equipo =
-  propiedad); el administrador ve todo.
+  propiedad); el administrador ve todo. Lo que manda un formulario como propiedad pasa por
+  `Acceso::propiedadElegida`, y al guardar, `RecursoDePropiedad::comprobarReferencias`.
+- `app/Http/Middleware/` — `CabecerasSeguridad` (D-057), `MismoOrigen` (motor sin CSRF) y `UsuarioActivo`
+  (rutas con sesión fuera del panel).
 - `app/Servicios/` — consultas de las pantallas operativas (Operacion, Calendario,
   Disponibilidad, Indicadores).
 - `app/Filament/Pages/` (pantallas propias, vistas en `resources/views/filament/pages/`) y

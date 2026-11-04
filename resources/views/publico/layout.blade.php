@@ -5,6 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>@yield('titulo') · {{ $propiedad->nombre }}</title>
+@if ($propiedad->es_demo)<meta name="robots" content="noindex">@endif
 <style>
 :root{--marca:{{ $propiedad->color ?: '#0f766e' }};--tinta:#0b1f2a;--gris:#475569;--borde:#cbd5e1;--fondo:#f8fafc;--tarjeta:#fff;--campo:#fff;--rojo:#b91c1c;--verde:#15803d}
 @media (prefers-color-scheme:dark){:root{--tinta:#e2e8f0;--gris:#94a3b8;--borde:#334155;--fondo:#020617;--tarjeta:#0f172a;--campo:#1e293b;--rojo:#f87171;--verde:#4ade80}}
@@ -48,6 +49,9 @@ footer a{color:inherit}
         <h1>{{ $propiedad->nombre }}</h1>
         @if ($propiedad->telefono)<span class="gris">{{ $propiedad->telefono }}</span>@endif
     </header>
+    @if ($propiedad->es_demo)
+        <p class="mensaje" role="status">{{ __('motor.demo_aviso') }}</p>
+    @endif
     @if (request()->isMethod('get'))
         <nav class="idiomas" aria-label="{{ __('motor.idioma') }}">
             @foreach (\App\Support\Formato::idiomas() as $codigo => $nombre)

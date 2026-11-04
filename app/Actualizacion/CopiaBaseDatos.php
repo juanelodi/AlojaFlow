@@ -19,7 +19,8 @@ use Illuminate\Support\Facades\DB;
 class CopiaBaseDatos
 {
     /** Tablas de las que solo se copia la estructura. */
-    private const SIN_DATOS = ['cache', 'cache_locks', 'sessions', 'jobs', 'job_batches', 'failed_jobs'];
+    // hd_filas se vuelve a llenar en la siguiente sincronización: guardarla solo engorda la copia.
+    private const SIN_DATOS = ['cache', 'cache_locks', 'sessions', 'jobs', 'job_batches', 'failed_jobs', 'hd_filas'];
 
     private const FILAS_POR_INSERT = 200;
 

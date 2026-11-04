@@ -152,6 +152,10 @@ final class GestorLlegadas
 
         foreach ($fotos as $i => $foto) {
             if ($foto instanceof UploadedFile) {
+                // Corregir no acumula: cada envío con foto reemplaza la anterior de esa persona.
+                foreach ($registro->archivos()->where('clase', ClaseArchivo::DocumentoIdentidad->value)->where('nombre_original', 'like', 'documento-'.($i + 1).'.%')->get() as $anterior) {
+                    $this->archivos->eliminar($anterior);
+                }
                 $this->archivos->guardar(
                     (string) file_get_contents($foto->getRealPath()),
                     'documento-'.($i + 1).'.'.$foto->extension(),

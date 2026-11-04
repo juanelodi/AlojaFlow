@@ -51,7 +51,7 @@ class FuenteIcalResource extends RecursoDeCualquierPropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
-    protected static ?int $navigationSort = 13;
+    protected static ?int $navigationSort = 6;
 
     protected static function permiso(): string
     {
@@ -73,17 +73,22 @@ class FuenteIcalResource extends RecursoDeCualquierPropiedad
         return parent::canCreate() && ! ModoDemo::activo();
     }
 
+    protected static function referencias(): array
+    {
+        return ['unidad_id' => Unidad::class, 'canal_id' => Canal::class];
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
             Section::make()->description(__('ical.fuentes.ayuda'))->columnSpanFull()->columns(['default' => 1, 'md' => 2])->schema([
                 self::campoPropiedad(),
                 Select::make('unidad_id')->label(__('ical.fuentes.unidad'))->required()->native(false)->searchable()
-                    ->options(fn (Get $get): array => Unidad::query()->where('propiedad_id', (int) $get('propiedad_id'))->where('activa', true)->orderBy('orden')->orderBy('nombre')->pluck('nombre', 'id')->all())
-                    ->getOptionLabelUsing(fn (mixed $value): ?string => Unidad::query()->whereKey($value)->value('nombre')),
+                    ->options(fn (Get $get): array => Unidad::query()->where('propiedad_id', self::propiedadDe($get))->where('activa', true)->orderBy('orden')->orderBy('nombre')->pluck('nombre', 'id')->all())
+                    ->getOptionLabelUsing(fn (mixed $value, Get $get): ?string => Unidad::query()->where('propiedad_id', self::propiedadDe($get))->whereKey($value)->value('nombre')),
                 TextInput::make('nombre')->label(__('ical.fuentes.nombre'))->helperText(__('ical.fuentes.nombre_ayuda'))->required()->maxLength(100),
                 Select::make('canal_id')->label(__('ical.fuentes.canal'))->native(false)
-                    ->options(fn (Get $get): array => Canal::query()->where('propiedad_id', (int) $get('propiedad_id'))->orderBy('nombre')->pluck('nombre', 'id')->all()),
+                    ->options(fn (Get $get): array => Canal::query()->where('propiedad_id', self::propiedadDe($get))->orderBy('nombre')->pluck('nombre', 'id')->all()),
                 TextInput::make('url')->label(__('ical.fuentes.url'))->helperText(__('ical.fuentes.url_ayuda'))->required()->url()->maxLength(1000)->password()->revealable()->columnSpanFull()
                     ->rule(fn (): Closure => function (string $atributo, mixed $valor, Closure $falla): void {
                         try {
@@ -130,7 +135,7 @@ class FuenteIcalResource extends RecursoDeCualquierPropiedad
 
                             return;
                         }
-                        Notification::make()->danger()->title(__('ical.fuentes.no_leida'))->body($record->ultimo_error)->send();
+                        Notification::make()->danger()->title(__('ical.fuentes.no_leida'))->body(e((string) $record->ultimo_error))->send();
                     }),
                 EditAction::make()->visible(fn (FuenteIcal $record): bool => self::canEdit($record)),
             ]);

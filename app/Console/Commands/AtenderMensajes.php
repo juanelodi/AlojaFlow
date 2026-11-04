@@ -27,7 +27,7 @@ class AtenderMensajes extends Command
         $eventos = $mensajero->procesarEventos();
         $generados = $mensajero->procesarTiempo();
         $enviados = $mensajero->enviarPendientes();
-        $this->info("Eventos: $eventos · Por fecha: $generados · Enviados: $enviados");
+        $this->info(__('consola.mensajes', ['eventos' => $eventos, 'generados' => $generados, 'enviados' => $enviados]));
 
         return self::SUCCESS;
     }

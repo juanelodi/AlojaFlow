@@ -14,6 +14,9 @@ use App\Http\Controllers\CodigoFuenteController;
 use App\Http\Controllers\IcalController;
 use App\Http\Controllers\LlegadaController;
 use App\Http\Controllers\MotorReservasController;
+use App\Http\Middleware\MismoOrigen;
+use App\Http\Middleware\UsuarioActivo;
+use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Route;
 
 // La aplicación vive en el panel de Filament (raíz «/»). Aquí solo van las rutas que no son del panel.
@@ -29,33 +32,33 @@ Route::get('/ical/{token}.ics', IcalController::class)->where('token', '[0-9a-f]
 // Llegada en línea: lo identifica un token; el huésped no tiene cuenta.
 Route::prefix('llegada/{token}')->where(['token' => '[0-9a-f]{40}'])->name('llegada.')->middleware('throttle:publico')->group(function (): void {
     Route::get('/', [LlegadaController::class, 'formulario'])->name('formulario');
-    Route::post('/', [LlegadaController::class, 'guardar'])->middleware('throttle:publico-envio')->name('guardar');
+    Route::post('/', [LlegadaController::class, 'guardar'])->middleware(['throttle:publico-envio', 'throttle:llegada-envio'])->name('guardar');
     Route::get('/verificar', [LlegadaController::class, 'verificar'])->name('verificar');
     Route::post('/verificar', [LlegadaController::class, 'comprobar'])->middleware('throttle:publico-envio')->name('comprobar');
-    Route::post('/reenviar', [LlegadaController::class, 'reenviar'])->middleware('throttle:publico-codigo')->name('reenviar');
+    Route::post('/reenviar', [LlegadaController::class, 'reenviar'])->middleware(['throttle:publico-codigo', 'throttle:llegada-codigo'])->name('reenviar');
     Route::get('/listo', [LlegadaController::class, 'listo'])->name('listo');
 });
 
 // Archivos privados: solo con sesión y según el permiso de su clase.
-Route::get('/archivos/{archivo}', ArchivoController::class)->middleware(['auth', 'throttle:120,1'])->name('archivos.ver');
+Route::get('/archivos/{archivo}', ArchivoController::class)->middleware(['auth', AuthenticateSession::class, UsuarioActivo::class, 'throttle:120,1'])->name('archivos.ver');
 
 // Motor de reservas: páginas públicas del alojamiento (D-042).
 Route::prefix('reservar/{codigo}')->name('motor.')->middleware('throttle:publico')->group(function (): void {
     Route::get('/', [MotorReservasController::class, 'buscar'])->name('buscar');
     Route::get('/datos', [MotorReservasController::class, 'datos'])->name('datos');
-    Route::post('/', [MotorReservasController::class, 'reservar'])->middleware('throttle:publico-envio')->name('reservar');
+    Route::post('/', [MotorReservasController::class, 'reservar'])->middleware([MismoOrigen::class, 'throttle:motor-reserva'])->name('reservar');
     Route::get('/r/{publico}', [MotorReservasController::class, 'reserva'])->name('reserva');
     Route::get('/r/{publico}/confirmacion.pdf', [MotorReservasController::class, 'confirmacionPdf'])->name('pdf');
-    Route::post('/r/{publico}/pagar/{pasarela}', [MotorReservasController::class, 'pagar'])->middleware('throttle:publico-envio')->name('pagar');
+    Route::post('/r/{publico}/pagar/{pasarela}', [MotorReservasController::class, 'pagar'])->middleware([MismoOrigen::class, 'throttle:publico-envio'])->name('pagar');
     Route::get('/r/{publico}/retorno/{pasarela}', [MotorReservasController::class, 'retorno'])->name('retorno');
 });
 Route::post('/avisos-pago/{codigo}/{pasarela}', [MotorReservasController::class, 'aviso'])->middleware('throttle:120,1')->name('motor.aviso');
 
 // Fases de una actualización desde el panel (instalacion-actualizaciones.md). Firmadas y solo
 // para administradores (lo comprueba el controlador).
-Route::middleware(['auth', 'signed'])->group(function (): void {
+Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class, 'signed'])->group(function (): void {
     Route::get('/actualizaciones/{actualizacion}/aplicar', [ActualizacionController::class, 'aplicar'])->name('actualizaciones.aplicar');
     Route::get('/actualizaciones/{actualizacion}/finalizar', [ActualizacionController::class, 'finalizar'])->name('actualizaciones.finalizar');
 });
-Route::middleware('auth')->get('/actualizaciones/{actualizacion}/copia-base-datos', [ActualizacionController::class, 'copiaBaseDatos'])
+Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class])->get('/actualizaciones/{actualizacion}/copia-base-datos', [ActualizacionController::class, 'copiaBaseDatos'])
     ->name('actualizaciones.copia-base-datos');

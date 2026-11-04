@@ -39,7 +39,7 @@ class ColorTipoClienteResource extends RecursoDeCualquierPropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSwatch;
 
-    protected static ?int $navigationSort = 16;
+    protected static ?int $navigationSort = 10;
 
     protected static function permiso(): string
     {

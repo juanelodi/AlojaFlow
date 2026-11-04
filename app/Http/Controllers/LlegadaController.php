@@ -10,7 +10,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Comunicacion\Mensajero;
 use App\Enums\EstadoRegistroLlegada;
 use App\Enums\VerificacionAceptacion;
 use App\Llegada\GestorLlegadas;
@@ -204,8 +203,6 @@ class LlegadaController extends Controller
                 'nombre' => $titular->nombre ?? '',
                 'apellido1' => $titular->apellido1 ?? '',
                 'apellido2' => $titular->apellido2 ?? '',
-                'correo' => Mensajero::correoDe($reserva) ?? '',
-                'telefono' => Mensajero::telefonoDe($reserva) ?? '',
             ],
         ];
     }
@@ -217,7 +214,7 @@ class LlegadaController extends Controller
         $reserva->load(['propiedad', 'titular.contactos']);
 
         $idiomas = (array) config('alojaflow.idiomas');
-        $idioma = (string) $request->query('idioma', '');
+        $idioma = $request->query('idioma');
         if (! in_array($idioma, $idiomas, true)) {
             $idioma = (string) ($reserva->getAttribute('idioma') ?: ($request->headers->has('Accept-Language') ? substr((string) $request->getPreferredLanguage($idiomas), 0, 2) : $reserva->propiedad->idioma));
         }

@@ -125,6 +125,44 @@ it('no restaura una copia de una versión más nueva ni un zip ajeno', function 
     expect(fn () => $this->copias->ruta('../../.env'))->toThrow(ErrorCopia::class);
 });
 
+it('restaurar la copia más antigua no la borra antes de usarla', function () {
+    restaurable();
+    Propiedad::query()->create(['nombre' => 'Posada', 'codigo' => 'posada', 'modo' => ModoPropiedad::Nativa, 'zona_horaria' => 'UTC', 'moneda' => 'MXN']);
+    Ajustes::guardar('copias.conservar', 2);
+    $vieja = $this->copias->crear();
+    $this->travel(1)->minutes();
+    $this->copias->crear();
+    $this->travel(1)->minutes();
+
+    $this->copias->restaurar($vieja['nombre']);
+
+    expect(Propiedad::query()->count())->toBe(1)
+        ->and(collect($this->copias->listar())->pluck('nombre')->all())->toContain($vieja['nombre']);
+
+    $this->artisan('migrate:fresh');
+})->group('restaura');
+
+it('una copia con SQL que AlojaFlow no escribe no se ejecuta', function () {
+    restaurable();
+    Propiedad::query()->create(['nombre' => 'Posada', 'codigo' => 'posada', 'modo' => ModoPropiedad::Nativa, 'zona_horaria' => 'UTC', 'moneda' => 'MXN']);
+    $copia = $this->copias->crear();
+    $temporal = (string) tempnam(sys_get_temp_dir(), 'af-sql');
+    $salida = gzopen($temporal, 'wb');
+    gzwrite($salida, "SET NAMES utf8mb4;\nCREATE USER 'intruso'@'%' IDENTIFIED BY 'x';\n");
+    gzclose($salida);
+    $zip = new ZipArchive();
+    $zip->open($this->copias->ruta($copia['nombre']));
+    $zip->addFile($temporal, 'base-datos.sql.gz');
+    $zip->close();
+    unlink($temporal);
+
+    expect(fn () => $this->copias->restaurar($copia['nombre']))->toThrow(ErrorCopia::class);
+    // Lo que había antes se recupera solo.
+    expect(Propiedad::query()->count())->toBe(1);
+
+    $this->artisan('migrate:fresh');
+})->group('restaura');
+
 it('borra las copias de más según el ajuste', function () {
     Ajustes::guardar('copias.conservar', 2);
     $this->copias->crear();
@@ -160,7 +198,7 @@ it('el administrador crea, descarga y borra copias', function () {
 
     Livewire::test(CopiasSeguridad::class)
         ->assertSee($nombre)
-        ->callAction('descargar', arguments: ['nombre' => $nombre])
+        ->callAction('descargar', data: ['contrasena' => 'una-contrasena-larga'], arguments: ['nombre' => $nombre])
         ->assertFileDownloaded($nombre);
 
     Livewire::test(CopiasSeguridad::class)

@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Sincronizacion\HotelDruid;
 
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -32,12 +33,17 @@ final class CargadorEspejo
      */
     public function agregar(string $tabla, ?int $anio, array $fila): void
     {
+        // Solo las de la instalación (subordinacion.md C1): las demás son preferencias de otros usuarios.
+        if ($tabla === 'personalizza' && ($fila['idutente'] ?? null) !== '1') {
+            return;
+        }
         $this->lote[] = [
             'principal_id' => $this->principalId,
             'ejecucion_id' => $this->ejecucionId,
             'tabla' => $tabla,
             'anio' => $anio,
-            'datos' => (string) json_encode($fila, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE),
+            // Trae documentos, domicilios y fechas de nacimiento: cifrado, como en la ficha del huésped.
+            'datos' => Crypt::encryptString((string) json_encode($fila, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE)),
         ];
 
         if (count($this->lote) >= $this->tamanoLote) {

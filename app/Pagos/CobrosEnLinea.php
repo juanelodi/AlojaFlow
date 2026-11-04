@@ -28,6 +28,8 @@ use Illuminate\Support\Facades\DB;
  */
 final class CobrosEnLinea
 {
+    private const MINUTOS_COBRO_ABIERTO = 20;
+
     public function __construct(private readonly GestorReservas $reservas)
     {
     }
@@ -46,6 +48,14 @@ final class CobrosEnLinea
         if ($importe <= 0) {
             throw new ErrorPago(__('motor.error.nada_que_cobrar'));
         }
+        // Volver a pulsar «Pagar» sigue en el mismo cobro: con dos abiertos a la vez se pueden pagar los dos.
+        $abierto = PagoEnLinea::query()->where('reserva_id', $reserva->id)->where('pasarela', $proveedor->nombre())
+            ->where('estado', 'pendiente')->where('importe', $importe)->where('creado_en', '>=', now('UTC')->subMinutes(self::MINUTOS_COBRO_ABIERTO))
+            ->orderByDesc('id')->first();
+        $url = $abierto->datos['url'] ?? null;
+        if (is_string($url)) {
+            return $url;
+        }
         $cobro = PagoEnLinea::query()->create([
             'propiedad_id' => $reserva->propiedad_id,
             'reserva_id' => $reserva->id,
@@ -55,8 +65,8 @@ final class CobrosEnLinea
             'moneda' => $reserva->moneda,
         ]);
         $separador = str_contains($urlExito, '?') ? '&' : '?';
-        $inicio = $proveedor->iniciar($reserva, $importe, $concepto, $urlExito.$separador.'cobro='.$cobro->id, $urlCancelar, $urlAviso, (string) $cobro->id);
-        $cobro->update(['referencia' => $inicio->referencia]);
+        $inicio = $proveedor->iniciar($reserva, $importe, $concepto, $urlExito.$separador.'cobro='.$cobro->id, $urlCancelar, $urlAviso, self::referenciaInterna($cobro->id));
+        $cobro->update(['referencia' => $inicio->referencia, 'datos' => ['url' => $inicio->url]]);
 
         return $inicio->url;
     }
@@ -67,7 +77,11 @@ final class CobrosEnLinea
      */
     public function confirmar(ProveedorPago $proveedor, ResultadoPago $resultado, int $propiedadId): ?PagoEnLinea
     {
-        $id = str_starts_with($resultado->referencia, 'interna:') ? (int) substr($resultado->referencia, 8) : null;
+        $esInterna = str_starts_with($resultado->referencia, 'interna:');
+        $id = $esInterna ? self::idDeReferencia(substr($resultado->referencia, 8)) : null;
+        if ($esInterna && $id === null) {
+            return null;
+        }
         $consulta = PagoEnLinea::query()->where('propiedad_id', $propiedadId)->where('pasarela', $proveedor->nombre());
         $cobro = $id !== null ? (clone $consulta)->find($id) : (clone $consulta)->where('referencia', $resultado->referencia)->first();
         if ($cobro === null) {
@@ -89,6 +103,10 @@ final class CobrosEnLinea
                 return $bloqueado;
             }
             $reserva = $bloqueado->reserva;
+            // El dinero ya entró a la cuenta, así que se anota de todos modos; devolverlo lo decide una persona.
+            if ($bloqueado->importe > max(0, $reserva->pendiente)) {
+                Aviso::abrir($reserva->propiedad_id, 'pago_duplicado', NivelAviso::Error, ['reserva' => $reserva->numero]);
+            }
             $pago = $this->reservas->registrarPago(
                 $reserva,
                 $bloqueado->importe,
@@ -105,10 +123,16 @@ final class CobrosEnLinea
 
     /**
      * Si la retención venció mientras pagaba, se intenta recuperar. Si ya se vendieron las noches, el
-     * dinero entró igual: se avisa al alojamiento para que lo resuelva con el huésped.
+     * dinero entró igual: se avisa al alojamiento para que lo resuelva con el huésped. La que canceló
+     * una persona no vuelve sola: esa decisión, y la de devolver el dinero, siguen siendo suyas.
      */
     private function asegurarReserva(Reserva $reserva): void
     {
+        if ($reserva->estado === EstadoReserva::Cancelada && $reserva->expira_en === null) {
+            Aviso::abrir($reserva->propiedad_id, 'pago_en_cancelada', NivelAviso::Error, ['reserva' => $reserva->numero]);
+
+            return;
+        }
         try {
             if ($reserva->estado === EstadoReserva::Cancelada) {
                 $this->reservas->reactivar($reserva);
@@ -117,6 +141,29 @@ final class CobrosEnLinea
         } catch (ReservaRechazada) {
             Aviso::abrir($reserva->propiedad_id, 'pago_sin_lugar', NivelAviso::Error, ['reserva' => $reserva->numero]);
         }
+    }
+
+    /**
+     * Lo que viaja a la pasarela para reconocer el cobro cuando vuelve. Va firmado: otro pago de la
+     * misma cuenta de la pasarela con un número cualquiera no se aplica a una reserva.
+     */
+    public static function referenciaInterna(int $id): string
+    {
+        return $id.'-'.self::firmaReferencia($id);
+    }
+
+    private static function idDeReferencia(string $referencia): ?int
+    {
+        if (preg_match('/^([0-9]+)-([0-9a-f]{24})$/', $referencia, $partes) !== 1) {
+            return null;
+        }
+
+        return hash_equals(self::firmaReferencia((int) $partes[1]), $partes[2]) ? (int) $partes[1] : null;
+    }
+
+    private static function firmaReferencia(int $id): string
+    {
+        return substr(hash_hmac('sha256', 'cobro:'.$id, (string) config('app.key')), 0, 24);
     }
 
     public static function pasarelas(Reserva $reserva): Pasarelas

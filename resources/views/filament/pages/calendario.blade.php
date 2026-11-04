@@ -90,14 +90,15 @@
                         @foreach ($fila['barras'] as $barra)
                             @php($reserva = $barra['reserva'])
                             @php($texto = $reserva->tipo === \App\Enums\TipoReserva::Bloqueo ? ($reserva->origen_texto ?? __('ui.calendario.bloqueo')) : ($reserva->titular?->nombreCompleto() ?? $reserva->numero))
-                            <a href="{{ \App\Filament\Resources\Reservas\ReservaResource::getUrl('view', ['record' => $reserva]) }}"
+                            {{-- Sin permiso de datos, la barra no lleva a la ficha: un enlace sin destino no se puede seguir. --}}
+                            <a @if (\App\Seguridad\Acceso::puede(\App\Seguridad\Acceso::usuarioActual(), \App\Seguridad\Acceso::DATOS, $reserva->propiedad_id)) href="{{ \App\Filament\Resources\Reservas\ReservaResource::getUrl('view', ['record' => $reserva]) }}" @endif
                                @if (! $reserva->sincronizada && in_array($reserva->propiedad_id, $gestionables, true) && $reserva->salida_registrada_en === null)
                                    draggable="true"
                                    x-on:dragstart="$event.dataTransfer.effectAllowed = 'move'; $event.dataTransfer.setData('text/plain', '{{ $reserva->id }}'); setTimeout(() => moviendo = {{ $reserva->id }}, 0)"
                                    x-on:dragend="moviendo = null"
                                @endif
-                               @class(['af-barra', $barra['clase'], 'af-barra--sigue-antes' => $barra['sigue_antes'], 'af-barra--sigue-despues' => $barra['sigue_despues']])
-                               style="grid-column: {{ $barra['columna'] + 1 }} / span {{ $barra['ancho'] }}@if ($barra['color']); border-left: 6px solid {{ $barra['color'] }}@endif"
+                               @class(['af-barra', $barra['clase'], 'af-barra--marcada' => $barra['color'], 'af-barra--sigue-antes' => $barra['sigue_antes'], 'af-barra--sigue-despues' => $barra['sigue_despues']])
+                               style="grid-column: {{ $barra['columna'] + 1 }} / span {{ $barra['ancho'] }}@if ($barra['color']); --af-marca: {{ $barra['color'] }}@endif"
                                title="{{ __('ui.calendario.detalle', ['huesped' => $texto, 'noches' => $reserva->noches, 'llegada' => Formato::fechaCorta($reserva->llegada), 'salida' => Formato::fechaCorta($reserva->salida)]) }}"
                             >{{ $texto }}</a>
                         @endforeach

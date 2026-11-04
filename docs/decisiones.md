@@ -392,6 +392,91 @@ y *Sie*; el portugués es el de Portugal. Lo que se guarda como dato sigue en el
 `docs/producto.md` §8.5 pide antes de publicarlas: queda pendiente, y el usuario pidió sacarlas así en la 1.0.7, que
 sigue siendo versión de prueba. **Por qué:** lo pidió el usuario.
 
+### D-053 · 2026-11-04 · Auditoría de noviembre: qué se corrigió y cómo se revisó
+Revisión completa de seguridad, rendimiento, accesibilidad, diseño y buenas prácticas, con el resultado en
+`docs/auditoria-2026-11.md`. El usuario pidió corregirlo todo y publicar la 1.0.8. Los ataques se hicieron contra una
+copia local; en línea solo una revisión suave de `app.alojaflow.com`.
+
+### D-054 · 2026-11-04 · Reservas sin pago que nadie revisa: caducan a las 48 horas
+Una reserva del motor sin pago en línea y sin confirmar retenía sus noches para siempre: cualquiera podía llenar un
+calendario con un formulario público. Ahora caduca sola, a las 48 horas por omisión. Se cambia en Motor de reservas; con
+0 no caduca, y la ayuda de ese campo dice el riesgo. Además: tres reservas vigentes por correo, treinta nuevas por hora
+en cada propiedad (con aviso al alojamiento), cinco por minuto y veinte por hora por dirección, y hasta 730 días por
+delante. **Por qué:** es la única forma de que el motor siga sin registro y sin captcha. **Riesgo que queda:** alguien
+con muchas direcciones y correos todavía puede apartar noches durante 48 horas. Bajar las horas lo reduce.
+
+### D-055 · 2026-11-04 · Limpieza y mantenimiento no ven datos del huésped
+Antes, el permiso de operación daba acceso a fichas, teléfonos, saldos y recibos. Ahora, sin el permiso de datos, Hoy y
+el calendario muestran unidad, fechas, personas y nombre, sin teléfono, sin dinero y sin entrar a la reserva. Cierre del
+día y choques piden el permiso de datos, y resolver un choque o marcar no-show, el de reservas. **Por qué:** quien limpia
+necesita saber qué cuarto y cuándo, no cuánto debe el huésped. El nombre se queda porque en un alojamiento pequeño es como
+se habla de las habitaciones.
+
+### D-056 · 2026-11-04 · Permisos con `Acceso` y `can*`, no con Policies; validación pública con `Validator`
+La regla 4 pedía Policies y Form Requests. Los permisos ya están centralizados por propiedad en `App\Seguridad\Acceso`, y
+Filament los consulta con sus `can*`: repetirlos en Policies daría dos fuentes de verdad. Las páginas públicas (motor y
+llegada) validan en el controlador porque responden en la misma página y el motor no puede usar la sesión dentro de un
+iframe. Se cambia la regla en vez de forzar el código.
+
+### D-057 · 2026-11-04 · Cabeceras de seguridad, con CSP que admite scripts en línea
+`CabecerasSeguridad` pone CSP, `nosniff`, `Referrer-Policy: same-origin`, HSTS sin subdominios y `X-Frame-Options`.
+Alpine y Livewire piden `'unsafe-inline'` y `'unsafe-eval'`, así que la política sirve sobre todo para que nada se cargue
+ni se mande a otro sitio. El motor de reservas queda fuera del límite de iframes, porque se puede insertar en el sitio del
+alojamiento, y fuera de `form-action`, porque redirige a la pasarela. HSTS no incluye subdominios: el dominio puede tener
+otros sitios que no se conocen.
+
+### D-058 · 2026-11-04 · Sin avatares de terceros
+Filament pedía las iniciales a ui-avatars.com: cada visita le mandaba a un tercero el nombre del usuario, en contra de
+«todos los recursos se sirven desde la instalación». `AvatarLocal` las genera aquí. Lo destapó la CSP.
+
+### D-059 · 2026-11-04 · Espejo cifrado y fuera de las copias
+`hd_filas` guardaba en claro documentos y domicilios de la principal, aunque la ficha los cifrara. Ahora cada fila va
+cifrada con la llave de la aplicación, no se incluye en las copias (se rellena en la siguiente sincronización) y solo
+guarda las preferencias de `idutente = 1`, como pedía la especificación. Sustituye en esto a D-027, que sigue valiendo en
+lo demás. La migración vacía la tabla; la siguiente sincronización la llena otra vez.
+
+### D-060 · 2026-11-04 · Registros por día y cachés de arranque
+Un `laravel.log` único crecía hasta agotar la cuota del hosting: ahora hay uno por día y se conservan 14. La
+configuración, las rutas, los eventos y los componentes se dejan en caché al instalar, actualizar y restaurar, porque
+armarlos en cada visita era lo que más tardaba (1.3 a 1.9 s en DreamHost). Quien edita `.env` a mano no tiene que saber de
+cachés: `bootstrap/app.php` descarta la configuración guardada si `.env` es más nuevo.
+
+### D-061 · 2026-11-04 · El menú, por tareas
+Con 39 entradas en cuatro grupos, Configuración y Operación ya no se leían. Ahora son Operación, Reservas, Dinero,
+Comunicación, Configuración y Sistema, con los tres últimos plegados de inicio. Los botones ya usan `#0F766E`: Filament
+pinta con el tono 600, y el generado a partir del hexadecimal no daba contraste con el blanco, así que caía al 400 con
+texto oscuro. La paleta es el teal de Tailwind recorrido un tono. Las franjas de color en un costado se cambiaron por una
+franja superior en Limpieza y una marca dentro de la barra en el calendario.
+
+### D-062 · 2026-11-04 · Verificación en dos pasos: se recomienda, no se obliga
+Un administrador sin ella ve un aviso en el inicio y una fila en Estado del sistema. `ALOJAFLOW_EXIGIR_DOS_PASOS=true`
+la vuelve obligatoria para todo el personal. **Por qué no se obliga:** el personal de un alojamiento pequeño no siempre
+tiene cómo usarla, y bloquear a quien no puede sería peor que el riesgo. Es decisión de cada instalación.
+
+### D-063 · 2026-11-04 · Recuperar la contraseña, solo con correo configurado
+Sin correo no hay página ni enlace; se sigue resolviendo con `alojaflow:crear-administrador`. Con correo, la respuesta es
+la misma exista o no la cuenta. La contraseña pide al menos 12 caracteres en todos lados, como el instalador.
+
+### D-064 · 2026-11-04 · Una vez instalado, el instalador solo se puede borrar
+Si lleva más de una hora en el servidor ya no empieza nada: hay que volver a subirlo, y eso demuestra que es de quien
+manda en el servidor. Con la instalación hecha, cualquier petición lo borra y no dice nada más. La firma del paquete se
+comprueba en cada paso. **Riesgo que queda:** en la primera hora, quien adivine el nombre del archivo antes que el dueño
+podría usarlo. Pedir una clave complicaría lo que debía ser lo más simple posible (pedido del usuario).
+
+### D-065 · 2026-11-04 · Anonimizar llega a todo lo personal, salvo lo que obliga la ley
+Ahora alcanza el PDF de la aceptación, los datos como acompañante, los avisos sin ficha, notas, referencias de pago y
+datos fiscales guardados para reutilizar. Las facturas ya emitidas conservan su copia del receptor: la ley fiscal obliga
+a guardarlas. A quien viajó de acompañante se le reconoce por el documento o, sin él, por el nombre: dos personas con el
+mismo nombre en una misma reserva se tratarían igual, y se acepta por poco probable. La exportación ya no incluye a
+quienes viajaron con esa persona.
+
+### D-066 · 2026-11-04 · Aviso de versiones de PHP con fallos críticos
+La auditoría encontró que PHP 8.3.28, el de Wamp, tiene CVE-2026-109618 y CVE-2026-109619: ejecución de código sin iniciar
+sesión, más grave con mod_php (php.net, 2026-10-21; corregidas en 8.2.35, 8.3.36, 8.4.27 y 8.5.12). Estado del sistema lo
+marca en rojo y el instalador avisa, sin bloquear: un hosting puede haber llevado el parche a un número anterior. La lista
+está en `App\Instalacion\VersionPhp` y en el instalador; se actualiza cuando PHP publique otra corrección crítica.
+`composer.json` no sube el mínimo por lo mismo. Además, la aplicación ya no dice su versión de PHP en las cabeceras.
+
 ---
 
 ## Pendientes

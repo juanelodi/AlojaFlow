@@ -96,7 +96,7 @@ function documentoPublicado($test, TipoDocumentoLegal $tipo = TipoDocumentoLegal
 
 describe('formulario del huésped', function () {
     it('se abre solo con el enlace correcto y enseña lo que conoce', function () {
-        $this->get($this->url)->assertOk()->assertSee($this->reserva->codigo_publico)->assertSee('ana@example.com')->assertSee(__('legal.documentos.ine'))->assertSee(__('legal.campos.procedencia'));
+        $this->get($this->url)->assertOk()->assertDontSee($this->reserva->codigo_publico)->assertDontSee('ana@example.com')->assertSee(__('legal.documentos.ine'))->assertSee(__('legal.campos.procedencia'));
         $this->get('/llegada/'.str_repeat('a', 40))->assertNotFound();
         $this->get('/llegada/corto')->assertNotFound();
 

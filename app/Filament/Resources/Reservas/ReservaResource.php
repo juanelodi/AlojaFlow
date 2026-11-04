@@ -51,7 +51,7 @@ class ReservaResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('ui.nav.datos');
+        return __('ui.nav.reservas');
     }
 
     public static function getModelLabel(): string
@@ -65,18 +65,14 @@ class ReservaResource extends Resource
     }
 
     /**
-     * Quien ve la operación o los datos de una propiedad ve sus reservas.
+     * Quien ve los datos de una propiedad ve sus reservas. Limpieza y mantenimiento ven en Hoy y en el
+     * calendario lo justo para su trabajo: sin teléfonos, sin dinero y sin entrar a la ficha.
      *
      * @return list<int>
      */
     public static function propiedadesPermitidas(): array
     {
-        $usuario = Acceso::usuarioActual();
-
-        return array_values(array_unique(array_merge(
-            Acceso::propiedades($usuario, Acceso::DATOS),
-            Acceso::propiedades($usuario, Acceso::OPERACION),
-        )));
+        return Acceso::propiedades(Acceso::usuarioActual(), Acceso::DATOS);
     }
 
     public static function getEloquentQuery(): Builder

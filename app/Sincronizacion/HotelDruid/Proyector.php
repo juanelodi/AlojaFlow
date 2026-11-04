@@ -16,6 +16,7 @@ use App\Enums\TipoEventoReserva;
 use App\Enums\TipoReserva;
 use App\Models\EjecucionSincronizacion;
 use App\Models\Principal;
+use App\Reservas\GestorReservas;
 use App\Sincronizacion\ContextoSincronizacion;
 use App\Support\Contactos;
 use App\Support\Dinero;
@@ -483,6 +484,8 @@ class Proyector
 
         $inicio = CarbonImmutable::parse((string) $datos['llegada']);
         $cuantas = (int) $inicio->diffInDays(CarbonImmutable::parse((string) $datos['salida']));
+        // Una fecha absurda en la principal no debe llenar la memoria en cada sincronización.
+        $cuantas = min($cuantas, GestorReservas::NOCHES_MAXIMAS);
         $importes = Dinero::repartir((int) $datos['total'], $cuantas);
         $noches = [];
         for ($i = 0; $i < $cuantas; $i++) {
@@ -576,7 +579,8 @@ class Proyector
                 'f' => 'mujer',
                 default => null,
             },
-            'idioma' => $c->texto($f['lingua'] ?? null, 12),
+            // Solo si es un idioma de los nuestros: con otro texto, los mensajes a ese huésped fallarían.
+            'idioma' => in_array($f['lingua'] ?? null, (array) config('alojaflow.idiomas'), true) ? $f['lingua'] : null,
             'fecha_nacimiento' => $c->fecha($f['datanascita'] ?? null),
             'lugar_nacimiento' => $c->texto(implode(', ', array_filter([$f['cittanascita'] ?? null, $f['regionenascita'] ?? null])), 255),
             'pais_nacimiento_texto' => $c->texto($f['nazionenascita'] ?? null, 100),
@@ -664,7 +668,7 @@ class Proyector
 
         foreach ($consulta->lazyById(1000) as $fila) {
             /** @var array<string, string|null> $datos */
-            $datos = json_decode((string) $fila->datos, true);
+            $datos = json_decode(Crypt::decryptString((string) $fila->datos), true);
             yield [$fila->anio === null ? null : (int) $fila->anio, $datos];
         }
     }

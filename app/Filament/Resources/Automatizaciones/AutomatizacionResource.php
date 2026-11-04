@@ -46,11 +46,16 @@ class AutomatizacionResource extends RecursoDeCualquierPropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBolt;
 
-    protected static ?int $navigationSort = 11;
+    protected static ?int $navigationSort = 3;
 
     protected static function permiso(): string
     {
         return Acceso::AJUSTES;
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('ui.nav.comunicacion');
     }
 
     public static function getModelLabel(): string
@@ -68,6 +73,11 @@ class AutomatizacionResource extends RecursoDeCualquierPropiedad
         $valor = $get('disparador');
 
         return $valor instanceof DisparadorAutomatizacion ? $valor : DisparadorAutomatizacion::tryFrom((string) $valor);
+    }
+
+    protected static function referencias(): array
+    {
+        return ['plantilla_id' => Plantilla::class];
     }
 
     public static function form(Schema $schema): Schema
@@ -89,7 +99,7 @@ class AutomatizacionResource extends RecursoDeCualquierPropiedad
                     ->required(fn (Get $get): bool => in_array($get('accion'), [AccionAutomatizacion::CorreoFijo, AccionAutomatizacion::CorreoFijo->value], true))
                     ->visible(fn (Get $get): bool => in_array($get('accion'), [AccionAutomatizacion::CorreoFijo, AccionAutomatizacion::CorreoFijo->value], true)),
                 Select::make('plantilla_id')->label(__('mensajes.automatizaciones.plantilla'))->required()->native(false)
-                    ->options(fn (Get $get): array => Plantilla::query()->where('propiedad_id', (int) $get('propiedad_id'))->where('activa', true)->orderBy('nombre')->pluck('nombre', 'id')->all()),
+                    ->options(fn (Get $get): array => Plantilla::query()->where('propiedad_id', self::propiedadDe($get))->where('activa', true)->orderBy('nombre')->pluck('nombre', 'id')->all()),
                 Toggle::make('activa')->label(__('mensajes.automatizaciones.activa'))->default(true),
             ]),
         ]);

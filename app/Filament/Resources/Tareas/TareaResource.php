@@ -47,7 +47,7 @@ class TareaResource extends RecursoDeCualquierPropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentCheck;
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 6;
 
     protected static function permiso(): string
     {
@@ -69,18 +69,31 @@ class TareaResource extends RecursoDeCualquierPropiedad
         return __('limpieza.tareas.modelos');
     }
 
+    protected static function referencias(): array
+    {
+        return ['unidad_id' => Unidad::class];
+    }
+
+    public static function comprobarReferencias(array $data, int $propiedadId): void
+    {
+        parent::comprobarReferencias($data, $propiedadId);
+        if (filled($data['asignada_a'] ?? null) && ! array_key_exists((int) $data['asignada_a'], self::personal($propiedadId))) {
+            abort(403);
+        }
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
             Section::make()->columnSpanFull()->columns(['default' => 1, 'md' => 2])->schema([
                 self::campoPropiedad(),
                 Select::make('unidad_id')->label(__('limpieza.tareas.unidad'))->native(false)->searchable()
-                    ->options(fn (Get $get): array => Unidad::query()->where('propiedad_id', (int) $get('propiedad_id'))->orderBy('orden')->orderBy('nombre')->pluck('nombre', 'id')->all()),
+                    ->options(fn (Get $get): array => Unidad::query()->where('propiedad_id', self::propiedadDe($get))->orderBy('orden')->orderBy('nombre')->pluck('nombre', 'id')->all()),
                 Select::make('tipo')->label(__('limpieza.tareas.tipo'))->options(TipoTarea::opciones())->required()->native(false)->default(TipoTarea::Mantenimiento->value),
                 TextInput::make('titulo')->label(__('limpieza.tareas.titulo'))->required()->maxLength(150),
                 DatePicker::make('fecha')->label(__('limpieza.tareas.fecha'))->required()->default(now()),
                 Select::make('asignada_a')->label(__('limpieza.tareas.asignada'))->native(false)->placeholder(__('limpieza.tareas.sin_asignar'))
-                    ->options(fn (Get $get): array => self::personal((int) $get('propiedad_id'))),
+                    ->options(fn (Get $get): array => self::personal(self::propiedadDe($get))),
                 Select::make('estado')->label(__('limpieza.tareas.estado'))->options(EstadoTarea::opciones())->required()->native(false)->default(EstadoTarea::Pendiente->value),
                 Toggle::make('prioridad')->label(__('limpieza.tareas.urgente'))
                     ->formatStateUsing(fn (mixed $state): bool => (int) $state > 0)

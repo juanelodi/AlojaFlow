@@ -48,6 +48,15 @@ final class AjustesMotor
         return max(5, (int) $this->valor('minutos_retencion', 30));
     }
 
+    /**
+     * Cuánto espera una reserva sin pagar a que el alojamiento la revise antes de liberar sus noches.
+     * Con 0 no caduca: quien abuse del formulario puede dejar la propiedad sin lugar.
+     */
+    public function horasRevision(): int
+    {
+        return max(0, (int) $this->valor('horas_revision', 48));
+    }
+
     public function diasMinimosAntelacion(): int
     {
         return max(0, (int) $this->valor('dias_antelacion', 0));

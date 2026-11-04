@@ -37,11 +37,11 @@ class ChoqueResource extends RecursoDeCualquierPropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedExclamationTriangle;
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 8;
 
     protected static function permiso(): string
     {
-        return Acceso::OPERACION;
+        return Acceso::DATOS;
     }
 
     public static function getNavigationGroup(): ?string
@@ -115,7 +115,7 @@ class ChoqueResource extends RecursoDeCualquierPropiedad
                 Action::make('resolver')
                     ->label(__('ical.choques.resolver'))
                     ->icon(Heroicon::OutlinedCheck)
-                    ->visible(fn (Choque $record): bool => $record->resuelto_en === null)
+                    ->visible(fn (Choque $record): bool => $record->resuelto_en === null && Acceso::puede(Acceso::usuarioActual(), Acceso::RESERVAS, $record->propiedad_id))
                     ->schema([Textarea::make('nota')->label(__('ical.choques.nota'))->rows(2)->maxLength(1000)])
                     ->action(fn (Choque $record, array $data) => $record->update(['resuelto_en' => now('UTC'), 'resuelto_por' => auth()->id(), 'nota' => $data['nota'] ?? null])),
             ]);

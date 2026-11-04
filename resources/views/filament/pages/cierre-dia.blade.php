@@ -39,7 +39,7 @@
         @php($anteriores = $this->anteriores())
         @if ($anteriores->isNotEmpty())
             <x-filament::section :heading="__('cierre.anteriores')">
-                <div class="af-tabla-contenedor">
+                <div class="af-tabla-contenedor" tabindex="0" role="region" aria-label="{{ $this->getTitle() }}">
                     <table class="af-tabla">
                         <tbody>
                             @foreach ($anteriores as $cierre)

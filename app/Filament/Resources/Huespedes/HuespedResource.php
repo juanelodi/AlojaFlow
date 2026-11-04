@@ -48,7 +48,7 @@ class HuespedResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('ui.nav.datos');
+        return __('ui.nav.reservas');
     }
 
     public static function getModelLabel(): string

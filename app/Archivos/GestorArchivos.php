@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 /**
  * Guarda y lee archivos en `storage/app/private/archivos`, que entra en las copias de seguridad.
@@ -25,6 +26,8 @@ use Illuminate\Support\Str;
 final class GestorArchivos
 {
     private const DISCO = 'local';
+
+    public const CARPETA_SUBIDAS = 'subidas-temporales';
 
     public function guardar(string $contenido, string $nombreOriginal, string $tipoMime, ClaseArchivo $clase, ?Model $objeto, ?int $propiedadId, bool $cifrar = false, ?CarbonInterface $conservarHasta = null): Archivo
     {
@@ -53,9 +56,14 @@ final class GestorArchivos
 
     /**
      * Toma un archivo que Livewire dejó en el disco privado, lo guarda con los demás y borra el temporal.
+     * La ruta pasa por el navegador: fuera de la carpeta de subidas se rechaza, porque lo que se toma
+     * aquí se borra después y sería una forma de leer y destruir archivos privados de otros.
      */
     public function guardarSubida(string $rutaTemporal, ClaseArchivo $clase, ?Model $objeto, ?int $propiedadId, bool $cifrar = false, ?CarbonInterface $conservarHasta = null): Archivo
     {
+        if (! str_starts_with($rutaTemporal, self::CARPETA_SUBIDAS.'/') || str_contains($rutaTemporal, '..')) {
+            throw new InvalidArgumentException('Ruta de subida no válida.');
+        }
         $disco = Storage::disk(self::DISCO);
         $archivo = $this->guardar((string) $disco->get($rutaTemporal), basename($rutaTemporal), (string) $disco->mimeType($rutaTemporal), $clase, $objeto, $propiedadId, $cifrar, $conservarHasta);
         $disco->delete($rutaTemporal);

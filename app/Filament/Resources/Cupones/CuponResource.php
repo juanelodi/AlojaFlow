@@ -48,6 +48,11 @@ class CuponResource extends RecursoDePropiedad
 
     protected static ?int $navigationSort = 7;
 
+    public static function getNavigationGroup(): ?string
+    {
+        return __('ui.nav.dinero');
+    }
+
     public static function getModelLabel(): string
     {
         return __('ui.cupones.modelo');
@@ -66,7 +71,7 @@ class CuponResource extends RecursoDePropiedad
             Section::make()->columnSpanFull()->columns(['default' => 1, 'md' => 2])->schema([
                 self::campoPropiedad(),
                 TextInput::make('codigo')->label(__('ui.cupones.codigo'))->required()->maxLength(40)->alphaDash()
-                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', (int) $get('propiedad_id'))),
+                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', self::propiedadDe($get))),
                 TextInput::make('descripcion')->label(__('ui.cupones.descripcion'))->maxLength(150),
                 Select::make('tipo')->label(__('ui.cupones.tipo'))->options(TipoCupon::opciones())->required()->native(false)->live()->default(TipoCupon::Porcentaje->value),
                 TextInput::make('porcentaje')->label(__('ui.cupones.porcentaje'))->numeric()->minValue(0)->maxValue(100)->step('any')->suffix('%')

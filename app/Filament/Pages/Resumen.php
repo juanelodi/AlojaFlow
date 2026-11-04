@@ -10,7 +10,9 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Demo\ModoDemo;
 use App\Filament\Concerns\ConPropiedadSeleccionada;
+use App\Models\Aviso;
 use App\Models\Propiedad;
 use App\Seguridad\Acceso;
 use App\Servicios\Operacion;
@@ -38,6 +40,22 @@ class Resumen extends Dashboard
     protected static function permiso(): string
     {
         return Acceso::OPERACION;
+    }
+
+    public function atenderAviso(int $id): void
+    {
+        Aviso::query()->whereKey($id)->whereIn('propiedad_id', Acceso::propiedades(Acceso::usuarioActual(), Acceso::DATOS))
+            ->whereIn('tipo', Aviso::SE_CIERRAN_A_MANO)->update(['clave_unica' => null, 'resuelto_en' => now()]);
+    }
+
+    /**
+     * Quien administra todo sin verificación en dos pasos es la cuenta que más conviene proteger.
+     */
+    public function faltaDosPasos(): bool
+    {
+        $usuario = Acceso::usuarioActual();
+
+        return $usuario?->es_administrador === true && ! ModoDemo::activo() && blank($usuario->getAppAuthenticationSecret());
     }
 
     /**

@@ -13,6 +13,7 @@ namespace App\Filament\Resources\Propiedades\Schemas;
 use App\Enums\MetodoPeticion;
 use App\Enums\ModoPropiedad;
 use App\Enums\PaquetePais;
+use App\Paises\CatalogoPaises;
 use App\Support\Formato;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Radio;
@@ -21,7 +22,9 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Str;
 
 class PropiedadForm
 {
@@ -42,20 +45,36 @@ class PropiedadForm
             Section::make(__('ui.propiedades.datos'))->columnSpanFull()
                 ->columns(['default' => 1, 'md' => 2])
                 ->schema([
-                    TextInput::make('nombre')->label(__('ui.propiedades.nombre'))->required()->maxLength(150),
+                    TextInput::make('nombre')->label(__('ui.propiedades.nombre'))->required()->maxLength(150)->live(onBlur: true)
+                        ->afterStateUpdated(function (Get $get, Set $set, ?string $state): void {
+                            if (blank($get('codigo'))) {
+                                $set('codigo', Str::limit(Str::slug((string) $state), 40, ''));
+                            }
+                        }),
+                    Select::make('pais')->label(__('ui.propiedades.pais'))->helperText(__('ui.propiedades.pais_ayuda'))
+                        ->options(fn (): array => CatalogoPaises::opciones())->searchable()->native(false)->default('MX')->live()
+                        ->afterStateUpdated(function (Set $set, ?string $state): void {
+                            if (filled($state)) {
+                                foreach (CatalogoPaises::valoresDe($state) as $campo => $valor) {
+                                    $set($campo, $valor);
+                                }
+                            }
+                        }),
+                    Select::make('idioma')->label(__('ui.propiedades.idioma'))->options(Formato::idiomas())->default('es')->required()->native(false),
+                    ColorPicker::make('color')->label(__('ui.propiedades.color'))->default('#0f766e')->regex('/^#[0-9a-fA-F]{6}$/'),
+                    Toggle::make('activa')->label(__('ui.propiedades.activa'))->default(true),
+                ]),
+            Section::make(__('ui.propiedades.avanzado'))->description(__('ui.propiedades.avanzado_ayuda'))->columnSpanFull()->collapsed()
+                ->columns(['default' => 1, 'md' => 2])
+                ->schema([
                     TextInput::make('codigo')->label(__('ui.propiedades.codigo'))->helperText(__('ui.propiedades.codigo_ayuda'))
                         ->required()->maxLength(40)->alphaDash()->unique(ignoreRecord: true),
-                    Select::make('paquete_pais')->label(__('ui.propiedades.paquete_pais'))
+                    Select::make('paquete_pais')->label(__('ui.propiedades.paquete_pais'))->helperText(__('ui.propiedades.paquete_pais_ayuda'))
                         ->options(PaquetePais::opciones())->default(PaquetePais::Mexico->value)->required()->native(false),
-                    TextInput::make('pais')->label(__('ui.propiedades.pais'))->maxLength(2)->regex('/^[A-Za-z]{2}$/')
-                        ->dehydrateStateUsing(fn (?string $state): ?string => $state === null ? null : strtoupper($state))->default('MX'),
                     Select::make('zona_horaria')->label(__('ui.propiedades.zona_horaria'))
                         ->options(Formato::zonasHorarias())->searchable()->required()->default('America/Mexico_City'),
                     TextInput::make('moneda')->label(__('ui.propiedades.moneda'))->required()->length(3)->regex('/^[A-Za-z]{3}$/')
                         ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))->default('MXN'),
-                    Select::make('idioma')->label(__('ui.propiedades.idioma'))->options(Formato::idiomas())->default('es')->required()->native(false),
-                    ColorPicker::make('color')->label(__('ui.propiedades.color'))->default('#0f766e')->regex('/^#[0-9a-fA-F]{6}$/'),
-                    Toggle::make('activa')->label(__('ui.propiedades.activa'))->default(true),
                 ]),
             Section::make(__('ui.propiedades.principal'))->columnSpanFull()
                 ->description(__('ui.propiedades.principal_ayuda'))
@@ -81,7 +100,7 @@ class PropiedadForm
                             720 => __('ui.propiedades.cada_horas', ['horas' => 12]),
                             1440 => __('ui.propiedades.cada_horas', ['horas' => 24]),
                         ]),
-                    Select::make('metodo')->label(__('ui.propiedades.metodo'))->options(MetodoPeticion::opciones())
+                    Select::make('metodo')->label(__('ui.propiedades.metodo'))->helperText(__('ui.propiedades.metodo_ayuda'))->options(MetodoPeticion::opciones())
                         ->default(MetodoPeticion::Post->value)->required()->native(false),
                     Toggle::make('compresion')->label(__('ui.propiedades.compresion'))->default(true),
                     Toggle::make('permitir_red_local')->label(__('ui.propiedades.red_local'))->helperText(__('ui.propiedades.red_local_ayuda'))

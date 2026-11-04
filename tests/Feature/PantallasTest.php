@@ -114,7 +114,7 @@ it('el código fuente se descarga sin iniciar sesión y sin el .env', function (
     }
 
     expect($nombres)->toContain('alojaflow-'.config('alojaflow.version').'/LICENSE')
-        ->and(array_filter($nombres, fn (string $n): bool => str_ends_with($n, '/.env') || str_contains($n, '/storage/') || str_contains($n, '/vendor/')))->toBe([]);
+        ->and(array_filter($nombres, fn (string $n): bool => str_ends_with($n, '/.env') || str_contains($n, '/storage/') || (str_contains($n, '/vendor/') && ! str_contains($n, '/lang/vendor/'))))->toBe([]);
 });
 
 it('la interfaz sale en el idioma del usuario', function (string $idioma, string $texto) {

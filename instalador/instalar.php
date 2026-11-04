@@ -107,6 +107,7 @@ function af_textos()
             'reintentar' => 'Reintentar',
             'error_red' => 'El servidor respondió con un error. :detalle',
             'ocupado_titulo' => 'Hay otra instalación en curso',
+            'caducado_texto' => 'Este instalador lleva más de una hora en el servidor. Por seguridad ya no se puede empezar con él: vuelve a subir el archivo y ábrelo de nuevo.',
             'ocupado_texto' => 'Este instalador ya se abrió en otro navegador. Si fuiste tú y quieres empezar de nuevo, borra por FTP la carpeta .alojaflow-instalacion y vuelve a abrir esta página.',
             'ya_titulo' => 'AlojaFlow ya está instalado',
             'ya_texto' => 'Por seguridad, este instalador no hace nada en una instalación existente.',
@@ -115,6 +116,8 @@ function af_textos()
             // Análisis.
             'a_php' => 'Versión de PHP',
             'a_php_valor' => ':actual (se necesita :minimo o más)',
+            'a_php_parche' => 'Fallo crítico en esta versión de PHP',
+            'a_php_parche_valor' => 'Permite tomar el servidor sin iniciar sesión. Sube a :version o más en el panel de tu hosting antes de usar el sistema, salvo que el hosting confirme que ya lo corrigió.',
             'a_php_ayuda' => 'Cambia la versión de PHP de este sitio en el panel de tu hosting a 8.3 o 8.4 y vuelve a revisar.',
             'a_ext' => 'Extensiones de PHP',
             'a_ext_ok' => 'Todas las necesarias',
@@ -225,6 +228,7 @@ function af_textos()
             'reintentar' => 'Try again',
             'error_red' => 'The server replied with an error. :detalle',
             'ocupado_titulo' => 'Another installation is in progress',
+            'caducado_texto' => 'This installer has been on the server for more than an hour. For safety it can no longer be started: upload the file again and open it.',
             'ocupado_texto' => 'This installer was already opened in another browser. If that was you and you want to start over, delete the .alojaflow-instalacion folder by FTP and open this page again.',
             'ya_titulo' => 'AlojaFlow is already installed',
             'ya_texto' => 'For safety, this installer does nothing on an existing installation.',
@@ -232,6 +236,8 @@ function af_textos()
             'php_viejo_extra' => 'The installer needs PHP :minimo. Change it in your hosting panel and open this page again.',
             'a_php' => 'PHP version',
             'a_php_valor' => ':actual (:minimo or newer is needed)',
+            'a_php_parche' => 'Critical flaw in this PHP version',
+            'a_php_parche_valor' => 'It lets someone take over the server without signing in. Move up to :version or newer in your hosting panel before using the system, unless the hosting confirms it has already fixed it.',
             'a_php_ayuda' => 'Change this site\'s PHP version to 8.3 or 8.4 in your hosting panel and check again.',
             'a_ext' => 'PHP extensions',
             'a_ext_ok' => 'All the required ones',
@@ -392,16 +398,37 @@ function af_instalado()
 }
 
 /**
- * Solo el navegador que abrió primero el instalador puede usarlo. Un candado de más de 6 horas
- * ya se considera abandonado.
+ * Un archivo que lleva tiempo en el servidor ya no sirve para empezar: el visitante que lo encuentre
+ * no se queda con el sitio. Volver a subirlo demuestra que es de quien manda en el servidor.
+ */
+function af_instalador_caducado()
+{
+    return max((int) @filemtime(__FILE__), (int) @filectime(__FILE__)) < time() - 3600;
+}
+
+function af_es_dueno()
+{
+    $candado = af_temporal().'/propietario';
+    $galleta = isset($_COOKIE[AF_COOKIE]) ? (string) $_COOKIE[AF_COOKIE] : '';
+
+    return is_file($candado) && $galleta !== '' && strcmp(trim((string) @file_get_contents($candado)), sha1($galleta)) === 0;
+}
+
+/**
+ * Solo el navegador que abrió primero el instalador puede usarlo, y cada paso renueva el candado. Uno
+ * de más de 6 horas se considera abandonado, pero tomarlo exige un archivo recién subido.
  */
 function af_comprobar_dueno()
 {
     $temporal = af_temporal();
     $candado = $temporal.'/propietario';
-    $galleta = isset($_COOKIE[AF_COOKIE]) ? (string) $_COOKIE[AF_COOKIE] : '';
-    if (is_file($candado) && filemtime($candado) > time() - 21600) {
-        return $galleta !== '' && strcmp(trim((string) @file_get_contents($candado)), sha1($galleta)) === 0;
+    if (af_es_dueno()) {
+        @touch($candado);
+
+        return true;
+    }
+    if ((is_file($candado) && filemtime($candado) > time() - 21600) || af_instalador_caducado()) {
+        return false;
     }
     if (! is_dir($temporal) && ! @mkdir($temporal, 0755, true)) {
         return true; // Sin carpeta temporal no hay nada que proteger: el análisis lo marca en rojo.
@@ -416,6 +443,17 @@ function af_comprobar_dueno()
 }
 
 /* ---------------------------------------------------------------- Análisis del servidor -- */
+
+/**
+ * La versión a la que hay que subir por un fallo crítico conocido. La misma lista que App\Instalacion\VersionPhp.
+ */
+function af_php_sin_parche()
+{
+    $corregidas = array('8.2' => '8.2.35', '8.3' => '8.3.36', '8.4' => '8.4.27', '8.5' => '8.5.12');
+    $rama = PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;
+
+    return isset($corregidas[$rama]) && version_compare(PHP_VERSION, $corregidas[$rama], '<') ? $corregidas[$rama] : null;
+}
 
 function af_bytes($valor)
 {
@@ -449,7 +487,11 @@ function af_analizar()
     $destino = af_destino();
 
     $php_ok = version_compare(PHP_VERSION, AF_PHP_MINIMO, '>=');
+    $falta_parche = af_php_sin_parche();
     $filas[] = af_fila(af_t('a_php'), af_t('a_php_valor', array('actual' => PHP_VERSION, 'minimo' => AF_PHP_MINIMO)), $php_ok ? 'ok' : 'error', $php_ok ? '' : af_t('a_php_ayuda'));
+    if ($falta_parche !== null) {
+        $filas[] = af_fila(af_t('a_php_parche'), af_t('a_php_parche_valor', array('version' => $falta_parche)), 'aviso');
+    }
 
     $faltan = array();
     foreach (explode(',', AF_EXTENSIONES) as $extension) {
@@ -658,19 +700,41 @@ function af_preparar()
     $total = $zip->numFiles;
     $zip->close();
 
-    $publica = base64_decode(AF_CLAVE_PUBLICA, true);
-    $firmaCruda = $firma === false ? false : base64_decode(trim($firma), true);
-    if ($manifiesto === false || $firmaCruda === false || strlen($firmaCruda) !== SODIUM_CRYPTO_SIGN_BYTES
-        || ! sodium_crypto_sign_verify_detached($firmaCruda, $manifiesto, $publica)) {
+    if ($manifiesto === false || $firma === false || ! af_firma_valida($manifiesto, $firma)) {
         @unlink($paquete);
 
         return af_error(af_t('e_paquete_firma'));
     }
-    if (@file_put_contents($temporal.'/manifiesto.json', $manifiesto) === false) {
+    if (@file_put_contents($temporal.'/manifiesto.json', $manifiesto) === false || @file_put_contents($temporal.'/manifiesto.firma', $firma) === false) {
         return af_error(af_t('e_escribir', array('archivo' => $temporal.'/manifiesto.json')));
     }
 
     return array('ok' => true, 'total' => $total);
+}
+
+function af_firma_valida($manifiesto, $firma)
+{
+    $firmaCruda = base64_decode(trim($firma), true);
+
+    return $firmaCruda !== false && strlen($firmaCruda) === SODIUM_CRYPTO_SIGN_BYTES
+        && sodium_crypto_sign_verify_detached($firmaCruda, $manifiesto, base64_decode(AF_CLAVE_PUBLICA, true));
+}
+
+/**
+ * Lo que dice qué archivos se instalan y con qué huella. Se vuelve a comprobar en cada paso: entre
+ * una petición y otra está en una carpeta del servidor.
+ */
+function af_manifiesto()
+{
+    $temporal = af_temporal();
+    $manifiesto = @file_get_contents($temporal.'/manifiesto.json');
+    $firma = @file_get_contents($temporal.'/manifiesto.firma');
+    if ($manifiesto === false || $firma === false || ! af_firma_valida($manifiesto, $firma)) {
+        return null;
+    }
+    $datos = json_decode($manifiesto, true);
+
+    return is_array($datos) && isset($datos['archivos']) ? $datos : null;
 }
 
 function af_segundos_por_tanda()
@@ -693,8 +757,8 @@ function af_extraer($desde)
     $temporal = af_temporal();
     $destino = af_destino();
 
-    $datos = json_decode((string) @file_get_contents($temporal.'/manifiesto.json'), true);
-    if (! is_array($datos) || ! isset($datos['archivos'])) {
+    $datos = af_manifiesto();
+    if ($datos === null) {
         return af_error(af_t('e_paquete_firma'));
     }
     $archivos = $datos['archivos'];
@@ -786,11 +850,14 @@ function af_proteger()
     if (is_file($destino.'/.htaccess') && ! is_file($destino.'/.htaccess.antes-de-alojaflow')) {
         @rename($destino.'/.htaccess', $destino.'/.htaccess.antes-de-alojaflow');
     }
+    $datos = af_manifiesto();
+    if ($datos === null) {
+        return af_error(af_t('e_paquete_firma'));
+    }
     $zip = new ZipArchive();
     if ($zip->open(af_ruta_paquete()) !== true) {
         return af_error(af_t('e_paquete_zip'));
     }
-    $datos = json_decode((string) @file_get_contents(af_temporal().'/manifiesto.json'), true);
     $resultado = af_escribir_del_zip($zip, 'alojaflow-'.AF_VERSION.'/.htaccess', $destino.'/.htaccess', $datos['archivos']['.htaccess'], '.htaccess');
     $zip->close();
 
@@ -917,7 +984,13 @@ function af_php_consola()
  */
 function af_ultimo_error()
 {
-    $registro = af_destino().'/storage/logs/laravel.log';
+    // Un archivo por día: el último es el que tiene el error.
+    $registros = glob(af_destino().'/storage/logs/laravel*.log');
+    if (empty($registros)) {
+        return '';
+    }
+    rsort($registros);
+    $registro = $registros[0];
     if (! is_file($registro)) {
         return '';
     }
@@ -989,11 +1062,13 @@ function af_atender_accion()
     if (! isset($_SERVER['HTTP_X_ALOJAFLOW'])) {
         af_responder(array('ok' => false, 'error' => 'Solicitud no válida.', '_codigo' => 400));
     }
-    if (af_instalado() && $accion !== 'terminar') {
+    if (af_instalado() && ($accion !== 'terminar' || ! af_es_dueno())) {
+        // Con la instalación hecha, lo único que puede pasarle a este archivo es que se borre.
+        @unlink(__FILE__);
         af_responder(array('ok' => false, 'error' => af_t('ya_texto'), '_codigo' => 409));
     }
     if (! af_comprobar_dueno()) {
-        af_responder(array('ok' => false, 'error' => af_t('ocupado_texto'), '_codigo' => 403));
+        af_responder(array('ok' => false, 'error' => af_t(af_instalador_caducado() ? 'caducado_texto' : 'ocupado_texto'), '_codigo' => 403));
     }
 
     try {
@@ -1352,7 +1427,7 @@ function af_pagina()
     function protegidos() {
         var archivos = ['composer.json', '.env.example', 'artisan'];
         return Promise.all(archivos.map(function (a) {
-            return fetch(a + '?comprobar=' + Date.now(), {cache: 'no-store', credentials: 'omit', redirect: 'manual'}).then(function (r) {
+            return fetch(a + '?comprobar=' + Date.now(), {cache: 'no-store', credentials: 'omit'}).then(function (r) {
                 if (r.status !== 200) { return true; }
                 return r.text().then(function (t) { return t.indexOf('juanelodi/alojaflow') === -1 && t.indexOf('APP_NAME=') === -1 && t.indexOf('LARAVEL_START') === -1; });
             }).catch(function () { return true; });
@@ -1449,7 +1524,7 @@ if (af_instalado()) {
 }
 
 if (! af_comprobar_dueno()) {
-    af_pagina_simple(af_t('ocupado_titulo'), af_t('ocupado_texto'), 403);
+    af_pagina_simple(af_t('ocupado_titulo'), af_t(af_instalador_caducado() ? 'caducado_texto' : 'ocupado_texto'), 403);
 }
 
 af_pagina();

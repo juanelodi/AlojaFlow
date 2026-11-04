@@ -11,18 +11,16 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\ConPropiedadSeleccionada;
+use App\Filament\Pages\Concerns\ConRangoDeFechas;
 use App\Seguridad\Acceso;
 use App\Servicios\Informes as ServicioInformes;
-use App\Servicios\Operacion;
 use App\Support\Csv;
 use BackedEnum;
-use Carbon\CarbonImmutable;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Livewire\Attributes\Url;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Throwable;
 
 /**
  * Todos los informes en una pantalla, con su descarga en CSV (M9).
@@ -30,6 +28,7 @@ use Throwable;
 class Informes extends Page
 {
     use ConPropiedadSeleccionada;
+    use ConRangoDeFechas;
 
     protected string $view = 'filament.pages.informes';
 
@@ -37,7 +36,7 @@ class Informes extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPresentationChartLine;
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 4;
 
     #[Url]
     public string $informe = 'unidades';
@@ -55,7 +54,7 @@ class Informes extends Page
 
     public static function getNavigationGroup(): ?string
     {
-        return __('ui.nav.operacion');
+        return __('ui.nav.dinero');
     }
 
     public static function getNavigationLabel(): string
@@ -66,31 +65,6 @@ class Informes extends Page
     public function getTitle(): string|Htmlable
     {
         return __('informes.titulo');
-    }
-
-    public function mount(): void
-    {
-        $hoy = Operacion::hoyDe($this->propiedadUnica());
-        $this->desde = $this->desde !== '' ? $this->desde : $hoy->startOfMonth()->format('Y-m-d');
-        $this->hasta = $this->hasta !== '' ? $this->hasta : $hoy->endOfMonth()->format('Y-m-d');
-    }
-
-    /**
-     * @return array{0: CarbonImmutable, 1: CarbonImmutable}|null
-     */
-    public function rango(): ?array
-    {
-        try {
-            $desde = CarbonImmutable::createFromFormat('!Y-m-d', $this->desde);
-            $hasta = CarbonImmutable::createFromFormat('!Y-m-d', $this->hasta);
-        } catch (Throwable) {
-            return null;
-        }
-        if (! $desde || ! $hasta || $hasta->lt($desde) || $desde->diffInDays($hasta) > 731) {
-            return null;
-        }
-
-        return [$desde, $hasta];
     }
 
     /**

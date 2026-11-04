@@ -33,6 +33,7 @@ class CreateGrupo extends CreateRecord
     {
         $propiedadId = (int) ($data['propiedad_id'] ?? 0);
         abort_unless(in_array($propiedadId, GrupoResource::propiedadesGestionables(), true), 403);
+        GrupoResource::comprobarReferencias($data, $propiedadId);
 
         try {
             return app(GestorGrupos::class)->crear(

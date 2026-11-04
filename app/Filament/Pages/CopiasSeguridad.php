@@ -159,6 +159,10 @@ class CopiasSeguridad extends Page
             ->icon(Heroicon::OutlinedArrowDownTray)
             ->color('gray')
             ->size('sm')
+            // Lleva todos los datos: una sesión olvidada abierta no debe bastar para llevársela.
+            ->schema([
+                TextInput::make('contrasena')->label(__('copias.contrasena'))->password()->required()->currentPassword(),
+            ])
             ->action(function (array $arguments): BinaryFileResponse {
                 $nombre = (string) ($arguments['nombre'] ?? '');
                 $ruta = $this->gestor()->ruta($nombre);

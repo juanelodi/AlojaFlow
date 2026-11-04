@@ -31,13 +31,14 @@ final class Cotizador
     public static function cotizar(Unidad $unidad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas = 1): ?Cotizacion
     {
         $tarifa = $unidad->tarifa_id === null ? null : Tarifa::query()->where('activa', true)->find($unidad->tarifa_id);
-        if ($tarifa === null || $salida->lte($llegada)) {
+        // El recorrido es por noche: sin este tope, unas fechas absurdas ocupan el servidor.
+        if ($tarifa === null || $salida->lte($llegada) || $llegada->diffInDays($salida) > GestorReservas::NOCHES_MAXIMAS) {
             return null;
         }
 
         $temporadas = TemporadaTarifa::query()->where('tarifa_id', $tarifa->id)
-            ->whereDate('desde', '<', $salida->format('Y-m-d'))
-            ->whereDate('hasta', '>=', $llegada->format('Y-m-d'))
+            ->where('desde', '<', $salida->format('Y-m-d'))
+            ->where('hasta', '>=', $llegada->format('Y-m-d'))
             ->orderByDesc('desde')->orderByDesc('id')
             ->get();
         $personas = max(1, $personas);

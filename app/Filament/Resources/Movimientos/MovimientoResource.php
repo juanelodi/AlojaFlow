@@ -47,7 +47,7 @@ class MovimientoResource extends RecursoDePropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 2;
 
     protected static function permiso(): string
     {
@@ -56,7 +56,7 @@ class MovimientoResource extends RecursoDePropiedad
 
     public static function getNavigationGroup(): ?string
     {
-        return __('ui.nav.datos');
+        return __('ui.nav.dinero');
     }
 
     public static function getModelLabel(): string
@@ -69,6 +69,11 @@ class MovimientoResource extends RecursoDePropiedad
         return __('ui.movimientos.modelos');
     }
 
+    protected static function referencias(): array
+    {
+        return ['caja_id' => Caja::class];
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -78,11 +83,11 @@ class MovimientoResource extends RecursoDePropiedad
                 DatePicker::make('fecha')->label(__('ui.pagos.fecha'))->required()->default(fn (): string => now()->format('Y-m-d')),
                 TextInput::make('concepto')->label(__('ui.movimientos.concepto'))->required()->maxLength(255),
                 TextInput::make('categoria')->label(__('ui.movimientos.categoria'))->maxLength(100)
-                    ->datalist(fn (Get $get): array => Movimiento::query()->where('propiedad_id', (int) $get('propiedad_id'))->whereNotNull('categoria')->distinct()->orderBy('categoria')->pluck('categoria')->all()),
+                    ->datalist(fn (Get $get): array => Movimiento::query()->where('propiedad_id', self::propiedadDe($get))->whereNotNull('categoria')->distinct()->orderBy('categoria')->pluck('categoria')->all()),
                 CampoDinero::make('importe')->label(__('ui.pagos.importe'))->required(),
                 Select::make('metodo')->label(__('ui.pagos.metodo'))->options(MetodoPago::opciones())->required()->native(false)->default(MetodoPago::Efectivo->value),
                 Select::make('caja_id')->label(__('ui.cajas.modelo_campo'))->native(false)
-                    ->options(fn (Get $get): array => Caja::query()->where('propiedad_id', (int) $get('propiedad_id'))->where('activa', true)->orderBy('nombre')->pluck('nombre', 'id')->all()),
+                    ->options(fn (Get $get): array => Caja::query()->where('propiedad_id', self::propiedadDe($get))->where('activa', true)->orderBy('nombre')->pluck('nombre', 'id')->all()),
                 TextInput::make('referencia')->label(__('ui.pagos.referencia'))->maxLength(100),
             ]),
         ]);
@@ -113,8 +118,8 @@ class MovimientoResource extends RecursoDePropiedad
                         DatePicker::make('hasta')->label(__('ui.indicadores.hasta')),
                     ])
                     ->query(fn (Builder $query, array $data): Builder => $query
-                        ->when($data['desde'] ?? null, fn (Builder $q, string $desde): Builder => $q->whereDate('fecha', '>=', $desde))
-                        ->when($data['hasta'] ?? null, fn (Builder $q, string $hasta): Builder => $q->whereDate('fecha', '<=', $hasta))),
+                        ->when($data['desde'] ?? null, fn (Builder $q, string $desde): Builder => $q->where('fecha', '>=', $desde))
+                        ->when($data['hasta'] ?? null, fn (Builder $q, string $hasta): Builder => $q->where('fecha', '<=', $hasta))),
             ])
             ->emptyStateHeading(__('ui.movimientos.vacio'))
             ->recordActions([EditAction::make()->visible(fn (Movimiento $record): bool => self::canEdit($record))]);

@@ -47,7 +47,7 @@ class Empaquetar extends Command
                 throw new RuntimeException("Hay cambios sin confirmar en git; confírmalos antes de publicar la versión (o usa --permitir-cambios para una prueba):\n".$cambios);
             }
             if (! preg_match('/^## '.preg_quote($version, '/').'\b/m', (string) @file_get_contents($raiz.'/CAMBIOS.md'))) {
-                $this->warn("CAMBIOS.md no tiene la sección «## {$version}».");
+                $this->warn(__('consola.paquete.sin_cambios', ['version' => $version]));
             }
 
             $archivoClave = (string) ($this->option('clave') ?? $raiz.'/.herramientas/clave-actualizaciones.secreta');
@@ -60,7 +60,7 @@ class Empaquetar extends Command
                 throw new RuntimeException("No se encuentra composer ($composer).");
             }
 
-            $this->info("Paquete de AlojaFlow $version");
+            $this->info(__('consola.paquete.de', ['version' => $version]));
             if ($this->callSilently('filament:assets') !== self::SUCCESS) {
                 throw new RuntimeException('php artisan filament:assets falló.');
             }
@@ -89,23 +89,23 @@ class Empaquetar extends Command
             File::deleteDirectory($vacia);
         }
         if (! $revision->valida()) {
-            $this->error('El paquete no pasa la revisión: '.implode(' ', $revision->errores));
+            $this->error(__('consola.paquete.no_pasa', ['errores' => implode(' ', $revision->errores)]));
 
             return self::FAILURE;
         }
 
         $this->newLine();
-        $this->info('Paquete listo y revisado.');
+        $this->info(__('consola.paquete.listo'));
         $this->table(['', ''], [
             ['Zip', $resultado['zip']],
             ['SHA-256', $resultado['sha256']],
-            ['Instalador', $resultado['instalador']],
-            ['Archivos', (string) $resultado['archivos']],
-            ['Tamaño', Number::fileSize((int) filesize($resultado['zip']), 1).' (descomprimido '.Number::fileSize($resultado['bytes'], 1).')'],
+            [__('consola.paquete.instalador'), $resultado['instalador']],
+            [__('consola.paquete.archivos'), (string) $resultado['archivos']],
+            [__('consola.paquete.tamano'), __('consola.paquete.tamano_valor', ['zip' => Number::fileSize((int) filesize($resultado['zip']), 1), 'descomprimido' => Number::fileSize($resultado['bytes'], 1)])],
         ]);
-        $this->line('Para actualizar una instalación: súbelo en Sistema → '.__('actualizaciones.titulo').', o en su consola:');
+        $this->line(__('consola.paquete.para_actualizar', ['pantalla' => __('actualizaciones.titulo')]));
         $this->line('  php artisan alojaflow:actualizar /ruta/a/'.basename($resultado['zip']));
-        $this->line('Para instalar desde cero: sube '.basename($resultado['instalador']).' al hosting y ábrelo en el navegador.');
+        $this->line(__('consola.paquete.para_instalar', ['archivo' => basename($resultado['instalador'])]));
 
         return self::SUCCESS;
     }

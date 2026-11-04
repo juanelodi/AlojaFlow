@@ -11,11 +11,13 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Actualizacion\Actualizador;
+use App\Archivos\GestorArchivos;
 use App\Enums\EstadoEnvio;
 use App\Models\Actualizacion;
 use App\Models\EjecucionSincronizacion;
 use App\Models\Envio;
 use App\Models\Principal;
+use App\Models\RegistroAuditoria;
 use App\Privacidad\GestorPrivacidad;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -38,15 +40,17 @@ class Limpiar extends Command
             ->whereNotIn('id', $vigentes)
             ->delete();
 
-        $this->info("Ejecuciones de sincronización borradas: $borradas");
+        $this->info(__('consola.ejecuciones_borradas', ['cuantas' => $borradas]));
 
         $vencidos = $privacidad->aplicarPlazos();
-        $this->info('Plazos de conservación: '.json_encode($vencidos));
+        $this->info(__('consola.plazos', ['detalle' => (string) json_encode($vencidos)]));
 
         // El texto de los mensajes lleva datos personales: el historial se queda, el cuerpo no (§8).
         Envio::query()->whereNotNull('cuerpo')->where('creado_en', '<', now()->subDays(90))->whereNotIn('estado', [EstadoEnvio::Pendiente->value])->update(['cuerpo' => null]);
+        RegistroAuditoria::query()->where('creado_en', '<', now()->subDays((int) config('alojaflow.dias_conservar_auditoria')))->delete();
+
         $disco = Storage::disk('local');
-        foreach ($disco->files('subidas-temporales') as $temporal) {
+        foreach ($disco->files(GestorArchivos::CARPETA_SUBIDAS) as $temporal) {
             if ($disco->lastModified($temporal) < now()->subDay()->getTimestamp()) {
                 $disco->delete($temporal);
             }
@@ -62,7 +66,7 @@ class Limpiar extends Command
                 $copias++;
             }
         }
-        $this->info("Copias de actualizaciones borradas: $copias");
+        $this->info(__('consola.copias_borradas', ['cuantas' => $copias]));
 
         return self::SUCCESS;
     }

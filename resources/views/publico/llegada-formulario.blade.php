@@ -14,7 +14,7 @@
     <section class="tarjeta">
         <h2>{{ __('llegada.titulo') }}</h2>
         <p class="gris" style="margin:0">
-            {{ __('motor.tu_reserva') }} {{ $reserva->codigo_publico }} ·
+            {{ __('motor.tu_reserva') }} ·
             {{ Formato::fecha($reserva->llegada, 'ddd D MMM') }} → {{ Formato::fecha($reserva->salida, 'ddd D MMM') }}
         </p>
         <p class="gris" style="margin:8px 0 0">{{ __('llegada.ayuda') }}</p>

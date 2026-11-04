@@ -49,7 +49,7 @@
 
         @if ($registro->aceptaciones->isNotEmpty())
             <x-filament::section :heading="__('llegada.panel.aceptaciones')">
-                <div class="af-tabla-contenedor">
+                <div class="af-tabla-contenedor" tabindex="0" role="region" aria-label="{{ $this->getTitle() }}">
                     <table class="af-tabla">
                         <tbody>
                             @foreach ($registro->aceptaciones as $aceptacion)

@@ -95,7 +95,7 @@
             @if ($historial->isEmpty())
                 <p class="af-nota">{{ __('actualizaciones.sin_historial') }}</p>
             @else
-                <div class="af-tabla-contenedor">
+                <div class="af-tabla-contenedor" tabindex="0" role="region" aria-label="{{ __('actualizaciones.historial') }}">
                     <table class="af-tabla">
                         <caption class="af-sr">{{ __('actualizaciones.historial') }}</caption>
                         <thead>

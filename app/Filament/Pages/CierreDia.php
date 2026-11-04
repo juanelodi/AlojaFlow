@@ -41,19 +41,19 @@ class CierreDia extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedLockClosed;
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     #[Url]
     public ?string $fecha = null;
 
     protected static function permiso(): string
     {
-        return Acceso::OPERACION;
+        return Acceso::DATOS;
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return __('ui.nav.operacion');
+        return __('ui.nav.dinero');
     }
 
     public static function getNavigationLabel(): string
@@ -92,7 +92,7 @@ class CierreDia extends Page
             $filas[] = [
                 'propiedad' => $propiedad,
                 'resumen' => $servicio->resumen($propiedad, $fecha),
-                'cierre' => ModeloCierre::query()->with('usuario')->where('propiedad_id', $propiedad->id)->whereDate('fecha', $fecha->format('Y-m-d'))->first(),
+                'cierre' => ModeloCierre::query()->with('usuario')->where('propiedad_id', $propiedad->id)->where('fecha', $fecha->format('Y-m-d'))->first(),
             ];
         }
 

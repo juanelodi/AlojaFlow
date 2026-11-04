@@ -12,9 +12,12 @@ namespace App\Motor;
 
 use App\Comunicacion\Mensajero;
 use App\Enums\EstadoReserva;
+use App\Enums\NivelAviso;
 use App\Enums\TipoContacto;
+use App\Models\Aviso;
 use App\Models\ConceptoCargo;
 use App\Models\ContactoHuesped;
+use App\Models\Cupon;
 use App\Models\Huesped;
 use App\Models\Propiedad;
 use App\Models\Reserva;
@@ -28,6 +31,7 @@ use App\Servicios\Disponibilidad;
 use App\Support\Contactos;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Reservas directas desde el sitio del alojamiento (D-042). El huésped ve tarifas con unidades
@@ -35,8 +39,39 @@ use Illuminate\Support\Facades\DB;
  */
 final class MotorReservas
 {
+    /** Hasta cuántos días adelante se reserva desde el sitio. */
+    public const DIAS_HORIZONTE = 730;
+
+    /** Reservas vigentes de un mismo correo: un huésped real rara vez tiene más. */
+    private const VIGENTES_POR_CORREO = 3;
+
+    /** Reservas nuevas por hora en una propiedad: más de esto en un hotel pequeño es abuso. */
+    private const NUEVAS_POR_HORA = 30;
+
     public function __construct(private readonly GestorReservas $reservas)
     {
+    }
+
+    /**
+     * Por qué no se pueden pedir esas fechas, o null si se puede. Va antes de calcular nada.
+     */
+    public function motivoFechas(Propiedad $propiedad, CarbonImmutable $llegada, CarbonImmutable $salida): ?string
+    {
+        if (! $this->rangoCotizable($propiedad, $llegada, $salida)) {
+            return $salida->gt($llegada) && $llegada->diffInDays($salida) <= GestorReservas::NOCHES_MAXIMAS ? __('motor.error.fecha_lejana') : __('motor.error.fechas');
+        }
+        if ($llegada->format('Y-m-d') < $propiedad->hoy()->addDays((new AjustesMotor($propiedad))->diasMinimosAntelacion())->format('Y-m-d')) {
+            return __('motor.error.fecha_pasada');
+        }
+
+        return null;
+    }
+
+    public function rangoCotizable(Propiedad $propiedad, CarbonImmutable $llegada, CarbonImmutable $salida): bool
+    {
+        return $salida->gt($llegada)
+            && $llegada->diffInDays($salida) <= GestorReservas::NOCHES_MAXIMAS
+            && $llegada->format('Y-m-d') <= $propiedad->hoy()->addDays(self::DIAS_HORIZONTE)->format('Y-m-d');
     }
 
     /**
@@ -97,9 +132,11 @@ final class MotorReservas
         }
         $llegada = CarbonImmutable::parse($datos['llegada'])->startOfDay();
         $salida = CarbonImmutable::parse($datos['salida'])->startOfDay();
-        if ($llegada->format('Y-m-d') < $propiedad->hoy()->addDays($ajustes->diasMinimosAntelacion())->format('Y-m-d')) {
-            throw new ReservaRechazada(__('motor.error.fecha_pasada'));
+        $motivo = $this->motivoFechas($propiedad, $llegada, $salida);
+        if ($motivo !== null) {
+            throw new ReservaRechazada($motivo);
         }
+        $this->comprobarLimites($propiedad, $datos['correo']);
 
         $tarifa = Tarifa::query()->where('propiedad_id', $propiedad->id)->where('activa', true)->where('visible_motor', true)->find($datos['tarifa_id']);
         if ($tarifa === null) {
@@ -114,9 +151,9 @@ final class MotorReservas
         $cupon = null;
         if (filled($datos['cupon'])) {
             $cupon = Cupones::buscar($propiedad->id, $datos['cupon']);
-            $motivo = $cupon === null ? __('ui.cupones.error_no_existe') : Cupones::motivoRechazo($cupon, $llegada, (int) $llegada->diffInDays($salida));
-            if ($motivo !== null) {
-                throw new ReservaRechazada($motivo, 'cupon');
+            // Un solo mensaje: el formulario es público y no debe servir para probar qué códigos existen.
+            if ($cupon === null || Cupones::motivoRechazo($cupon, $llegada, (int) $llegada->diffInDays($salida)) !== null) {
+                throw new ReservaRechazada(__('ui.cupones.error_no_valido'), 'cupon');
             }
         }
 
@@ -125,6 +162,10 @@ final class MotorReservas
         $elegidos = array_fill_keys($cargos, 1.0);
 
         $reserva = DB::transaction(function () use ($propiedad, $ajustes, $datos, $candidatas, $llegada, $salida, $cupon, $cargos, $elegidos): Reserva {
+            // Con la fila bloqueada, dos reservas a la vez no rebasan los usos permitidos del cupón.
+            if ($cupon !== null) {
+                Cupon::query()->whereKey($cupon->id)->lockForUpdate()->first();
+            }
             $huesped = $this->huesped($propiedad, $datos);
             /** @var Unidad $primera */
             $primera = $candidatas->first();
@@ -154,11 +195,19 @@ final class MotorReservas
                         'comentario' => $datos['comentario'],
                         'cupon_codigo' => $cupon->codigo ?? '',
                         'idioma' => $datos['idioma'],
-                        // Se retiene solo mientras se paga: si no paga, las noches vuelven a venderse.
-                        'expira_en' => $pagaraEnLinea ? now('UTC')->addMinutes($ajustes->minutosRetencion()) : null,
+                        // Nada retiene noches para siempre desde un formulario público: si no paga
+                        // o nadie la revisa a tiempo, las noches vuelven a venderse.
+                        'expira_en' => match (true) {
+                            $pagaraEnLinea => now('UTC')->addMinutes($ajustes->minutosRetencion()),
+                            ! $confirmada && $ajustes->horasRevision() > 0 => now('UTC')->addHours($ajustes->horasRevision()),
+                            default => null,
+                        },
                         'cargos' => array_map(fn (int $id): array => ['concepto_cargo_id' => $id, 'cantidad' => 1], $cargos),
                     ]);
                 } catch (ReservaRechazada $e) {
+                    if ($e->campo === 'cupon_codigo') {
+                        throw new ReservaRechazada(__('ui.cupones.error_no_valido'), 'cupon');
+                    }
                     if ($e->campo !== 'unidad_id') {
                         throw $e;
                     }
@@ -173,18 +222,39 @@ final class MotorReservas
     }
 
     /**
-     * Si el correo ya está en una ficha de la propiedad, se usa esa: no se duplica ni se cambia. Un
-     * huésped no debe poder sobrescribir la ficha de otro desde una página pública.
+     * Frena a quien llena el formulario una y otra vez para dejar a la propiedad sin lugar.
+     */
+    private function comprobarLimites(Propiedad $propiedad, string $correo): void
+    {
+        $normalizado = Contactos::normalizar(TipoContacto::Correo->value, $correo);
+        $vigentes = Reserva::query()->where('propiedad_id', $propiedad->id)->where('estado', '!=', EstadoReserva::Cancelada->value);
+        $delCorreo = (clone $vigentes)->where('salida', '>=', $propiedad->hoy()->format('Y-m-d'))
+            ->whereHas('titular.contactos', fn ($q) => $q->where('valor_normalizado', $normalizado))->count();
+        if ($delCorreo >= self::VIGENTES_POR_CORREO) {
+            throw new ReservaRechazada(__('motor.error.demasiadas'));
+        }
+        if ((clone $vigentes)->where('creado_en', '>=', now('UTC')->subHour())->count() >= self::NUEVAS_POR_HORA) {
+            Aviso::abrir($propiedad->id, 'motor_saturado', NivelAviso::Advertencia);
+            throw new ReservaRechazada(__('motor.error.saturado'));
+        }
+    }
+
+    /**
+     * Se reutiliza una ficha solo si coinciden el correo y el nombre. Con el correo nada más, quien lo
+     * escriba vería el nombre real de la persona y le dejaría reservas falsas en su historial. Si es
+     * la misma persona con otro nombre escrito, el personal puede fusionar las dos fichas.
      *
      * @param  array<string, mixed>  $datos
      */
     private function huesped(Propiedad $propiedad, array $datos): Huesped
     {
         $correo = Contactos::normalizar(TipoContacto::Correo->value, (string) $datos['correo']);
-        $contacto = ContactoHuesped::query()->where('valor_normalizado', $correo)
-            ->whereHas('huesped', fn ($q) => $q->where('propiedad_id', $propiedad->id)->where('sincronizada', false))->first();
-        if ($contacto !== null) {
-            return $contacto->huesped;
+        $contactos = ContactoHuesped::query()->with('huesped')->where('valor_normalizado', $correo)
+            ->whereHas('huesped', fn ($q) => $q->where('propiedad_id', $propiedad->id)->where('sincronizada', false))->get();
+        foreach ($contactos as $contacto) {
+            if ($this->mismoNombre($contacto->huesped, (string) $datos['nombre'], (string) $datos['apellido'])) {
+                return $contacto->huesped;
+            }
         }
 
         $huesped = Huesped::query()->create([
@@ -199,5 +269,13 @@ final class MotorReservas
         }
 
         return $huesped;
+    }
+
+    private function mismoNombre(Huesped $huesped, string $nombre, string $apellido): bool
+    {
+        $normal = fn (?string $texto): string => Str::lower(Str::ascii(trim((string) $texto)));
+
+        return $normal($huesped->nombre) === $normal($nombre)
+            && in_array($normal($apellido), [$normal($huesped->apellido1), $normal(trim($huesped->apellido1.' '.$huesped->apellido2))], true);
     }
 }

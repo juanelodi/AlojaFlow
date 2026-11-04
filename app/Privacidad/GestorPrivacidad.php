@@ -24,6 +24,7 @@ use App\Models\RegistroLlegada;
 use App\Models\Reserva;
 use App\Models\SolicitudPrivacidad;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Derechos del huésped (M10): exportar sus datos, anonimizarlos, y plazos de conservación.
@@ -46,7 +47,7 @@ final class GestorPrivacidad
         $huesped->load(['contactos', 'campos']);
         $reservas = Reserva::query()->where('titular_id', $huesped->id)->orWhereHas('huespedes', fn ($q) => $q->where('huespedes.id', $huesped->id))->with(['unidad', 'pagos', 'cargos'])->get();
         $idsReservas = $reservas->modelKeys();
-        $registros = RegistroLlegada::query()->with('personas')->whereIn('reserva_id', $idsReservas)->get();
+        $registros = RegistroLlegada::query()->with(['personas', 'reserva'])->whereIn('reserva_id', $idsReservas)->get();
 
         $datos = [
             'generado_en' => now('UTC')->toIso8601String(),
@@ -61,7 +62,9 @@ final class GestorPrivacidad
             ])->all(),
             'registros_llegada' => $registros->map(fn (RegistroLlegada $r): array => [
                 'estado' => $r->estado->value,
-                'personas' => $r->personas->map(fn (PersonaLlegada $p): array => $p->makeVisible('documento_numero')->attributesToArray())->all(),
+                // Solo los suyos: el mismo registro trae los datos de quienes viajaron con esa persona.
+                'personas' => $r->personas->filter(fn (PersonaLlegada $p): bool => $this->esLaMismaPersona($p, $huesped, $r))
+                    ->map(fn (PersonaLlegada $p): array => $p->makeVisible('documento_numero')->attributesToArray())->values()->all(),
             ])->all(),
             'aceptaciones' => Aceptacion::query()->with('documento')->whereIn('reserva_id', $idsReservas)->get()->map(fn (Aceptacion $a): array => [
                 'documento' => $a->documento->titulo, 'version' => $a->documento->version, 'huella' => $a->huella_documento, 'fecha' => $a->aceptada_en->toIso8601String(), 'verificacion' => $a->verificacion->value,
@@ -109,8 +112,23 @@ final class GestorPrivacidad
                     $this->archivos->eliminar($archivo);
                 }
             }
-            Aceptacion::query()->whereIn('reserva_id', $reservas)->update(['firmante_nombre' => $marca, 'ip' => null, 'agente' => null]);
-            Envio::query()->where('huesped_id', $huesped->id)->update(['destino' => null, 'asunto' => null, 'cuerpo' => null]);
+            $this->anonimizarComoAcompanante($huesped, $marca);
+            foreach (Aceptacion::query()->with('copia')->whereIn('reserva_id', $reservas)->get() as $aceptacion) {
+                $copia = $aceptacion->copia;
+                $aceptacion->update(['firmante_nombre' => $marca, 'ip' => null, 'agente' => null, 'copia_archivo_id' => null]);
+                if ($copia !== null) {
+                    $this->archivos->eliminar($copia);
+                }
+            }
+            // También los que no llevan ficha: los avisos a otros sistemas y al alojamiento traen sus datos.
+            Envio::query()->where(fn ($q) => $q->where('huesped_id', $huesped->id)->orWhereIn('reserva_id', $reservas))
+                ->update(['destino' => null, 'asunto' => null, 'cuerpo' => null, 'ultimo_error' => null]);
+            DB::table('notas_reserva')->whereIn('reserva_id', $reservas)->delete();
+            DB::table('pagos')->whereIn('reserva_id', $reservas)->update(['referencia' => null]);
+            DB::table('grupos')->where('coordinador_id', $huesped->id)->update(['notas' => null]);
+            // Las facturas guardan su propia copia del receptor, que la ley obliga a conservar; esto es solo
+            // lo que se ofrece para no volver a escribirlo.
+            DB::table('receptores_fiscales')->where('huesped_id', $huesped->id)->delete();
             foreach (Archivo::query()->where('objeto_type', $huesped->getMorphClass())->where('objeto_id', $huesped->id)->get() as $archivo) {
                 $this->archivos->eliminar($archivo);
             }
@@ -131,6 +149,43 @@ final class GestorPrivacidad
 
             return $anonimizada;
         });
+    }
+
+    /**
+     * Sus datos en los registros de llegada de reservas en las que no es titular. Ahí no hay ficha que
+     * los una: se reconocen por el documento o por el nombre, en las reservas donde viajó.
+     */
+    private function anonimizarComoAcompanante(Huesped $huesped, string $marca): void
+    {
+        $reservas = Reserva::query()->where('titular_id', '!=', $huesped->id)->whereHas('huespedes', fn ($q) => $q->where('huespedes.id', $huesped->id))->pluck('id');
+        foreach (RegistroLlegada::query()->with('personas')->whereIn('reserva_id', $reservas)->get() as $registro) {
+            foreach ($registro->personas as $persona) {
+                if ($this->coinciden($persona, $huesped)) {
+                    $persona->update($this->camposPersonaVacios() + ['nombre' => $marca]);
+                }
+            }
+        }
+    }
+
+    private function esLaMismaPersona(PersonaLlegada $persona, Huesped $huesped, RegistroLlegada $registro): bool
+    {
+        if ($persona->es_titular && $registro->reserva->titular_id === $huesped->id) {
+            return true;
+        }
+
+        return ! $persona->es_titular && $this->coinciden($persona, $huesped);
+    }
+
+    private function coinciden(PersonaLlegada $persona, Huesped $huesped): bool
+    {
+        $documentoPersona = $persona->getAttribute('documento_numero_hmac');
+        $documentoHuesped = $huesped->getAttribute('documento_numero_hmac');
+        if (filled($documentoPersona) && filled($documentoHuesped)) {
+            return hash_equals((string) $documentoHuesped, (string) $documentoPersona);
+        }
+        $normal = fn (?string $texto): string => Str::lower(Str::ascii(trim((string) $texto)));
+
+        return $normal($persona->nombre) === $normal($huesped->nombre) && $normal($persona->apellido1) === $normal($huesped->apellido1);
     }
 
     /**
@@ -157,10 +212,11 @@ final class GestorPrivacidad
             $resultado['registros']++;
         }
 
-        foreach (Aceptacion::query()->whereNotNull('conservar_hasta')->where('conservar_hasta', '<', $hoy)->whereNotNull('ip')->get() as $aceptacion) {
-            $aceptacion->update(['firmante_nombre' => __('llegada.anonimizado', ['id' => $aceptacion->id]), 'ip' => null, 'agente' => null]);
-            if ($aceptacion->copia !== null) {
-                $this->archivos->eliminar($aceptacion->copia);
+        foreach (Aceptacion::query()->whereNotNull('conservar_hasta')->where('conservar_hasta', '<', $hoy)->where(fn ($q) => $q->whereNotNull('ip')->orWhereNotNull('copia_archivo_id'))->get() as $aceptacion) {
+            $copia = $aceptacion->copia;
+            $aceptacion->update(['firmante_nombre' => __('llegada.anonimizado', ['id' => $aceptacion->id]), 'ip' => null, 'agente' => null, 'copia_archivo_id' => null]);
+            if ($copia !== null) {
+                $this->archivos->eliminar($copia);
             }
             $resultado['aceptaciones']++;
         }

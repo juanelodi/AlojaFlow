@@ -14,6 +14,7 @@ use App\Models\Propiedad;
 use App\Seguridad\Acceso;
 use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -73,6 +74,39 @@ abstract class RecursoDePropiedad extends Resource
     public static function canDeleteAny(): bool
     {
         return false;
+    }
+
+    /**
+     * La propiedad que dice el formulario, solo si el usuario tiene acceso a ella.
+     */
+    protected static function propiedadDe(Get $get): int
+    {
+        return Acceso::propiedadElegida($get('propiedad_id'), static::propiedadesGestionables());
+    }
+
+    /**
+     * Campos del formulario que apuntan a otra fila de la misma propiedad.
+     *
+     * @return array<string, class-string<Model>>
+     */
+    protected static function referencias(): array
+    {
+        return [];
+    }
+
+    /**
+     * El navegador manda lo que quiera: al guardar se comprueba que cada dato sea de esa propiedad.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public static function comprobarReferencias(array $data, int $propiedadId): void
+    {
+        foreach (static::referencias() as $campo => $modelo) {
+            $valor = $data[$campo] ?? null;
+            if (filled($valor) && ! $modelo::query()->where('propiedad_id', $propiedadId)->whereKey($valor)->exists()) {
+                abort(403);
+            }
+        }
     }
 
     public static function campoPropiedad(): Select

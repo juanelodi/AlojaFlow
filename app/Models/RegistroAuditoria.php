@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Demo\ModoDemo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -55,7 +56,8 @@ class RegistroAuditoria extends ModeloBase
      */
     public static function anotar(string $accion, ?Model $modelo = null, array $cambios = [], ?int $propiedadId = null): void
     {
-        $peticion = app()->runningInConsole() ? null : request();
+        // En la demostración pública, la auditoría la ve cualquiera: no guarda de dónde entró cada quien.
+        $peticion = app()->runningInConsole() || ModoDemo::activo() ? null : request();
 
         self::query()->create([
             'user_id' => auth()->id(),

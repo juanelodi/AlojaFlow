@@ -48,9 +48,9 @@ final class Operacion
     public static function dia(array $propiedades, string $fecha): array
     {
         return [
-            'llegan' => self::reservas($propiedades)->whereDate('llegada', $fecha)->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
-            'salen' => self::reservas($propiedades)->whereDate('salida', $fecha)->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
-            'continuan' => self::reservas($propiedades)->whereDate('llegada', '<', $fecha)->whereDate('salida', '>', $fecha)
+            'llegan' => self::reservas($propiedades)->where('llegada', $fecha)->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
+            'salen' => self::reservas($propiedades)->where('salida', $fecha)->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
+            'continuan' => self::reservas($propiedades)->where('llegada', '<', $fecha)->where('salida', '>', $fecha)
                 ->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
         ];
     }
@@ -69,16 +69,16 @@ final class Operacion
         return [
             'propiedad' => $propiedad,
             'hoy' => $hoy,
-            'llegan' => $base()->whereDate('llegada', $fecha)->count(),
-            'salen' => $base()->whereDate('salida', $fecha)->count(),
-            'alojados' => $base()->whereDate('llegada', '<=', $fecha)->whereDate('salida', '>', $fecha)->count(),
+            'llegan' => $base()->where('llegada', $fecha)->count(),
+            'salen' => $base()->where('salida', $fecha)->count(),
+            'alojados' => $base()->where('llegada', '<=', $fecha)->where('salida', '>', $fecha)->count(),
             'unidades' => $propiedad->unidades()->where('activa', true)->count(),
-            'llegadas_semana' => $base()->whereDate('llegada', '>', $fecha)->whereDate('llegada', '<=', $hoy->addDays(7)->format('Y-m-d'))->count(),
+            'llegadas_semana' => $base()->where('llegada', '>', $fecha)->where('llegada', '<=', $hoy->addDays(7)->format('Y-m-d'))->count(),
             'sin_confirmar' => $base()->where('estado', EstadoReserva::SinConfirmar->value)
-                ->whereDate('llegada', '>=', $fecha)->whereDate('llegada', '<=', $hoy->addDays(3)->format('Y-m-d'))->count(),
+                ->where('llegada', '>=', $fecha)->where('llegada', '<=', $hoy->addDays(3)->format('Y-m-d'))->count(),
             'pendiente' => (int) $base()->where('pendiente', '>', 0)
-                ->whereDate('llegada', '<=', $hoy->addDays(7)->format('Y-m-d'))
-                ->whereDate('salida', '>=', $hoy->subDays(7)->format('Y-m-d'))->sum('pendiente'),
+                ->where('llegada', '<=', $hoy->addDays(7)->format('Y-m-d'))
+                ->where('salida', '>=', $hoy->subDays(7)->format('Y-m-d'))->sum('pendiente'),
             'principal' => $propiedad->principal,
             'avisos' => Aviso::query()->where('propiedad_id', $propiedad->id)->whereNull('resuelto_en')->orderByDesc('abierto_en')->get(),
         ];

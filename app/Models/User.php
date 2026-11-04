@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use SensitiveParameter;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -45,6 +46,19 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     use HasFactory;
     use HasRoles;
     use Notifiable;
+
+    protected static function booted(): void
+    {
+        // Quien pierde el acceso o cambia de contraseña no sigue dentro en otro navegador.
+        static::updated(function (User $usuario): void {
+            if (! $usuario->wasChanged('password') && ! ($usuario->wasChanged('activo') && ! $usuario->activo)) {
+                return;
+            }
+            DB::table('sessions')->where('user_id', $usuario->id)->where('id', '!=', session()->getId())->delete();
+            // Sin eventos: esto no es otro cambio del usuario.
+            User::query()->whereKey($usuario->id)->toBase()->update(['remember_token' => null]);
+        });
+    }
 
     /**
      * @return array<string, string>

@@ -18,10 +18,16 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Str;
 
 class ViewReserva extends ViewRecord
 {
     protected static string $resource = ReservaResource::class;
+
+    public function getTitle(): string
+    {
+        return Str::ucfirst(__('ui.reservas.modelo')).' '.$this->getRecord()->getAttribute('numero');
+    }
 
     protected function getHeaderActions(): array
     {

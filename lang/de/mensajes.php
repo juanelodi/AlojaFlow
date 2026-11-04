@@ -12,6 +12,7 @@ return [
     'omitido_sin_destino' => 'Es gibt keine E-Mail-Adresse oder die Vorlage ist deaktiviert.',
     'correo_sin_configurar' => 'Die ausgehende E-Mail ist nicht konfiguriert.',
     'webhook_borrado' => 'Die Benachrichtigung an das andere System gibt es nicht mehr.',
+    'error_tamano' => 'Die Antwort ist zu groß.',
     'error_redirecciones' => 'Die Adresse leitet zu oft weiter.',
     'aviso_motor' => [
         'asunto' => 'Neue Buchung {numero} in der Buchungsmaschine',
@@ -125,6 +126,7 @@ return [
         'host' => 'SMTP-Server',
         'puerto' => 'Port',
         'cifrado' => 'Verschlüsselung',
+        'cifrado_ayuda' => 'Ohne Verschlüsselung sind das Kontopasswort und die Nachrichten unterwegs für jeden sichtbar. Verwenden Sie TLS oder SSL, es sei denn, Ihr Anbieter bietet sie nicht an.',
         'cifrado_tls' => 'TLS (Port 587)',
         'cifrado_ssl' => 'SSL (Port 465)',
         'cifrado_ninguno' => 'Keine',

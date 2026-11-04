@@ -11,9 +11,11 @@ declare(strict_types=1);
 namespace App\Propiedades;
 
 use App\Copias\GestorCopias;
+use App\Enums\EstadoEjecucion;
 use App\Enums\MetodoPago;
 use App\Enums\ModoPropiedad;
 use App\Models\Aviso;
+use App\Models\EjecucionSincronizacion;
 use App\Models\Principal;
 use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
@@ -67,9 +69,7 @@ final class Independizador
         if ($propiedad->esIndependiente() || $principal === null) {
             throw new ErrorIndependizar(__('ui.independizar.error_no_subordinada'));
         }
-        if ($principal->ejecucion_vigente_id !== null) {
-            throw new ErrorIndependizar(__('ui.independizar.error_sincronizando'));
-        }
+        $this->comprobarSinSincronizacion($principal);
         $this->comprobarChoques($propiedad);
 
         $this->copias->crear('antes-de-independizar');
@@ -85,13 +85,22 @@ final class Independizador
         }
     }
 
+    /**
+     * Que esté corriendo una ahora. `ejecucion_vigente_id` no sirve para esto: es la última que salió
+     * bien, y la tiene toda principal que haya sincronizado alguna vez.
+     */
+    private function comprobarSinSincronizacion(Principal $principal): void
+    {
+        if (EjecucionSincronizacion::query()->where('principal_id', $principal->id)->where('estado', EstadoEjecucion::EnCurso->value)->exists()) {
+            throw new ErrorIndependizar(__('ui.independizar.error_sincronizando'));
+        }
+    }
+
     private function convertir(Propiedad $propiedad, Principal $principal): int
     {
         // Con la principal bloqueada, una sincronización no puede empezar a medias de la conversión.
         $bloqueada = Principal::query()->whereKey($principal->id)->lockForUpdate()->firstOrFail();
-        if ($bloqueada->ejecucion_vigente_id !== null) {
-            throw new ErrorIndependizar(__('ui.independizar.error_sincronizando'));
-        }
+        $this->comprobarSinSincronizacion($bloqueada);
 
         $this->crearSaldosIniciales($propiedad);
         foreach (self::TABLAS_CON_ORIGEN as $tabla) {

@@ -42,7 +42,7 @@ class FacturaResource extends RecursoDeCualquierPropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentCurrencyDollar;
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 3;
 
     protected static function permiso(): string
     {
@@ -51,7 +51,7 @@ class FacturaResource extends RecursoDeCualquierPropiedad
 
     public static function getNavigationGroup(): ?string
     {
-        return __('ui.nav.datos');
+        return __('ui.nav.dinero');
     }
 
     public static function getModelLabel(): string

@@ -42,7 +42,7 @@ class Correo extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelope;
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 5;
 
     /** @var array<string, mixed>|null */
     public ?array $datos = [];
@@ -54,7 +54,7 @@ class Correo extends Page
 
     public static function getNavigationGroup(): ?string
     {
-        return __('ui.nav.configuracion');
+        return __('ui.nav.comunicacion');
     }
 
     public static function getNavigationLabel(): string
@@ -85,7 +85,7 @@ class Correo extends Page
             Section::make()->description(__('mensajes.correo.ayuda'))->columns(['default' => 1, 'md' => 2])->schema([
                 TextInput::make('host')->label(__('mensajes.correo.host'))->maxLength(255)->required(),
                 TextInput::make('puerto')->label(__('mensajes.correo.puerto'))->integer()->minValue(1)->maxValue(65535)->required(),
-                Select::make('cifrado')->label(__('mensajes.correo.cifrado'))->native(false)->required()
+                Select::make('cifrado')->label(__('mensajes.correo.cifrado'))->helperText(__('mensajes.correo.cifrado_ayuda'))->native(false)->required()
                     ->options(['tls' => __('mensajes.correo.cifrado_tls'), 'ssl' => __('mensajes.correo.cifrado_ssl'), 'ninguno' => __('mensajes.correo.cifrado_ninguno')]),
                 TextInput::make('usuario')->label(__('mensajes.correo.usuario'))->maxLength(255)->autocomplete('off'),
                 TextInput::make('contrasena')->label(__('mensajes.correo.contrasena'))->password()->revealable()->autocomplete('new-password')->maxLength(500)

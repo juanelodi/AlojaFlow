@@ -179,7 +179,7 @@ it('el archivo cifrado no se lee en el disco y un usuario sin permiso no lo ve',
     $limpieza = User::factory()->create(['activo' => true, 'idioma' => 'es']);
     Acceso::asignarRoles($limpieza, [['propiedad_id' => $this->propiedad->id, 'rol' => 'limpieza']]);
     $this->actingAs($limpieza);
-    $this->get(route('archivos.ver', $archivo))->assertForbidden();
+    $this->get(route('archivos.ver', $archivo))->assertNotFound();
 });
 
 it('el rol de limpieza entra y no ve las demás propiedades', function () {

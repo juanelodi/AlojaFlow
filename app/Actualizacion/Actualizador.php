@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Actualizacion;
 
 use App\Enums\EstadoActualizacion;
+use App\Instalacion\CachesArranque;
 use App\Models\Actualizacion;
 use App\Models\RegistroAuditoria;
 use App\Models\User;
@@ -354,6 +355,7 @@ class Actualizador
             File::delete($paquete);
         }
 
+        CachesArranque::rehacer();
         $actualizacion->update(['estado' => EstadoActualizacion::Completada, 'terminada_en' => now()]);
         RegistroAuditoria::anotar('actualizacion.completada', $actualizacion, ['version' => $actualizacion->version_nueva]);
     }
@@ -415,6 +417,9 @@ class Actualizador
         foreach (self::CACHES_ARRANQUE as $archivo) {
             @unlink($this->raiz().'/bootstrap/cache/'.$archivo);
         }
+        // Componentes e iconos de la versión anterior: el código nuevo no debe arrancar con ellos.
+        File::deleteDirectory($this->raiz().'/bootstrap/cache/filament');
+        @unlink($this->raiz().'/bootstrap/cache/blade-icons.php');
     }
 
     private function guardarFirma(string $zipRuta, Revision $revision, string $carpeta): void

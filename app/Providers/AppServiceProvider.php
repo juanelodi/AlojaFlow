@@ -11,10 +11,15 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Demo\ModoDemo;
+use App\Seguridad\MemoriaAcceso;
+use App\Support\ClaveCliente;
+use Filament\Tables\Table;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped(MemoriaAcceso::class);
     }
 
     /**
@@ -31,10 +36,31 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->app->terminating(fn () => $this->app->make(MemoriaAcceso::class)->vaciar());
+
+        // Lo mismo que pide el instalador, en el perfil y al recuperar la contraseña.
+        Password::defaults(fn (): Password => Password::min(12));
+
+        // En el teléfono, cada fila es una tarjeta con todos sus datos: una tabla ancha solo dejaba ver dos columnas.
+        Table::configureUsing(fn (Table $table): Table => $table->stackedOnMobile());
+
         // Con nombre: sin él, dos límites en una misma ruta comparten el contador y se suman.
-        RateLimiter::for('publico', fn (Request $request): Limit => Limit::perMinute(60)->by((string) $request->ip()));
-        RateLimiter::for('publico-envio', fn (Request $request): Limit => Limit::perMinute(10)->by((string) $request->ip()));
-        RateLimiter::for('publico-codigo', fn (Request $request): Limit => Limit::perMinute(3)->by((string) $request->ip()));
+        RateLimiter::for('publico', fn (Request $request): Limit => Limit::perMinute(60)->by(ClaveCliente::de($request)));
+        RateLimiter::for('publico-envio', fn (Request $request): Limit => Limit::perMinute(10)->by(ClaveCliente::de($request)));
+        RateLimiter::for('publico-codigo', fn (Request $request): Limit => Limit::perMinute(3)->by(ClaveCliente::de($request)));
+        // Por enlace, además de por dirección: quien tenga uno filtrado no llena el disco ni manda correos sin fin.
+        RateLimiter::for('llegada-envio', fn (Request $request): Limit => Limit::perHour(20)->by('llegada:'.(string) $request->route('token')));
+        RateLimiter::for('llegada-codigo', fn (Request $request): Limit => Limit::perHour(6)->by('llegada:'.(string) $request->route('token')));
+        // Crear una reserva aparta noches: cuesta más que cualquier otro envío público.
+        RateLimiter::for('motor-reserva', fn (Request $request): array => [
+            Limit::perMinute(5)->by('minuto:'.ClaveCliente::de($request)),
+            Limit::perHour(20)->by('hora:'.ClaveCliente::de($request)),
+        ]);
+
+        // Con la instalación en https, todos los enlaces van en https aunque un proxy hable en http.
+        if ($this->app->isProduction() && str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
 
         // La demostración pública nunca manda correos de verdad.
         if (ModoDemo::activo()) {

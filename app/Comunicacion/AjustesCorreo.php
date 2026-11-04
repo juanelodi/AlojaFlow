@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Mail;
  */
 final class AjustesCorreo
 {
-    private const MAILER = 'alojaflow';
+    public const MAILER = 'alojaflow';
 
     public function configurado(): bool
     {
@@ -48,7 +48,11 @@ final class AjustesCorreo
             'transport' => 'smtp',
             'host' => (string) Ajustes::obtener('correo.host'),
             'port' => (int) Ajustes::obtener('correo.puerto', 587),
-            'encryption' => $cifrado === 'ninguno' ? null : $cifrado,
+            // Laravel 13 ya no lee «encryption». Sin require_tls, quien esté en el camino puede quitar
+            // STARTTLS de la respuesta y la contraseña viajaría en claro.
+            'scheme' => $cifrado === 'ssl' ? 'smtps' : 'smtp',
+            'auto_tls' => $cifrado !== 'ninguno',
+            'require_tls' => $cifrado === 'tls',
             'username' => (string) Ajustes::obtener('correo.usuario'),
             'password' => Ajustes::secreto('correo.contrasena'),
             'timeout' => 20,

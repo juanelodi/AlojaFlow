@@ -38,7 +38,7 @@ use Throwable;
  */
 final class GestorReservas
 {
-    private const NOCHES_MAXIMAS = 366;
+    public const NOCHES_MAXIMAS = 366;
 
     /**
      * @param  bool  $registrar  genera eventos y auditoría; el demo lo apaga para no parecer actividad real
@@ -149,9 +149,12 @@ final class GestorReservas
         });
     }
 
-    public function cancelar(Reserva $reserva): Reserva
+    /**
+     * @param  bool  $porVencimiento  Se le acabó el tiempo a la retención; no la canceló una persona, y un pago que llegue tarde todavía puede recuperarla.
+     */
+    public function cancelar(Reserva $reserva, bool $porVencimiento = false): Reserva
     {
-        return DB::transaction(function () use ($reserva): Reserva {
+        return DB::transaction(function () use ($reserva, $porVencimiento): Reserva {
             $actual = $this->bloquear($reserva);
             if ($actual->estado === EstadoReserva::Cancelada) {
                 return $actual;
@@ -160,6 +163,9 @@ final class GestorReservas
                 throw new ReservaRechazada(__('ui.reservas.error_en_casa'));
             }
             $actual->estado = EstadoReserva::Cancelada;
+            if (! $porVencimiento) {
+                $actual->expira_en = null;
+            }
             $actual->version++;
             $actual->save();
             $actual->nochesOcupadas()->delete();

@@ -28,6 +28,17 @@ trait EditaEnPropiedad
         ];
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        static::getResource()::comprobarReferencias($data, (int) $this->record->getAttribute('propiedad_id'));
+
+        return $data;
+    }
+
     protected function afterSave(): void
     {
         // Solo los nombres de los campos: la auditoría no guarda datos personales ni secretos.

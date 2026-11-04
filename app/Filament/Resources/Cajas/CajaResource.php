@@ -40,7 +40,12 @@ class CajaResource extends RecursoDePropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInboxStack;
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 6;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('ui.nav.dinero');
+    }
 
     public static function getModelLabel(): string
     {
@@ -58,7 +63,7 @@ class CajaResource extends RecursoDePropiedad
             Section::make()->columnSpanFull()->columns(['default' => 1, 'md' => 2])->schema([
                 self::campoPropiedad(),
                 TextInput::make('nombre')->label(__('ui.cajas.nombre'))->helperText(__('ui.cajas.nombre_ayuda'))->required()->maxLength(100)
-                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', (int) $get('propiedad_id'))),
+                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', self::propiedadDe($get))),
                 Toggle::make('activa')->label(__('ui.tarifas.activa'))->default(true),
             ]),
         ]);

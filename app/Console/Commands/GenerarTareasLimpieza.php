@@ -30,7 +30,7 @@ class GenerarTareasLimpieza extends Command
             $limpieza->atenderSalidas($propiedad);
             $nuevas += $limpieza->generarTareas($propiedad);
         });
-        $this->info("Tareas nuevas: $nuevas");
+        $this->info(__('consola.tareas_nuevas', ['cuantas' => $nuevas]));
 
         return self::SUCCESS;
     }

@@ -102,6 +102,7 @@ class Sincronizador
         } catch (ErrorSincronizacion $error) {
             $this->terminarMal($principal, $ejecucion, $error, $incidencias);
         } catch (Throwable $error) {
+            // Con los valores ya ocultos en la conexión (config/database.php): no van datos de huéspedes al registro.
             report($error);
             $this->terminarMal($principal, $ejecucion, new ErrorSincronizacion(CodigoError::RespuestaDesconocida, 'interno', class_basename($error)), $incidencias);
         } finally {

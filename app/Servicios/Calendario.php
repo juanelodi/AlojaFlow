@@ -44,14 +44,14 @@ final class Calendario
 
         $reservas = Reserva::query()->vigentes()->with('titular.campos')
             ->whereIn('propiedad_id', $propiedades)
-            ->whereDate('llegada', '<', $fin->format('Y-m-d'))
-            ->whereDate('salida', '>', $inicio->format('Y-m-d'))
+            ->where('llegada', '<', $fin->format('Y-m-d'))
+            ->where('salida', '>', $inicio->format('Y-m-d'))
             ->orderBy('llegada')
             ->get()
             ->groupBy('unidad_id');
 
         $externos = BloqueoExterno::query()->with('fuente')->whereIn('propiedad_id', $propiedades)->whereNull('eliminado_en')
-            ->whereDate('llegada', '<', $fin->format('Y-m-d'))->whereDate('salida', '>', $inicio->format('Y-m-d'))
+            ->where('llegada', '<', $fin->format('Y-m-d'))->where('salida', '>', $inicio->format('Y-m-d'))
             ->orderBy('llegada')->get()->groupBy('unidad_id');
 
         $colores = ColorTipoCliente::query()->whereIn('propiedad_id', $propiedades)->get();

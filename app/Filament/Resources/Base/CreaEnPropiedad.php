@@ -27,6 +27,7 @@ trait CreaEnPropiedad
         if (! in_array((int) ($data['propiedad_id'] ?? 0), $this->propiedadesPermitidas(), true)) {
             abort(403);
         }
+        static::getResource()::comprobarReferencias($data, (int) $data['propiedad_id']);
 
         return $this->completarDatos($data);
     }

@@ -49,7 +49,7 @@ it('rechaza http sin red local', function () {
 
 it('rechaza direcciones privadas y de bucle local sin red local', function (string $ip) {
     expect(errorDeDestino(validadorCon($ip), 'https://principal.example/hd/'))->toBe(CodigoError::DestinoNoPermitido);
-})->with(['127.0.0.1', '10.0.0.5', '192.168.1.20', '169.254.169.254', '172.16.0.1']);
+})->with(['127.0.0.1', '10.0.0.5', '192.168.1.20', '169.254.169.254', '172.16.0.1', '100.100.100.200', '192.0.0.192', '198.18.0.1', '::ffff:127.0.0.1', '::1', 'fd00::1']);
 
 it('acepta localhost por http con red local', function () {
     expect(errorDeDestino(validadorCon('127.0.0.1'), 'http://localhost:8080/', true))->toBeNull();

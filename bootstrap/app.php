@@ -8,11 +8,18 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\CabecerasSeguridad;
 use App\Http\Middleware\ProgramadorPorVisitas;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+
+// Quien edita .env a mano (en un hosting compartido es lo normal) espera que cuente sin saber de cachés.
+$configuracionGuardada = __DIR__.'/cache/config.php';
+if (is_file($configuracionGuardada) && @filemtime(dirname(__DIR__).'/.env') > filemtime($configuracionGuardada)) {
+    @unlink($configuracionGuardada);
+}
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,6 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Primero que todo: también las páginas de error y la de mantenimiento llevan las cabeceras.
+        $middleware->prepend(CabecerasSeguridad::class);
         // Las dos fases de una actualización corren con la aplicación en mantenimiento. La cookie
         // que deja pasar al administrador durante el mantenimiento va sin cifrar: la lee
         // storage/framework/maintenance.php antes de arrancar Laravel (y ya va firmada).

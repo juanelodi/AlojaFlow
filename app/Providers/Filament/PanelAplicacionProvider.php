@@ -12,9 +12,11 @@ namespace App\Providers\Filament;
 
 use App\Actualizacion\Actualizador;
 use App\Demo\ModoDemo;
+use App\Filament\AvatarLocal;
 use App\Filament\Pages\Actualizaciones;
 use App\Filament\Pages\EditarPerfil;
 use App\Filament\Pages\IniciarSesion;
+use App\Filament\Pages\PedirRecuperacion;
 use App\Http\Middleware\AplicarIdioma;
 use App\Seguridad\Acceso;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
@@ -51,6 +53,23 @@ class PanelAplicacionProvider extends PanelProvider
         Table::configureUsing(fn (Table $tabla) => $tabla->defaultDateDisplayFormat('j M Y')->defaultDateTimeDisplayFormat('j M Y H:i'));
     }
 
+    /**
+     * El color de la marca es #0F766E. Filament pinta los botones con el tono 600, y un tono generado a
+     * partir del hexadecimal no daba contraste con el blanco: los botones salían aguamarina. Es el teal
+     * de Tailwind recorrido un tono, para que el 600 sea exactamente la marca.
+     *
+     * @return array<int, string>
+     */
+    private static function paletaMarca(): array
+    {
+        $teal = Color::Teal;
+
+        return [
+            50 => $teal[50], 100 => $teal[100], 200 => $teal[200], 300 => $teal[300], 400 => $teal[400],
+            500 => $teal[600], 600 => $teal[700], 700 => $teal[800], 800 => $teal[900], 900 => $teal[950], 950 => $teal[950],
+        ];
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -58,16 +77,18 @@ class PanelAplicacionProvider extends PanelProvider
             ->id('app')
             ->path('')
             ->login(IniciarSesion::class)
+            ->passwordReset(PedirRecuperacion::class)
             ->profile(EditarPerfil::class, isSimple: false)
             // En la demostración el usuario es de todos: nadie debe poder dejar fuera a los demás.
-            ->multiFactorAuthentication(ModoDemo::activo() ? [] : [AppAuthentication::make()->recoverable()])
+            ->multiFactorAuthentication(ModoDemo::activo() ? [] : [AppAuthentication::make()->recoverable()], isRequired: (bool) config('alojaflow.exigir_dos_pasos'))
+            ->defaultAvatarProvider(AvatarLocal::class)
             ->brandName('AlojaFlow')
             ->brandLogo(asset('img/logo-alojaflow.svg'))
             ->darkModeBrandLogo(asset('img/logo-alojaflow-oscuro.svg'))
             ->brandLogoHeight('2.25rem')
             ->favicon(asset('img/icono-alojaflow.svg'))
             ->colors([
-                'primary' => Color::hex('#0f766e'),
+                'primary' => self::paletaMarca(),
                 'warning' => Color::Amber,
                 'danger' => Color::Rose,
                 'success' => Color::Emerald,
@@ -76,9 +97,12 @@ class PanelAplicacionProvider extends PanelProvider
             ])
             ->navigationGroups([
                 NavigationGroup::make()->label(fn (): string => __('ui.nav.operacion')),
-                NavigationGroup::make()->label(fn (): string => __('ui.nav.datos')),
-                NavigationGroup::make()->label(fn (): string => __('ui.nav.configuracion')),
-                NavigationGroup::make()->label(fn (): string => __('ui.nav.sistema')),
+                NavigationGroup::make()->label(fn (): string => __('ui.nav.reservas')),
+                NavigationGroup::make()->label(fn (): string => __('ui.nav.dinero')),
+                // Lo que no se toca a diario empieza plegado: cerca de cuarenta entradas abiertas no se leen.
+                NavigationGroup::make()->label(fn (): string => __('ui.nav.comunicacion'))->collapsed(),
+                NavigationGroup::make()->label(fn (): string => __('ui.nav.configuracion'))->collapsed(),
+                NavigationGroup::make()->label(fn (): string => __('ui.nav.sistema'))->collapsed(),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

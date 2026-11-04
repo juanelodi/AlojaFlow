@@ -101,6 +101,9 @@ final class GestorLimpieza
         $hasta = $hoy->addDays(self::DIAS_POR_DELANTE);
         $vigentes = [];
         $nuevas = 0;
+        // Esta pantalla lo pide en cada visita: lo que ya existe no se vuelve a intentar insertar.
+        $existentes = Tarea::query()->where('propiedad_id', $propiedad->id)->where('fecha', '>=', $hoy->format('Y-m-d'))
+            ->whereNotNull('clave_generacion')->pluck('clave_generacion')->flip();
 
         $reservas = Reserva::query()->with('unidad')
             ->where('propiedad_id', $propiedad->id)->where('tipo', TipoReserva::Reserva->value)
@@ -118,7 +121,7 @@ final class GestorLimpieza
                 $vigentes[] = $clave;
                 // Si alguien llega ese mismo día a esa unidad, corre prisa.
                 $prioridad = $llegadas->has($reserva->unidad_id.':'.$fecha) ? 1 : 0;
-                $nuevas += $this->crearAutomatica($clave, $propiedad, $reserva, TipoTarea::LimpiezaSalida, $reserva->salida, $prioridad, __('limpieza.tarea_salida', ['unidad' => $nombreUnidad], $propiedad->idioma));
+                $nuevas += $existentes->has($clave) ? 0 : $this->crearAutomatica($clave, $propiedad, $reserva, TipoTarea::LimpiezaSalida, $reserva->salida, $prioridad, __('limpieza.tarea_salida', ['unidad' => $nombreUnidad], $propiedad->idioma));
             }
 
             $regla = $reglas->get($reserva->id);
@@ -131,7 +134,7 @@ final class GestorLimpieza
                 }
                 $clave = 'estancia:'.$reserva->unidad_id.':'.$dia->format('Y-m-d').':'.$reserva->id;
                 $vigentes[] = $clave;
-                $nuevas += $this->crearAutomatica($clave, $propiedad, $reserva, TipoTarea::LimpiezaEstancia, $dia, 0, __('limpieza.tarea_estancia', ['unidad' => $nombreUnidad], $propiedad->idioma));
+                $nuevas += $existentes->has($clave) ? 0 : $this->crearAutomatica($clave, $propiedad, $reserva, TipoTarea::LimpiezaEstancia, $dia, 0, __('limpieza.tarea_estancia', ['unidad' => $nombreUnidad], $propiedad->idioma));
             }
         }
 
@@ -225,7 +228,7 @@ final class GestorLimpieza
     public function enlaceAvisoDia(Propiedad $propiedad, CarbonImmutable $fecha): string
     {
         $tareas = Tarea::query()->with('unidad')->where('propiedad_id', $propiedad->id)
-            ->whereDate('fecha', $fecha->format('Y-m-d'))
+            ->where('fecha', $fecha->format('Y-m-d'))
             ->whereIn('estado', [EstadoTarea::Pendiente->value, EstadoTarea::EnCurso->value])
             ->orderByDesc('prioridad')->orderBy('id')->get();
 

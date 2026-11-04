@@ -42,7 +42,7 @@ class CanalResource extends RecursoDePropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGlobeAlt;
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 4;
 
     public static function getModelLabel(): string
     {
@@ -54,16 +54,21 @@ class CanalResource extends RecursoDePropiedad
         return __('ui.canales.modelos');
     }
 
+    protected static function referencias(): array
+    {
+        return ['politica_id' => Politica::class];
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
             Section::make()->columnSpanFull()->columns(['default' => 1, 'md' => 2])->schema([
                 self::campoPropiedad(),
                 TextInput::make('nombre')->label(__('ui.canales.nombre'))->helperText(__('ui.canales.nombre_ayuda'))->required()->maxLength(100)
-                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', (int) $get('propiedad_id'))),
+                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', self::propiedadDe($get))),
                 TextInput::make('comision_porcentaje')->label(__('ui.canales.comision'))->helperText(__('ui.canales.comision_ayuda'))->numeric()->minValue(0)->maxValue(100)->step('any')->suffix('%'),
                 Select::make('politica_id')->label(__('dinero.politicas.modelo'))->native(false)
-                    ->options(fn (Get $get): array => Politica::query()->where('propiedad_id', (int) $get('propiedad_id'))->orderBy('nombre')->pluck('nombre', 'id')->all()),
+                    ->options(fn (Get $get): array => Politica::query()->where('propiedad_id', self::propiedadDe($get))->orderBy('nombre')->pluck('nombre', 'id')->all()),
                 Toggle::make('activo')->label(__('ui.tarifas.activa'))->default(true),
             ]),
         ]);

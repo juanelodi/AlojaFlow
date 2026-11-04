@@ -49,11 +49,16 @@ class PlantillaResource extends RecursoDeCualquierPropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 2;
 
     protected static function permiso(): string
     {
         return Acceso::AJUSTES;
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('ui.nav.comunicacion');
     }
 
     public static function getModelLabel(): string
@@ -75,7 +80,7 @@ class PlantillaResource extends RecursoDeCualquierPropiedad
     {
         $pestanas = [];
         foreach (Formato::idiomas() as $codigo => $nombre) {
-            $esDeLaPropiedad = fn (Get $get): bool => Propiedad::query()->whereKey((int) $get('propiedad_id'))->value('idioma') === $codigo;
+            $esDeLaPropiedad = fn (Get $get): bool => Propiedad::query()->whereKey(self::propiedadDe($get))->value('idioma') === $codigo;
             $pestanas[] = Tab::make($nombre)->schema([
                 TextInput::make('asunto.'.$codigo)->label(__('mensajes.plantillas.asunto'))->maxLength(200)->required($esDeLaPropiedad),
                 Textarea::make('cuerpo.'.$codigo)->label(__('mensajes.plantillas.cuerpo'))->rows(10)->maxLength(10000)->required($esDeLaPropiedad),
@@ -87,7 +92,7 @@ class PlantillaResource extends RecursoDeCualquierPropiedad
                 self::campoPropiedad(),
                 TextInput::make('nombre')->label(__('mensajes.plantillas.nombre'))->required()->maxLength(100),
                 TextInput::make('codigo')->label(__('mensajes.plantillas.codigo'))->helperText(__('mensajes.plantillas.codigo_ayuda'))->required()->maxLength(50)->alphaDash()
-                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', (int) $get('propiedad_id'))),
+                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', self::propiedadDe($get))),
                 Toggle::make('activa')->label(__('mensajes.plantillas.activa'))->default(true),
             ]),
             Section::make()->columnSpanFull()->description(__('mensajes.plantillas.variables').' '.VariablesMensaje::ayuda())->schema([

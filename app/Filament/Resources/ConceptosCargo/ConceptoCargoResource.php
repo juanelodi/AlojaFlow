@@ -43,7 +43,12 @@ class ConceptoCargoResource extends RecursoDePropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPlusCircle;
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 8;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('ui.nav.dinero');
+    }
 
     public static function getModelLabel(): string
     {

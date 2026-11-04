@@ -2,6 +2,60 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.8 — 2026-11-04
+
+Resultado de una auditoría completa de seguridad, rendimiento, accesibilidad y diseño (`docs/auditoria-2026-11.md`). No
+se encontró nada crítico en AlojaFlow, pero sí seis fallos graves: **actualiza si ya tienes una instalación en internet**.
+
+**Revisa tu versión de PHP.** PHP publicó el 21 de octubre correcciones de dos fallos críticos que permiten tomar el
+servidor sin iniciar sesión. Necesitas **8.3.36, 8.4.27 u 8.5.12**, o más. Estado del sistema ahora te lo dice en rojo.
+
+**Lo que cambia en cómo funciona**
+- **Las reservas del motor sin pago caducan a las 48 horas** si nadie las confirma, y sus noches vuelven a estar libres.
+  Se cambia en Motor de reservas; con 0 no caducan.
+- **Limpieza y mantenimiento ya no ven** teléfonos, saldos ni fichas de los huéspedes, ni pueden marcar no-show.
+- **Contraseñas de al menos 12 caracteres** al cambiarlas, como ya pedía el instalador. Las actuales siguen valiendo.
+- **El menú está ordenado por tareas:** Operación, Reservas, Dinero, Comunicación, Configuración y Sistema.
+- **Descargar una copia de seguridad pide la contraseña.**
+- **El enlace de llegada ya no muestra** el código de la reserva, el correo ni el teléfono del huésped.
+
+**Seguridad**
+- Motor de reservas: fechas absurdas ya no ponen a trabajar al servidor; límites por dirección, por correo y por
+  propiedad; solo acepta envíos de su propio sitio; escribir el correo de otra persona ya no muestra su nombre; los
+  cupones ya no revelan qué códigos existen.
+- Panel: una ruta de archivo inventada ya no lee ni borra archivos privados; ningún formulario deja usar datos de otra
+  propiedad; el usuario desactivado pierde el acceso de inmediato; cambiar la contraseña cierra las demás sesiones.
+- Instalador: pasada una hora en el servidor hay que volver a subirlo, y una vez instalado solo se puede borrar.
+- Cabeceras de seguridad en toda la aplicación, https obligatorio cuando la instalación es https, y el motor sigue
+  funcionando dentro de un iframe.
+- Pagos: volver a pulsar «Pagar» sigue en el mismo cobro; un pago sobre una reserva cancelada a mano no la reactiva y
+  avisa al alojamiento.
+- Correo: el ajuste de cifrado no hacía nada. Ahora, con TLS, sin cifrado no se manda.
+- Restaurar una copia solo ejecuta lo que AlojaFlow escribe al crearla, y ya no borra la copia si era la más antigua.
+- Datos personales: el espejo de la principal va cifrado, anonimizar llega a todo lo que faltaba (PDF de aceptación,
+  acompañantes, notas, avisos), exportar ya no incluye a terceros, y los nombres ya no se mandan a ui-avatars.com.
+- Direcciones internas y de metadatos de nube rechazadas en calendarios y avisos; descargas con tope real.
+
+**Errores**
+- Una propiedad que ya había sincronizado no se podía independizar.
+- Un idioma raro en una ficha de la principal podía frenar todos los mensajes.
+- Los avisos de pagos y de correos fallidos no se podían cerrar: ahora tienen «Ya lo revisé».
+
+**Más rápido**
+- Muchas menos consultas por pantalla, fechas que sí usan los índices y cachés de arranque al instalar y actualizar. Si
+  editas `.env` a mano, se toma en cuenta solo.
+- Los registros van por día y se conservan 14: un archivo único llegaba a llenar la cuota.
+
+**Más fácil**
+- Botones en el verde de la marca, y mejor contraste en el tema oscuro.
+- En el teléfono, las listas son tarjetas con sus datos.
+- Crear una propiedad: eliges el país y se proponen moneda, zona horaria, idioma y reglas.
+- Recuperar la contraseña por correo, si hay correo configurado.
+- Páginas de error traducidas; informes que dicen de qué propiedad es cada fila; Estado del sistema comprueba si hay
+  archivos expuestos en internet.
+
+**Sin verificar:** Stripe, Mercado Pago, SMTP y los portales iCal solo se probaron con respuestas simuladas.
+
 ## 1.0.7 — 2026-11-04
 
 El panel del personal, en los seis idiomas, y correcciones que salieron al revisarlo. No cambia la base de datos.

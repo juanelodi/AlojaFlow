@@ -24,6 +24,10 @@ use Throwable;
  */
 final class LectorIcal
 {
+    private const EVENTOS_MAXIMOS = 5000;
+
+    private const REPETIDOS_MAXIMOS = 100;
+
     private const RESUMEN_GENERICO = '/^(airbnb|booking(\.com)?|vrbo|expedia|closed|blocked|reserved|not available|unavailable|bloqueado|reservado|no disponible)\b[^@\d]{0,40}$/iu';
 
     /**
@@ -38,6 +42,12 @@ final class LectorIcal
             $calendario = Reader::read($contenido, Reader::OPTION_FORGIVING);
             if (! $calendario instanceof VCalendar) {
                 throw new RuntimeException(__('ical.error_formato'));
+            }
+            // Expandir repeticiones multiplica los objetos en memoria: un calendario real no llega a tanto.
+            $eventos = $calendario->select('VEVENT');
+            $repetidos = array_filter($eventos, fn ($evento): bool => isset($evento->RRULE));
+            if (count($eventos) > self::EVENTOS_MAXIMOS || count($repetidos) > self::REPETIDOS_MAXIMOS) {
+                throw new RuntimeException(__('ical.error_tamano'));
             }
             $expandido = $calendario->expand($hoy->subDay()->toDateTimeImmutable(), $hoy->addYears(2)->toDateTimeImmutable());
         } catch (RuntimeException $e) {

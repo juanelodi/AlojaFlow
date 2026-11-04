@@ -274,7 +274,7 @@ describe('facturación', function () {
         Acceso::asignarRoles($limpieza, [['propiedad_id' => $this->propiedad->id, 'rol' => 'limpieza']]);
         $this->actingAs($limpieza);
         expect(FacturaResource::canViewAny())->toBeFalse();
-        $this->get(route('archivos.ver', Factura::query()->first()->pdf_archivo_id))->assertForbidden();
+        $this->get(route('archivos.ver', Factura::query()->first()->pdf_archivo_id))->assertNotFound();
     });
 
     it('una propiedad con facturas no se borra; la demostración sí', function () {

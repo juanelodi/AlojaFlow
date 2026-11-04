@@ -20,7 +20,7 @@
             @if ($copias === [])
                 <p class="af-nota">{{ __('copias.vacio') }}</p>
             @else
-                <div class="af-tabla-contenedor">
+                <div class="af-tabla-contenedor" tabindex="0" role="region" aria-label="{{ __('copias.lista') }}">
                     <table class="af-tabla">
                         <caption class="af-sr">{{ __('copias.lista') }}</caption>
                         <thead>

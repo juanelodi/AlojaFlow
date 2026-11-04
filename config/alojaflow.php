@@ -11,7 +11,7 @@ declare(strict_types=1);
 return [
 
     // Versión instalada; la usa el enlace «Código fuente» (regla 8).
-    'version' => '1.0.7',
+    'version' => '1.0.8',
 
     // Idiomas de la interfaz (regla 7). El español es la fuente.
     'idiomas' => ['es', 'en', 'fr', 'it', 'pt', 'de'],
@@ -19,12 +19,18 @@ return [
     // Quién timbra los CFDI. Para conectar un PAC: implementar App\Facturacion\ConectorPac (D-049).
     'pac' => App\Facturacion\SinPac::class,
 
+    // Registro de auditoría: lleva dirección y navegador del personal (modelo-datos.md §8).
+    'dias_conservar_auditoria' => 365,
+
+    // Obliga a todo el personal a usar la verificación en dos pasos.
+    'exigir_dos_pasos' => filter_var(env('ALOJAFLOW_EXIGIR_DOS_PASOS', false), FILTER_VALIDATE_BOOLEAN),
+
     // Demostración pública: solo en una instalación aparte, sin datos reales (D-044).
-    'modo_demo' => (bool) env('ALOJAFLOW_MODO_DEMO', false),
+    'modo_demo' => filter_var(env('ALOJAFLOW_MODO_DEMO', false), FILTER_VALIDATE_BOOLEAN),
 
     'subordinacion' => [
         // Permite principales por http:// y en redes privadas. Solo para desarrollo.
-        'red_local' => (bool) env('ALOJAFLOW_SUBORDINACION_RED_LOCAL', false),
+        'red_local' => filter_var(env('ALOJAFLOW_SUBORDINACION_RED_LOCAL', false), FILTER_VALIDATE_BOOLEAN),
         'tiempo_conexion' => 15,
         'tiempo_peticion' => 180,
         'tamano_maximo_descarga' => 60 * 1024 * 1024,
@@ -45,7 +51,7 @@ return [
         // con su clave secreta. Quien distribuya su propia versión de AlojaFlow pone aquí la suya.
         'clave_publica' => env('ALOJAFLOW_CLAVE_PUBLICA_ACTUALIZACIONES', 'lC/ZImhUArZodVfJSVyjddbGKVsJp1b47kDSMdCql10='),
         // En una copia de desarrollo (con .git) el código se actualiza con git, no desde el panel.
-        'permitir_en_copia_git' => (bool) env('ALOJAFLOW_ACTUALIZAR_COPIA_GIT', false),
+        'permitir_en_copia_git' => filter_var(env('ALOJAFLOW_ACTUALIZAR_COPIA_GIT', false), FILTER_VALIDATE_BOOLEAN),
         'tamano_maximo_paquete' => 300 * 1024 * 1024,
         'tamano_maximo_descomprimido' => 900 * 1024 * 1024,
         'archivos_maximos' => 60000,

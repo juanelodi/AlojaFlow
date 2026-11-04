@@ -24,7 +24,7 @@ class AtenderIcal extends Command
 
     public function handle(GestorIcal $ical): int
     {
-        $this->info('Calendarios leídos: '.$ical->leerPendientes());
+        $this->info(__('consola.calendarios_leidos', ['cuantos' => $ical->leerPendientes()]));
 
         return self::SUCCESS;
     }

@@ -39,7 +39,7 @@ class EnvioResource extends RecursoDeCualquierPropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftRight;
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 1;
 
     protected static function permiso(): string
     {
@@ -48,7 +48,7 @@ class EnvioResource extends RecursoDeCualquierPropiedad
 
     public static function getNavigationGroup(): ?string
     {
-        return __('ui.nav.operacion');
+        return __('ui.nav.comunicacion');
     }
 
     public static function getModelLabel(): string

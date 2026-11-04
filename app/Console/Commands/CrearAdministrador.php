@@ -48,7 +48,7 @@ class CrearAdministrador extends Command
             'activo' => true,
             'es_administrador' => true,
         ]);
-        $this->info("Administrador listo: $correo");
+        $this->info(__('consola.administrador_listo', ['correo' => $correo]));
 
         return self::SUCCESS;
     }

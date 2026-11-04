@@ -17,13 +17,13 @@ use App\Reservas\ReservaRechazada;
 use Illuminate\Console\Command;
 
 /**
- * Libera las reservas del motor que se retuvieron mientras el huésped pagaba y no llegó a pagar.
+ * Libera las reservas del motor que nadie pagó ni confirmó a tiempo.
  */
 class ReservasVencidas extends Command
 {
     protected $signature = 'alojaflow:reservas-vencidas';
 
-    protected $description = 'Cancela las reservas del motor de reservas que no se pagaron a tiempo';
+    protected $description = 'Cancela las reservas del motor de reservas que no se pagaron ni confirmaron a tiempo';
 
     public function handle(GestorReservas $gestor): int
     {
@@ -32,13 +32,13 @@ class ReservasVencidas extends Command
             ->where('estado', EstadoReserva::SinConfirmar->value)->where('pagado', 0)
             ->each(function (Reserva $reserva) use ($gestor, &$canceladas): void {
                 try {
-                    $gestor->cancelar($reserva);
+                    $gestor->cancelar($reserva, porVencimiento: true);
                     $canceladas++;
                 } catch (ReservaRechazada $e) {
                     report($e);
                 }
             });
-        $this->info("Reservas vencidas canceladas: $canceladas");
+        $this->info(__('consola.vencidas_canceladas', ['cuantas' => $canceladas]));
 
         return self::SUCCESS;
     }

@@ -2,6 +2,13 @@
 <x-filament-panels::page>
     @php($tarjetas = $this->tarjetas())
 
+    @if ($this->faltaDosPasos())
+        <p class="af-aviso af-aviso-global" role="status">
+            {{ __('ui.resumen.dos_pasos') }}
+            <a class="af-enlace" href="{{ filament()->getProfileUrl() }}">{{ __('ui.resumen.dos_pasos_enlace') }}</a>
+        </p>
+    @endif
+
     @if ($tarjetas === [])
         <x-filament::empty-state
             :heading="__('ui.resumen.sin_propiedades')"
@@ -32,13 +39,20 @@
                         <div class="af-cifra"><dt>{{ __('ui.resumen.alojados') }}</dt><dd>{{ $t['alojados'] }}<span class="af-nota"> / {{ $t['unidades'] }}</span></dd></div>
                         <div class="af-cifra"><dt>{{ __('ui.resumen.llegadas_semana') }}</dt><dd>{{ $t['llegadas_semana'] }}</dd></div>
                         <div @class(['af-cifra', 'af-cifra--destacada' => $t['sin_confirmar'] > 0])><dt>{{ __('ui.resumen.sin_confirmar') }}</dt><dd>{{ $t['sin_confirmar'] }}</dd></div>
-                        <div @class(['af-cifra', 'af-cifra--destacada' => $t['pendiente'] > 0]) title="{{ __('ui.resumen.pendiente_ayuda') }}">
-                            <dt>{{ __('ui.resumen.pendiente') }}</dt><dd>{{ \App\Support\Formato::dinero($t['pendiente'], $propiedad->moneda) }}</dd>
-                        </div>
+                        @if (\App\Seguridad\Acceso::puede(\App\Seguridad\Acceso::usuarioActual(), \App\Seguridad\Acceso::DATOS, $propiedad->id))
+                            <div @class(['af-cifra', 'af-cifra--destacada' => $t['pendiente'] > 0]) title="{{ __('ui.resumen.pendiente_ayuda') }}">
+                                <dt>{{ __('ui.resumen.pendiente') }}</dt><dd>{{ \App\Support\Formato::dinero($t['pendiente'], $propiedad->moneda) }}</dd>
+                            </div>
+                        @endif
                     </dl>
 
                     @foreach ($t['avisos'] as $aviso)
-                        <p @class(['af-aviso', 'af-aviso--error' => $aviso->nivel === \App\Enums\NivelAviso::Error]) role="status">{{ $aviso->mensaje() }}</p>
+                        <div @class(['af-aviso', 'af-aviso--error' => $aviso->nivel === \App\Enums\NivelAviso::Error]) role="status">
+                            {{ $aviso->mensaje() }}
+                            @if (in_array($aviso->tipo, \App\Models\Aviso::SE_CIERRAN_A_MANO, true))
+                                <button type="button" class="af-enlace" wire:click="atenderAviso({{ $aviso->id }})">{{ __('ui.resumen.aviso_atendido') }}</button>
+                            @endif
+                        </div>
                     @endforeach
 
                     <div class="af-tarjeta__pie">

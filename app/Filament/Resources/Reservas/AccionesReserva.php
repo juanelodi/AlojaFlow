@@ -75,7 +75,7 @@ final class AccionesReserva
             ->icon(Heroicon::OutlinedUserMinus)
             ->color('warning')
             ->modalDescription(__('dinero.politicas.no_show_ayuda'))
-            ->visible(fn (Reserva $record): bool => Acceso::puede(Acceso::usuarioActual(), Acceso::OPERACION, $record->propiedad_id) && app(GestorPoliticas::class)->puedeMarcarNoShow($record))
+            ->visible(fn (Reserva $record): bool => Acceso::puede(Acceso::usuarioActual(), Acceso::RESERVAS, $record->propiedad_id) && app(GestorPoliticas::class)->puedeMarcarNoShow($record))
             ->schema([Textarea::make('nota')->label(__('dinero.politicas.no_show_nota'))->rows(2)->maxLength(1000)])
             ->action(function (Reserva $record, array $data, GestorPoliticas $politicas): void {
                 try {

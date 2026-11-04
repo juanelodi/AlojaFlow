@@ -61,12 +61,16 @@ final class Informes
     private static function unidades(array $propiedades, CarbonImmutable $desde, CarbonImmutable $hasta): array
     {
         $dias = (int) $desde->diffInDays($hasta) + 1;
+        // «101» puede existir en dos propiedades: con varias elegidas, cada fila dice de cuál es.
+        $varias = count($propiedades) > 1;
         $filas = self::noches($propiedades, $desde, $hasta)
             ->join('unidades as u', 'u.id', '=', 'n.unidad_id')
-            ->groupBy('u.id', 'u.nombre', 'r.moneda')
-            ->orderBy('u.nombre')
-            ->get(['u.nombre', 'r.moneda', DB::raw('COUNT(*) as noches'), DB::raw('SUM(n.importe) as ingresos')])
+            ->join('propiedades as p', 'p.id', '=', 'u.propiedad_id')
+            ->groupBy('u.id', 'u.nombre', 'r.moneda', 'p.nombre')
+            ->orderBy('p.nombre')->orderBy('u.nombre')
+            ->get(['u.nombre', 'p.nombre as propiedad', 'r.moneda', DB::raw('COUNT(*) as noches'), DB::raw('SUM(n.importe) as ingresos')])
             ->map(fn (object $f): array => [
+                ...($varias ? [(string) $f->propiedad] : []),
                 (string) $f->nombre,
                 (string) $f->noches,
                 Formato::porcentaje($f->noches / max(1, $dias)),
@@ -74,7 +78,7 @@ final class Informes
                 Dinero::formatear((int) round($f->ingresos / max(1, $f->noches)), (string) $f->moneda),
             ])->all();
 
-        return ['columnas' => self::titulos('unidad', 'noches', 'ocupacion', 'ingresos', 'adr'), 'filas' => $filas];
+        return ['columnas' => self::titulos(...[...($varias ? ['propiedad'] : []), 'unidad', 'noches', 'ocupacion', 'ingresos', 'adr']), 'filas' => $filas];
     }
 
     /**
@@ -278,10 +282,13 @@ final class Informes
     private static function anticipos(array $propiedades): array
     {
         $hoy = CarbonImmutable::now()->format('Y-m-d');
+        $varias = count($propiedades) > 1;
+        $nombres = Propiedad::query()->whereIn('id', $propiedades)->pluck('nombre', 'id');
         $filas = self::reservas($propiedades)->where('estado', '!=', EstadoReserva::Cancelada->value)->where('llegada', '>=', $hoy)
             ->whereColumn('pagado', '<', 'deposito')->orderBy('llegada')->limit(200)
-            ->get(['numero', 'llegada', 'moneda', 'total', 'deposito', 'pagado'])
+            ->get(['propiedad_id', 'numero', 'llegada', 'moneda', 'total', 'deposito', 'pagado'])
             ->map(fn (object $f): array => [
+                ...($varias ? [(string) $nombres->get($f->propiedad_id)] : []),
                 (string) $f->numero,
                 (string) $f->llegada,
                 Dinero::formatear((int) $f->total, (string) $f->moneda),
@@ -290,7 +297,7 @@ final class Informes
                 Dinero::formatear((int) $f->deposito - (int) $f->pagado, (string) $f->moneda),
             ])->all();
 
-        return ['columnas' => self::titulos('reserva', 'llegada', 'total', 'anticipo', 'pagado', 'falta'), 'filas' => $filas];
+        return ['columnas' => self::titulos(...[...($varias ? ['propiedad'] : []), 'reserva', 'llegada', 'total', 'anticipo', 'pagado', 'falta']), 'filas' => $filas];
     }
 
     /**

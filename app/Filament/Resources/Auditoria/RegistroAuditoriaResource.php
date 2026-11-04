@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Auditoria;
 
+use App\Demo\ModoDemo;
 use App\Filament\Resources\Auditoria\Pages\ListRegistrosAuditoria;
 use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
@@ -59,7 +60,7 @@ class RegistroAuditoriaResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return (bool) Acceso::usuarioActual()?->es_administrador;
+        return (bool) Acceso::usuarioActual()?->es_administrador && ! ModoDemo::activo();
     }
 
     public static function canCreate(): bool

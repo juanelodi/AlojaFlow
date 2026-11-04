@@ -54,6 +54,8 @@ return [
 
         'mysql' => [
             'driver' => 'mysql',
+            // Los errores de SQL se guardan en el registro: sin los valores, que llevan datos personales.
+            'mask_bindings_in_exception_messages' => true,
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
@@ -75,6 +77,7 @@ return [
 
         'mariadb' => [
             'driver' => 'mariadb',
+            'mask_bindings_in_exception_messages' => true,
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),

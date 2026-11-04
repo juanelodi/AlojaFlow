@@ -25,6 +25,7 @@ use App\Models\Unidad;
 use App\Models\User;
 use App\Motor\AjustesMotor;
 use App\Motor\MotorReservas;
+use App\Pagos\CobrosEnLinea;
 use App\Reservas\ReservaRechazada;
 use App\Support\Ajustes;
 use Database\Seeders\RolesYPermisosSeeder;
@@ -84,12 +85,12 @@ it('no abre si el motor está apagado, si la propiedad es subordinada o no exist
     $this->get('/reservar/sub')->assertNotFound();
 });
 
-it('reserva sin pasarelas: queda por revisar y sin retención', function () {
+it('reserva sin pasarelas: queda por revisar, con plazo para hacerlo', function () {
     $this->post('/reservar/posada', ($this->formulario)())->assertRedirect();
 
     $reserva = Reserva::query()->firstOrFail();
     expect($reserva->estado)->toBe(EstadoReserva::SinConfirmar)
-        ->and($reserva->expira_en)->toBeNull()
+        ->and($reserva->expira_en->diffInHours(now('UTC')->addHours(48)))->toBeLessThan(1.0)
         ->and($reserva->total)->toBe(200000)
         ->and($reserva->deposito)->toBe(100000)
         ->and($reserva->unidad_id)->toBe($this->unidad1->id)
@@ -143,12 +144,18 @@ it('asigna otra unidad si la primera se ocupa y avisa cuando no queda lugar', fu
         ->toThrow(ReservaRechazada::class, __('motor.error.sin_lugar'));
 });
 
-it('reutiliza la ficha del mismo correo sin cambiarla', function () {
+it('reutiliza la ficha solo si coinciden el correo y el nombre, sin cambiarla', function () {
     $motor = app(MotorReservas::class);
-    $motor->reservar($this->propiedad, ($this->datos)());
-    $motor->reservar($this->propiedad, ($this->datos)(['nombre' => 'Otro nombre', 'llegada' => $this->hoy->addDays(10)->format('Y-m-d'), 'salida' => $this->hoy->addDays(11)->format('Y-m-d')]));
+    $fechas = ['llegada' => $this->hoy->addDays(10)->format('Y-m-d'), 'salida' => $this->hoy->addDays(11)->format('Y-m-d')];
+    $primera = $motor->reservar($this->propiedad, ($this->datos)());
+    $misma = $motor->reservar($this->propiedad, ($this->datos)($fechas + ['nombre' => ' ANA', 'apellido' => 'ejemplo ', 'telefono' => '+52 55 5550 0102']));
+    expect($misma->titular_id)->toBe($primera->titular_id);
 
-    expect(Huesped::query()->count())->toBe(1)->and(Huesped::query()->first()->nombre)->toBe('Ana');
+    // Con el correo de otra persona no se llega a su ficha: su nombre no aparece en la página pública.
+    $ajena = $motor->reservar($this->propiedad, ($this->datos)(['nombre' => 'Otro', 'apellido' => 'Nombre', 'llegada' => $this->hoy->addDays(20)->format('Y-m-d'), 'salida' => $this->hoy->addDays(21)->format('Y-m-d')]));
+    expect($ajena->titular_id)->not->toBe($primera->titular_id)->and(Huesped::query()->count())->toBe(2)
+        ->and($primera->titular->nombre)->toBe('Ana');
+    $this->get('/reservar/posada/r/'.$ajena->codigo_publico)->assertOk()->assertDontSee('Ana');
 });
 
 it('respeta la estancia mínima, la antelación y solo cobra cargos del catálogo público', function () {
@@ -250,7 +257,7 @@ describe('Mercado Pago', function () {
         $this->reserva = Reserva::query()->firstOrFail();
         Http::fake([
             'api.mercadopago.com/checkout/preferences' => Http::response(['id' => 'pref_1', 'init_point' => 'https://mp.test/pagar']),
-            'api.mercadopago.com/v1/payments/555' => fn () => Http::response(['id' => 555, 'status' => 'approved', 'transaction_amount' => 1000.0, 'currency_id' => 'MXN', 'external_reference' => (string) PagoEnLinea::query()->firstOrFail()->id]),
+            'api.mercadopago.com/v1/payments/555' => fn () => Http::response(['id' => 555, 'status' => 'approved', 'transaction_amount' => 1000.0, 'currency_id' => 'MXN', 'external_reference' => CobrosEnLinea::referenciaInterna(PagoEnLinea::query()->firstOrFail()->id)]),
         ]);
     });
 

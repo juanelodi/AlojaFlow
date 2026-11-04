@@ -46,11 +46,16 @@ class WebhookResource extends RecursoDeCualquierPropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowTopRightOnSquare;
 
-    protected static ?int $navigationSort = 12;
+    protected static ?int $navigationSort = 4;
 
     protected static function permiso(): string
     {
         return Acceso::AJUSTES;
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('ui.nav.comunicacion');
     }
 
     public static function canViewAny(): bool
@@ -80,7 +85,7 @@ class WebhookResource extends RecursoDeCualquierPropiedad
         return $schema->components([
             Section::make()->columnSpanFull()->columns(['default' => 1, 'md' => 2])->schema([
                 self::campoPropiedad(),
-                TextInput::make('url')->label(__('mensajes.webhooks.url'))->helperText(__('mensajes.webhooks.url_ayuda'))->url()->required()->maxLength(500)
+                TextInput::make('url')->label(__('mensajes.webhooks.url'))->helperText(__('mensajes.webhooks.url_ayuda'))->url()->required()->minLength(16)->maxLength(500)
                     ->rule(fn (): Closure => function (string $atributo, mixed $valor, Closure $falla): void {
                         try {
                             app(ClienteExterno::class)->comprobar((string) $valor);
@@ -88,7 +93,7 @@ class WebhookResource extends RecursoDeCualquierPropiedad
                             $falla(__('mensajes.webhooks.url_invalida'));
                         }
                     }),
-                TextInput::make('secreto')->label(__('mensajes.webhooks.secreto'))->helperText(__('mensajes.webhooks.secreto_ayuda'))->required()->maxLength(200)
+                TextInput::make('secreto')->label(__('mensajes.webhooks.secreto'))->helperText(__('mensajes.webhooks.secreto_ayuda'))->required()->minLength(16)->maxLength(200)
                     ->default(fn (): string => Str::random(40))->autocomplete('off'),
                 Toggle::make('activo')->label(__('mensajes.webhooks.activo'))->default(true),
                 CheckboxList::make('eventos')->label(__('mensajes.webhooks.eventos'))->options($eventos)->required()->columnSpanFull()->columns(2),

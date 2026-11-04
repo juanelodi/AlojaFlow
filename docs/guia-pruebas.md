@@ -81,6 +81,20 @@ Con la demo creada (**Hotel Bahía Serena**):
    habitación para ver un bloqueo y su choque.
 8. **Pasar a independiente:** en una propiedad subordinada de prueba, en **Propiedades → Editar**.
 
+### Lo que cambió con la auditoría (1.0.8)
+
+El detalle está en `docs/auditoria-2026-11.md`. Conviene ver esto, porque cambia cómo se trabaja:
+
+1. **Estado del sistema:** revisa que la fila de PHP no salga en rojo y que no haya archivos expuestos.
+2. **Menú:** ahora va por tareas. Comunicación, Configuración y Sistema empiezan plegados.
+3. **Usuario de limpieza:** crea uno y entra con él: ve unidades, fechas y nombres, sin teléfonos ni saldos, y no abre
+   fichas.
+4. **Motor:** una reserva sin pago se cancela sola a las 48 horas. El plazo se cambia en **Motor de reservas**.
+5. **Teléfono:** abre Reservas y Hoy: cada fila es una tarjeta.
+6. **Crear una propiedad:** elige el país y mira lo que se propone en **Ajustes avanzados**.
+7. **Recuperar la contraseña:** con el correo configurado, aparece el enlace al iniciar sesión.
+8. **Copias:** descargar una ya pide la contraseña.
+
 ### Demostración pública
 
 Para enseñar el sistema en internet, en una instalación **aparte** y sin datos reales:
@@ -256,7 +270,7 @@ Las demás preguntas abiertas están al final de `docs/especificacion/subordinac
 
 ## 8. Si algo falla
 
-- **Página de error:** el detalle queda en `storage/logs/laravel.log`.
+- **Página de error:** el detalle queda en `storage/logs/`, en un archivo por día (`laravel-AAAA-MM-DD.log`).
 - **«Esta página no existe» o 403:** el usuario no tiene rol en esa propiedad, o la pantalla es
   solo para administradores.
 - **La aplicación se quedó en mantenimiento** después de actualizar:

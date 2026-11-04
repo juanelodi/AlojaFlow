@@ -29,6 +29,9 @@ use Illuminate\Support\Carbon;
  */
 class Aviso extends ModeloBase
 {
+    /** Los que ningún proceso puede dar por resueltos: los cierra quien ya los revisó. */
+    public const SE_CIERRAN_A_MANO = ['pago_no_coincide', 'pago_sin_lugar', 'pago_duplicado', 'pago_en_cancelada', 'motor_saturado', 'envios_fallidos', 'copia_no_borrada'];
+
     protected $table = 'avisos';
 
     public $timestamps = false;

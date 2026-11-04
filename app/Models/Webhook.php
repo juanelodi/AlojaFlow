@@ -31,6 +31,8 @@ class Webhook extends ModeloBase
     protected function casts(): array
     {
         return [
+            // La dirección de un aviso suele llevar un token (Slack, Zapier…).
+            'url' => 'encrypted',
             'secreto' => 'encrypted',
             'eventos' => 'array',
             'activo' => 'boolean',

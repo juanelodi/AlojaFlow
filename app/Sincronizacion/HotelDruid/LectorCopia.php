@@ -176,6 +176,9 @@ class LectorCopia
                             $fila = $linea;
                         } else {
                             $fila .= "\n".$linea;
+                            if (strlen($fila) > $maxLinea) {
+                                throw $this->formato("fila de la línea $numLinea demasiado larga");
+                            }
                         }
 
                         if (str_ends_with($linea, '</riga>')) {

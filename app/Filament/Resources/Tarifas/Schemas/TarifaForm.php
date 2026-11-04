@@ -14,6 +14,7 @@ use App\Enums\ModoTarifa;
 use App\Filament\Campos\CampoDinero;
 use App\Filament\Resources\Tarifas\TarifaResource;
 use App\Models\Propiedad;
+use App\Seguridad\Acceso;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -44,7 +45,7 @@ class TarifaForm
                         })
                         ->disabledOn('edit'),
                     TextInput::make('nombre')->label(__('ui.tarifas.nombre'))->required()->maxLength(100)
-                        ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', (int) $get('propiedad_id'))),
+                        ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', Acceso::propiedadElegida($get('propiedad_id'), TarifaResource::propiedadesGestionables()))),
                     Select::make('modo')->label(__('ui.tarifas.modo'))->helperText(__('ui.tarifas.modo_ayuda'))->options(ModoTarifa::opciones())->required()->native(false)->live()
                         ->default(ModoTarifa::PorNoche->value),
                     CampoDinero::make('precio_noche')

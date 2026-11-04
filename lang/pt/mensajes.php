@@ -12,6 +12,7 @@ return [
     'omitido_sin_destino' => 'Não tem um e-mail para onde escrever ou o modelo está desativado.',
     'correo_sin_configurar' => 'O e-mail de saída não está configurado.',
     'webhook_borrado' => 'O aviso a outro sistema já não existe.',
+    'error_tamano' => 'A resposta é demasiado grande.',
     'error_redirecciones' => 'O endereço redireciona demasiadas vezes.',
     'aviso_motor' => [
         'asunto' => 'Nova reserva {numero} no motor de reservas',
@@ -125,6 +126,7 @@ return [
         'host' => 'Servidor SMTP',
         'puerto' => 'Porta',
         'cifrado' => 'Cifragem',
+        'cifrado_ayuda' => 'Sem cifragem, a palavra-passe da conta e as mensagens viajam à vista de qualquer pessoa no caminho. Use TLS ou SSL, a não ser que o seu fornecedor não os ofereça.',
         'cifrado_tls' => 'TLS (porta 587)',
         'cifrado_ssl' => 'SSL (porta 465)',
         'cifrado_ninguno' => 'Nenhuma',

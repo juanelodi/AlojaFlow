@@ -44,11 +44,22 @@ final class VariablesMensaje
             'total' => Formato::dinero($reserva->total, $reserva->moneda),
             'pagado' => Formato::dinero($reserva->pagado, $reserva->moneda),
             'pendiente' => Formato::dinero($reserva->pendiente, $reserva->moneda),
-            'enlace_reserva' => $propiedad->esIndependiente() ? route('motor.reserva', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico, 'idioma' => $idioma]) : '',
+            'enlace_reserva' => $propiedad->esIndependiente() ? self::enlaceInstalado('motor.reserva', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico, 'idioma' => $idioma]) : '',
         ];
         app()->setLocale($idiomaAnterior);
 
         return $variables;
+    }
+
+    /**
+     * Con la dirección de la instalación, no la de la petición: el formulario público lo puede abrir
+     * cualquiera, con la cabecera Host que quiera, y este enlace termina en un correo.
+     *
+     * @param  array<string, mixed>  $parametros
+     */
+    private static function enlaceInstalado(string $ruta, array $parametros): string
+    {
+        return rtrim((string) config('app.url'), '/').route($ruta, $parametros, false);
     }
 
     /**

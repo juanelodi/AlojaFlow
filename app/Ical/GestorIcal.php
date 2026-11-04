@@ -41,6 +41,9 @@ final class GestorIcal
 {
     private const BYTES_MAXIMOS = 5 * 1024 * 1024;
 
+    /** Mil fechas ocupadas dos veces ya dicen lo que hay que decir; con datos malos, los pares crecen al cuadrado. */
+    private const CHOQUES_MAXIMOS = 5000;
+
     /** Fallos seguidos antes de avisar: un portal puede fallar un rato sin que importe. */
     private const MINUTOS_PARA_AVISAR = 180;
 
@@ -102,7 +105,7 @@ final class GestorIcal
     {
         $fuente->ultimo_intento_en = now('UTC');
         try {
-            $respuesta = $this->cliente->descargar($fuente->url, permitirHttp: true);
+            $respuesta = $this->cliente->descargar($fuente->url, permitirHttp: true, bytesMaximos: self::BYTES_MAXIMOS);
             if (! $respuesta->successful()) {
                 throw new RuntimeException('HTTP '.$respuesta->status());
             }
@@ -203,6 +206,7 @@ final class GestorIcal
             ->where('r.salida', '>=', $hoy)->where('b.salida', '>=', $hoy)
             // El bloqueo que la principal ya creó por ese evento no es un choque (§4.9).
             ->whereRaw("NOT (r.tipo = 'bloqueo' AND r.llegada = b.llegada AND r.salida = b.salida)")
+            ->limit(self::CHOQUES_MAXIMOS)
             ->get(['b.id as bloqueo', 'r.id as reserva', 'b.unidad_id', 'b.llegada as b_llegada', 'b.salida as b_salida', 'r.llegada as r_llegada', 'r.salida as r_salida']);
 
         $vigentes = [];
@@ -236,6 +240,7 @@ final class GestorIcal
             ->where('a.estado', '!=', EstadoReserva::Cancelada->value)->where('b.estado', '!=', EstadoReserva::Cancelada->value)
             ->whereNull('a.eliminada_en_principal_en')->whereNull('b.eliminada_en_principal_en')
             ->where('a.salida', '>=', $hoy)->where('b.salida', '>=', $hoy)
+            ->limit(self::CHOQUES_MAXIMOS)
             ->get(['a.id as a_id', 'b.id as b_id', 'a.unidad_id', 'a.llegada as a_llegada', 'a.salida as a_salida', 'b.llegada as b_llegada', 'b.salida as b_salida']);
 
         $vigentes = [];

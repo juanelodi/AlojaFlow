@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Copias;
 
 use App\Actualizacion\CopiaBaseDatos;
+use App\Instalacion\CachesArranque;
 use App\Models\RegistroAuditoria;
 use App\Support\Ajustes;
 use FilesystemIterator;
@@ -52,7 +53,7 @@ class GestorCopias
      * @param  string  $origen  manual, programada o antes_de_restaurar
      * @return array{nombre: string, tamano: int, tablas: int}
      */
-    public function crear(string $origen = 'manual'): array
+    public function crear(string $origen = 'manual', ?string $protegida = null): array
     {
         if (function_exists('set_time_limit')) {
             @set_time_limit(600);
@@ -94,7 +95,7 @@ class GestorCopias
         Ajustes::guardar('copias.ultima', ['nombre' => $nombre, 'en' => now('UTC')->toIso8601String(), 'origen' => $origen]);
         RegistroAuditoria::anotar('copia.crear', null, ['copia' => $nombre, 'origen' => $origen]);
         $tamano = (int) filesize($this->carpeta().'/'.$nombre);
-        $this->borrarAntiguas($nombre);
+        $this->borrarAntiguas($nombre, $protegida);
 
         return ['nombre' => $nombre, 'tamano' => $tamano, 'tablas' => $tablas];
     }
@@ -167,7 +168,8 @@ class GestorCopias
             @set_time_limit(900);
         }
 
-        $seguridad = $this->crear('antes_de_restaurar');
+        // La que se va a restaurar puede ser la más antigua: al guardar esta, no debe borrarse.
+        $seguridad = $this->crear('antes_de_restaurar', $nombre);
         try {
             $this->cargarDesdeZip($ruta);
         } catch (Throwable $e) {
@@ -181,17 +183,19 @@ class GestorCopias
             throw new ErrorCopia(__('copias.error.restaurar', ['detalle' => trim(Artisan::output())]));
         }
         Artisan::call('optimize:clear');
+        CachesArranque::rehacer();
         RegistroAuditoria::anotar('copia.restaurar', null, ['copia' => $nombre, 'seguridad' => $seguridad['nombre']]);
     }
 
     /**
      * @param  string|null  $recien  la copia recién creada cuenta, pero nunca se borra: dos copias en
      *                               el mismo segundo no tienen un orden seguro
+     * @param  string|null  $protegida  la que se está usando en este momento
      */
-    public function borrarAntiguas(?string $recien = null): int
+    public function borrarAntiguas(?string $recien = null, ?string $protegida = null): int
     {
         $conservar = max(1, (int) Ajustes::obtener('copias.conservar', self::CONSERVAR_POR_OMISION)) - ($recien === null ? 0 : 1);
-        $otras = array_values(array_filter($this->listar(), fn (array $copia): bool => $copia['nombre'] !== $recien));
+        $otras = array_values(array_filter($this->listar(), fn (array $copia): bool => $copia['nombre'] !== $recien && $copia['nombre'] !== $protegida));
         $borradas = 0;
         foreach (array_slice($otras, $conservar) as $copia) {
             File::delete($this->carpeta().'/'.$copia['nombre']);
@@ -260,6 +264,7 @@ class GestorCopias
                 }
                 $sentencia .= $linea;
                 if (str_ends_with(rtrim($linea), ';')) {
+                    $this->comprobarSentencia($sentencia);
                     $conexion->unprepared($sentencia);
                     $sentencia = '';
                 }
@@ -267,6 +272,17 @@ class GestorCopias
         } finally {
             gzclose($entrada);
             $conexion->unprepared('SET FOREIGN_KEY_CHECKS=1');
+        }
+    }
+
+    /**
+     * Una copia se puede subir desde otro equipo: solo se ejecuta lo que escribe AlojaFlow al volcar
+     * (crear tablas y meter filas), no cualquier SQL que traiga el archivo.
+     */
+    private function comprobarSentencia(string $sentencia): void
+    {
+        if (preg_match('/^\s*(SET (NAMES|FOREIGN_KEY_CHECKS)\b|DROP TABLE IF EXISTS `|CREATE TABLE `|INSERT INTO `[^`]+` \([^)]*\) VALUES\b)/', $sentencia) !== 1) {
+            throw new ErrorCopia(__('copias.error.no_es_copia'));
         }
     }
 

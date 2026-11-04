@@ -13,6 +13,7 @@ namespace App\Filament\Resources\Unidades\Schemas;
 use App\Filament\Resources\Unidades\UnidadResource;
 use App\Models\Propiedad;
 use App\Models\Tarifa;
+use App\Seguridad\Acceso;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -41,10 +42,10 @@ class UnidadForm
                         ->afterStateUpdated(fn (Set $set) => $set('tarifa_id', null))
                         ->disabledOn('edit'),
                     TextInput::make('nombre')->label(__('ui.unidades.nombre'))->helperText(__('ui.unidades.nombre_ayuda'))->required()->maxLength(100)
-                        ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', (int) $get('propiedad_id'))),
+                        ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', Acceso::propiedadElegida($get('propiedad_id'), UnidadResource::propiedadesGestionables()))),
                     TextInput::make('capacidad')->label(__('ui.unidades.capacidad'))->required()->numeric()->minValue(1)->maxValue(1000)->default(2),
                     Select::make('tarifa_id')->label(__('ui.unidades.tarifa'))->helperText(__('ui.unidades.tarifa_ayuda'))->native(false)
-                        ->options(fn (Get $get): array => blank($get('propiedad_id')) ? [] : Tarifa::query()->where('propiedad_id', (int) $get('propiedad_id'))->orderBy('nombre')->pluck('nombre', 'id')->all()),
+                        ->options(fn (Get $get): array => blank($get('propiedad_id')) ? [] : Tarifa::query()->where('propiedad_id', Acceso::propiedadElegida($get('propiedad_id'), UnidadResource::propiedadesGestionables()))->orderBy('nombre')->pluck('nombre', 'id')->all()),
                     TextInput::make('piso')->label(__('ui.unidades.piso'))->maxLength(50),
                     TextInput::make('edificio')->label(__('ui.unidades.edificio'))->maxLength(50),
                     TextInput::make('orden')->label(__('ui.unidades.orden'))->helperText(__('ui.unidades.orden_ayuda'))->numeric()->minValue(-100000)->maxValue(100000)->default(0),

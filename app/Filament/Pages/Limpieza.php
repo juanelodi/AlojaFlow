@@ -50,7 +50,7 @@ class Limpieza extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSparkles;
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 4;
 
     #[Url]
     public ?string $fecha = null;
@@ -122,7 +122,7 @@ class Limpieza extends Page
         $unidades = Unidad::query()->with(['propiedad', 'estado'])->whereIn('propiedad_id', $propiedades)->where('activa', true)
             ->orderBy('propiedad_id')->orderBy('orden')->orderBy('nombre')->get();
 
-        $tareas = Tarea::query()->with('archivos')->whereIn('propiedad_id', $propiedades)->whereDate('fecha', '<=', $fecha)
+        $tareas = Tarea::query()->with('archivos')->whereIn('propiedad_id', $propiedades)->where('fecha', '<=', $fecha)
             ->whereIn('estado', [EstadoTarea::Pendiente->value, EstadoTarea::EnCurso->value])
             ->when($this->soloMias, fn ($q) => $q->where(fn ($q) => $q->where('asignada_a', auth()->id())->orWhereNull('asignada_a')))
             ->orderByDesc('prioridad')->orderBy('fecha')->get()->groupBy('unidad_id');
@@ -192,7 +192,7 @@ class Limpieza extends Page
             ->schema([
                 TextInput::make('titulo')->label(__('limpieza.incidencia_titulo'))->helperText(__('limpieza.incidencia_titulo_ayuda'))->required()->maxLength(150),
                 Textarea::make('descripcion')->label(__('limpieza.incidencia_descripcion'))->rows(3)->maxLength(2000),
-                FileUpload::make('fotos')->label(__('limpieza.fotos'))->multiple()->maxFiles(5)->image()->maxSize(10240)->disk('local')->directory('subidas-temporales')->visibility('private'),
+                FileUpload::make('fotos')->label(__('limpieza.fotos'))->multiple()->maxFiles(5)->image()->maxSize(10240)->disk('local')->directory(GestorArchivos::CARPETA_SUBIDAS)->preventFilePathTampering()->visibility('private'),
                 Toggle::make('urgente')->label(__('limpieza.urgente')),
                 Toggle::make('fuera_de_servicio')->label(__('limpieza.dejar_fuera')),
             ])

@@ -45,7 +45,7 @@ class PlanoPropiedad extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 5;
 
     public ?int $planoId = null;
 
@@ -163,7 +163,7 @@ class PlanoPropiedad extends Page
                         ->options(fn (): array => Propiedad::query()->whereIn('id', Acceso::propiedades(Acceso::usuarioActual(), Acceso::AJUSTES))->orderBy('nombre')->pluck('nombre', 'id')->all())
                         ->default(fn (): ?int => Acceso::propiedades(Acceso::usuarioActual(), Acceso::AJUSTES)[0] ?? null),
                     TextInput::make('nombre')->label(__('plano.nombre'))->helperText(__('plano.nombre_ayuda'))->required()->maxLength(100),
-                    FileUpload::make('imagen')->label(__('plano.imagen'))->helperText(__('plano.imagen_ayuda'))->image()->maxSize(10240)->disk('local')->directory('subidas-temporales')->visibility('private'),
+                    FileUpload::make('imagen')->label(__('plano.imagen'))->helperText(__('plano.imagen_ayuda'))->image()->maxSize(10240)->disk('local')->directory(GestorArchivos::CARPETA_SUBIDAS)->preventFilePathTampering()->visibility('private'),
                 ])
                 ->action(function (array $data, GestorArchivos $archivos): void {
                     $propiedad = Propiedad::query()->whereIn('id', Acceso::propiedades(Acceso::usuarioActual(), Acceso::AJUSTES))->findOrFail((int) $data['propiedad']);

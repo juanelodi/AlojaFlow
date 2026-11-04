@@ -15,6 +15,7 @@ use App\Support\Ajustes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\URL;
 use Throwable;
 
 /**
@@ -99,6 +100,8 @@ final class TareasPorVisita
             if (self::cronActivo() || ! Cache::add('programador.visita', 1, 60)) {
                 return;
             }
+            // Corre dentro de la visita de cualquiera: los enlaces de los correos no deben salir de su cabecera Host.
+            URL::forceRootUrl((string) config('app.url'));
             self::ejecutarPendientes();
         } catch (Throwable $e) {
             report($e);

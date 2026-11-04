@@ -70,11 +70,8 @@ class MotorReservasController extends Controller
         $error = null;
         $ofertas = null;
         if ($llegada !== null && $salida !== null) {
-            if ($salida->lte($llegada) || $llegada->diffInDays($salida) > 366) {
-                $error = __('motor.error.fechas');
-            } elseif ($llegada->format('Y-m-d') < $hoy->addDays((new AjustesMotor($propiedad))->diasMinimosAntelacion())->format('Y-m-d')) {
-                $error = __('motor.error.fecha_pasada');
-            } else {
+            $error = $this->motor->motivoFechas($propiedad, $llegada, $salida);
+            if ($error === null) {
                 $ofertas = $this->motor->ofertas($propiedad, $llegada, $salida, $personas);
             }
         }
@@ -235,7 +232,7 @@ class MotorReservasController extends Controller
         abort_if($propiedad === null || ! $propiedad->esIndependiente() || ($soloActivo && ! (new AjustesMotor($propiedad))->activo()), 404);
 
         $idiomas = (array) config('alojaflow.idiomas');
-        $idioma = (string) $request->query('idioma', '');
+        $idioma = $request->query('idioma');
         if (! in_array($idioma, $idiomas, true)) {
             $idioma = $request->headers->has('Accept-Language') ? substr((string) $request->getPreferredLanguage($idiomas), 0, 2) : $propiedad->idioma;
         }
@@ -253,7 +250,7 @@ class MotorReservasController extends Controller
         $salida = $this->fecha($salidaTexto);
         $personas = max(1, min(100, $personasPedidas));
         $tarifa = Tarifa::query()->where('propiedad_id', $propiedad->id)->where('activa', true)->where('visible_motor', true)->find($tarifaId);
-        if ($llegada === null || $salida === null || $salida->lte($llegada) || $tarifa === null) {
+        if ($llegada === null || $salida === null || ! $this->motor->rangoCotizable($propiedad, $llegada, $salida) || $tarifa === null) {
             return redirect()->route('motor.buscar', ['codigo' => $propiedad->codigo]);
         }
         $oferta = collect($this->motor->ofertas($propiedad, $llegada, $salida, $personas))->first(fn ($o): bool => $o->tarifa->id === $tarifa->id);

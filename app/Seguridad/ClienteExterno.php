@@ -14,7 +14,9 @@ use App\Sincronizacion\HotelDruid\ValidadorDestino;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use LogicException;
 use RuntimeException;
+use Throwable;
 
 /**
  * Peticiones a direcciones que escribió un usuario (avisos a otros sistemas, calendarios iCal).
@@ -24,6 +26,8 @@ use RuntimeException;
 final class ClienteExterno
 {
     private const REDIRECCIONES_MAXIMAS = 3;
+
+    private const BYTES_MAXIMOS = 5242880;
 
     public function __construct(private readonly ValidadorDestino $validador)
     {
@@ -41,17 +45,30 @@ final class ClienteExterno
     {
         $destino = $this->validador->validarEnlace($url, $permitirHttp);
 
-        return Http::withOptions(['allow_redirects' => false, 'curl' => [CURLOPT_RESOLVE => [$destino['host'].':'.$destino['puerto'].':'.$destino['ip']]]])
+        return Http::withOptions(['allow_redirects' => false, 'decode_content' => false, 'curl' => [CURLOPT_RESOLVE => [$destino['host'].':'.$destino['puerto'].':'.$destino['ip']]]])
             ->timeout(20)->connectTimeout(10);
     }
 
     /**
-     * Descarga una dirección, siguiendo pocas redirecciones y comprobando cada una.
+     * Descarga una dirección, siguiendo pocas redirecciones y comprobando cada una. Se corta al pasar
+     * del tope: lo que llega se guarda en memoria.
      */
-    public function descargar(string $url, bool $permitirHttp = false): Response
+    public function descargar(string $url, bool $permitirHttp = false, int $bytesMaximos = self::BYTES_MAXIMOS): Response
     {
         for ($i = 0; $i <= self::REDIRECCIONES_MAXIMAS; $i++) {
-            $respuesta = $this->peticion($url, $permitirHttp)->get($url);
+            $excedido = false;
+            try {
+                $respuesta = $this->peticion($url, $permitirHttp)->withHeaders(['Accept-Encoding' => 'identity'])->withOptions([
+                    'progress' => function (int|float $total, int|float $descargado) use ($bytesMaximos, &$excedido): void {
+                        if ($total > $bytesMaximos || $descargado > $bytesMaximos) {
+                            $excedido = true;
+                            throw new LogicException('limite');
+                        }
+                    },
+                ])->get($url);
+            } catch (Throwable $e) {
+                throw $excedido ? new RuntimeException(__('mensajes.error_tamano'), 0, $e) : $e;
+            }
             if (! $respuesta->redirect()) {
                 return $respuesta;
             }

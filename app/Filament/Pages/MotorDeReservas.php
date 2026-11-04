@@ -41,7 +41,7 @@ class MotorDeReservas extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;
 
-    protected static ?int $navigationSort = 9;
+    protected static ?int $navigationSort = 5;
 
     /** @var array<string, mixed>|null */
     public ?array $datos = [];
@@ -128,6 +128,7 @@ class MotorDeReservas extends Page
                     TextInput::make('anticipo_porcentaje')->label(__('motor.panel.anticipo'))->helperText(__('motor.panel.anticipo_ayuda'))->numeric()->minValue(0)->maxValue(100)->required(),
                     TextInput::make('minutos_retencion')->label(__('motor.panel.retencion'))->helperText(__('motor.panel.retencion_ayuda'))->numeric()->minValue(5)->maxValue(10080)->required(),
                     Toggle::make('confirmacion_inmediata')->label(__('motor.panel.confirmacion_inmediata'))->helperText(__('motor.panel.confirmacion_inmediata_ayuda')),
+                    TextInput::make('horas_revision')->label(__('motor.panel.horas_revision'))->helperText(__('motor.panel.horas_revision_ayuda'))->numeric()->minValue(0)->maxValue(720)->required(),
                     TextInput::make('dias_antelacion')->label(__('motor.panel.antelacion'))->numeric()->minValue(0)->maxValue(365)->required(),
                     Textarea::make('instrucciones')->label(__('motor.panel.instrucciones'))->helperText(__('motor.panel.instrucciones_ayuda'))->rows(3)->maxLength(3000)->columnSpanFull(),
                     Textarea::make('condiciones')->label(__('motor.panel.condiciones'))->rows(3)->maxLength(5000)->columnSpanFull(),
@@ -160,6 +161,7 @@ class MotorDeReservas extends Page
             'anticipo_porcentaje' => (int) $datos['anticipo_porcentaje'],
             'minutos_retencion' => (int) $datos['minutos_retencion'],
             'confirmacion_inmediata' => (bool) ($datos['confirmacion_inmediata'] ?? false),
+            'horas_revision' => (int) $datos['horas_revision'],
             'dias_antelacion' => (int) $datos['dias_antelacion'],
             'instrucciones' => $datos['instrucciones'] ?? null,
             'condiciones' => $datos['condiciones'] ?? null,
@@ -191,6 +193,7 @@ class MotorDeReservas extends Page
             'anticipo_porcentaje' => $motor['anticipo_porcentaje'] ?? 30,
             'minutos_retencion' => $motor['minutos_retencion'] ?? 30,
             'confirmacion_inmediata' => (bool) ($motor['confirmacion_inmediata'] ?? false),
+            'horas_revision' => $motor['horas_revision'] ?? 48,
             'dias_antelacion' => $motor['dias_antelacion'] ?? 0,
             'instrucciones' => $motor['instrucciones'] ?? null,
             'condiciones' => $motor['condiciones'] ?? null,

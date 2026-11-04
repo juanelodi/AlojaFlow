@@ -45,7 +45,7 @@ class ReservasTable
                     ->formatStateUsing(fn (Reserva $record): string => Formato::fecha($record->llegada)),
                 TextColumn::make('salida')->label(__('ui.comun.salida'))->sortable()
                     ->formatStateUsing(fn (Reserva $record): string => Formato::fecha($record->salida)),
-                TextColumn::make('noches')->label(__('ui.comun.noches'))->alignEnd(),
+                TextColumn::make('noches')->label(__('ui.comun.noches'))->alignEnd()->visibleFrom('md'),
                 TextColumn::make('estado')->label(__('ui.comun.estado'))->badge()
                     ->formatStateUsing(fn (Reserva $record): string => $record->eliminada_en_principal_en ? __('ui.reservas.eliminada') : ($record->tipo === TipoReserva::Bloqueo ? TipoReserva::Bloqueo->etiqueta() : $record->estado->etiqueta()))
                     ->color(fn (Reserva $record): string => match (true) {
@@ -55,11 +55,11 @@ class ReservasTable
                         $record->estado === EstadoReserva::SinConfirmar => 'warning',
                         default => 'success',
                     }),
-                TextColumn::make('total')->label(__('ui.comun.total'))->alignEnd()->sortable()
+                TextColumn::make('total')->label(__('ui.comun.total'))->alignEnd()->sortable()->visibleFrom('md')
                     ->formatStateUsing(fn (Reserva $record): string => Formato::dinero($record->total, $record->moneda)),
                 TextColumn::make('pendiente')->label(__('ui.comun.pendiente'))->alignEnd()->sortable()
                     ->formatStateUsing(fn (Reserva $record): string => $record->pendiente > 0 ? Formato::dinero($record->pendiente, $record->moneda) : '—'),
-                TextColumn::make('origen_texto')->label(__('ui.comun.origen'))->toggleable(),
+                TextColumn::make('origen_texto')->label(__('ui.comun.origen'))->toggleable()->visibleFrom('md'),
             ])
             ->defaultSort('llegada', 'desc')
             ->filters([
@@ -75,8 +75,8 @@ class ReservasTable
                         DatePicker::make('hasta')->label(__('ui.indicadores.hasta')),
                     ])
                     ->query(fn (Builder $query, array $data): Builder => $query
-                        ->when($data['desde'] ?? null, fn (Builder $q, string $desde): Builder => $q->whereDate('llegada', '>=', $desde))
-                        ->when($data['hasta'] ?? null, fn (Builder $q, string $hasta): Builder => $q->whereDate('llegada', '<=', $hasta))),
+                        ->when($data['desde'] ?? null, fn (Builder $q, string $desde): Builder => $q->where('llegada', '>=', $desde))
+                        ->when($data['hasta'] ?? null, fn (Builder $q, string $hasta): Builder => $q->where('llegada', '<=', $hasta))),
             ])
             ->recordActions([
                 ViewAction::make(),

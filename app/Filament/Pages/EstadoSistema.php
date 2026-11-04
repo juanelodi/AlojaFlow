@@ -11,6 +11,8 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Demo\ModoDemo;
+use App\Instalacion\VersionPhp;
+use App\Models\User;
 use App\Programador\TareasPorVisita;
 use App\Seguridad\Acceso;
 use App\Support\Ajustes;
@@ -76,7 +78,10 @@ class EstadoSistema extends Page
         $filas = [];
         $version = (string) config('alojaflow.version');
         $filas[] = $this->fila('version', $version, 'ok');
-        $filas[] = $this->fila('php', PHP_VERSION, 'ok');
+        $corregida = VersionPhp::falta(PHP_VERSION);
+        $filas[] = $corregida === null
+            ? $this->fila('php', PHP_VERSION, 'ok')
+            : $this->fila('php', PHP_VERSION, 'error', __('ui.estado.php_sin_parche', ['version' => $corregida]));
 
         try {
             $base = (string) DB::selectOne('SELECT VERSION() AS v')->v;
@@ -111,6 +116,11 @@ class EstadoSistema extends Page
         $filas[] = $https
             ? $this->fila('https', __('ui.estado.https_si'), 'ok')
             : $this->fila('https', __('ui.estado.https_no'), 'aviso', __('ui.estado.https_ayuda'));
+
+        $sinDosPasos = User::query()->where('es_administrador', true)->where('activo', true)->whereNull('app_authentication_secret')->count();
+        $filas[] = $sinDosPasos === 0
+            ? $this->fila('dos_pasos', __('ui.estado.dos_pasos_ok'), 'ok')
+            : $this->fila('dos_pasos', __('ui.estado.dos_pasos_faltan', ['cuantos' => $sinDosPasos]), 'aviso', __('ui.estado.dos_pasos_ayuda'));
 
         $libre = function_exists('disk_free_space') ? @disk_free_space(base_path()) : false;
         $filas[] = $libre === false

@@ -42,7 +42,7 @@ class ValidadorDestino
         }
 
         foreach ($direcciones as $ip) {
-            $publica = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
+            $publica = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE) !== false;
             if (! $publica && ! $permitirRedLocal) {
                 throw $this->error(__('sincronizacion.destino.red_local', ['host' => $host]));
             }
@@ -73,7 +73,7 @@ class ValidadorDestino
             throw new ErrorSincronizacion(CodigoError::Conexion, 'validar', __('sincronizacion.destino.sin_resolver', ['host' => $host]));
         }
         foreach ($direcciones as $ip) {
-            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE) === false) {
                 throw $this->error(__('sincronizacion.destino.red_local', ['host' => $host]));
             }
         }

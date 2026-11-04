@@ -42,7 +42,7 @@ final class AccionesSincronizacion
                     app(Sincronizador::class)->cliente($principal)->probarConexion();
                     Notification::make()->success()->title(__('ui.propiedades.probar_ok'))->send();
                 } catch (ErrorSincronizacion $e) {
-                    Notification::make()->danger()->title($e->codigo->value.' · '.$e->codigo->etiqueta())->body($e->getMessage())->persistent()->send();
+                    Notification::make()->danger()->title($e->codigo->value.' · '.$e->codigo->etiqueta())->body(e($e->getMessage()))->persistent()->send();
                 }
             });
     }
@@ -70,7 +70,7 @@ final class AccionesSincronizacion
                     ]))->send();
                 } else {
                     Notification::make()->danger()->title(($ejecucion->codigo_error ?? '').' · '.$ejecucion->estado->etiqueta())
-                        ->body((string) $ejecucion->detalle)->persistent()->send();
+                        ->body(e((string) $ejecucion->detalle))->persistent()->send();
                 }
             });
     }

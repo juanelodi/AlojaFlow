@@ -15,10 +15,8 @@ use App\Filament\Resources\Base\RecursoDePropiedad;
 use App\Filament\Resources\Grupos\Pages\CreateGrupo;
 use App\Filament\Resources\Grupos\Pages\ListGrupos;
 use App\Filament\Resources\Grupos\Pages\ViewGrupo;
-use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Grupo;
 use App\Models\Huesped;
-use App\Models\Reserva;
 use App\Models\Unidad;
 use App\Reservas\GestorGrupos;
 use App\Seguridad\Acceso;
@@ -31,6 +29,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ViewEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
@@ -51,7 +50,7 @@ class GrupoResource extends RecursoDePropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     protected static function permiso(): string
     {
@@ -60,7 +59,7 @@ class GrupoResource extends RecursoDePropiedad
 
     public static function getNavigationGroup(): ?string
     {
-        return __('ui.nav.datos');
+        return __('ui.nav.reservas');
     }
 
     public static function getModelLabel(): string
@@ -83,6 +82,11 @@ class GrupoResource extends RecursoDePropiedad
         return in_array((int) $record->getAttribute('propiedad_id'), static::propiedadesGestionables(), true);
     }
 
+    protected static function referencias(): array
+    {
+        return ['coordinador_id' => Huesped::class];
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -90,10 +94,10 @@ class GrupoResource extends RecursoDePropiedad
                 self::campoPropiedad(),
                 TextInput::make('nombre')->label(__('ui.grupos.nombre'))->helperText(__('ui.grupos.nombre_ayuda'))->required()->maxLength(150),
                 Select::make('coordinador_id')->label(__('ui.grupos.coordinador'))->required()->native(false)->searchable()
-                    ->getSearchResultsUsing(fn (string $search, Get $get): array => Huesped::query()->where('propiedad_id', (int) $get('propiedad_id'))
+                    ->getSearchResultsUsing(fn (string $search, Get $get): array => Huesped::query()->where('propiedad_id', self::propiedadDe($get))
                         ->where(fn (Builder $q): Builder => $q->where('nombre', 'like', '%'.$search.'%')->orWhere('apellido1', 'like', '%'.$search.'%'))
                         ->limit(30)->get()->mapWithKeys(fn (Huesped $h): array => [$h->id => $h->nombreCompleto()])->all())
-                    ->getOptionLabelUsing(fn (mixed $value): ?string => Huesped::query()->find((int) $value)?->nombreCompleto()),
+                    ->getOptionLabelUsing(fn (mixed $value, Get $get): ?string => Huesped::query()->where('propiedad_id', self::propiedadDe($get))->find((int) $value)?->nombreCompleto()),
                 Select::make('estado')->label(__('ui.comun.estado'))->required()->native(false)
                     ->options([
                         EstadoReserva::Confirmada->value => EstadoReserva::Confirmada->etiqueta(),
@@ -104,7 +108,7 @@ class GrupoResource extends RecursoDePropiedad
                 DatePicker::make('salida')->label(__('ui.comun.salida'))->required()->after('llegada')->live(onBlur: true),
                 TextInput::make('personas')->label(__('ui.grupos.personas_por_unidad'))->numeric()->minValue(1)->default(2)->required(),
                 CheckboxList::make('unidades')->label(__('ui.grupos.unidades'))->helperText(__('ui.grupos.unidades_ayuda'))->required()->columnSpanFull()->columns(['default' => 2, 'md' => 4])
-                    ->options(fn (Get $get): array => blank($get('propiedad_id')) ? [] : Unidad::query()->where('propiedad_id', (int) $get('propiedad_id'))->where('activa', true)->orderBy('orden')->orderBy('nombre')->pluck('nombre', 'id')->all())
+                    ->options(fn (Get $get): array => blank($get('propiedad_id')) ? [] : Unidad::query()->where('propiedad_id', self::propiedadDe($get))->where('activa', true)->orderBy('orden')->orderBy('nombre')->pluck('nombre', 'id')->all())
                     ->visibleOn('create'),
                 Textarea::make('notas')->label(__('ui.huespedes.notas'))->rows(2)->maxLength(5000)->columnSpanFull(),
             ]),
@@ -132,10 +136,7 @@ class GrupoResource extends RecursoDePropiedad
                 TextEntry::make('notas')->label(__('ui.huespedes.notas'))->placeholder('—'),
             ]),
             Section::make(__('ui.reservas.modelos'))->columnSpanFull()->schema([
-                TextEntry::make('lista')->label(__('ui.reservas.modelos'))->hiddenLabel()->listWithLineBreaks()->bulleted()->html()
-                    ->state(fn (Grupo $record): array => $record->reservas()->with('unidad')->orderBy('id')->get()
-                        ->map(fn (Reserva $r): string => '<a class="af-enlace" href="'.e(ReservaResource::getUrl('view', ['record' => $r])).'">'.e($r->numero).'</a> · '.e($r->unidad->nombre).' · '.e(Formato::fecha($r->llegada)).' → '.e(Formato::fecha($r->salida)).' · '.e($r->estado->etiqueta()).' · '.e(Formato::dinero($r->total, $r->moneda)))
-                        ->all()),
+                ViewEntry::make('lista')->hiddenLabel()->view('filament.partes.grupo-reservas'),
             ]),
         ]);
     }

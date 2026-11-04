@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\ModoPropiedad;
 use App\Enums\PaquetePais;
+use App\Seguridad\Acceso;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
@@ -42,6 +43,13 @@ class Propiedad extends ModeloBase
         'nombre', 'codigo', 'color', 'modo', 'paquete_pais', 'pais', 'subdivision',
         'zona_horaria', 'moneda', 'idioma', 'domicilio', 'telefono', 'correo', 'ajustes', 'activa', 'es_demo',
     ];
+
+    protected static function booted(): void
+    {
+        // Crear, activar o cambiar de modo una propiedad cambia lo que cada usuario puede ver.
+        static::saved(fn () => Acceso::olvidar());
+        static::deleted(fn () => Acceso::olvidar());
+    }
 
     protected function casts(): array
     {

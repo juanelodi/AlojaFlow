@@ -12,6 +12,7 @@ return [
     'omitido_sin_destino' => 'Il n’a pas d’adresse e-mail où écrire ou le modèle est désactivé.',
     'correo_sin_configurar' => 'L’e-mail sortant n’est pas configuré.',
     'webhook_borrado' => 'La notification vers un autre système n’existe plus.',
+    'error_tamano' => 'La réponse est trop volumineuse.',
     'error_redirecciones' => 'L’adresse redirige trop de fois.',
     'aviso_motor' => [
         'asunto' => 'Nouvelle réservation {numero} dans le moteur de réservation',
@@ -125,6 +126,7 @@ return [
         'host' => 'Serveur SMTP',
         'puerto' => 'Port',
         'cifrado' => 'Chiffrement',
+        'cifrado_ayuda' => 'Sans chiffrement, le mot de passe du compte et les messages circulent à la vue de quiconque sur le trajet. Utilisez TLS ou SSL, sauf si votre fournisseur ne les propose pas.',
         'cifrado_tls' => 'TLS (port 587)',
         'cifrado_ssl' => 'SSL (port 465)',
         'cifrado_ninguno' => 'Aucun',

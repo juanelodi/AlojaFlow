@@ -70,5 +70,6 @@ class Instalador
             'version' => config('alojaflow.version'),
             'instalado_en' => now('UTC')->toIso8601String(),
         ]));
+        CachesArranque::rehacer();
     }
 }

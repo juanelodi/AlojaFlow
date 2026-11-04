@@ -25,6 +25,9 @@ use Throwable;
  */
 class ClientePrincipal
 {
+    /** Lo que se espera de las respuestas que no son la copia: unas pocas líneas de texto. */
+    private const BYTES_MAXIMOS_RESPUESTA = 1048576;
+
     /** Lista blanca: la garantía técnica de que AlojaFlow nunca escribe en la principal. */
     public const PARAMETROS_PERMITIDOS = [
         'nome_utente_phpr', 'password_phpr', 'anno', 'azione', 'crea_backup', 'mostra_header',
@@ -48,7 +51,6 @@ class ClientePrincipal
 
     private const TEXTOS_ERROR_BORRADO = ['errore cancellando il file', 'error al borrar el archivo', 'error deleting the file'];
 
-    private bool $limiteExcedido = false;
 
     public function __construct(
         private readonly Principal $principal,
@@ -157,20 +159,23 @@ class ClientePrincipal
         ], $adicionales);
         $this->comprobarListaBlanca($parametros);
 
-        $opciones = ['allow_redirects' => false];
+        // Sin descomprimir al vuelo: con «Content-Encoding: gzip», pocos MB de red serían GB en el disco. El
+        // tope se cuenta sobre lo que llega, y LectorCopia y Descompresor ya limitan lo descomprimido.
+        $opciones = ['allow_redirects' => false, 'decode_content' => false, 'headers' => ['Accept-Encoding' => 'identity']];
         if (defined('CURLOPT_RESOLVE')) {
             // Fija la IP ya validada para que no cambie entre la validación y la conexión.
             $opciones['curl'] = [CURLOPT_RESOLVE => [$destinoValidado['host'].':'.$destinoValidado['puerto'].':'.$destinoValidado['ip']]];
         }
+        $limite ??= self::BYTES_MAXIMOS_RESPUESTA;
+        $excedido = false;
+        $opciones['progress'] = function (int|float $total, int|float $descargado) use ($limite, &$excedido): void {
+            if ($total > $limite || $descargado > $limite) {
+                $excedido = true;
+                throw new LogicException('limite');
+            }
+        };
         if ($destino !== null) {
-            $this->limiteExcedido = false;
             $opciones['sink'] = $destino;
-            $opciones['progress'] = function (int|float $total, int|float $descargado) use ($limite): void {
-                if ($limite !== null && ($total > $limite || $descargado > $limite)) {
-                    $this->limiteExcedido = true;
-                    throw new LogicException('limite');
-                }
-            };
         }
 
         $cliente = $this->http
@@ -187,7 +192,7 @@ class ClientePrincipal
         } catch (ConnectionException $e) {
             throw new ErrorSincronizacion($this->clasificarConexion($e), $paso, $this->limpiar($e->getMessage()), $e);
         } catch (Throwable $e) {
-            if ($this->limiteExcedido) {
+            if ($excedido) {
                 throw new ErrorSincronizacion(CodigoError::TamanoExcedido, $paso);
             }
             throw new ErrorSincronizacion(CodigoError::Conexion, $paso, $this->limpiar($e->getMessage()), $e);

@@ -42,7 +42,12 @@ class ImpuestoResource extends RecursoDePropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedReceiptPercent;
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 9;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('ui.nav.dinero');
+    }
 
     public static function getModelLabel(): string
     {

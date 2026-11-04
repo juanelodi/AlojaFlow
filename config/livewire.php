@@ -142,7 +142,7 @@ return [
         // PHP (upload_max_filesize y post_max_size). config/alojaflow.php: tamano_maximo_paquete.
         'rules' => ['required', 'file', 'max:307200'],        // 300 MB
         'directory' => null,                                  // Example: 'tmp'                     | Default: 'livewire-tmp'
-        'middleware' => null,                                 // Example: 'throttle:5,1'            | Default: 'throttle:60,1'
+        'middleware' => 'throttle:30,1',                      // Example: 'throttle:5,1'            | Default: 'throttle:60,1'
         'preview_mimes' => [                                  // Supported file types for temporary pre-signed file URLs...
             'png', 'gif', 'bmp', 'svg', 'wav', 'mp4',
             'mov', 'avi', 'wmv', 'mp3', 'm4a',

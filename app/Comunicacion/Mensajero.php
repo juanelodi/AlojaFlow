@@ -41,6 +41,8 @@ final class Mensajero
 {
     public const INTENTOS_MAXIMOS = 5;
 
+    private const SEGUNDOS_MAXIMOS_ENVIO = 600;
+
     public function __construct(private readonly AjustesCorreo $correo, private readonly ClienteExterno $cliente)
     {
     }
@@ -54,8 +56,13 @@ final class Mensajero
         foreach ($eventos as $evento) {
             $reserva = $evento->reserva;
             $disparador = $this->disparadorDe($evento);
-            if ($reserva->tipo === TipoReserva::Reserva && $disparador !== null) {
-                $this->atenderEvento($evento, $reserva, $disparador);
+            // Un dato raro en una reserva no debe dejar sin mensajes a todas las demás.
+            try {
+                if ($reserva->tipo === TipoReserva::Reserva && $disparador !== null) {
+                    $this->atenderEvento($evento, $reserva, $disparador);
+                }
+            } catch (Throwable $e) {
+                report($e);
             }
             $evento->update(['procesado_en' => now('UTC')]);
         }
@@ -89,7 +96,7 @@ final class Mensajero
             };
             $reservas = Reserva::query()->with(['propiedad', 'titular.contactos', 'unidad'])->where('propiedad_id', $propiedad->id)
                 ->where('tipo', TipoReserva::Reserva->value)->where('estado', '!=', EstadoReserva::Cancelada->value)->whereNull('eliminada_en_principal_en')
-                ->whereDate($columna, $fecha->format('Y-m-d'))->get();
+                ->where($columna, $fecha->format('Y-m-d'))->get();
             foreach ($reservas as $reserva) {
                 if ($automatizacion->cumpleCondiciones($reserva)
                     && $this->programar($automatizacion, $reserva, $automatizacion->disparador->value.':'.$fecha->format('Y-m-d')) !== null) {
@@ -107,10 +114,15 @@ final class Mensajero
     public function enviarPendientes(int $limite = 50): int
     {
         $enviados = 0;
+        $inicio = microtime(true);
         $envios = Envio::query()->with(['propiedad', 'webhook'])->where('estado', EstadoEnvio::Pendiente->value)
             ->where(fn ($q) => $q->whereNull('programado_para')->orWhere('programado_para', '<=', now('UTC')))
             ->orderBy('id')->limit($limite)->get();
         foreach ($envios as $envio) {
+            // Se para antes de que venza el candado de la tarea: otra corrida repetiría estos mismos envíos.
+            if (microtime(true) - $inicio > self::SEGUNDOS_MAXIMOS_ENVIO) {
+                break;
+            }
             $enviados += $this->enviar($envio) ? 1 : 0;
         }
 
@@ -183,7 +195,8 @@ final class Mensajero
      */
     public function avisarNuevaReserva(Reserva $reserva, ?string $destino): void
     {
-        if (blank($destino)) {
+        // Quien prueba la demostración no llena el correo del dueño.
+        if (blank($destino) || $reserva->propiedad->es_demo) {
             return;
         }
         $idioma = $reserva->propiedad->idioma;
@@ -212,7 +225,14 @@ final class Mensajero
 
     public static function idiomaDe(Reserva $reserva): string
     {
-        return (string) ($reserva->getAttribute('idioma') ?: $reserva->titular?->idioma ?: $reserva->propiedad->idioma);
+        // La ficha puede venir de una principal con cualquier texto: solo vale un idioma de los nuestros.
+        foreach ([$reserva->getAttribute('idioma'), $reserva->titular?->idioma] as $idioma) {
+            if (in_array($idioma, (array) config('alojaflow.idiomas'), true)) {
+                return $idioma;
+            }
+        }
+
+        return $reserva->propiedad->idioma;
     }
 
     /**
@@ -293,7 +313,8 @@ final class Mensajero
                     'reserva_id' => $reserva->id,
                     'webhook_id' => $webhook->id,
                     'canal' => CanalEnvio::Webhook,
-                    'destino' => $webhook->url,
+                    // Solo el sitio: la dirección completa suele llevar un token, y esta lista la ve recepción.
+                    'destino' => (string) parse_url($webhook->url, PHP_URL_HOST),
                     'cuerpo' => (string) json_encode($this->cargaWebhook($disparador, $reserva, $evento), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                     'estado' => EstadoEnvio::Pendiente,
                 ]);
@@ -375,11 +396,22 @@ final class Mensajero
     }
 
     /**
+     * El servidor de correo repite en sus errores la dirección del huésped y el usuario de la cuenta,
+     * y este texto lo ve quien gestiona mensajes y se conserva tras anonimizar.
+     */
+    private static function sinDatosPersonales(string $mensaje): string
+    {
+        $mensaje = (string) preg_replace('/[^\s<>"\']+@[^\s<>"\']+/', '***', $mensaje);
+
+        return (string) preg_replace('/(username) "[^"]*"/i', '$1 "***"', $mensaje);
+    }
+
+    /**
      * Se reintenta cada vez más tarde; después de varios intentos se avisa al alojamiento.
      */
     private function anotarFallo(Envio $envio, Throwable $e): void
     {
-        $envio->ultimo_error = mb_substr($e->getMessage(), 0, 1000);
+        $envio->ultimo_error = mb_substr(self::sinDatosPersonales($e->getMessage()), 0, 1000);
         if ($envio->intentos >= self::INTENTOS_MAXIMOS) {
             $envio->estado = EstadoEnvio::Fallido;
             Aviso::abrir($envio->propiedad_id, 'envios_fallidos', NivelAviso::Advertencia);

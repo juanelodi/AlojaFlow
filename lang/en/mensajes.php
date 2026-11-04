@@ -12,6 +12,7 @@ return [
     'omitido_sin_destino' => 'There is no email address to write to, or the template is disabled.',
     'correo_sin_configurar' => 'Outgoing email is not configured.',
     'webhook_borrado' => 'The webhook no longer exists.',
+    'error_tamano' => 'The response is too large.',
     'error_redirecciones' => 'The address redirects too many times.',
     'aviso_motor' => [
         'asunto' => 'New booking {numero} from the booking engine',
@@ -125,6 +126,7 @@ return [
         'host' => 'SMTP server',
         'puerto' => 'Port',
         'cifrado' => 'Encryption',
+        'cifrado_ayuda' => 'Without encryption, the account password and the messages travel in the open for anyone along the way. Use TLS or SSL unless your provider doesn’t offer them.',
         'cifrado_tls' => 'TLS (port 587)',
         'cifrado_ssl' => 'SSL (port 465)',
         'cifrado_ninguno' => 'None',

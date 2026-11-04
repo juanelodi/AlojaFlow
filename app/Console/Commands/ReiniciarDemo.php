@@ -33,7 +33,7 @@ class ReiniciarDemo extends Command
     public function handle(Instalador $instalador): int
     {
         if (! ModoDemo::activo()) {
-            $this->error('Esta instalación no está en modo demo: no se borra nada.');
+            $this->error(__('consola.demo_no_activa'));
 
             return self::FAILURE;
         }
@@ -56,7 +56,7 @@ class ReiniciarDemo extends Command
         $instalador->migrar();
         $instalador->crearAdministrador('Demo', ModoDemo::CORREO, ModoDemo::CONTRASENA);
         $instalador->crearDemo();
-        $this->info('Demostración reiniciada.');
+        $this->info(__('consola.demo_reiniciada'));
 
         return self::SUCCESS;
     }

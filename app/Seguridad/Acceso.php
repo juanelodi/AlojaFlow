@@ -74,6 +74,14 @@ final class Acceso
             return [];
         }
 
+        return app(MemoriaAcceso::class)->recordar('propiedades:'.$usuario->id.':'.(int) $usuario->es_administrador.':'.$permiso, fn (): array => self::calcularPropiedades($usuario, $permiso));
+    }
+
+    /**
+     * @return list<int>
+     */
+    private static function calcularPropiedades(User $usuario, string $permiso): array
+    {
         if ($usuario->es_administrador) {
             return Propiedad::query()->where('activa', true)->orderBy('nombre')->pluck('id')->map(fn (mixed $id): int => (int) $id)->values()->all();
         }
@@ -101,9 +109,32 @@ final class Acceso
      */
     public static function propiedadesIndependientes(?User $usuario, string $permiso): array
     {
-        return Propiedad::query()->whereIn('id', self::propiedades($usuario, $permiso))
+        $propiedades = self::propiedades($usuario, $permiso);
+        if ($propiedades === []) {
+            return [];
+        }
+
+        return app(MemoriaAcceso::class)->recordar('independientes:'.implode(',', $propiedades), fn (): array => Propiedad::query()->whereIn('id', $propiedades)
             ->where('modo', ModoPropiedad::Nativa->value)
-            ->orderBy('nombre')->pluck('id')->map(fn (mixed $id): int => (int) $id)->values()->all();
+            ->orderBy('nombre')->pluck('id')->map(fn (mixed $id): int => (int) $id)->values()->all());
+    }
+
+    /**
+     * La propiedad que manda un formulario, si está entre las permitidas; si no, 0, que no coincide con
+     * ninguna fila. El valor viene del navegador: cambiándolo se podrían leer datos de otra propiedad.
+     *
+     * @param  list<int>  $permitidas
+     */
+    public static function propiedadElegida(mixed $valor, array $permitidas): int
+    {
+        $id = is_numeric($valor) ? (int) $valor : 0;
+
+        return in_array($id, $permitidas, true) ? $id : 0;
+    }
+
+    public static function olvidar(): void
+    {
+        app(MemoriaAcceso::class)->vaciar();
     }
 
     public static function puede(?User $usuario, string $permiso, ?int $propiedadId = null): bool
@@ -165,6 +196,7 @@ final class Acceso
             }
         });
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+        self::olvidar();
     }
 
     /**

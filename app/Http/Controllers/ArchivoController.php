@@ -29,7 +29,8 @@ class ArchivoController extends Controller
         $permitido = $archivo->propiedad_id === null
             ? (bool) $usuario?->es_administrador
             : Acceso::puede($usuario, $archivo->clase->permiso(), $archivo->propiedad_id);
-        abort_unless($permitido, 403);
+        // 404 y no 403: no se confirma qué archivos existen.
+        abort_unless($permitido, 404);
 
         $disposicion = in_array($archivo->tipo_mime, self::SE_PUEDEN_VER, true) ? 'inline' : 'attachment';
 

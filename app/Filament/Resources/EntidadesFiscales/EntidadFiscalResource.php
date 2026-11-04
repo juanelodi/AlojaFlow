@@ -45,7 +45,7 @@ class EntidadFiscalResource extends RecursoDeCualquierPropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
 
-    protected static ?int $navigationSort = 15;
+    protected static ?int $navigationSort = 9;
 
     protected static function permiso(): string
     {
@@ -67,7 +67,7 @@ class EntidadFiscalResource extends RecursoDeCualquierPropiedad
      */
     private static function regimenes(Get $get): array
     {
-        $propiedad = Propiedad::query()->find((int) $get('propiedad_id'));
+        $propiedad = Propiedad::query()->find(self::propiedadDe($get));
 
         return $propiedad === null ? [] : (Paises::de($propiedad)->generadorFiscal()?->catalogos()['regimen'] ?? []);
     }

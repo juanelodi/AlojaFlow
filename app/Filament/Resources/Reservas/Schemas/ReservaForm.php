@@ -24,6 +24,7 @@ use App\Models\Unidad;
 use App\Reservas\Cotizador;
 use App\Reservas\Cupones;
 use App\Reservas\Presupuesto;
+use App\Seguridad\Acceso;
 use App\Servicios\Disponibilidad;
 use App\Support\Contactos;
 use App\Support\Dinero;
@@ -114,7 +115,7 @@ class ReservaForm
                                     if ($llegada === null || $salida === null || blank($get('propiedad_id'))) {
                                         return;
                                     }
-                                    $unidad = Disponibilidad::primeraLibre((int) $get('propiedad_id'), $llegada->format('Y-m-d'), $salida->format('Y-m-d'), max(1, (int) $get('personas')));
+                                    $unidad = Disponibilidad::primeraLibre(self::propiedadPermitida($get('propiedad_id')), $llegada->format('Y-m-d'), $salida->format('Y-m-d'), max(1, (int) $get('personas')));
                                     $set('unidad_id', $unidad?->id);
                                     if ($operation === 'create') {
                                         self::aplicarTarifa($get, $set);
@@ -132,8 +133,8 @@ class ReservaForm
                 ->schema([
                     Select::make('titular_id')->label(__('ui.comun.huesped'))->required()->native(false)->searchable()
                         ->helperText(__('ui.reservas.huesped_ayuda'))
-                        ->getSearchResultsUsing(fn (string $search, Get $get): array => self::buscarHuespedes((int) $get('propiedad_id'), $search))
-                        ->getOptionLabelUsing(fn (mixed $value, Get $get): ?string => Huesped::query()->where('propiedad_id', (int) $get('propiedad_id'))->find((int) $value)?->nombreCompleto())
+                        ->getSearchResultsUsing(fn (string $search, Get $get): array => self::buscarHuespedes(self::propiedadPermitida($get('propiedad_id')), $search))
+                        ->getOptionLabelUsing(fn (mixed $value, Get $get): ?string => Huesped::query()->where('propiedad_id', self::propiedadPermitida($get('propiedad_id')))->find((int) $value)?->nombreCompleto())
                         ->disabled(fn (Get $get): bool => blank($get('propiedad_id')))
                         ->createOptionModalHeading(__('ui.huespedes.nuevo'))
                         ->createOptionForm([
@@ -143,7 +144,7 @@ class ReservaForm
                             TextInput::make('telefono')->label(__('ui.huespedes.telefono'))->tel()->maxLength(50),
                             TextInput::make('correo')->label(__('ui.huespedes.correo'))->email()->maxLength(150),
                         ])
-                        ->createOptionUsing(fn (array $data, Get $get): int => self::crearHuesped((int) $get('propiedad_id'), $data)),
+                        ->createOptionUsing(fn (array $data, Get $get): int => self::crearHuesped(self::propiedadPermitida($get('propiedad_id')), $data)),
                 ]),
             Section::make(__('ui.cargos.modelos'))->columnSpanFull()
                 ->visible(fn (Get $get): bool => $esReserva($get) && self::hayConceptosOpcionales($get('propiedad_id')))
@@ -216,7 +217,7 @@ class ReservaForm
         $moneda = CampoDinero::moneda($get($ruta.'propiedad_id'));
         $set($ruta.'total', Dinero::aDecimal($presupuesto->total(), $moneda));
 
-        $canal = Canal::query()->where('propiedad_id', (int) $get($ruta.'propiedad_id'))->where('nombre', (string) $get($ruta.'origen_texto'))->first();
+        $canal = Canal::query()->where('propiedad_id', self::propiedadPermitida($get($ruta.'propiedad_id')))->where('nombre', (string) $get($ruta.'origen_texto'))->first();
         if ($canal !== null && $canal->comision_porcentaje !== null) {
             $set($ruta.'comision', Dinero::aDecimal((int) round($presupuesto->total() * (float) $canal->comision_porcentaje / 100), $moneda));
         }
@@ -250,7 +251,7 @@ class ReservaForm
     private static function aplicarCupon(Get $get, Set $set): void
     {
         $presupuesto = self::presupuesto($get, '', sinDescuento: true);
-        $cupon = Cupones::buscar((int) $get('propiedad_id'), (string) $get('cupon_codigo'));
+        $cupon = Cupones::buscar(self::propiedadPermitida($get('propiedad_id')), (string) $get('cupon_codigo'));
         if ($presupuesto === null || $cupon === null) {
             return;
         }
@@ -262,7 +263,7 @@ class ReservaForm
         if (trim($codigo) === '') {
             return null;
         }
-        $cupon = Cupones::buscar((int) $get('propiedad_id'), $codigo);
+        $cupon = Cupones::buscar(self::propiedadPermitida($get('propiedad_id')), $codigo);
         if ($cupon === null) {
             return __('ui.cupones.error_no_existe');
         }
@@ -279,6 +280,11 @@ class ReservaForm
         $tipo = $get('tipo');
 
         return $tipo instanceof TipoReserva ? $tipo : (TipoReserva::tryFrom((string) $tipo) ?? TipoReserva::Reserva);
+    }
+
+    private static function propiedadPermitida(mixed $valor): int
+    {
+        return Acceso::propiedadElegida($valor, ReservaResource::propiedadesPermitidas());
     }
 
     private static function propiedadInicial(): ?int
@@ -324,7 +330,7 @@ class ReservaForm
             return [];
         }
 
-        return Unidad::query()->with('tarifa')->where('propiedad_id', (int) $propiedadId)->where('activa', true)
+        return Unidad::query()->with('tarifa')->where('propiedad_id', self::propiedadPermitida($propiedadId))->where('activa', true)
             ->orderBy('orden')->orderBy('nombre')->get()
             ->mapWithKeys(fn (Unidad $u): array => [$u->id => trim($u->nombre.($u->capacidad > 0 ? ' · '.__('ui.disponibilidad.capacidad', ['personas' => $u->capacidad]) : '').($u->tarifa ? ' · '.$u->tarifa->nombre : ''))])
             ->all();
@@ -339,7 +345,7 @@ class ReservaForm
             return [];
         }
 
-        return ConceptoCargo::query()->where('propiedad_id', (int) $propiedadId)->where('activo', true)->where('obligatorio', false)
+        return ConceptoCargo::query()->where('propiedad_id', self::propiedadPermitida($propiedadId))->where('activo', true)->where('obligatorio', false)
             ->orderBy('orden')->orderBy('nombre')->pluck('nombre', 'id')->all();
     }
 
@@ -353,7 +359,7 @@ class ReservaForm
      */
     private static function canales(mixed $propiedadId): array
     {
-        $canales = blank($propiedadId) ? [] : Canal::query()->where('propiedad_id', (int) $propiedadId)->where('activo', true)->orderBy('nombre')->pluck('nombre')->all();
+        $canales = blank($propiedadId) ? [] : Canal::query()->where('propiedad_id', self::propiedadPermitida($propiedadId))->where('activo', true)->orderBy('nombre')->pluck('nombre')->all();
 
         return $canales !== [] ? array_values($canales) : ['Directo', 'Booking', 'Airbnb', 'Expedia', 'Teléfono'];
     }
@@ -368,7 +374,7 @@ class ReservaForm
             return [];
         }
 
-        return Disponibilidad::ocupadas((int) $get('propiedad_id'), $llegada->format('Y-m-d'), $salida->format('Y-m-d'), $record?->id);
+        return Disponibilidad::ocupadas(self::propiedadPermitida($get('propiedad_id')), $llegada->format('Y-m-d'), $salida->format('Y-m-d'), $record?->id);
     }
 
     /**
@@ -392,7 +398,7 @@ class ReservaForm
         if ($llegada === null || $salida === null || blank($get($ruta.'unidad_id'))) {
             return null;
         }
-        $unidad = Unidad::query()->where('propiedad_id', (int) $get($ruta.'propiedad_id'))->find((int) $get($ruta.'unidad_id'));
+        $unidad = Unidad::query()->where('propiedad_id', self::propiedadPermitida($get($ruta.'propiedad_id')))->find((int) $get($ruta.'unidad_id'));
         if ($unidad === null) {
             return null;
         }

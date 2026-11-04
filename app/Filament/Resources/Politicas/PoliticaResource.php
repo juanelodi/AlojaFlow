@@ -40,11 +40,16 @@ class PoliticaResource extends RecursoDeCualquierPropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedScale;
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 10;
 
     protected static function permiso(): string
     {
         return Acceso::AJUSTES;
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('ui.nav.dinero');
     }
 
     public static function getModelLabel(): string

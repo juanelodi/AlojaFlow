@@ -45,7 +45,7 @@ class DocumentoLegalResource extends RecursoDeCualquierPropiedad
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentCheck;
 
-    protected static ?int $navigationSort = 14;
+    protected static ?int $navigationSort = 8;
 
     protected static function permiso(): string
     {
@@ -88,6 +88,7 @@ class DocumentoLegalResource extends RecursoDeCualquierPropiedad
     public static function table(Table $table): Table
     {
         return $table
+            ->recordUrl(fn (DocumentoLegal $record): ?string => self::canEdit($record) ? self::getUrl('edit', ['record' => $record]) : null)
             ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('propiedad'))
             ->defaultSort('titulo')
             ->columns([
