@@ -15,6 +15,7 @@ use App\Enums\MetodoPago;
 use App\Enums\OrigenFila;
 use App\Enums\TipoEventoReserva;
 use App\Enums\TipoReserva;
+use App\Limpieza\GestorLimpieza;
 use App\Models\EventoReserva;
 use App\Models\Huesped;
 use App\Models\Pago;
@@ -239,6 +240,7 @@ final class GestorReservas
             $actual->version++;
             $actual->save();
             $this->anotar($actual, TipoEventoReserva::Modificada, 'reserva.salida', ['accion' => 'salida']);
+            app(GestorLimpieza::class)->salidaRegistrada($actual);
 
             return $actual;
         });

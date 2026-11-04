@@ -196,3 +196,29 @@
 /* Demostración pública */
 .af-banner-demo { padding: .5rem 1rem; text-align: center; font-size: .875rem; font-weight: 600; background: var(--warning-100); color: var(--warning-900); }
 .dark .af-banner-demo { background: var(--warning-900); color: var(--warning-100); }
+
+/* Limpieza: tarjetas grandes para usar con el teléfono */
+.af-casilla { display: inline-flex; align-items: center; gap: .5rem; min-height: 2.75rem; font-size: .875rem; }
+.af-limpieza { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); }
+.af-unidad-tarjeta {
+    display: flex; flex-direction: column; gap: .75rem; padding: 1rem; border-radius: .75rem;
+    background: white; border: 1px solid var(--gray-200); border-left: 5px solid var(--success-600);
+}
+.dark .af-unidad-tarjeta { background: var(--gray-900); border-color: var(--gray-800); border-left-color: var(--success-500); }
+.af-unidad-tarjeta--sucia, .dark .af-unidad-tarjeta--sucia { border-left-color: var(--danger-600); }
+.af-unidad-tarjeta--inspeccion, .dark .af-unidad-tarjeta--inspeccion { border-left-color: var(--warning-500); }
+.af-unidad-tarjeta--fuera, .dark .af-unidad-tarjeta--fuera { border-left-color: var(--gray-500); }
+.af-unidad-tarjeta__cabecera { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+.af-unidad-tarjeta__nombre { font-size: 1.125rem; font-weight: 600; color: var(--gray-950); }
+.dark .af-unidad-tarjeta__nombre { color: white; }
+.af-pastilla { display: inline-block; padding: .125rem .5rem; border-radius: 999px; font-size: .75rem; font-weight: 600; white-space: nowrap; }
+.af-pastilla--limpia { background: var(--success-100); color: var(--success-800); }
+.af-pastilla--sucia { background: var(--danger-100); color: var(--danger-800); }
+.af-pastilla--inspeccion { background: var(--warning-100); color: var(--warning-900); }
+.dark .af-pastilla--limpia { background: var(--success-900); color: var(--success-100); }
+.dark .af-pastilla--sucia { background: var(--danger-900); color: var(--danger-100); }
+.dark .af-pastilla--inspeccion { background: var(--warning-900); color: var(--warning-100); }
+.af-tarea { display: flex; flex-direction: column; gap: .5rem; padding: .625rem .75rem; border-radius: .5rem; background: var(--gray-50); }
+.dark .af-tarea { background: var(--gray-800); }
+.af-tarea__titulo { font-weight: 500; }
+.af-unidad-tarjeta .fi-btn { min-height: 2.75rem; }

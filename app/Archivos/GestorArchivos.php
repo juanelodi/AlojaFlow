@@ -1,0 +1,78 @@
+<?php
+
+/*
+ * AlojaFlow — sistema de gestión de alojamientos
+ * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+declare(strict_types=1);
+
+namespace App\Archivos;
+
+use App\Enums\ClaseArchivo;
+use App\Models\Archivo;
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
+/**
+ * Guarda y lee archivos en `storage/app/private/archivos`, que entra en las copias de seguridad.
+ * Los que llevan datos personales van cifrados con la llave de la aplicación (regla 12).
+ */
+final class GestorArchivos
+{
+    private const DISCO = 'local';
+
+    public function guardar(string $contenido, string $nombreOriginal, string $tipoMime, ClaseArchivo $clase, ?Model $objeto, ?int $propiedadId, bool $cifrar = false, ?CarbonInterface $conservarHasta = null): Archivo
+    {
+        $ruta = 'archivos/'.($propiedadId ?? 'general').'/'.now('UTC')->format('Y/m').'/'.Str::uuid()->toString();
+        Storage::disk(self::DISCO)->put($ruta, $cifrar ? Crypt::encryptString($contenido) : $contenido);
+
+        $archivo = new Archivo([
+            'propiedad_id' => $propiedadId,
+            'ruta' => $ruta,
+            'nombre_original' => mb_substr(basename($nombreOriginal), 0, 255),
+            'tipo_mime' => mb_substr($tipoMime, 0, 100),
+            'bytes' => strlen($contenido),
+            'sha256' => hash('sha256', $contenido),
+            'cifrado' => $cifrar,
+            'clase' => $clase,
+            'subido_por' => auth()->id(),
+            'conservar_hasta' => $conservarHasta,
+        ]);
+        if ($objeto !== null) {
+            $archivo->objeto()->associate($objeto);
+        }
+        $archivo->save();
+
+        return $archivo;
+    }
+
+    /**
+     * Toma un archivo que Livewire dejó en el disco privado, lo guarda con los demás y borra el temporal.
+     */
+    public function guardarSubida(string $rutaTemporal, ClaseArchivo $clase, ?Model $objeto, ?int $propiedadId, bool $cifrar = false, ?CarbonInterface $conservarHasta = null): Archivo
+    {
+        $disco = Storage::disk(self::DISCO);
+        $archivo = $this->guardar((string) $disco->get($rutaTemporal), basename($rutaTemporal), (string) $disco->mimeType($rutaTemporal), $clase, $objeto, $propiedadId, $cifrar, $conservarHasta);
+        $disco->delete($rutaTemporal);
+
+        return $archivo;
+    }
+
+    public function contenido(Archivo $archivo): string
+    {
+        $contenido = (string) Storage::disk(self::DISCO)->get($archivo->ruta);
+
+        return $archivo->cifrado ? Crypt::decryptString($contenido) : $contenido;
+    }
+
+    public function eliminar(Archivo $archivo): void
+    {
+        Storage::disk(self::DISCO)->delete($archivo->ruta);
+        $archivo->delete();
+    }
+}

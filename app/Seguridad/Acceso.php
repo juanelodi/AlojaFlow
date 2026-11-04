@@ -37,13 +37,30 @@ final class Acceso
     /** Crear y cambiar unidades y tarifas en propiedades independientes (D-035). */
     public const CATALOGO = 'catalogo.gestionar';
 
+    /** Estado de las unidades y tareas de limpieza y mantenimiento, en cualquier propiedad. */
+    public const LIMPIEZA = 'limpieza.gestionar';
+
+    /** Mandar mensajes a los huéspedes y ver lo enviado, en cualquier propiedad. */
+    public const MENSAJES = 'mensajes.gestionar';
+
+    /** Plantillas, automatizaciones, avisos a otros sistemas, calendarios iCal y motor. */
+    public const AJUSTES = 'ajustes.gestionar';
+
+    /** Registro de llegada, documentos legales y privacidad de los huéspedes, en cualquier propiedad. */
+    public const HUESPEDES = 'huespedes.gestionar';
+
+    /** Datos fiscales, facturas, recibos y exportaciones para el contador. */
+    public const FACTURACION = 'facturacion.gestionar';
+
+    public const PERMISOS = [self::OPERACION, self::DATOS, self::INDICADORES, self::SINCRONIZACION, self::RESERVAS, self::CATALOGO, self::LIMPIEZA, self::MENSAJES, self::AJUSTES, self::HUESPEDES, self::FACTURACION];
+
     /** Roles y sus permisos (modelo-datos.md §4.1). */
     public const ROLES = [
-        'gerente' => [self::OPERACION, self::DATOS, self::INDICADORES, self::SINCRONIZACION, self::RESERVAS, self::CATALOGO],
-        'recepcion' => [self::OPERACION, self::DATOS, self::RESERVAS],
-        'limpieza' => [self::OPERACION],
-        'mantenimiento' => [self::OPERACION],
-        'contador' => [self::DATOS, self::INDICADORES],
+        'gerente' => self::PERMISOS,
+        'recepcion' => [self::OPERACION, self::DATOS, self::RESERVAS, self::LIMPIEZA, self::MENSAJES, self::HUESPEDES],
+        'limpieza' => [self::OPERACION, self::LIMPIEZA],
+        'mantenimiento' => [self::OPERACION, self::LIMPIEZA],
+        'contador' => [self::DATOS, self::INDICADORES, self::FACTURACION],
     ];
 
     /**

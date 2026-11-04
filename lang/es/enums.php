@@ -27,4 +27,42 @@ return [
     'TipoContacto' => ['telefono' => 'Teléfono', 'correo' => 'Correo', 'fax' => 'Fax'],
     'OrigenFila' => ['hoteldruid' => 'HotelDruid', 'alojaflow' => 'AlojaFlow'],
     'EstadoActualizacion' => ['preparada' => 'Preparada', 'aplicando' => 'Aplicando', 'archivos_aplicados' => 'Sin terminar', 'completada' => 'Completada', 'fallida' => 'Fallida', 'revertida' => 'Revertida'],
+
+    'EstadoLimpieza' => [
+        'limpia' => 'Limpia',
+        'sucia' => 'Sucia',
+        'inspeccion' => 'Por revisar',
+    ],
+
+    'TipoTarea' => [
+        'limpieza_salida' => 'Limpieza de salida',
+        'limpieza_estancia' => 'Limpieza durante la estancia',
+        'limpieza_profunda' => 'Limpieza profunda',
+        'inspeccion' => 'Inspección',
+        'mantenimiento' => 'Mantenimiento',
+        'otra' => 'Otra',
+    ],
+
+    'EstadoTarea' => [
+        'pendiente' => 'Pendiente',
+        'en_curso' => 'En curso',
+        'hecha' => 'Hecha',
+        'cancelada' => 'Cancelada',
+    ],
+
+    'FrecuenciaLimpieza' => [
+        'diaria' => 'Todos los días',
+        'semanal' => 'Algunos días de la semana',
+    ],
+
+    'ClaseArchivo' => [
+        'documento_identidad' => 'Documento de identidad',
+        'firma' => 'Firma',
+        'copia_aceptacion' => 'Copia firmada',
+        'foto_tarea' => 'Foto',
+        'plano' => 'Plano',
+        'factura_xml' => 'Factura (XML)',
+        'factura_pdf' => 'Factura (PDF)',
+        'exportacion' => 'Exportación',
+    ],
 ];

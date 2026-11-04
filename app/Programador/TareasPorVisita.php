@@ -40,6 +40,7 @@ final class TareasPorVisita
         'alojaflow:ical' => 15,
         'alojaflow:mensajes' => 5,
         'alojaflow:reservas-vencidas' => 5,
+        'alojaflow:limpieza' => 15,
         'alojaflow:limpiar' => 1440,
         'alojaflow:copia --programada' => 1440,
     ];

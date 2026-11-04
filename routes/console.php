@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::call(fn () => TareasPorVisita::anotarLatido())->name('latido')->everyMinute()->evenInMaintenanceMode();
 Schedule::command('alojaflow:sincronizar')->everyMinute()->withoutOverlapping(60);
 Schedule::command('alojaflow:reservas-vencidas')->everyFiveMinutes()->withoutOverlapping(10);
+Schedule::command('alojaflow:limpieza')->everyFifteenMinutes()->withoutOverlapping(30);
 Schedule::command('alojaflow:limpiar')->dailyAt('03:30');
 Schedule::command('alojaflow:copia --programada')->dailyAt('03:10')->withoutOverlapping(60)->skip(fn (): bool => ModoDemo::activo());
 Schedule::command('alojaflow:demo-reiniciar')->dailyAt('04:00')->when(fn (): bool => ModoDemo::activo());

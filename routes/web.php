@@ -9,6 +9,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\ActualizacionController;
+use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\CodigoFuenteController;
 use App\Http\Controllers\MotorReservasController;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/codigo-fuente', CodigoFuenteController::class)
     ->middleware('throttle:10,1')
     ->name('codigo-fuente');
+
+// Archivos privados: solo con sesión y según el permiso de su clase.
+Route::get('/archivos/{archivo}', ArchivoController::class)->middleware(['auth', 'throttle:120,1'])->name('archivos.ver');
 
 // Motor de reservas: páginas públicas del alojamiento (D-042).
 Route::prefix('reservar/{codigo}')->name('motor.')->middleware('throttle:60,1')->group(function (): void {

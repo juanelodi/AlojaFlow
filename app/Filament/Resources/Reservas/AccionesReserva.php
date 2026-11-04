@@ -12,12 +12,20 @@ namespace App\Filament\Resources\Reservas;
 
 use App\Documentos\GeneradorPdf;
 use App\Enums\EstadoReserva;
+use App\Enums\FrecuenciaLimpieza;
 use App\Enums\TipoReserva;
+use App\Limpieza\GestorLimpieza;
+use App\Models\ReglaLimpieza;
 use App\Models\Reserva;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
+use App\Seguridad\Acceso;
+use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -35,6 +43,60 @@ final class AccionesReserva
             ->visible(fn (Reserva $record): bool => self::gestionable($record) && $record->tipo === TipoReserva::Reserva
                 && $record->estado !== EstadoReserva::Cancelada && $record->entrada_registrada_en === null)
             ->action(fn (Reserva $record) => self::ejecutar($record, fn (GestorReservas $g) => $g->registrarEntrada($record), __('ui.reservas.entrada_ok')));
+    }
+
+    /**
+     * Limpiezas fijas durante la estancia. Vale también en subordinadas: es un dato propio.
+     */
+    public static function limpiezaEstancia(): Action
+    {
+        return Action::make('limpiezaEstancia')
+            ->label(__('limpieza.regla.accion'))
+            ->icon(Heroicon::OutlinedSparkles)
+            ->color('gray')
+            ->visible(fn (Reserva $record): bool => $record->estado !== EstadoReserva::Cancelada && Acceso::puede(Acceso::usuarioActual(), Acceso::LIMPIEZA, $record->propiedad_id))
+            ->fillForm(function (Reserva $record): array {
+                $regla = ReglaLimpieza::query()->where('reserva_id', $record->id)->first();
+                $dias = [];
+                for ($i = 1; $i <= 7; $i++) {
+                    if (((int) $regla?->dias_semana & (1 << ($i - 1))) !== 0) {
+                        $dias[] = (string) $i;
+                    }
+                }
+
+                return ['frecuencia' => $regla->frecuencia->value ?? '', 'dias' => $dias];
+            })
+            ->schema([
+                Select::make('frecuencia')->label(__('limpieza.regla.frecuencia'))->native(false)->live()->placeholder(__('limpieza.regla.sin_limpieza'))->options(FrecuenciaLimpieza::opciones()),
+                CheckboxList::make('dias')->label(__('limpieza.regla.dias'))->columns(4)->required()
+                    ->visible(fn (Get $get): bool => $get('frecuencia') === FrecuenciaLimpieza::Semanal->value || $get('frecuencia') === FrecuenciaLimpieza::Semanal)
+                    ->options(function (): array {
+                        $opciones = [];
+                        foreach (range(1, 7) as $i) {
+                            $opciones[(string) $i] = CarbonImmutable::create(2024, 1, $i)?->locale(app()->getLocale())->isoFormat('dddd') ?? (string) $i;
+                        }
+
+                        return $opciones;
+                    }),
+            ])
+            ->action(function (Reserva $record, array $data): void {
+                $frecuencia = FrecuenciaLimpieza::tryFrom((string) ($data['frecuencia'] ?? ''));
+                if ($frecuencia === null) {
+                    ReglaLimpieza::query()->where('reserva_id', $record->id)->delete();
+                } else {
+                    $mascara = 0;
+                    foreach ((array) ($data['dias'] ?? []) as $dia) {
+                        $mascara |= 1 << ((int) $dia - 1);
+                    }
+                    ReglaLimpieza::query()->updateOrCreate(['reserva_id' => $record->id], [
+                        'frecuencia' => $frecuencia,
+                        'dias_semana' => $frecuencia === FrecuenciaLimpieza::Semanal ? $mascara : null,
+                        'creada_por' => auth()->id(),
+                    ]);
+                }
+                app(GestorLimpieza::class)->generarTareas($record->propiedad);
+                Notification::make()->success()->title(__('limpieza.regla.guardada'))->send();
+            });
     }
 
     public static function confirmar(): Action

@@ -27,6 +27,7 @@ class ViewReserva extends ViewRecord
     {
         return [
             AccionesReserva::confirmar(),
+            AccionesReserva::limpiezaEstancia(),
             AccionesReserva::entrada(),
             AccionesReserva::salida(),
             EditAction::make()->visible(fn (Reserva $record): bool => ReservaResource::canEdit($record)),

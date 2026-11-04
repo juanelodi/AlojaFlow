@@ -27,4 +27,42 @@ return [
     'TipoContacto' => ['telefono' => 'Phone', 'correo' => 'Email', 'fax' => 'Fax'],
     'OrigenFila' => ['hoteldruid' => 'HotelDruid', 'alojaflow' => 'AlojaFlow'],
     'EstadoActualizacion' => ['preparada' => 'Prepared', 'aplicando' => 'Applying', 'archivos_aplicados' => 'Unfinished', 'completada' => 'Completed', 'fallida' => 'Failed', 'revertida' => 'Rolled back'],
+
+    'EstadoLimpieza' => [
+        'limpia' => 'Clean',
+        'sucia' => 'Dirty',
+        'inspeccion' => 'To inspect',
+    ],
+
+    'TipoTarea' => [
+        'limpieza_salida' => 'Check-out cleaning',
+        'limpieza_estancia' => 'Cleaning during the stay',
+        'limpieza_profunda' => 'Deep cleaning',
+        'inspeccion' => 'Inspection',
+        'mantenimiento' => 'Maintenance',
+        'otra' => 'Other',
+    ],
+
+    'EstadoTarea' => [
+        'pendiente' => 'Pending',
+        'en_curso' => 'In progress',
+        'hecha' => 'Done',
+        'cancelada' => 'Cancelled',
+    ],
+
+    'FrecuenciaLimpieza' => [
+        'diaria' => 'Every day',
+        'semanal' => 'Some days of the week',
+    ],
+
+    'ClaseArchivo' => [
+        'documento_identidad' => 'Identity document',
+        'firma' => 'Signature',
+        'copia_aceptacion' => 'Signed copy',
+        'foto_tarea' => 'Photo',
+        'plano' => 'Floor plan',
+        'factura_xml' => 'Invoice (XML)',
+        'factura_pdf' => 'Invoice (PDF)',
+        'exportacion' => 'Export',
+    ],
 ];

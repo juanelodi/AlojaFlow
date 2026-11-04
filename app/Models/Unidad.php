@@ -14,6 +14,7 @@ use App\Enums\OrigenFila;
 use App\Models\Concerns\ProtegidaPorSincronizacion;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Habitación, cabaña, departamento o parcela (proyección; modelo-datos.md §4.2).
@@ -48,6 +49,12 @@ class Unidad extends ModeloBase
             'origen' => OrigenFila::class,
             'sincronizada' => 'boolean',
         ];
+    }
+
+    /** @return HasOne<EstadoUnidad, $this> */
+    public function estado(): HasOne
+    {
+        return $this->hasOne(EstadoUnidad::class);
     }
 
     /** @return BelongsTo<Propiedad, $this> */

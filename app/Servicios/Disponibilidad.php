@@ -31,6 +31,11 @@ final class Disponibilidad
             ->where('activa', true)
             // capacidad 0 = la principal no la indicó: se muestra igual.
             ->where(fn ($q) => $q->where('capacidad', '>=', $personas)->orWhere('capacidad', 0))
+            ->whereNotExists(function (Builder $q): void {
+                $q->selectRaw('1')->from('estados_unidad')
+                    ->whereColumn('estados_unidad.unidad_id', 'unidades.id')
+                    ->where('estados_unidad.fuera_de_servicio', true);
+            })
             ->whereNotExists(function (Builder $q) use ($llegada, $salida): void {
                 $q->selectRaw('1')->from('reservas_noches')
                     ->whereColumn('reservas_noches.unidad_id', 'unidades.id')
