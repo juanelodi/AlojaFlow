@@ -14,6 +14,6 @@ enum ModoPropiedad: string
 {
     use ConEtiqueta;
 
-    case Subordinada = 'subordinada';
     case Nativa = 'nativa';
+    case Subordinada = 'subordinada';
 }

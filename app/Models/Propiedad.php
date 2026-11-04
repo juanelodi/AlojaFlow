@@ -29,6 +29,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $moneda
  * @property string $idioma
  * @property bool $activa
+ * @property bool $es_demo
+ * @property int $consecutivo_reserva
  * @property-read Principal|null $principal
  */
 class Propiedad extends ModeloBase
@@ -37,7 +39,7 @@ class Propiedad extends ModeloBase
 
     protected $fillable = [
         'nombre', 'codigo', 'color', 'modo', 'paquete_pais', 'pais', 'subdivision',
-        'zona_horaria', 'moneda', 'idioma', 'domicilio', 'telefono', 'correo', 'ajustes', 'activa',
+        'zona_horaria', 'moneda', 'idioma', 'domicilio', 'telefono', 'correo', 'ajustes', 'activa', 'es_demo',
     ];
 
     protected function casts(): array
@@ -47,6 +49,8 @@ class Propiedad extends ModeloBase
             'paquete_pais' => PaquetePais::class,
             'ajustes' => 'array',
             'activa' => 'boolean',
+            'es_demo' => 'boolean',
+            'consecutivo_reserva' => 'integer',
         ];
     }
 
@@ -74,6 +78,12 @@ class Propiedad extends ModeloBase
         return $this->hasMany(Huesped::class);
     }
 
+    /** @return HasMany<Tarifa, $this> */
+    public function tarifas(): HasMany
+    {
+        return $this->hasMany(Tarifa::class);
+    }
+
     /** @return HasMany<Aviso, $this> */
     public function avisos(): HasMany
     {
@@ -84,6 +94,14 @@ class Propiedad extends ModeloBase
     public function ejecuciones(): HasManyThrough
     {
         return $this->hasManyThrough(EjecucionSincronizacion::class, Principal::class);
+    }
+
+    /**
+     * Sus reservas y catálogos los gestiona AlojaFlow, sin una principal (D-035).
+     */
+    public function esIndependiente(): bool
+    {
+        return $this->modo === ModoPropiedad::Nativa;
     }
 
     /**

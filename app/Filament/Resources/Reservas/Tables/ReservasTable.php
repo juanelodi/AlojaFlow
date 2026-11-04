@@ -16,6 +16,7 @@ use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Support\Formato;
+use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
@@ -79,6 +80,7 @@ class ReservasTable
             ])
             ->recordActions([
                 ViewAction::make(),
+                EditAction::make()->visible(fn (Reserva $record): bool => ReservaResource::canEdit($record)),
             ])
             ->recordUrl(fn (Reserva $record): string => ReservaResource::getUrl('view', ['record' => $record]));
     }

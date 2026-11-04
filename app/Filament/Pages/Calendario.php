@@ -11,11 +11,13 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\ConPropiedadSeleccionada;
+use App\Filament\Resources\Reservas\ReservaResource;
 use App\Seguridad\Acceso;
 use App\Servicios\Calendario as ServicioCalendario;
 use App\Servicios\Operacion;
 use BackedEnum;
 use Carbon\CarbonImmutable;
+use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
@@ -23,8 +25,8 @@ use Livewire\Attributes\Url;
 use Throwable;
 
 /**
- * Calendario por habitaciones de un mes, solo consulta (M2). Las reservas se cambian en la
- * principal mientras la propiedad esté subordinada.
+ * Calendario por habitaciones de un mes (M2). En una propiedad independiente, un día libre abre
+ * una reserva nueva; en una subordinada es solo consulta y se cambia en la principal.
  */
 class Calendario extends Page
 {
@@ -89,6 +91,18 @@ class Calendario extends Page
     public function datos(): array
     {
         return ServicioCalendario::mes($this->propiedadesElegidas(), $this->inicioMes());
+    }
+
+    /**
+     * @return array<Action>
+     */
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('nuevaReserva')->label(__('ui.reservas.nueva'))->icon(Heroicon::OutlinedPlus)
+                ->url(fn (): string => ReservaResource::getUrl('create'))
+                ->visible(fn (): bool => ReservaResource::canCreate()),
+        ];
     }
 
     public function hoy(): CarbonImmutable

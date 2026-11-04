@@ -758,6 +758,24 @@ Propuesta D-022.
 
 Se construyen en la fase 2. Las columnas de la fase 1 ya las tienen en cuenta.
 
+**Ya construido en la 1.0.3 (D-035, D-036, D-037), para las propiedades independientes
+(`modo = nativa`):**
+
+- **`tarifas` (O):** `propiedad_id`, `nombre` (único por propiedad), `precio_noche` y `activa`.
+- **`tarifas_temporadas` (O):** `tarifa_id`, `nombre`, `desde`, `hasta` (última noche, inclusive) y
+  `precio_noche`. Si dos se pisan, vale la que empieza más tarde.
+- **`unidades.tarifa_id`:** FK nula, `SET NULL`. La sincronización no la toca.
+- **`pagos`:** como abajo, sin `grupo_id`, `pasarela`, `estado` ni comprobante. `reservas.pagado` es
+  la suma de sus pagos; importe negativo = devolución.
+- **`reservas.version`:** bloqueo optimista al editar.
+- **`propiedades.es_demo` y `propiedades.consecutivo_reserva`:** marca del demo y número de la última
+  reserva, repartido con un candado sobre la fila de la propiedad.
+- **Noches con `exclusiva = 1`:** la base de datos rechaza la doble reserva. Solo se escriben por
+  `App\Reservas\GestorReservas`.
+
+`planes_tarifarios`, `precios` y `tipos_unidad` siguen pendientes hasta que hagan falta los canales
+o los planes derivados; entonces se migran las tarifas simples.
+
 | Tabla | Columnas clave | Notas |
 |---|---|---|
 | `planes_tarifarios` | `propiedad_id`, `nombre` (traducible), `codigo`, `moneda`, `incluye_impuestos`, `politica_id`, `padre_id` + `ajuste_porcentaje`, `visible_motor`, `activo` | Planes derivados («no reembolsable −10 %») |

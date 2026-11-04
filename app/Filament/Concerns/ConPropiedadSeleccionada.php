@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Concerns;
 
+use App\Enums\ModoPropiedad;
 use App\Models\Propiedad;
 use App\Seguridad\Acceso;
 use Livewire\Attributes\Session;
@@ -59,6 +60,24 @@ trait ConPropiedadSeleccionada
         $visibles = $this->propiedadesVisibles();
 
         return $this->propiedadId !== null && in_array($this->propiedadId, $visibles, true) ? [$this->propiedadId] : $visibles;
+    }
+
+    /**
+     * Propiedades elegidas en las que el usuario puede crear y cambiar reservas.
+     *
+     * @return list<int>
+     */
+    public function propiedadesGestionables(): array
+    {
+        return array_values(array_intersect($this->propiedadesElegidas(), Acceso::propiedadesIndependientes(Acceso::usuarioActual(), Acceso::RESERVAS)));
+    }
+
+    /**
+     * Si alguna de las propiedades elegidas depende de una principal, para avisar dónde se cambian.
+     */
+    public function haySubordinadas(): bool
+    {
+        return Propiedad::query()->whereIn('id', $this->propiedadesElegidas())->where('modo', ModoPropiedad::Subordinada->value)->exists();
     }
 
     /**

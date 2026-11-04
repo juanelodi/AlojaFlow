@@ -233,6 +233,33 @@ prueban en una instalación hecha desde el zip (`E:\AlojaFlow-prueba`). **Por qu
 archivos desde un zip dejaría cambios en el árbol de git y quitaría las dependencias de
 desarrollo de `vendor/`.
 
+### D-035 · 2026-11-04 · Modo independiente: el núcleo mínimo de la fase 2 se adelanta
+Al crear una propiedad se elige entre **independiente** (`modo = nativa`: AlojaFlow es su sistema)
+y **subordinada** (como hasta ahora). El modo no se cambia después; pasar de subordinada a
+independiente será la migración de `modelo-datos.md` §5. Se adelantan unidades, tarifas, huéspedes,
+reservas, bloqueos, entrada y salida, y pagos. Lo demás de la fase 2 sigue pendiente (ver
+`CAMBIOS.md`, 1.0.3). Toda escritura de reservas pasa por `App\Reservas\GestorReservas`. La lógica
+se toma de AlojaFlow 1.2.3 sin copiar código ni pantallas (regla 4). **Por qué:** lo pidió el
+usuario al probar la 1.0.2: el sistema debe servir también a quien no tiene HotelDruid.
+Decidió: usuario. **Cuidado:** en una independiente, AlojaFlow tiene la única copia de los datos,
+y todavía no hay copia de seguridad completa desde el panel.
+
+### D-036 · 2026-11-04 · Tarifas simples por noche con temporadas
+`tarifas` (precio base por noche) y `tarifas_temporadas` (precio entre dos fechas), con
+`unidades.tarifa_id`. El total de la reserva se reparte en partes iguales entre sus noches, como en
+la proyección. Sustituye por ahora a `planes_tarifarios`, `precios` y `tipos_unidad` del diseño de
+la fase 2, que resuelven canales y planes derivados que aún no existen. **Por qué:** cubre lo
+habitual de un alojamiento pequeño con mucho menos código. Propuesta de Claude: se revisa con el
+usuario. `reservas.version` hace el bloqueo optimista de `modelo-datos.md` §7.
+
+### D-037 · 2026-11-04 · Demo como propiedad aparte, generada y sin usuario público
+`propiedades.es_demo` marca una propiedad con datos inventados por `App\Demo\GeneradorDemo`, con
+fechas alrededor del día en que se crea y sin Faker, que no va en el paquete. Se crea y se quita
+desde Propiedades o con `alojaflow:demo`. No genera eventos ni auditoría de reservas: las
+automatizaciones futuras no deben escribir a sus huéspedes. No crea un usuario `demo` con contraseña
+conocida, como la 1.2.x. **Por qué:** el usuario quiere probar sin riesgo, y una contraseña pública en
+una instalación que puede tener datos reales sería un riesgo.
+
 ---
 
 ## Pendientes

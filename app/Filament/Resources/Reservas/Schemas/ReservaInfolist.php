@@ -36,10 +36,10 @@ class ReservaInfolist
                     TextEntry::make('personas')->label(__('ui.comun.personas')),
                     TextEntry::make('estado')->label(__('ui.comun.estado'))->badge()->formatStateUsing(fn (Reserva $record): string => $record->estado->etiqueta()),
                     TextEntry::make('tipo')->label(__('ui.reservas.tipo'))->formatStateUsing(fn (Reserva $record): string => $record->tipo->etiqueta()),
-                    TextEntry::make('entrada_registrada_en')->label(__('ui.reservas.entrada'))->formatStateUsing(fn (Reserva $record): string => Formato::momento($record->entrada_registrada_en))->placeholder('—'),
-                    TextEntry::make('salida_registrada_en')->label(__('ui.reservas.salida_registrada'))->formatStateUsing(fn (Reserva $record): string => Formato::momento($record->salida_registrada_en))->placeholder('—'),
+                    TextEntry::make('entrada_registrada_en')->label(__('ui.reservas.entrada'))->formatStateUsing(fn (Reserva $record): string => Formato::momento($record->entrada_registrada_en, self::zona($record)))->placeholder('—'),
+                    TextEntry::make('salida_registrada_en')->label(__('ui.reservas.salida_registrada'))->formatStateUsing(fn (Reserva $record): string => Formato::momento($record->salida_registrada_en, self::zona($record)))->placeholder('—'),
                     TextEntry::make('eliminada_en_principal_en')->label(__('ui.reservas.eliminada'))->color('danger')
-                        ->formatStateUsing(fn (Reserva $record): string => Formato::momento($record->eliminada_en_principal_en))
+                        ->formatStateUsing(fn (Reserva $record): string => Formato::momento($record->eliminada_en_principal_en, self::zona($record)))
                         ->visible(fn (Reserva $record): bool => $record->eliminada_en_principal_en !== null),
                 ]),
             Section::make(__('ui.comun.huesped'))->columnSpanFull()
@@ -81,7 +81,10 @@ class ReservaInfolist
                     TextEntry::make('origen_texto')->label(__('ui.comun.origen'))->placeholder('—'),
                     TextEntry::make('grupo_codigo')->label(__('ui.reservas.grupo'))->placeholder('—'),
                     TextEntry::make('codigo_publico')->label(__('ui.reservas.codigo_publico'))->copyable(),
-                    TextEntry::make('creada_en_origen')->label(__('ui.reservas.creada_origen'))->formatStateUsing(fn (Reserva $record): string => Formato::momento($record->creada_en_origen))->placeholder('—'),
+                    TextEntry::make('creada_en_origen')->label(__('ui.reservas.creada_origen'))->formatStateUsing(fn (Reserva $record): string => Formato::momento($record->creada_en_origen, self::zona($record)))->placeholder('—')
+                        ->visible(fn (Reserva $record): bool => $record->sincronizada),
+                    TextEntry::make('creado_en')->label(__('ui.reservas.creada'))->formatStateUsing(fn (Reserva $record): string => Formato::momento($record->getAttribute('creado_en'), self::zona($record)))
+                        ->visible(fn (Reserva $record): bool => ! $record->sincronizada),
                     TextEntry::make('comentario')->label(__('ui.reservas.comentario'))->columnSpanFull()->placeholder('—'),
                 ]),
             Section::make(__('ui.reservas.eventos'))->columnSpanFull()
@@ -94,5 +97,13 @@ class ReservaInfolist
                         ->listWithLineBreaks()->bulleted()->placeholder('—'),
                 ]),
         ]);
+    }
+
+    /**
+     * La zona que eligió el usuario o, si no eligió ninguna, la de la propiedad.
+     */
+    private static function zona(Reserva $reserva): string
+    {
+        return (string) (auth()->user()->zona_horaria ?? $reserva->propiedad->zona_horaria);
     }
 }

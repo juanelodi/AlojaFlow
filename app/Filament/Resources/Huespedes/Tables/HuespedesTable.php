@@ -14,6 +14,7 @@ use App\Filament\Resources\Huespedes\HuespedResource;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Huesped;
 use App\Models\Propiedad;
+use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -48,7 +49,7 @@ class HuespedesTable
                 SelectFilter::make('propiedad_id')->label(__('ui.comun.propiedad'))
                     ->options(fn (): array => Propiedad::query()->whereIn('id', ReservaResource::propiedadesPermitidas())->orderBy('nombre')->pluck('nombre', 'id')->all()),
             ])
-            ->recordActions([ViewAction::make()])
+            ->recordActions([ViewAction::make(), EditAction::make()->visible(fn (Huesped $record): bool => HuespedResource::canEdit($record))])
             ->recordUrl(fn (Huesped $record): string => HuespedResource::getUrl('view', ['record' => $record]));
     }
 }

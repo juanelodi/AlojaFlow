@@ -7,6 +7,7 @@
         $hoy = $this->hoy()->format('Y-m-d');
         $propiedadAnterior = null;
         $variasPropiedades = count($this->propiedadesElegidas()) > 1;
+        $gestionables = $this->propiedadesGestionables();
     @endphp
     <div class="af-pila">
         <div class="af-barra-herramientas">
@@ -34,7 +35,12 @@
             <span><i class="af-barra--en-casa"></i>{{ __('ui.calendario.en_casa') }}</span>
             <span><i class="af-barra--salio"></i>{{ __('ui.calendario.salio') }}</span>
             <span><i class="af-barra--bloqueo"></i>{{ __('ui.calendario.bloqueo') }}</span>
-            <span class="af-nota">{{ __('ui.comun.solo_consulta') }}</span>
+            @if ($this->haySubordinadas())
+                <span class="af-nota">{{ __('ui.comun.solo_consulta') }}</span>
+            @endif
+            @if ($gestionables !== [])
+                <span class="af-nota">{{ __('ui.calendario.ayuda_nueva') }}</span>
+            @endif
         </div>
 
         @if ($datos['filas'] === [])
@@ -62,7 +68,16 @@
                             @if ($unidad->capacidad > 0)<span class="af-secundario">{{ $unidad->capacidad }} <span class="af-sr">{{ __('ui.comun.personas') }}</span><span aria-hidden="true">👤</span></span>@endif
                         </div>
                         @foreach ($dias as $i => $dia)
-                            <div @class(['af-cal-dia', 'af-cal-dia--finde' => $dia->isWeekend(), 'af-cal-dia--hoy' => $dia->format('Y-m-d') === $hoy]) style="grid-column: {{ $i + 2 }}"></div>
+                            @if (in_array($unidad->propiedad_id, $gestionables, true))
+                                {{-- Las barras van encima, así que solo se puede pulsar en lo que está libre. --}}
+                                <a href="{{ \App\Filament\Resources\Reservas\ReservaResource::getUrl('create', ['unidad' => $unidad->id, 'llegada' => $dia->format('Y-m-d'), 'salida' => $dia->addDay()->format('Y-m-d')]) }}"
+                                   @class(['af-cal-dia', 'af-cal-dia--libre', 'af-cal-dia--finde' => $dia->isWeekend(), 'af-cal-dia--hoy' => $dia->format('Y-m-d') === $hoy])
+                                   style="grid-column: {{ $i + 2 }}"
+                                   title="{{ __('ui.calendario.nueva_en', ['unidad' => $unidad->nombre, 'fecha' => Formato::fechaCorta($dia)]) }}"
+                                   aria-label="{{ __('ui.calendario.nueva_en', ['unidad' => $unidad->nombre, 'fecha' => Formato::fechaCorta($dia)]) }}"></a>
+                            @else
+                                <div @class(['af-cal-dia', 'af-cal-dia--finde' => $dia->isWeekend(), 'af-cal-dia--hoy' => $dia->format('Y-m-d') === $hoy]) style="grid-column: {{ $i + 2 }}"></div>
+                            @endif
                         @endforeach
                         @foreach ($fila['barras'] as $barra)
                             @php($reserva = $barra['reserva'])

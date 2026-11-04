@@ -11,10 +11,16 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\ConPropiedadSeleccionada;
+use App\Filament\Resources\Reservas\ReservaResource;
+use App\Models\Reserva;
+use App\Reservas\GestorReservas;
+use App\Reservas\ReservaRechazada;
 use App\Seguridad\Acceso;
 use App\Servicios\Operacion;
 use BackedEnum;
 use Carbon\CarbonImmutable;
+use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
@@ -79,6 +85,42 @@ class Hoy extends Page
     public function irAHoy(): void
     {
         $this->fecha = Operacion::hoyDe($this->propiedadUnica())->format('Y-m-d');
+    }
+
+    /**
+     * @return array<Action>
+     */
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('nuevaReserva')->label(__('ui.reservas.nueva'))->icon(Heroicon::OutlinedPlus)
+                ->url(fn (): string => ReservaResource::getUrl('create'))
+                ->visible(fn (): bool => ReservaResource::canCreate()),
+        ];
+    }
+
+    public function registrarEntrada(int $reservaId): void
+    {
+        $this->cambiar($reservaId, fn (GestorReservas $g, Reserva $r) => $g->registrarEntrada($r), __('ui.reservas.entrada_ok'));
+    }
+
+    public function registrarSalida(int $reservaId): void
+    {
+        $this->cambiar($reservaId, fn (GestorReservas $g, Reserva $r) => $g->registrarSalida($r), __('ui.reservas.salida_ok'));
+    }
+
+    /**
+     * @param  callable(GestorReservas, Reserva): mixed  $accion
+     */
+    private function cambiar(int $reservaId, callable $accion, string $mensaje): void
+    {
+        $reserva = Reserva::query()->whereIn('propiedad_id', ReservaResource::propiedadesGestionables())->findOrFail($reservaId);
+        try {
+            $accion(app(GestorReservas::class), $reserva);
+            Notification::make()->success()->title($mensaje)->send();
+        } catch (ReservaRechazada $e) {
+            Notification::make()->danger()->title($e->getMessage())->send();
+        }
     }
 
     /**

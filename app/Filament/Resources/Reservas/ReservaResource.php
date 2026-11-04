@@ -10,8 +10,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Reservas;
 
+use App\Enums\EstadoReserva;
+use App\Filament\Resources\Reservas\Pages\CreateReserva;
+use App\Filament\Resources\Reservas\Pages\EditReserva;
 use App\Filament\Resources\Reservas\Pages\ListReservas;
 use App\Filament\Resources\Reservas\Pages\ViewReserva;
+use App\Filament\Resources\Reservas\RelationManagers\PagosRelationManager;
+use App\Filament\Resources\Reservas\Schemas\ReservaForm;
 use App\Filament\Resources\Reservas\Schemas\ReservaInfolist;
 use App\Filament\Resources\Reservas\Tables\ReservasTable;
 use App\Models\Reserva;
@@ -25,7 +30,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Reservas en modo consulta: en la fase 1 se cambian en la principal.
+ * Reservas: en una propiedad independiente se crean y cambian aquí; en una subordinada, solo se
+ * consultan y se cambian en la principal.
  */
 class ReservaResource extends Resource
 {
@@ -84,16 +90,30 @@ class ReservaResource extends Resource
         return $record instanceof Reserva && in_array($record->propiedad_id, self::propiedadesPermitidas(), true);
     }
 
+    /**
+     * Propiedades independientes donde el usuario puede crear y cambiar reservas.
+     *
+     * @return list<int>
+     */
+    public static function propiedadesGestionables(): array
+    {
+        return Acceso::propiedadesIndependientes(Acceso::usuarioActual(), Acceso::RESERVAS);
+    }
+
     public static function canCreate(): bool
     {
-        return false;
+        return self::propiedadesGestionables() !== [];
     }
 
     public static function canEdit(Model $record): bool
     {
-        return false;
+        return $record instanceof Reserva && ! $record->sincronizada && $record->estado !== EstadoReserva::Cancelada
+            && in_array($record->propiedad_id, self::propiedadesGestionables(), true);
     }
 
+    /**
+     * Las reservas no se borran: se cancelan y queda su historial.
+     */
     public static function canDelete(Model $record): bool
     {
         return false;
@@ -102,6 +122,11 @@ class ReservaResource extends Resource
     public static function canDeleteAny(): bool
     {
         return false;
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return ReservaForm::configure($schema);
     }
 
     public static function infolist(Schema $schema): Schema
@@ -114,11 +139,18 @@ class ReservaResource extends Resource
         return ReservasTable::configure($table);
     }
 
+    public static function getRelations(): array
+    {
+        return [PagosRelationManager::class];
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListReservas::route('/'),
+            'create' => CreateReserva::route('/create'),
             'view' => ViewReserva::route('/{record}'),
+            'edit' => EditReserva::route('/{record}/edit'),
         ];
     }
 }

@@ -12,8 +12,10 @@ namespace App\Filament\Resources\Propiedades\Pages;
 
 use App\Filament\Resources\Propiedades\AccionesSincronizacion;
 use App\Filament\Resources\Propiedades\PropiedadResource;
+use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
 use Filament\Actions\DeleteAction;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\EditRecord;
 
 class EditPropiedad extends EditRecord
@@ -26,7 +28,15 @@ class EditPropiedad extends EditRecord
             AccionesSincronizacion::probar(),
             AccionesSincronizacion::sincronizar(),
             AccionesSincronizacion::reanudar(),
-            DeleteAction::make(),
+            // En una independiente estos son los únicos datos: se pide escribir el código para borrarla.
+            DeleteAction::make()
+                ->modalDescription(fn (Propiedad $record): string => $record->esIndependiente()
+                    ? __('ui.propiedades.eliminar_independiente', ['codigo' => $record->codigo])
+                    : __('ui.propiedades.eliminar_subordinada'))
+                ->schema(fn (Propiedad $record): array => $record->esIndependiente() ? [
+                    TextInput::make('confirmacion')->label(__('ui.propiedades.eliminar_confirmacion'))->required()->in([$record->codigo])->autocomplete('off'),
+                ] : [])
+                ->before(fn (Propiedad $record) => RegistroAuditoria::anotar('propiedad.eliminar', $record, ['nombre' => $record->nombre, 'modo' => $record->modo->value])),
         ];
     }
 

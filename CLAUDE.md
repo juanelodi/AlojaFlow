@@ -4,9 +4,10 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-03): versión de prueba 1.0.1 (entrega Base)**, a la espera de que el
-  usuario la pruebe (`docs/guia-pruebas.md`). Producto aprobado; la especificación sigue en
-  redacción. Las decisiones tomadas por delegación (D-024 a D-029) se revisan con él.
+- **Estado (2026-11-04): versión de prueba 1.0.3**, a la espera de que el usuario la pruebe
+  (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
+  aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
+  D-029) y D-036 se revisan con el usuario.
 - **Idioma:** español de México en la conversación, la documentación, el código
   (identificadores y comentarios) y los mensajes de commit. Interfaz en español y en los
   idiomas de la regla 7.
@@ -27,7 +28,9 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
    [docs/producto.md](docs/producto.md) §8.
 2. **Fase 2 — núcleo propio.** Reservas, tarifas y clientes propios para funcionar sin
    HotelDruid, más todo lo que escribe reservas (grupos, cupones, fusionar clientes, motor de
-   reservas…). Se construye después, pero el modelo de datos lo contempla desde la fase 1.
+   reservas…). El modelo de datos lo contempla desde la fase 1. **Desde la 1.0.3 ya existe su
+   parte mínima (D-035):** propiedades independientes (`modo = nativa`) con unidades, tarifas,
+   huéspedes, reservas, bloqueos y pagos. Las subordinadas siguen como en la fase 1.
 
 AlojaFlow 1.2.x queda **congelada** (solo correcciones de seguridad y errores): el esquema 3.081
 de la copia no cambia mientras se construye la fase 1.
@@ -186,6 +189,9 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   - `Empaquetador` (construye el zip firmado) y `Revisor` (lo comprueba sin cambiar nada);
   - `Aplicador` (extrae e intercambia los archivos con diario) y `Actualizador` (las dos fases);
   - `CopiaBaseDatos`, `Firma`, `Manifiesto` y `Rutas` (qué no toca nunca una actualización).
+- `app/Reservas/` — propiedades independientes: `GestorReservas` es el único que escribe reservas,
+  noches y pagos propios, y `Cotizador` calcula el precio con la tarifa y sus temporadas.
+- `app/Demo/GeneradorDemo.php` — la propiedad de demostración con datos inventados (D-037).
 - `app/Models/` — modelos en español sobre `ModeloBase` (`creado_en`/`actualizado_en`). Las
   filas con `sincronizada = true` solo las cambia la sincronización
   (`Concerns/ProtegidaPorSincronizacion`).
@@ -217,6 +223,7 @@ PHP artisan serve                         # http://127.0.0.1:8000
 PHP artisan schedule:work                 # sincronización periódica en local
 PHP artisan alojaflow:sincronizar --principal=ID
 PHP artisan alojaflow:crear-administrador correo@ejemplo.com
+PHP artisan alojaflow:demo [--quitar]     # propiedad de demostración con datos ficticios
 PHP vendor/bin/pest                       # pruebas, contra la base MySQL alojaflow_pruebas
 PHP vendor/bin/pint --test                # formato PSR-12 + cabecera de licencia + strict_types
 PHP vendor/bin/phpstan analyse --memory-limit=1G   # Larastan nivel 6

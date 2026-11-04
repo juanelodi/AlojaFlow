@@ -9,7 +9,8 @@
 declare(strict_types=1);
 
 return [
-    'ModoPropiedad' => ['subordinada' => 'Subordinate to HotelDruid', 'nativa' => 'Native'],
+    'ModoPropiedad' => ['nativa' => 'Independent', 'subordinada' => 'Subordinate to HotelDruid'],
+    'MetodoPago' => ['efectivo' => 'Cash', 'tarjeta' => 'Card', 'transferencia' => 'Transfer', 'otro' => 'Other'],
     'PaquetePais' => ['mexico' => 'Mexico', 'espana' => 'Spain', 'estados_unidos' => 'United States', 'generico' => 'Generic'],
     'EstadoPrincipal' => ['activa' => 'Active', 'pausada' => 'Paused'],
     'MetodoPeticion' => ['post' => 'POST (recommended)', 'get' => 'GET (compatibility mode)'],

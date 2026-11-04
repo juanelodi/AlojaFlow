@@ -1,5 +1,5 @@
 {{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
-@props(['reservas', 'vacio', 'titulo', 'mostrarPropiedad' => false])
+@props(['reservas', 'vacio', 'titulo', 'mostrarPropiedad' => false, 'gestionables' => []])
 @use('App\Support\Formato')
 @use('App\Enums\EstadoReserva')
 <div class="af-tabla-contenedor">
@@ -33,6 +33,16 @@
                                 {{ $reserva->titular?->nombreCompleto() ?? '—' }}
                             </a>
                             <span class="af-secundario">{{ $reserva->numero }}</span>
+                            @if (in_array($reserva->propiedad_id, $gestionables, true))
+                                {{-- Junto al nombre: es lo primero que busca recepción y no queda fuera de la pantalla. --}}
+                                <div class="af-accion-fila">
+                                    @if ($reserva->entrada_registrada_en === null)
+                                        <x-filament::button size="xs" color="success" wire:click="registrarEntrada({{ $reserva->id }})" wire:loading.attr="disabled">{{ __('ui.reservas.registrar_entrada') }}</x-filament::button>
+                                    @elseif ($reserva->salida_registrada_en === null)
+                                        <x-filament::button size="xs" color="info" wire:click="registrarSalida({{ $reserva->id }})" wire:loading.attr="disabled">{{ __('ui.reservas.registrar_salida') }}</x-filament::button>
+                                    @endif
+                                </div>
+                            @endif
                         </td>
                         <td>
                             {{ Formato::fechaCorta($reserva->llegada) }} → {{ Formato::fechaCorta($reserva->salida) }}

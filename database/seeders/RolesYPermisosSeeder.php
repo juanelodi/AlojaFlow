@@ -27,7 +27,7 @@ class RolesYPermisosSeeder extends Seeder
         $registro->forgetCachedPermissions();
         $registro->setPermissionsTeamId(null);
 
-        foreach ([Acceso::OPERACION, Acceso::DATOS, Acceso::INDICADORES, Acceso::SINCRONIZACION] as $permiso) {
+        foreach ([Acceso::OPERACION, Acceso::DATOS, Acceso::INDICADORES, Acceso::SINCRONIZACION, Acceso::RESERVAS, Acceso::CATALOGO] as $permiso) {
             Permission::findOrCreate($permiso, 'web');
         }
 

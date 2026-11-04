@@ -10,9 +10,12 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Reservas\Pages;
 
+use App\Filament\Resources\Reservas\AccionesReserva;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Reserva;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Icons\Heroicon;
 
@@ -23,6 +26,14 @@ class ViewReserva extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            AccionesReserva::entrada(),
+            AccionesReserva::salida(),
+            EditAction::make()->visible(fn (Reserva $record): bool => ReservaResource::canEdit($record)),
+            AccionesReserva::reactivar(),
+            ActionGroup::make([
+                AccionesReserva::deshacerRegistro(),
+                AccionesReserva::cancelar(),
+            ])->label(__('ui.reservas.mas_acciones'))->button()->color('gray'),
             Action::make('abrirEnPrincipal')
                 ->label(__('ui.comun.abrir_principal'))
                 ->icon(Heroicon::OutlinedArrowTopRightOnSquare)

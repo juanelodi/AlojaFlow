@@ -3,9 +3,13 @@
 Sistema de gestión de alojamientos (PMS) de código abierto, para alojamientos pequeños y
 propietarios con varias propiedades. Licencia **AGPL-3.0-or-later**.
 
-> **Estado:** versión de prueba 1.0.2 (fase 1, entrega Base). AlojaFlow lee los datos de
-> una instalación de **HotelDruid** o **AlojaFlow 1.2.x** y, sin escribir nunca en ella, ofrece
-> encima:
+> **Estado:** versión de prueba 1.0.3. Cada propiedad puede trabajar de dos formas:
+> - **Independiente:** AlojaFlow es su sistema, con unidades, tarifas por temporada, huéspedes,
+>   reservas, bloqueos, entrada y salida, y pagos.
+> - **Subordinada:** AlojaFlow lee los datos de una instalación de **HotelDruid** o
+>   **AlojaFlow 1.2.x**, sin escribir nunca en ella.
+>
+> En las dos formas ofrece:
 > - un resumen de todas las propiedades;
 > - la pantalla «Hoy»;
 > - el calendario por habitaciones;
@@ -13,7 +17,8 @@ propietarios con varias propiedades. Licencia **AGPL-3.0-or-later**.
 > - indicadores (ocupación, ADR, RevPAR);
 > - usuarios con roles por propiedad.
 >
-> Se actualiza desde el propio panel, subiendo el zip firmado de cada versión.
+> Trae una demo con datos ficticios para probarlo, y se actualiza desde el propio panel, subiendo
+> el zip firmado de cada versión.
 
 - **Probarlo:** [docs/guia-pruebas.md](docs/guia-pruebas.md)
 - **Instalar y actualizar:** [docs/especificacion/instalacion-actualizaciones.md](docs/especificacion/instalacion-actualizaciones.md)

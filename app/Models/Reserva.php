@@ -49,6 +49,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $entrada_registrada_en
  * @property Carbon|null $salida_registrada_en
  * @property string|null $comentario
+ * @property int $version
  * @property Carbon|null $creada_en_origen
  * @property Carbon|null $eliminada_en_principal_en
  * @property OrigenFila $origen
@@ -90,6 +91,7 @@ class Reserva extends ModeloBase
             'eliminada_en_principal_en' => 'datetime',
             'origen' => OrigenFila::class,
             'sincronizada' => 'boolean',
+            'version' => 'integer',
         ];
     }
 
@@ -129,6 +131,12 @@ class Reserva extends ModeloBase
         return $this->belongsToMany(Huesped::class, 'reservas_huespedes')->withPivot(['orden', 'parentesco_texto']);
     }
 
+    /** @return HasMany<Pago, $this> */
+    public function pagos(): HasMany
+    {
+        return $this->hasMany(Pago::class);
+    }
+
     /** @return HasMany<EventoReserva, $this> */
     public function eventos(): HasMany
     {
@@ -143,6 +151,14 @@ class Reserva extends ModeloBase
     public function scopeVigentes(Builder $consulta): void
     {
         $consulta->where('estado', '!=', EstadoReserva::Cancelada->value)->whereNull('eliminada_en_principal_en');
+    }
+
+    /**
+     * La gestiona AlojaFlow, no una principal.
+     */
+    public function esPropia(): bool
+    {
+        return ! $this->sincronizada && $this->propiedad->esIndependiente();
     }
 
     public function estaEnCasa(): bool

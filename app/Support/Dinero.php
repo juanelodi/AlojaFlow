@@ -42,6 +42,16 @@ final class Dinero
         return (int) round((float) $valor * (10 ** self::decimales($moneda)), 0, PHP_ROUND_HALF_UP);
     }
 
+    /**
+     * De la unidad menor a un decimal en texto («1234.50»), para los campos de los formularios.
+     */
+    public static function aDecimal(int $importe, string $moneda): string
+    {
+        $decimales = self::decimales($moneda);
+
+        return number_format($importe / (10 ** $decimales), $decimales, '.', '');
+    }
+
     public static function formatear(int $importe, string $moneda, ?string $locale = null): string
     {
         $formato = new NumberFormatter($locale ?? self::locale($moneda), NumberFormatter::CURRENCY);

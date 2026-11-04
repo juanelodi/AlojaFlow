@@ -65,6 +65,7 @@
 .dark .af-tabla th { color: var(--gray-400); border-color: var(--gray-800); }
 .dark .af-tabla td { color: var(--gray-100); border-color: var(--gray-800); }
 .af-tabla tr:last-child td { border-bottom: 0; }
+.af-accion-fila { margin-top: .375rem; }
 .af-tabla a { color: var(--primary-700); font-weight: 500; }
 .dark .af-tabla a { color: var(--primary-400); }
 .af-secundario { display: block; font-size: .75rem; color: var(--gray-500); }
@@ -109,6 +110,8 @@
 .af-cal-dia--finde { background: var(--gray-50); }
 .dark .af-cal-dia--finde { background: color-mix(in oklab, var(--gray-800) 40%, transparent); }
 .af-cal-dia--hoy { background: color-mix(in oklab, var(--primary-500) 12%, transparent); }
+.af-cal-dia--libre { display: block; min-height: 2.5rem; }
+.af-cal-dia--libre:hover, .af-cal-dia--libre:focus-visible { background: color-mix(in oklab, var(--primary-500) 22%, transparent); outline: 2px solid var(--primary-500); outline-offset: -2px; }
 .af-cal-cabecera-dia { grid-row: 1; text-align: center; font-size: .6875rem; line-height: 1.15; padding: .375rem 0; color: var(--gray-500); border-left: 1px solid var(--gray-100); }
 .af-cal-cabecera-dia strong { display: block; font-size: .8125rem; color: var(--gray-900); }
 .dark .af-cal-cabecera-dia { border-color: var(--gray-800); }

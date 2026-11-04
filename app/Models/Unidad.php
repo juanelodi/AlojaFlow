@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @property int $id
  * @property int $propiedad_id
+ * @property int|null $tarifa_id
  * @property string $codigo
  * @property string $nombre
  * @property string|null $piso
@@ -30,6 +31,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property OrigenFila $origen
  * @property bool $sincronizada
  * @property-read Propiedad $propiedad
+ * @property-read Tarifa|null $tarifa
  */
 class Unidad extends ModeloBase
 {
@@ -52,6 +54,12 @@ class Unidad extends ModeloBase
     public function propiedad(): BelongsTo
     {
         return $this->belongsTo(Propiedad::class);
+    }
+
+    /** @return BelongsTo<Tarifa, $this> */
+    public function tarifa(): BelongsTo
+    {
+        return $this->belongsTo(Tarifa::class);
     }
 
     /** @return HasMany<Reserva, $this> */

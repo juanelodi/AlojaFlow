@@ -2,6 +2,36 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.3 — 2026-11-04
+
+AlojaFlow también trabaja por su cuenta: al crear una propiedad eliges si es independiente o si
+se subordina a HotelDruid o AlojaFlow 1.2.x.
+
+**Propiedades independientes**
+- **Unidades y tarifas:** se dan de alta en Configuración. Cada tarifa tiene un precio base por
+  noche y temporadas con otro precio.
+- **Huéspedes:** se crean y se editan, también desde la propia reserva. El documento se guarda
+  cifrado y sus datos de contacto quedan listos para buscar.
+- **Reservas y bloqueos:** se crean desde Reservas, Hoy, el Calendario (pulsando un día libre) o
+  Disponibilidad. El total se calcula con la tarifa y se puede cambiar a mano.
+- **Sin doble reserva:** la base de datos rechaza una segunda reserva en la misma unidad y noche,
+  aunque lleguen dos a la vez. Si dos personas editan la misma reserva, se avisa a la segunda.
+- **Operación:** cancelar y reactivar, registrar entrada y salida (también desde Hoy), y registrar
+  cobros y devoluciones que actualizan el saldo.
+- **Permisos:** gerente y recepción gestionan reservas y huéspedes; el gerente, también unidades y
+  tarifas. Las reservas no se borran: se cancelan.
+- **Borrar una propiedad independiente** pide escribir su código, porque no hay otra copia.
+
+**Propiedades subordinadas:** siguen igual, de solo consulta y sin escribir nunca en la principal.
+
+**Demo con datos ficticios:** en Propiedades, «Crear demo» arma el «Hotel Bahía Serena (demo)» con
+12 unidades, 5 tarifas, 60 huéspedes inventados y reservas alrededor de la fecha de hoy. «Quitar
+demo» lo borra sin tocar lo demás. También con `php artisan alojaflow:demo` y `--quitar`.
+
+**Todavía no:** cargos adicionales, precios por persona o por semana, asignación automática de
+unidad, grupos, cupones, gastos y caja, documentos, motor de reservas, iCal, copias de seguridad
+completas desde el panel y pasar una propiedad subordinada a independiente.
+
 ## 1.0.2 — 2026-11-03
 
 Actualizar AlojaFlow desde el panel con el zip de cada versión.

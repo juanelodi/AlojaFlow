@@ -16,7 +16,9 @@ Funciona en cualquier país mediante **paquetes de país**; el idioma base es el
 
 La **fase 1** se instala junto a una instalación existente de HotelDruid o AlojaFlow 1.2.x, lee
 su copia de datos y ofrece encima las funciones nuevas, sin tocarla. La **fase 2** añade un núcleo
-propio de reservas, tarifas y clientes para funcionar sin HotelDruid.
+propio de reservas, tarifas y clientes para funcionar sin HotelDruid. Desde la 1.0.3 (D-035) ya hay
+una primera parte de ese núcleo: al crear una propiedad se elige si es **independiente** o
+**subordinada**.
 
 ## 2. Problema
 

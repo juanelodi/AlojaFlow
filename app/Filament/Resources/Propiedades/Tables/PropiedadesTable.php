@@ -29,6 +29,9 @@ class PropiedadesTable
             ->columns([
                 TextColumn::make('nombre')->label(__('ui.propiedades.nombre'))->searchable()->sortable(),
                 TextColumn::make('codigo')->label(__('ui.propiedades.codigo'))->toggleable(),
+                TextColumn::make('modo')->label(__('ui.propiedades.modo_corto'))->badge()
+                    ->formatStateUsing(fn (Propiedad $record): string => $record->modo->etiqueta().($record->es_demo ? ' · '.__('ui.demo.etiqueta') : ''))
+                    ->color(fn (Propiedad $record): string => $record->esIndependiente() ? 'primary' : 'gray'),
                 TextColumn::make('principal.estado')->label(__('ui.propiedades.estado'))->badge()
                     ->formatStateUsing(fn (Propiedad $record): string => $record->principal?->estado === EstadoPrincipal::Pausada
                         ? __('ui.propiedades.pausada', ['codigo' => (string) $record->principal->codigo_pausa])

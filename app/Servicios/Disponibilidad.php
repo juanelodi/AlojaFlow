@@ -13,6 +13,7 @@ namespace App\Servicios;
 use App\Models\Unidad;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Unidades libres entre dos fechas para un número de personas (M2).
@@ -38,5 +39,20 @@ final class Disponibilidad
             })
             ->orderBy('propiedad_id')->orderBy('orden')->orderBy('nombre')
             ->get();
+    }
+
+    /**
+     * Unidades de una propiedad con alguna noche ocupada entre dos fechas, sin contar una reserva.
+     *
+     * @return list<int>
+     */
+    public static function ocupadas(int $propiedadId, string $llegada, string $salida, ?int $sinContarReserva = null): array
+    {
+        return DB::table('reservas_noches')
+            ->where('propiedad_id', $propiedadId)
+            ->where('fecha', '>=', $llegada)
+            ->where('fecha', '<', $salida)
+            ->when($sinContarReserva !== null, fn ($q) => $q->where('reserva_id', '!=', $sinContarReserva))
+            ->distinct()->pluck('unidad_id')->map(fn (mixed $id): int => (int) $id)->values()->all();
     }
 }

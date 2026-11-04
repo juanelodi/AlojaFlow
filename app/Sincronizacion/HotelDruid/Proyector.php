@@ -17,6 +17,7 @@ use App\Enums\TipoReserva;
 use App\Models\EjecucionSincronizacion;
 use App\Models\Principal;
 use App\Sincronizacion\ContextoSincronizacion;
+use App\Support\Contactos;
 use App\Support\Dinero;
 use App\Support\Huellas;
 use Carbon\CarbonImmutable;
@@ -609,7 +610,7 @@ class Proyector
         $numero = $datos['documento_numero'];
         $datos['documento_numero'] = $numero === null ? null : Crypt::encryptString((string) $numero);
         $datos['documento_numero_hmac'] = $numero === null ? null
-            : Huellas::hmac('documento', (string) preg_replace('/[\s.\-]/', '', mb_strtoupper((string) $numero)));
+            : Huellas::hmacDocumento((string) $numero);
 
         return $datos;
     }
@@ -627,21 +628,10 @@ class Proyector
             if ($valor === null) {
                 continue;
             }
-            $normalizado = $tipo === 'correo' ? mb_strtolower($valor) : $this->normalizarTelefono($valor);
-            $contactos[] = ['tipo' => $tipo, 'valor' => $valor, 'valor_normalizado' => mb_substr($normalizado, 0, 255), 'orden' => $orden++];
+            $contactos[] = ['tipo' => $tipo, 'valor' => $valor, 'valor_normalizado' => Contactos::normalizar($tipo, $valor), 'orden' => $orden++];
         }
 
         return $contactos;
-    }
-
-    private function normalizarTelefono(string $telefono): string
-    {
-        $limpio = (string) preg_replace('/[^\d+]/', '', $telefono);
-        if (str_starts_with($limpio, '00')) {
-            $limpio = '+'.substr($limpio, 2);
-        }
-
-        return str_starts_with($limpio, '+') ? '+'.str_replace('+', '', $limpio) : str_replace('+', '', $limpio);
     }
 
     /**

@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Seguridad;
 
+use App\Enums\ModoPropiedad;
 use App\Models\Propiedad;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -30,10 +31,16 @@ final class Acceso
 
     public const SINCRONIZACION = 'sincronizacion.gestionar';
 
+    /** Crear y cambiar reservas, huéspedes y pagos en propiedades independientes (D-035). */
+    public const RESERVAS = 'reservas.gestionar';
+
+    /** Crear y cambiar unidades y tarifas en propiedades independientes (D-035). */
+    public const CATALOGO = 'catalogo.gestionar';
+
     /** Roles y sus permisos (modelo-datos.md §4.1). */
     public const ROLES = [
-        'gerente' => [self::OPERACION, self::DATOS, self::INDICADORES, self::SINCRONIZACION],
-        'recepcion' => [self::OPERACION, self::DATOS],
+        'gerente' => [self::OPERACION, self::DATOS, self::INDICADORES, self::SINCRONIZACION, self::RESERVAS, self::CATALOGO],
+        'recepcion' => [self::OPERACION, self::DATOS, self::RESERVAS],
         'limpieza' => [self::OPERACION],
         'mantenimiento' => [self::OPERACION],
         'contador' => [self::DATOS, self::INDICADORES],
@@ -68,6 +75,18 @@ final class Acceso
             ->map(fn (object $fila): int => (int) $fila->propiedad_id)
             ->values()
             ->all();
+    }
+
+    /**
+     * De las propiedades con ese permiso, las independientes: las únicas donde se escribe.
+     *
+     * @return list<int>
+     */
+    public static function propiedadesIndependientes(?User $usuario, string $permiso): array
+    {
+        return Propiedad::query()->whereIn('id', self::propiedades($usuario, $permiso))
+            ->where('modo', ModoPropiedad::Nativa->value)
+            ->orderBy('nombre')->pluck('id')->map(fn (mixed $id): int => (int) $id)->values()->all();
     }
 
     public static function puede(?User $usuario, string $permiso, ?int $propiedadId = null): bool

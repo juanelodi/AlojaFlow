@@ -32,6 +32,12 @@
                                 <span class="af-secundario">
                                     {{ $unidad->capacidad > 0 ? __('ui.disponibilidad.capacidad', ['personas' => $unidad->capacidad]) : __('ui.disponibilidad.capacidad_desconocida') }}
                                 </span>
+                                @if (in_array($unidad->propiedad_id, $this->propiedadesGestionables(), true))
+                                    <x-filament::button size="sm" tag="a" icon="heroicon-m-plus"
+                                        :href="\App\Filament\Resources\Reservas\ReservaResource::getUrl('create', ['unidad' => $unidad->id, 'llegada' => $this->llegada, 'salida' => $this->salida, 'personas' => $this->personas])">
+                                        {{ __('ui.disponibilidad.reservar') }}
+                                    </x-filament::button>
+                                @endif
                             </div>
                         @endforeach
                     </div>

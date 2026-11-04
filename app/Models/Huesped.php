@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\OrigenFila;
 use App\Models\Concerns\ProtegidaPorSincronizacion;
+use App\Support\Huellas;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
@@ -67,6 +68,17 @@ class Huesped extends ModeloBase
             'origen' => OrigenFila::class,
             'sincronizada' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // El número va cifrado; su HMAC permite buscarlo por coincidencia exacta (D-022).
+        static::saving(function (self $huesped): void {
+            if ($huesped->isDirty('documento_numero')) {
+                $numero = $huesped->documento_numero;
+                $huesped->setAttribute('documento_numero_hmac', blank($numero) ? null : Huellas::hmacDocumento((string) $numero));
+            }
+        });
     }
 
     /** @return BelongsTo<Propiedad, $this> */

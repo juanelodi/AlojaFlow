@@ -11,13 +11,16 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Propiedades\Schemas;
 
 use App\Enums\MetodoPeticion;
+use App\Enums\ModoPropiedad;
 use App\Enums\PaquetePais;
 use App\Support\Formato;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 class PropiedadForm
@@ -25,6 +28,17 @@ class PropiedadForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
+            Section::make(__('ui.propiedades.modo'))->columnSpanFull()
+                ->schema([
+                    // Se elige al crearla: pasar de una forma a la otra será una migración aparte.
+                    Radio::make('modo')->hiddenLabel()->required()->live()
+                        ->options(ModoPropiedad::opciones())
+                        ->descriptions([
+                            ModoPropiedad::Nativa->value => __('ui.propiedades.modo_independiente_ayuda'),
+                            ModoPropiedad::Subordinada->value => __('ui.propiedades.modo_subordinada_ayuda'),
+                        ])
+                        ->disabledOn('edit'),
+                ]),
             Section::make(__('ui.propiedades.datos'))->columnSpanFull()
                 ->columns(['default' => 1, 'md' => 2])
                 ->schema([
@@ -46,6 +60,7 @@ class PropiedadForm
             Section::make(__('ui.propiedades.principal'))->columnSpanFull()
                 ->description(__('ui.propiedades.principal_ayuda'))
                 ->relationship('principal')
+                ->visible(fn (Get $get): bool => self::modo($get) === ModoPropiedad::Subordinada)
                 ->columns(['default' => 1, 'md' => 2])
                 ->schema([
                     TextInput::make('url_base')->label(__('ui.propiedades.url_base'))->helperText(__('ui.propiedades.url_base_ayuda'))
@@ -73,5 +88,12 @@ class PropiedadForm
                         ->default(false),
                 ]),
         ]);
+    }
+
+    private static function modo(Get $get): ?ModoPropiedad
+    {
+        $modo = $get('modo');
+
+        return $modo instanceof ModoPropiedad ? $modo : ModoPropiedad::tryFrom((string) $modo);
     }
 }

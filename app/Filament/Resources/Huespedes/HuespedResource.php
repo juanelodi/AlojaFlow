@@ -10,8 +10,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Huespedes;
 
+use App\Filament\Resources\Huespedes\Pages\CreateHuesped;
+use App\Filament\Resources\Huespedes\Pages\EditHuesped;
 use App\Filament\Resources\Huespedes\Pages\ListHuespedes;
 use App\Filament\Resources\Huespedes\Pages\ViewHuesped;
+use App\Filament\Resources\Huespedes\Schemas\HuespedForm;
 use App\Filament\Resources\Huespedes\Schemas\HuespedInfolist;
 use App\Filament\Resources\Huespedes\Tables\HuespedesTable;
 use App\Filament\Resources\Reservas\ReservaResource;
@@ -23,9 +26,11 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 /**
- * Fichas de huéspedes en modo consulta (proyección de la principal).
+ * Fichas de huéspedes: se editan en las propiedades independientes y, en las subordinadas, son
+ * de solo consulta porque vienen de la principal.
  */
 class HuespedResource extends Resource
 {
@@ -76,22 +81,33 @@ class HuespedResource extends Resource
 
     public static function canCreate(): bool
     {
-        return false;
+        return ReservaResource::propiedadesGestionables() !== [];
     }
 
     public static function canEdit(Model $record): bool
     {
-        return false;
+        return $record instanceof Huesped && ! $record->sincronizada
+            && in_array($record->propiedad_id, ReservaResource::propiedadesGestionables(), true);
     }
 
+    /**
+     * Solo una ficha sin reservas: las reservas conservan a sus huéspedes.
+     */
     public static function canDelete(Model $record): bool
     {
-        return false;
+        return self::canEdit($record) && $record instanceof Huesped
+            && $record->reservasComoTitular()->doesntExist()
+            && DB::table('reservas_huespedes')->where('huesped_id', $record->id)->doesntExist();
     }
 
     public static function canDeleteAny(): bool
     {
         return false;
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return HuespedForm::configure($schema);
     }
 
     public static function infolist(Schema $schema): Schema
@@ -108,7 +124,9 @@ class HuespedResource extends Resource
     {
         return [
             'index' => ListHuespedes::route('/'),
+            'create' => CreateHuesped::route('/create'),
             'view' => ViewHuesped::route('/{record}'),
+            'edit' => EditHuesped::route('/{record}/edit'),
         ];
     }
 }

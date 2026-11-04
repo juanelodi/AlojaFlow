@@ -12,6 +12,7 @@ namespace App\Filament\Resources\Propiedades\RelationManagers;
 
 use App\Enums\EstadoEjecucion;
 use App\Models\EjecucionSincronizacion;
+use App\Models\Propiedad;
 use App\Support\Formato;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
@@ -25,6 +26,11 @@ use Illuminate\Support\Number;
 class EjecucionesRelationManager extends RelationManager
 {
     protected static string $relationship = 'ejecuciones';
+
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return $ownerRecord instanceof Propiedad && ! $ownerRecord->esIndependiente();
+    }
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {

@@ -1,19 +1,41 @@
-# Guía para probar AlojaFlow 1.0.2 (entrega Base)
+# Guía para probar AlojaFlow 1.0.3
 
-Versión de prueba para usar en tu equipo con Windows. Es la **fase 1**: AlojaFlow lee los datos
+Versión de prueba para usar en tu equipo con Windows. Cada propiedad trabaja de una de dos formas:
+**independiente**, con AlojaFlow como su sistema, o **subordinada**, donde AlojaFlow lee los datos
 de HotelDruid (o AlojaFlow 1.2.x) y **nunca escribe en él**.
+
+## Probar rápido con la demo
+
+1. Entra a **Configuración → Propiedades** y pulsa **Crear demo**. Tarda unos segundos.
+2. Abre **Resumen**: aparece el «Hotel Bahía Serena (demo)» con llegadas, salidas y huéspedes
+   alojados de hoy. Todos los datos son inventados, con correos `@example.com`.
+3. Prueba esto:
+   - **Hoy:** registra una entrada y una salida.
+   - **Calendario:** pulsa un día libre para crear una reserva; el total sale de la tarifa.
+   - **Otra vez la misma noche:** esa unidad aparece desactivada, y si insistes se rechaza.
+   - **Una reserva:** cámbiale las fechas, regístrale un pago y cancélala.
+   - **Tarifas:** cambia un precio o agrega una temporada y crea otra reserva en esas fechas.
+4. Cuando termines, **Quitar demo** la borra sin tocar tus otras propiedades. La fecha de la demo
+   es la del día en que la creas: para volver a tener llegadas de hoy, quítala y créala otra vez.
+
+Para empezar una propiedad de verdad: **Propiedades → Crear** y elige **Independiente**. Luego da de
+alta las **Tarifas**, después las **Unidades** y ya puedes crear reservas.
+
+En una independiente, AlojaFlow tiene la **única copia** de los datos y todavía no hay copia de
+seguridad completa desde el panel: usa las copias de tu hosting antes de guardar datos reales.
 
 ## Qué trae esta versión
 
 | Pantalla | Qué hace |
 |---|---|
 | **Resumen** | Una tarjeta por propiedad: llegadas y salidas de hoy, ocupación de la noche, llegadas de la semana, reservas sin confirmar, pendiente de cobro, avisos y antigüedad de los datos |
-| **Hoy** | Llegan, salen y siguen alojados en una fecha, con teléfono, enlace de WhatsApp y saldo |
-| **Calendario** | Calendario por habitaciones de un mes, con colores por estado; se puede ver en el móvil |
-| **Disponibilidad** | Unidades libres por fechas y número de personas |
+| **Hoy** | Llegan, salen y siguen alojados en una fecha, con teléfono, enlace de WhatsApp y saldo. En una independiente, registrar entrada y salida |
+| **Calendario** | Calendario por habitaciones de un mes, con colores por estado; se puede ver en el móvil. En una independiente, un día libre abre una reserva nueva |
+| **Disponibilidad** | Unidades libres por fechas y número de personas. En una independiente, botón para reservar |
 | **Indicadores** | Ocupación, ingresos, ADR, RevPAR, reservas, estancia media, por origen y por mes; descarga CSV |
-| **Reservas / Huéspedes** | Listados con búsqueda y filtros, y ficha de cada uno (solo consulta) |
-| **Propiedades** | Alta de propiedades y de su principal de HotelDruid; probar la conexión, sincronizar ahora y reanudar; historial de sincronizaciones |
+| **Reservas / Huéspedes** | Listados con búsqueda y filtros, y ficha de cada uno. En una independiente se crean y se cambian, con pagos; en una subordinada, solo consulta |
+| **Propiedades** | Alta eligiendo independiente o subordinada. En una subordinada: probar la conexión, sincronizar ahora y reanudar, con historial. Botones para crear y quitar la demo |
+| **Unidades / Tarifas** | Habitaciones y precios por noche con temporadas, para las independientes |
 | **Usuarios** | Usuarios con un rol en cada propiedad (gerente, recepción, limpieza, mantenimiento, contador) o administrador |
 | **Actualizaciones** | Subir el zip de una versión nueva, revisarlo e instalarlo; historial con la copia de la base de datos de cada actualización |
 | **Perfil** | Idioma, zona horaria, contraseña y verificación en dos pasos con app de códigos |
@@ -22,6 +44,8 @@ de HotelDruid (o AlojaFlow 1.2.x) y **nunca escribe en él**.
 **Todavía no trae:**
 - limpieza y mantenimiento, llegada en línea, mensajes, iCal y facturación (entregas Operación, Huéspedes y Dinero);
 - pantalla de cierre del día;
+- en las independientes: cargos adicionales, precios por persona o por semana, asignación automática de unidad, grupos, cupones, gastos y caja, documentos, y motor de reservas;
+- pasar una propiedad subordinada a independiente;
 - instalador web para hosting compartido ni copias de seguridad completas desde el panel.
 
 La interfaz está completa en español e inglés; en francés, italiano, portugués y alemán solo

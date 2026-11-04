@@ -40,6 +40,14 @@ final class Huellas
         return hash_hmac('sha256', $valor, self::clave($proposito));
     }
 
+    /**
+     * HMAC de un número de documento, sin espacios, puntos ni guiones y en mayúsculas.
+     */
+    public static function hmacDocumento(string $numero): string
+    {
+        return self::hmac('documento', (string) preg_replace('/[\s.\-]/', '', mb_strtoupper($numero)));
+    }
+
     public static function codigoPublico(int $longitud = 10): string
     {
         $codigo = '';

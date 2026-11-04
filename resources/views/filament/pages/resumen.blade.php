@@ -42,7 +42,11 @@
                     @endforeach
 
                     <div class="af-tarjeta__pie">
-                        <x-frescura :principal="$t['principal']" />
+                        @if ($propiedad->esIndependiente())
+                            <span class="af-frescura">{{ $propiedad->es_demo ? __('ui.demo.etiqueta') : $propiedad->modo->etiqueta() }}</span>
+                        @else
+                            <x-frescura :principal="$t['principal']" />
+                        @endif
                         <span class="af-enlaces">
                             <a href="{{ \App\Filament\Pages\Hoy::getUrl(['propiedad' => $propiedad->id]) }}">{{ __('ui.resumen.ir_hoy') }}</a>
                             <a href="{{ \App\Filament\Pages\Calendario::getUrl(['propiedad' => $propiedad->id]) }}">{{ __('ui.resumen.ir_calendario') }}</a>
