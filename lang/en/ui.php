@@ -613,4 +613,21 @@ return [
         'error_unidad' => ':unidad: :motivo',
         'error_sin_reservas' => 'This group has no active bookings.',
     ],
+
+    'independizar' => [
+        'accion' => 'Make independent',
+        'titulo' => 'Stop subordinating this property?',
+        'descripcion' => 'AlojaFlow keeps its rooms, guests, bookings and payments, and stops reading the main installation, which is left untouched. Do this when you no longer work there: anything you change there afterwards will not reach this system. A backup is saved first. This cannot be undone from this screen. To confirm, type the code: :codigo',
+        'listo' => 'The property is now independent, with its :reservas bookings.',
+        'siguiente' => 'Create your rates and assign them to the rooms so the system can calculate prices.',
+        'no_se_pudo' => 'It could not be made independent',
+        'saldo_inicial' => 'Opening balance when made independent',
+        'error_no_subordinada' => 'This property is not subordinate.',
+        'error_sincronizando' => 'A synchronization is running. Try again as soon as it finishes.',
+        'error_choques' => 'There is more than one booking in the same room and night, which an independent property does not allow. Resolve them in the main installation, synchronize and try again: :lista',
+    ],
+
+    'modo_demo' => [
+        'banner' => 'Demo: all data is fictitious and is erased every night. Do not enter real data.',
+    ],
 ];

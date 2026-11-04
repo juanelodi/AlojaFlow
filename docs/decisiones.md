@@ -301,6 +301,23 @@ una pasarela con SDK agrega peso y el hosting compartido no siempre lo soporta.
 **Sin verificar con cuentas reales:** solo se ha probado con respuestas simuladas, según la
 documentación de cada pasarela. Hay que hacer un cobro de prueba con llaves de prueba antes de usarlo.
 
+### D-043 · 2026-11-04 · Una propiedad subordinada puede pasar a independiente, sin vuelta atrás
+Acción en la propiedad, con copia de seguridad antes y escribiendo el código. Se niega si hay noches
+con dos reservas en la misma unidad, porque desde ese momento la base de datos lo impide (D-019): se
+resuelven en la principal. Lo pagado arranca como un pago «saldo inicial» por reserva. La principal se
+borra de AlojaFlow con sus credenciales, y a ella no se le escribe nada. Las filas conservan `origen` y
+`clave_origen` para saber de dónde vinieron. **Por qué:** quien deja HotelDruid no debe volver a capturar
+todo. No se ofrece volver a subordinar: los datos ya habrán divergido.
+
+### D-044 · 2026-11-04 · Demostración pública con usuario a la vista
+Revisa D-037 a petición del usuario. `ALOJAFLOW_MODO_DEMO=true` solo en una instalación aparte, sin
+datos reales: inicio de sesión ya lleno, aviso permanente, los correos van al log y `alojaflow:demo-reiniciar`
+borra toda la base cada noche. Quedan fuera usuarios, actualizaciones, copias, estado del sistema, crear
+o editar propiedades, llaves de pago, contraseñas y verificación en dos pasos. El comando se niega a
+correr sin el modo activo. **Por qué:** se quiere poder enseñar el sistema sin riesgo. El riesgo que
+preocupaba en D-037 (una contraseña pública en una instalación con datos reales) se evita porque
+es otra instalación y se borra sola.
+
 ---
 
 ## Pendientes

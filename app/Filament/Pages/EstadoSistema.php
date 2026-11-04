@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Demo\ModoDemo;
 use App\Programador\TareasPorVisita;
 use App\Seguridad\Acceso;
 use App\Support\Ajustes;
@@ -39,7 +40,7 @@ class EstadoSistema extends Page
 
     public static function canAccess(): bool
     {
-        return (bool) Acceso::usuarioActual()?->es_administrador;
+        return (bool) Acceso::usuarioActual()?->es_administrador && ! ModoDemo::activo();
     }
 
     public static function getNavigationGroup(): ?string

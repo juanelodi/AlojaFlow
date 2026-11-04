@@ -192,3 +192,7 @@
 .af-barra[draggable="true"] { cursor: grab; }
 .af-enlace { color: var(--primary-700); font-weight: 500; text-decoration: underline; text-underline-offset: 2px; }
 .dark .af-enlace { color: var(--primary-400); }
+
+/* Demostración pública */
+.af-banner-demo { padding: .5rem 1rem; text-align: center; font-size: .875rem; font-weight: 600; background: var(--warning-100); color: var(--warning-900); }
+.dark .af-banner-demo { background: var(--warning-900); color: var(--warning-100); }

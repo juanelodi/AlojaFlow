@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Demo\ModoDemo;
 use App\Support\Formato;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Forms\Components\Select;
@@ -22,9 +23,7 @@ class EditarPerfil extends EditProfile
 {
     public function form(Schema $schema): Schema
     {
-        return $schema->components([
-            $this->getNameFormComponent(),
-            $this->getEmailFormComponent(),
+        $preferencias = [
             Select::make('idioma')
                 ->label(__('ui.perfil.idioma'))
                 ->options(Formato::idiomas())
@@ -35,6 +34,16 @@ class EditarPerfil extends EditProfile
                 ->helperText(__('ui.perfil.zona_horaria_ayuda'))
                 ->options(Formato::zonasHorarias())
                 ->searchable(),
+        ];
+        // En la demostración pública el correo y la contraseña del usuario de prueba no se cambian.
+        if (ModoDemo::activo()) {
+            return $schema->components($preferencias);
+        }
+
+        return $schema->components([
+            $this->getNameFormComponent(),
+            $this->getEmailFormComponent(),
+            ...$preferencias,
             $this->getPasswordFormComponent(),
             $this->getPasswordConfirmationFormComponent(),
             $this->getCurrentPasswordFormComponent(),

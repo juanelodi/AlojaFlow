@@ -8,6 +8,7 @@
 
 declare(strict_types=1);
 
+use App\Demo\ModoDemo;
 use App\Programador\TareasPorVisita;
 use Illuminate\Support\Facades\Schedule;
 
@@ -17,7 +18,8 @@ Schedule::call(fn () => TareasPorVisita::anotarLatido())->name('latido')->everyM
 Schedule::command('alojaflow:sincronizar')->everyMinute()->withoutOverlapping(60);
 Schedule::command('alojaflow:reservas-vencidas')->everyFiveMinutes()->withoutOverlapping(10);
 Schedule::command('alojaflow:limpiar')->dailyAt('03:30');
-Schedule::command('alojaflow:copia --programada')->dailyAt('03:10')->withoutOverlapping(60);
+Schedule::command('alojaflow:copia --programada')->dailyAt('03:10')->withoutOverlapping(60)->skip(fn (): bool => ModoDemo::activo());
+Schedule::command('alojaflow:demo-reiniciar')->dailyAt('04:00')->when(fn (): bool => ModoDemo::activo());
 
 // Una actualización que se quedó sin terminar (se cerró el navegador entre las dos fases) o que
 // se cortó a medias: se termina o se deshace aquí, también en mantenimiento.

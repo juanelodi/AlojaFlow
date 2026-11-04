@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Usuarios;
 
+use App\Demo\ModoDemo;
 use App\Filament\Resources\Usuarios\Pages\CreateUsuario;
 use App\Filament\Resources\Usuarios\Pages\EditUsuario;
 use App\Filament\Resources\Usuarios\Pages\ListUsuarios;
@@ -56,7 +57,7 @@ class UsuarioResource extends Resource
 
     private static function esAdministrador(): bool
     {
-        return (bool) Acceso::usuarioActual()?->es_administrador;
+        return (bool) Acceso::usuarioActual()?->es_administrador && ! ModoDemo::activo();
     }
 
     public static function canViewAny(): bool

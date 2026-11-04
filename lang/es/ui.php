@@ -613,4 +613,21 @@ return [
         'error_unidad' => ':unidad: :motivo',
         'error_sin_reservas' => 'Este grupo no tiene reservas vigentes.',
     ],
+
+    'independizar' => [
+        'accion' => 'Pasar a independiente',
+        'titulo' => '¿Dejar de subordinar esta propiedad?',
+        'descripcion' => 'AlojaFlow se queda con sus habitaciones, huéspedes, reservas y lo pagado, y dejará de leer la instalación principal, que no se toca. Hazlo cuando ya no vayas a trabajar allá: lo que cambies allá después no llegará aquí. Antes se guarda una copia de seguridad. No se puede deshacer desde esta pantalla. Para confirmar, escribe el código: :codigo',
+        'listo' => 'La propiedad ya es independiente, con sus :reservas reservas.',
+        'siguiente' => 'Crea tus tarifas y asígnalas a las habitaciones para que el sistema calcule los precios.',
+        'no_se_pudo' => 'No se pudo pasar a independiente',
+        'saldo_inicial' => 'Saldo inicial al pasar a independiente',
+        'error_no_subordinada' => 'Esta propiedad no está subordinada.',
+        'error_sincronizando' => 'Hay una sincronización en curso. Inténtalo de nuevo en cuanto termine.',
+        'error_choques' => 'Hay más de una reserva en la misma habitación y noche, y una propiedad independiente no lo permite. Resuélvelas en la instalación principal, sincroniza y vuelve a intentarlo: :lista',
+    ],
+
+    'modo_demo' => [
+        'banner' => 'Demostración: todos los datos son ficticios y se borran cada noche. No escribas datos reales.',
+    ],
 ];

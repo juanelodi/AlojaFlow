@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Programador;
 
+use App\Demo\ModoDemo;
 use App\Support\Ajustes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
@@ -42,6 +43,21 @@ final class TareasPorVisita
         'alojaflow:limpiar' => 1440,
         'alojaflow:copia --programada' => 1440,
     ];
+
+    /**
+     * @return array<string, int>
+     */
+    public static function tareas(): array
+    {
+        if (! ModoDemo::activo()) {
+            return self::TAREAS;
+        }
+        $tareas = self::TAREAS;
+        unset($tareas['alojaflow:copia --programada']);
+
+        // Sin cron el reinicio no tiene hora: cada hora mira si hoy ya se hizo.
+        return $tareas + ['alojaflow:demo-reiniciar --si-toca' => 60];
+    }
 
     public static function anotarLatido(): void
     {
@@ -100,7 +116,7 @@ final class TareasPorVisita
         $ultimas = (array) Ajustes::obtener('programador.visitas', []);
         $ejecutados = [];
 
-        foreach (self::TAREAS as $comando => $minutos) {
+        foreach (self::tareas() as $comando => $minutos) {
             if (microtime(true) - $inicio > self::SEGUNDOS_MAXIMOS) {
                 break;
             }

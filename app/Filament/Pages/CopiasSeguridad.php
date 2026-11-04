@@ -12,6 +12,7 @@ namespace App\Filament\Pages;
 
 use App\Copias\ErrorCopia;
 use App\Copias\GestorCopias;
+use App\Demo\ModoDemo;
 use App\Models\RegistroAuditoria;
 use App\Seguridad\Acceso;
 use App\Support\Ajustes;
@@ -43,7 +44,7 @@ class CopiasSeguridad extends Page
 
     public static function canAccess(): bool
     {
-        return (bool) Acceso::usuarioActual()?->es_administrador;
+        return (bool) Acceso::usuarioActual()?->es_administrador && ! ModoDemo::activo();
     }
 
     public static function getNavigationGroup(): ?string

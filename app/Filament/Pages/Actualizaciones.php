@@ -12,6 +12,7 @@ namespace App\Filament\Pages;
 
 use App\Actualizacion\Actualizador;
 use App\Actualizacion\ErrorActualizacion;
+use App\Demo\ModoDemo;
 use App\Enums\EstadoActualizacion;
 use App\Models\Actualizacion;
 use App\Seguridad\Acceso;
@@ -58,7 +59,7 @@ class Actualizaciones extends Page
 
     public static function canAccess(): bool
     {
-        return (bool) Acceso::usuarioActual()?->es_administrador;
+        return (bool) Acceso::usuarioActual()?->es_administrador && ! ModoDemo::activo();
     }
 
     public static function getNavigationGroup(): ?string

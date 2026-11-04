@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Propiedades;
 
+use App\Demo\ModoDemo;
 use App\Filament\Resources\Propiedades\Pages\CreatePropiedad;
 use App\Filament\Resources\Propiedades\Pages\EditPropiedad;
 use App\Filament\Resources\Propiedades\Pages\ListPropiedades;
@@ -67,17 +68,18 @@ class PropiedadResource extends Resource
 
     public static function canCreate(): bool
     {
-        return self::esAdministrador();
+        return self::esAdministrador() && ! ModoDemo::activo();
     }
 
     public static function canEdit(Model $record): bool
     {
-        return self::esAdministrador();
+        // En la demostración no: conectar una principal haría peticiones a cualquier dirección.
+        return self::esAdministrador() && ! ModoDemo::activo();
     }
 
     public static function canDelete(Model $record): bool
     {
-        return self::esAdministrador();
+        return self::esAdministrador() && ! ModoDemo::activo();
     }
 
     public static function form(Schema $schema): Schema

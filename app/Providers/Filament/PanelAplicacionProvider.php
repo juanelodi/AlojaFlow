@@ -11,8 +11,10 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Actualizacion\Actualizador;
+use App\Demo\ModoDemo;
 use App\Filament\Pages\Actualizaciones;
 use App\Filament\Pages\EditarPerfil;
+use App\Filament\Pages\IniciarSesion;
 use App\Http\Middleware\AplicarIdioma;
 use App\Seguridad\Acceso;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
@@ -53,9 +55,10 @@ class PanelAplicacionProvider extends PanelProvider
             ->default()
             ->id('app')
             ->path('')
-            ->login()
+            ->login(IniciarSesion::class)
             ->profile(EditarPerfil::class, isSimple: false)
-            ->multiFactorAuthentication([AppAuthentication::make()->recoverable()])
+            // En la demostración el usuario es de todos: nadie debe poder dejar fuera a los demás.
+            ->multiFactorAuthentication(ModoDemo::activo() ? [] : [AppAuthentication::make()->recoverable()])
             ->brandName('AlojaFlow')
             ->brandLogo(asset('img/logo-alojaflow.svg'))
             ->darkModeBrandLogo(asset('img/logo-alojaflow-oscuro.svg'))
@@ -78,6 +81,7 @@ class PanelAplicacionProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->sidebarCollapsibleOnDesktop()
+            ->renderHook(PanelsRenderHook::BODY_START, fn (): View|string => ModoDemo::activo() ? view('componentes.banner-demo') : '')
             ->renderHook(PanelsRenderHook::FOOTER, fn () => view('componentes.pie'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn (): View|string => self::avisoActualizacionSinTerminar())
             ->middleware([

@@ -16,6 +16,9 @@ return [
     // Idiomas de la interfaz (regla 7). El español es la fuente.
     'idiomas' => ['es', 'en', 'fr', 'it', 'pt', 'de'],
 
+    // Demostración pública: solo en una instalación aparte, sin datos reales (D-044).
+    'modo_demo' => (bool) env('ALOJAFLOW_MODO_DEMO', false),
+
     'subordinacion' => [
         // Permite principales por http:// y en redes privadas. Solo para desarrollo.
         'red_local' => (bool) env('ALOJAFLOW_SUBORDINACION_RED_LOCAL', false),
