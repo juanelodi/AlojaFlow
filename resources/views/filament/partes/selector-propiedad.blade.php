@@ -7,7 +7,7 @@
             <x-filament::input.select wire:model.live="propiedadId">
                 <option value="">{{ __('ui.comun.todas') }}</option>
                 @foreach ($opciones as $id => $nombre)
-                    <option value="{{ $id }}">{{ $nombre }}</option>
+                    <option value="{{ $id }}" @selected($this->propiedadId === $id)>{{ $nombre }}</option>
                 @endforeach
             </x-filament::input.select>
         </x-filament::input.wrapper>

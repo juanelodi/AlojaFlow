@@ -20,6 +20,7 @@ use App\Models\Unidad;
 use App\Models\User;
 use App\Reservas\GestorReservas;
 use App\Servicios\Calendario;
+use App\Support\Formato;
 use Carbon\CarbonImmutable;
 use Database\Seeders\RolesYPermisosSeeder;
 
@@ -85,6 +86,20 @@ describe('contenido antes de que arranque el JavaScript', function () {
         $this->get('/calendario?mes=2030-01')->assertOk()->assertSee('value="2030-01"', false);
         $this->get('/limpieza?fecha=2030-01-15')->assertOk()->assertSee('value="2030-01-15"', false);
     });
+
+    it('el filtro de propiedad trae la opción elegida', function () {
+        $otra = Propiedad::query()->create(['nombre' => 'Lago', 'codigo' => 'lago', 'modo' => ModoPropiedad::Nativa, 'zona_horaria' => 'UTC', 'moneda' => 'MXN', 'idioma' => 'es']);
+
+        $this->get('/hoy?propiedad='.$otra->id)->assertOk()->assertSee('<option value="'.$otra->id.'" selected', false);
+    });
+
+    it('lo que llega por la dirección sale escapado en los filtros', function () {
+        $intento = '"><script>alert(1)</script>';
+
+        foreach (['/hoy?fecha=', '/calendario?mes=', '/limpieza?fecha='] as $ruta) {
+            $this->get($ruta.urlencode($intento))->assertOk()->assertDontSee('<script>alert(1)', false);
+        }
+    });
 });
 
 describe('calendario', function () {
@@ -106,7 +121,7 @@ describe('calendario', function () {
         expect($html)->toContain('data-unidad="'.$this->unidad->id.'"')
             // El día de salida ya está libre.
             ->toContain('/reservas/create?unidad='.$this->unidad->id.'&amp;llegada=2030-01-13&amp;salida=2030-01-14')
-            ->toContain('title="'.e(__('ui.calendario.nueva_en', ['unidad' => 'Cuarto 101', 'fecha' => CarbonImmutable::parse('2030-01-13')->locale('es')->isoFormat('ddd D MMM')])).'"')
+            ->toContain('title="'.e(__('ui.calendario.nueva_en', ['unidad' => 'Cuarto 101', 'fecha' => Formato::fechaCorta(CarbonImmutable::parse('2030-01-13'))])).'"')
             ->not->toContain('llegada=2030-01-10&amp;')
             ->not->toContain('llegada=2030-01-12&amp;')
             ->toMatch('/<div class="af-cal-dia" style="grid-column: \d+" data-fecha="2030-01-10"><\/div>/')

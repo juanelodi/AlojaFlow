@@ -113,9 +113,10 @@ interpreta todo el JavaScript. Por eso el contenido tardaba el doble que el prim
    lateral va por encima y no mueve nada. Se revisaron 19 pantallas sin JavaScript y no sale nada fuera de lugar.
 3. **Los formularios se quedan como estaban.** Sin JavaScript sus campos salen vacíos y lo que se escriba se perdería al arrancar
    Livewire. Por eso Crear reserva casi no mejora.
-4. **Los filtros traen su valor en el HTML**, para que las fechas no aparezcan vacías mientras tanto.
+4. **Los filtros traen su valor en el HTML**, para que las fechas no aparezcan vacías ni las listas en otra opción mientras tanto. El cuadro de
+   búsqueda de las listas no: si alguien escribe antes de que arranque Livewire, tiene que volver a escribir, y no se pierde ningún dato.
 5. **Sin `echo.js`** (`App\Filament\RecursosDelPanel`). Filament lo manda siempre y solo sirve para avisos en vivo, que no están
-   configurados. Si alguien configura `filament.broadcasting.echo`, vuelve solo.
+   configurados. Si alguien configura `filament.broadcasting.echo`, vuelve tras correr `php artisan filament:assets`, que hasta entonces ya no lo publica.
 6. **Sin precargar Inter.** La precarga competía con `app.css` por el ancho de banda: quitarla adelanta el primer pintado de 2.2 a 1.8 s
    junto con lo demás. El precio es un pequeño salto cuando llega la fuente, solo en la primera visita: CLS de 0.03 en Calendario y 0.003
    en Hoy (bueno es menos de 0.1).

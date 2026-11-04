@@ -69,7 +69,10 @@
                      empezar(evento) {
                          const barra = this.buscar(evento, '[data-reserva]');
                          if (! barra) {
-                             evento.preventDefault();
+                             {{-- Un enlace se puede arrastrar de fábrica, y un día no se arrastra. --}}
+                             if (this.buscar(evento, '.af-cal-dia')) {
+                                 evento.preventDefault();
+                             }
                              return;
                          }
                          evento.dataTransfer.effectAllowed = 'move';

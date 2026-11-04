@@ -9,7 +9,7 @@
                 <x-filament::input.wrapper>
                     <x-filament::input.select wire:model.live="informe">
                         @foreach (\App\Servicios\Informes::INFORMES as $clave)
-                            <option value="{{ $clave }}">{{ __('informes.nombres.'.$clave) }}</option>
+                            <option value="{{ $clave }}" @selected($this->informe === $clave)>{{ __('informes.nombres.'.$clave) }}</option>
                         @endforeach
                     </x-filament::input.select>
                 </x-filament::input.wrapper>

@@ -11,7 +11,7 @@
                     <x-filament::input.wrapper>
                         <x-filament::input.select wire:model.live="planoId">
                             @foreach ($planos as $opcion)
-                                <option value="{{ $opcion->id }}">{{ $opcion->nombre }}</option>
+                                <option value="{{ $opcion->id }}" @selected($this->planoId === $opcion->id)>{{ $opcion->nombre }}</option>
                             @endforeach
                         </x-filament::input.select>
                     </x-filament::input.wrapper>

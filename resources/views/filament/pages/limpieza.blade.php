@@ -17,7 +17,7 @@
                 <x-filament::button color="gray" icon="heroicon-m-chevron-right" wire:click="moverDia(1)" :label-sr-only="true" :tooltip="__('ui.comun.siguiente')">{{ __('ui.comun.siguiente') }}</x-filament::button>
             </div>
             <label class="af-casilla">
-                <x-filament::input.checkbox wire:model.live="soloMias" />
+                <x-filament::input.checkbox :checked="$this->soloMias" wire:model.live="soloMias" />
                 <span>{{ __('limpieza.solo_mias') }}</span>
             </label>
         </div>
