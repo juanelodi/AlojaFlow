@@ -41,10 +41,12 @@ lo confirma con un código por correo. Identificaciones cifradas y borradas a lo
 contador y doce informes con CSV.
 
 **También:** cierre del día, plano de habitaciones, colores por tipo de cliente y modo de demostración pública.
+Lo que ve el huésped ya está en francés, italiano, portugués y alemán.
 
 **Correcciones**
 - Las fechas de las tablas y los decimales salen como en México.
 - Una copia de seguridad podía borrarse a sí misma si había otra en el mismo segundo.
+- Borrar una propiedad ahora borra también sus archivos del disco. Si tiene facturas, no se borra.
 
 ## 1.0.4 — 2026-11-04
 

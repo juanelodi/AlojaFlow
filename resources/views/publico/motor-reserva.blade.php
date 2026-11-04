@@ -29,7 +29,7 @@
             <tr><th>{{ __('ui.comun.pagado') }}</th><td>{{ Formato::dinero($reserva->pagado, $reserva->moneda) }}</td></tr>
             <tr><th>{{ __('ui.comun.pendiente') }}</th><td>{{ Formato::dinero($reserva->pendiente, $reserva->moneda) }}</td></tr>
         </table>
-        <p style="margin:12px 0 0"><a class="boton secundario" href="{{ route('motor.pdf', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico]) }}">{{ __('documentos.descargar_confirmacion') }}</a></p>
+        <p style="margin:12px 0 0"><a class="boton secundario" href="{{ route('motor.pdf', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico, 'idioma' => app()->getLocale()]) }}">{{ __('documentos.descargar_confirmacion') }}</a></p>
     </section>
 
     @if ($porCobrar > 0 && $pasarelas !== [])
@@ -37,7 +37,7 @@
             <h2>{{ __('motor.pagar_titulo', ['importe' => Formato::dinero($porCobrar, $reserva->moneda)]) }}</h2>
             <p class="gris">{{ __('motor.pagar_ayuda') }}</p>
             @foreach ($pasarelas as $pasarela)
-                <form method="post" action="{{ route('motor.pagar', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico, 'pasarela' => $pasarela]) }}" target="_top" style="display:inline-block;margin:4px 8px 4px 0">
+                <form method="post" action="{{ route('motor.pagar', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico, 'pasarela' => $pasarela, 'idioma' => app()->getLocale()]) }}" target="_top" style="display:inline-block;margin:4px 8px 4px 0">
                     <button type="submit">{{ __('motor.pagar_con.'.$pasarela) }}</button>
                 </form>
             @endforeach

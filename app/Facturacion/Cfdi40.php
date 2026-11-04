@@ -38,6 +38,11 @@ final class Cfdi40 implements GeneradorFiscal
     /** Los impuestos federales van en el nodo de traslados; los demás (ISH) en el complemento local. */
     private const CODIGO_IVA = '002';
 
+    private static function esIva(?string $codigo): bool
+    {
+        return in_array(mb_strtoupper((string) $codigo), [self::CODIGO_IVA, 'IVA'], true);
+    }
+
     public function catalogos(): array
     {
         return [
@@ -157,7 +162,7 @@ final class Cfdi40 implements GeneradorFiscal
         $comprobante->appendChild($conceptos);
         foreach ($factura->lineas as $linea) {
             $concepto = $xml->createElementNS(self::NS_CFDI, 'cfdi:Concepto');
-            $federalesLinea = $linea->impuestos->filter(fn ($i): bool => $i->codigo === self::CODIGO_IVA);
+            $federalesLinea = $linea->impuestos->filter(fn ($i): bool => self::esIva($i->codigo));
             $this->atributos($concepto, [
                 'ClaveProdServ' => $linea->clave_producto,
                 'Cantidad' => rtrim(rtrim($linea->cantidad, '0'), '.'),
@@ -232,7 +237,7 @@ final class Cfdi40 implements GeneradorFiscal
         foreach ($factura->lineas as $linea) {
             foreach ($linea->impuestos as $impuesto) {
                 $clave = $impuesto->nombre.'|'.$impuesto->tasa;
-                if ($impuesto->codigo === self::CODIGO_IVA) {
+                if (self::esIva($impuesto->codigo)) {
                     $federales[$clave] ??= ['nombre' => $impuesto->nombre, 'tasa' => (float) $impuesto->tasa, 'base' => 0, 'importe' => 0];
                     $federales[$clave]['base'] += $impuesto->base;
                     $federales[$clave]['importe'] += $impuesto->importe;

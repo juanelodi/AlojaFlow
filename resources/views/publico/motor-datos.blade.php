@@ -36,7 +36,7 @@
         @endif
     </section>
 
-    <form method="post" action="{{ route('motor.reservar', ['codigo' => $propiedad->codigo]) }}" class="tarjeta">
+    <form method="post" action="{{ route('motor.reservar', ['codigo' => $propiedad->codigo, 'idioma' => app()->getLocale()]) }}" class="tarjeta">
         <h2>{{ __('motor.tus_datos') }}</h2>
         <input type="hidden" name="tarifa_id" value="{{ $tarifa->id }}">
         <input type="hidden" name="llegada" value="{{ $llegada->format('Y-m-d') }}">
@@ -78,6 +78,6 @@
         <label class="casilla"><input type="checkbox" name="acepto" value="1" required> <span>{{ __('motor.acepto') }}</span></label>
 
         <button type="submit" style="margin-top:8px">{{ __('motor.confirmar') }}</button>
-        <a class="boton secundario" href="{{ route('motor.buscar', ['codigo' => $propiedad->codigo, 'llegada' => $llegada->format('Y-m-d'), 'salida' => $salida->format('Y-m-d'), 'personas' => $personas]) }}">{{ __('motor.volver') }}</a>
+        <a class="boton secundario" href="{{ route('motor.buscar', ['codigo' => $propiedad->codigo, 'llegada' => $llegada->format('Y-m-d'), 'salida' => $salida->format('Y-m-d'), 'personas' => $personas, 'idioma' => app()->getLocale()]) }}">{{ __('motor.volver') }}</a>
     </form>
 @endsection

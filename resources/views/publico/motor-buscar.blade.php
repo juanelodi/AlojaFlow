@@ -5,6 +5,7 @@
 @section('contenido')
     <form method="get" class="tarjeta" action="{{ route('motor.buscar', ['codigo' => $propiedad->codigo]) }}">
         <h2>{{ __('motor.titulo') }}</h2>
+        <input type="hidden" name="idioma" value="{{ app()->getLocale() }}">
         <div class="rejilla">
             <div>
                 <label for="llegada">{{ __('ui.comun.llegada') }}</label>
@@ -44,7 +45,7 @@
                         <div class="precio">{{ Formato::dinero($oferta->presupuesto->total(), $propiedad->moneda) }}</div>
                         <div class="gris">{{ trans_choice('ui.comun.n_noches', $noches) }}</div>
                         @if ($oferta->cumpleEstancia)
-                            <a class="boton" style="margin-top:8px" href="{{ route('motor.datos', ['codigo' => $propiedad->codigo, 'tarifa' => $oferta->tarifa->id, 'llegada' => $llegada, 'salida' => $salida, 'personas' => $personas]) }}">{{ __('motor.reservar') }}</a>
+                            <a class="boton" style="margin-top:8px" href="{{ route('motor.datos', ['codigo' => $propiedad->codigo, 'tarifa' => $oferta->tarifa->id, 'llegada' => $llegada, 'salida' => $salida, 'personas' => $personas, 'idioma' => app()->getLocale()]) }}">{{ __('motor.reservar') }}</a>
                         @else
                             <div class="gris">{{ __('motor.error.estancia_minima', ['noches' => $oferta->estanciaMinima]) }}</div>
                         @endif

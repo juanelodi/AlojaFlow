@@ -36,6 +36,9 @@ td.num,th.num{text-align:right;white-space:nowrap}
 tr.total td{font-weight:700;border-bottom:0}
 .oculto{position:absolute;left:-9999px}
 footer{margin-top:24px;font-size:.8125rem;color:var(--gris)}
+.idiomas{display:flex;flex-wrap:wrap;gap:4px 12px;margin:-10px 0 16px;font-size:.8125rem}
+.idiomas a{color:var(--gris);text-decoration:none;padding:4px 0}
+.idiomas a[aria-current]{color:var(--tinta);font-weight:700}
 footer a{color:inherit}
 </style>
 </head>
@@ -45,6 +48,13 @@ footer a{color:inherit}
         <h1>{{ $propiedad->nombre }}</h1>
         @if ($propiedad->telefono)<span class="gris">{{ $propiedad->telefono }}</span>@endif
     </header>
+    @if (request()->isMethod('get'))
+        <nav class="idiomas" aria-label="{{ __('motor.idioma') }}">
+            @foreach (\App\Support\Formato::idiomas() as $codigo => $nombre)
+                <a href="{{ request()->fullUrlWithQuery(['idioma' => $codigo]) }}" lang="{{ $codigo }}" @if ($codigo === app()->getLocale()) aria-current="true" @endif>{{ $nombre }}</a>
+            @endforeach
+        </nav>
+    @endif
     @if (in_array(request()->query('aviso'), ['sin_lugar', 'pasarela', 'nada_que_cobrar'], true))
         <p class="mensaje error" role="alert">{{ __('motor.error.'.request()->query('aviso')) }}</p>
     @endif

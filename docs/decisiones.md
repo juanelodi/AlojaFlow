@@ -374,6 +374,13 @@ independiente cancela y libera noches; en una subordinada solo se anota. **Por q
 por un error de captura sería peor que recordarla. El cierre del día guarda una foto y no bloquea correcciones,
 porque en un hotel pequeño siempre hay algo que corregir al día siguiente.
 
+### D-051 · 2026-11-04 · Primero se traduce lo que ve el huésped
+Motor, llegada en línea, mensajes de partida, documentos y textos legales genéricos van en los seis idiomas; una
+prueba lo comprueba, junto con que cada traducción conserve sus variables. El panel del personal está en español
+e inglés, y en los otros cuatro cae al inglés. Las traducciones son mías, sin revisión de hablantes nativos. **Por qué:**
+México va primero; un huésped extranjero sí necesita leer su idioma, y el personal de un hotel mexicano no usa el
+panel en alemán. Revisa parcialmente la previsión de CLAUDE.md de traducirlo todo al final de la Base.
+
 ---
 
 ## Pendientes

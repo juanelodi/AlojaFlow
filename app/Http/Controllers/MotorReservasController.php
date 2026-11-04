@@ -134,7 +134,7 @@ class MotorReservasController extends Controller
             return $this->respuestaConError($reenviar(new MessageBag([$e->campo === 'cupon' ? 'cupon' : 'tarifa_id' => $e->getMessage()])));
         }
 
-        return redirect()->route('motor.reserva', ['codigo' => $codigo, 'publico' => $reserva->codigo_publico]);
+        return redirect()->route('motor.reserva', ['codigo' => $codigo, 'publico' => $reserva->codigo_publico, 'idioma' => app()->getLocale()]);
     }
 
     public function reserva(Request $request, string $codigo, string $publico): View
@@ -159,20 +159,20 @@ class MotorReservasController extends Controller
         $proveedor = (new Pasarelas($propiedad))->proveedor($pasarela);
         abort_if($proveedor === null || $reserva->estado === EstadoReserva::Cancelada, 404);
 
-        $volver = route('motor.reserva', ['codigo' => $codigo, 'publico' => $publico]);
+        $volver = route('motor.reserva', ['codigo' => $codigo, 'publico' => $publico, 'idioma' => app()->getLocale()]);
         try {
             $url = $this->cobros->iniciar(
                 $reserva,
                 $proveedor,
                 __('motor.concepto', ['propiedad' => $propiedad->nombre, 'numero' => $reserva->numero]),
-                route('motor.retorno', ['codigo' => $codigo, 'publico' => $publico, 'pasarela' => $pasarela]),
+                route('motor.retorno', ['codigo' => $codigo, 'publico' => $publico, 'pasarela' => $pasarela, 'idioma' => app()->getLocale()]),
                 $volver,
                 route('motor.aviso', ['codigo' => $codigo, 'pasarela' => $pasarela]),
             );
         } catch (ErrorPago $e) {
             report($e);
 
-            return redirect($volver.'?aviso=pasarela');
+            return redirect($volver.'&aviso=pasarela');
         }
 
         return redirect()->away($url);
@@ -194,7 +194,7 @@ class MotorReservasController extends Controller
             }
         }
 
-        return redirect()->route('motor.reserva', ['codigo' => $codigo, 'publico' => $publico]);
+        return redirect()->route('motor.reserva', ['codigo' => $codigo, 'publico' => $publico, 'idioma' => app()->getLocale()]);
     }
 
     /**

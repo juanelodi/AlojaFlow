@@ -19,8 +19,8 @@ de partida. Antes de usarlos con huéspedes y facturas reales, revísalos con un
 | Condiciones de hospedaje | Requisitos de la Ley Federal de Protección al Consumidor y de PROFECO para contratos de hospedaje | Abogado |
 | Registro de huéspedes | Requisitos del estado o municipio del alojamiento | Abogado o asociación hotelera |
 | Claves del SAT | `ClaveProdServ` 90111800 y `ClaveUnidad` E48 son una propuesta. Confirmar también el régimen y el uso de CFDI | Contador |
-| Impuesto sobre hospedaje | La tasa cambia por estado; se da de alta en **Impuestos** sin código `002`, para que vaya como impuesto local | Contador |
-| Código de IVA | Para que un impuesto salga como IVA federal, su campo **Código** debe ser `002` | Contador |
+| Impuesto sobre hospedaje | La tasa cambia por estado; se da de alta en **Impuestos** con otro código, por ejemplo `ISH`, para que vaya como impuesto local | Contador |
+| Código de IVA | Para que un impuesto salga como IVA federal, su campo **Código** debe ser `002` o `IVA` | Contador |
 | Plazos de conservación | 30 días para las fotos de identificaciones, 1 año para el registro y 5 años para las aceptaciones son una propuesta | Abogado |
 
 ## Para timbrar facturas

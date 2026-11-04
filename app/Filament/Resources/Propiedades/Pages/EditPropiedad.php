@@ -15,6 +15,7 @@ use App\Filament\Resources\Propiedades\AccionesSincronizacion;
 use App\Filament\Resources\Propiedades\PropiedadResource;
 use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
+use App\Propiedades\BorradorPropiedad;
 use App\Propiedades\ErrorIndependizar;
 use App\Propiedades\Independizador;
 use Filament\Actions\Action;
@@ -67,7 +68,18 @@ class EditPropiedad extends EditRecord
                 ->schema(fn (Propiedad $record): array => $record->esIndependiente() ? [
                     TextInput::make('confirmacion')->label(__('ui.propiedades.eliminar_confirmacion'))->required()->in([$record->codigo])->autocomplete('off'),
                 ] : [])
-                ->before(fn (Propiedad $record) => RegistroAuditoria::anotar('propiedad.eliminar', $record, ['nombre' => $record->nombre, 'modo' => $record->modo->value])),
+                ->before(function (Propiedad $record, DeleteAction $action, BorradorPropiedad $borrador): void {
+                    if ($borrador->tieneFacturas($record)) {
+                        Notification::make()->danger()->persistent()->title(__('ui.propiedades.error_con_facturas'))->send();
+                        $action->halt();
+                    }
+                    RegistroAuditoria::anotar('propiedad.eliminar', $record, ['nombre' => $record->nombre, 'modo' => $record->modo->value]);
+                })
+                ->using(function (Propiedad $record, BorradorPropiedad $borrador): bool {
+                    $borrador->borrar($record);
+
+                    return true;
+                }),
         ];
     }
 

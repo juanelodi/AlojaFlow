@@ -202,6 +202,7 @@ return [
         'eliminar_independiente' => 'Its rooms, rates, guests, bookings and payments will be deleted forever. There is no other copy of this data. To confirm, type the code: :codigo',
         'eliminar_subordinada' => 'It is deleted from AlojaFlow with its own data. The main installation is not touched.',
         'eliminar_confirmacion' => 'Property code',
+        'error_con_facturas' => 'This property has issued invoices or receipts, which must be kept: it cannot be deleted. You can deactivate it.',
     ],
 
     'ejecuciones' => [
@@ -414,6 +415,9 @@ return [
         'caja' => 'Front desk',
         'cupon' => '10% welcome discount',
         'instrucciones_pago' => 'Sample details: transfer to account 000 000 000 and send the receipt to hotel@example.com.',
+        'politica' => 'Flexible',
+        'entidad' => 'Hotel Bahía Serena SA de CV (fictitious)',
+        'domicilio' => 'Av. del Mar 123, Bahía de Banderas (fictitious)',
     ],
 
     'usuarios' => [

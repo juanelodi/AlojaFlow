@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 return [
     'titulo' => 'Book your stay',
+    'idioma' => 'Language',
     'buscar' => 'Search',
     'reservar' => 'Book',
     'capacidad' => 'Up to :personas people',

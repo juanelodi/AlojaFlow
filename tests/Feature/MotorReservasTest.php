@@ -66,6 +66,15 @@ it('muestra las tarifas con lugar y su precio', function () {
     $this->get(str_replace('personas=2', 'personas=3', $url))->assertOk()->assertSee(__('motor.sin_resultados'));
 });
 
+it('habla el idioma que se elige y lo conserva de una página a otra', function () {
+    $url = '/reservar/posada?idioma=fr&llegada='.$this->hoy->addDays(5)->format('Y-m-d').'&salida='.$this->hoy->addDays(7)->format('Y-m-d').'&personas=2';
+
+    $this->get($url)->assertOk()->assertSee('Réservez votre séjour')->assertSee('Arrivée')->assertSee('idioma=fr', false)->assertSee('name="idioma" value="fr"', false)->assertSee('Deutsch');
+    $this->post('/reservar/posada?idioma=de', ($this->formulario)())->assertRedirectContains('idioma=de');
+    $reserva = Reserva::query()->firstOrFail();
+    $this->get('/reservar/posada/r/'.$reserva->codigo_publico.'?idioma=de')->assertOk()->assertSee('Ihre Buchung');
+});
+
 it('no abre si el motor está apagado, si la propiedad es subordinada o no existe', function () {
     (new AjustesMotor($this->propiedad))->guardar(['activo' => false]);
     $this->get('/reservar/posada')->assertNotFound();

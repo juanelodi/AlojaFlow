@@ -58,7 +58,9 @@ copia desde **Sistema → Copias de seguridad** y guárdala fuera del servidor.
 - código de confirmación por WhatsApp o SMS;
 - channel manager por API: con los portales se trabaja por iCal.
 
-La interfaz está completa en español e inglés. Ver más abajo el estado de los demás idiomas.
+**Idiomas:** todo está en español e inglés. Lo que ve el huésped (motor de reservas, llegada en línea, mensajes,
+documentos en PDF y textos legales de partida) también está en francés, italiano, portugués y alemán, sin revisar
+por hablantes nativos. El panel del personal en esos cuatro idiomas sale en inglés, salvo los textos de Filament.
 
 ### Cosas nuevas que vale la pena probar
 

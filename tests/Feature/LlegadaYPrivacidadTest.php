@@ -287,6 +287,19 @@ describe('documentos legales', function () {
             ->and($this->llegadas->documentosPara($this->propiedad, 'es')->pluck('id')->all())->toBe([$dos->id]);
     });
 
+    it('borrar la propiedad se lleva sus aceptaciones y sus archivos del disco', function () {
+        $documento = documentoPublicado($this);
+        $this->post($this->url, ($this->formulario)(['aceptar' => [$documento->id => '1'], 'personas' => [['foto' => UploadedFile::fake()->image('ine.jpg')]]]));
+        $ruta = Archivo::query()->where('clase', ClaseArchivo::DocumentoIdentidad->value)->firstOrFail()->ruta;
+        Storage::disk('local')->assertExists($ruta);
+
+        app(App\Propiedades\BorradorPropiedad::class)->borrar($this->propiedad);
+
+        expect(Propiedad::query()->whereKey($this->propiedad->id)->exists())->toBeFalse()
+            ->and(Aceptacion::query()->count())->toBe(0);
+        Storage::disk('local')->assertMissing($ruta);
+    });
+
     it('un documento aceptado no se puede borrar', function () {
         $documento = documentoPublicado($this);
         $this->post($this->url, ($this->formulario)(['aceptar' => [$documento->id => '1']]));

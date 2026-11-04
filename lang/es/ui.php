@@ -202,6 +202,7 @@ return [
         'eliminar_independiente' => 'Se borrarán para siempre sus habitaciones, tarifas, huéspedes, reservas y pagos. No hay otra copia de estos datos. Para confirmar, escribe el código: :codigo',
         'eliminar_subordinada' => 'Se borra de AlojaFlow, con sus datos propios. La instalación principal no se toca.',
         'eliminar_confirmacion' => 'Código de la propiedad',
+        'error_con_facturas' => 'Esta propiedad tiene facturas o recibos emitidos, que hay que conservar: no se puede borrar. Puedes desactivarla.',
     ],
 
     'ejecuciones' => [
@@ -414,6 +415,9 @@ return [
         'caja' => 'Recepción',
         'cupon' => '10 % de descuento de bienvenida',
         'instrucciones_pago' => 'Datos de ejemplo: transfiere a la cuenta 000 000 000 y manda el comprobante a hotel@example.com.',
+        'politica' => 'Flexible',
+        'entidad' => 'Hotel Bahía Serena SA de CV (ficticio)',
+        'domicilio' => 'Av. del Mar 123, Bahía de Banderas (ficticio)',
     ],
 
     'usuarios' => [

@@ -277,6 +277,24 @@ describe('facturación', function () {
         $this->get(route('archivos.ver', Factura::query()->first()->pdf_archivo_id))->assertForbidden();
     });
 
+    it('una propiedad con facturas no se borra; la demostración sí', function () {
+        $this->facturas->emitir(($this->reservar)(1, 3), $this->serie, $this->receptor, '04', 'PUE');
+        $borrador = app(App\Propiedades\BorradorPropiedad::class);
+
+        expect(fn () => $borrador->borrar($this->propiedad))->toThrow(App\Propiedades\ErrorIndependizar::class, __('ui.propiedades.error_con_facturas'));
+        expect(Propiedad::query()->whereKey($this->propiedad->id)->exists())->toBeTrue();
+
+        $borrador->borrar($this->propiedad, conFacturas: true);
+        expect(Propiedad::query()->whereKey($this->propiedad->id)->exists())->toBeFalse();
+    });
+
+    it('reconoce el IVA aunque su código sea IVA', function () {
+        Impuesto::query()->update(['codigo' => 'IVA']);
+        $factura = $this->facturas->emitir(($this->reservar)(1, 3), $this->serie, $this->receptor, '04', 'PUE');
+
+        expect(app(GestorArchivos::class)->contenido($factura->xml))->toContain('Impuesto="002"')->toContain('TotalImpuestosTrasladados="160.00"');
+    });
+
     it('los datos fiscales se dan de alta en el panel', function () {
         Livewire::test(CreateEntidadFiscal::class)
             ->fillForm(['propiedad_id' => $this->propiedad->id, 'nombre' => 'Nueva', 'identificador_fiscal' => 'AAA010101AAA', 'pais' => 'MX', 'regimen_fiscal' => '626', 'codigo_postal' => '01000', 'modo' => 'pruebas', 'series' => [['serie' => 'B', 'tipo_documento' => 'factura', 'siguiente_numero' => 1, 'activa' => true]]])
