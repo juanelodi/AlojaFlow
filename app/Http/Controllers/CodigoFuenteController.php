@@ -29,7 +29,7 @@ class CodigoFuenteController extends Controller
     /** Lo que forma el código fuente de AlojaFlow. */
     private const INCLUIR = [
         'app', 'bootstrap/app.php', 'bootstrap/providers.php', 'config', 'database', 'docs', 'instalador', 'lang', 'resources', 'routes', 'tests', '.htaccess',
-        'public/index.php', 'public/img', 'public/robots.txt', 'public/favicon.ico', 'branding',
+        'public/index.php', 'public/.htaccess', 'public/img', 'public/robots.txt', 'public/favicon.ico', 'branding',
         'artisan', 'composer.json', 'composer.lock', 'package.json', 'phpunit.xml', 'phpstan.neon', 'pint.json', 'vite.config.js',
         'LICENSE', 'THIRD-PARTY-NOTICES.md', 'README.md', 'CAMBIOS.md', 'CLAUDE.md', '.env.example', '.editorconfig', '.gitattributes', '.gitignore',
     ];

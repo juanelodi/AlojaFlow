@@ -7,11 +7,11 @@
             @include('filament.partes.selector-propiedad')
             <label class="af-campo">
                 <span>{{ __('ui.indicadores.desde') }}</span>
-                <x-filament::input.wrapper><x-filament::input type="date" wire:model.live="desde" /></x-filament::input.wrapper>
+                <x-filament::input.wrapper><x-filament::input type="date" :value="$this->desde" wire:model.live="desde" /></x-filament::input.wrapper>
             </label>
             <label class="af-campo">
                 <span>{{ __('ui.indicadores.hasta') }}</span>
-                <x-filament::input.wrapper><x-filament::input type="date" wire:model.live="hasta" /></x-filament::input.wrapper>
+                <x-filament::input.wrapper><x-filament::input type="date" :value="$this->hasta" wire:model.live="hasta" /></x-filament::input.wrapper>
             </label>
             <div class="af-grupo-botones">
                 @foreach (['este_mes', 'mes_anterior', 'anio', 'proximos_90'] as $periodo)

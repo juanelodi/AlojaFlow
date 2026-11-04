@@ -25,7 +25,7 @@ final class Calendario
 {
     /**
      * @param  list<int>  $propiedades
-     * @return array{dias: list<CarbonImmutable>, filas: list<array{unidad: Unidad, barras: list<array<string, mixed>>, externos: list<array<string, mixed>>}>}
+     * @return array{dias: list<CarbonImmutable>, filas: list<array{unidad: Unidad, barras: list<array{reserva: Reserva, columna: int, ancho: int, sigue_antes: bool, sigue_despues: bool, clase: string, color: ?string}>, externos: list<array{columna: int, ancho: int, sigue_antes: bool, sigue_despues: bool, fuente: string}>, tapados: array<int, true>}>} en «tapados», los días del mes (desde 1) que quedan debajo de una barra
      */
     public static function mes(array $propiedades, CarbonImmutable $inicio): array
     {
@@ -86,7 +86,11 @@ final class Calendario
                     'fuente' => $externo->fuente->nombre,
                 ];
             }
-            $filas[] = ['unidad' => $unidad, 'barras' => $barras, 'externos' => $deportales];
+            $tapados = [];
+            foreach ([...$barras, ...$deportales] as $barra) {
+                $tapados += array_fill($barra['columna'], $barra['ancho'], true);
+            }
+            $filas[] = ['unidad' => $unidad, 'barras' => $barras, 'externos' => $deportales, 'tapados' => $tapados];
         }
 
         return ['dias' => $dias, 'filas' => $filas];

@@ -181,6 +181,13 @@
     .af-cifra dd { font-size: 1.125rem; }
 }
 
+/* Filament deja el contenido invisible hasta que arranca Alpine: en el escritorio, para que no salte al saber si la barra
+   lateral está plegada. En el teléfono la barra va por encima y no mueve nada, y con mala red eran segundos en blanco.
+   Los formularios se quedan como están: sin JavaScript sus campos salen vacíos y lo que se escriba se perdería. */
+@media (max-width: 63.99rem) {
+    .fi-main-ctn:not(:has(form)) { display: flex; opacity: 1; }
+}
+
 /* Logo con versión clara y oscura */
 .af-logo { height: 3rem; width: auto; }
 .af-logo--oscuro { display: none; }

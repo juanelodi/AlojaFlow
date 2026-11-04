@@ -30,8 +30,11 @@ class Empaquetador
     /** Del repositorio no se instala: la principal simulada y demás herramientas de desarrollo. */
     private const EXCLUIR = ['desarrollo/'];
 
-    /** Recursos que no están en git (los publica `filament:assets`) y la aplicación necesita. */
-    public const RECURSOS = ['public/css/filament', 'public/js/filament', 'public/fonts/filament', 'public/css/alojaflow'];
+    /**
+     * Recursos que no están en git y la aplicación necesita: los publican `filament:assets` y `vendor:publish`. Con Livewire en
+     * public/, su JavaScript lo sirve Apache: si no, cada primera visita arranca PHP entero para mandarlo.
+     */
+    public const RECURSOS = ['public/css/filament', 'public/js/filament', 'public/fonts/filament', 'public/css/alojaflow', 'public/vendor/livewire'];
 
     /**
      * @param  callable(string): void  $informar
@@ -77,10 +80,10 @@ class Empaquetador
             // Los ejecutables de vendor/bin no hacen falta para usar AlojaFlow.
             File::deleteDirectory($imagen.'/vendor/bin');
 
-            $informar('Recursos de Filament…');
+            $informar('Recursos de Filament y Livewire…');
             foreach (self::RECURSOS as $carpeta) {
                 if (! is_dir($raiz.'/'.$carpeta)) {
-                    throw new RuntimeException("Falta $carpeta: ejecuta php artisan filament:assets");
+                    throw new RuntimeException("Falta $carpeta: ejecuta php artisan filament:assets y php artisan vendor:publish --tag=livewire:assets");
                 }
                 File::copyDirectory($raiz.'/'.$carpeta, $imagen.'/'.$carpeta);
             }

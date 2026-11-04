@@ -64,6 +64,9 @@ class Empaquetar extends Command
             if ($this->callSilently('filament:assets') !== self::SUCCESS) {
                 throw new RuntimeException('php artisan filament:assets falló.');
             }
+            if ($this->callSilently('vendor:publish', ['--tag' => 'livewire:assets', '--force' => true]) !== self::SUCCESS) {
+                throw new RuntimeException('php artisan vendor:publish --tag=livewire:assets falló.');
+            }
             $resultado = $empaquetador->empaquetar(
                 $raiz,
                 $version,

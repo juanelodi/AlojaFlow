@@ -8,7 +8,7 @@
             <label class="af-campo">
                 <span>{{ __('ui.hoy.fecha') }}</span>
                 <x-filament::input.wrapper>
-                    <x-filament::input type="date" wire:model.live="fecha" />
+                    <x-filament::input type="date" :value="$this->fecha" wire:model.live="fecha" />
                 </x-filament::input.wrapper>
             </label>
             <div class="af-grupo-botones">

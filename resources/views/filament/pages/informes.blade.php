@@ -16,11 +16,11 @@
             </label>
             <label class="af-campo">
                 <span>{{ __('ui.indicadores.desde') }}</span>
-                <x-filament::input.wrapper><x-filament::input type="date" wire:model.live="desde" /></x-filament::input.wrapper>
+                <x-filament::input.wrapper><x-filament::input type="date" :value="$this->desde" wire:model.live="desde" /></x-filament::input.wrapper>
             </label>
             <label class="af-campo">
                 <span>{{ __('ui.indicadores.hasta') }}</span>
-                <x-filament::input.wrapper><x-filament::input type="date" wire:model.live="hasta" /></x-filament::input.wrapper>
+                <x-filament::input.wrapper><x-filament::input type="date" :value="$this->hasta" wire:model.live="hasta" /></x-filament::input.wrapper>
             </label>
             <x-filament::button icon="heroicon-m-arrow-down-tray" wire:click="descargarCsv">{{ __('ui.indicadores.descargar_csv') }}</x-filament::button>
         </div>

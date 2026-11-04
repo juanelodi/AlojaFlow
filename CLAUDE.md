@@ -133,7 +133,8 @@ microservicios, app nativa (más adelante una PWA), FullCalendar Premium, channe
 
 Destino de instalación: hosting compartido (`public_html`). El paquete incluye `vendor/` y los
 recursos ya compilados; un solo cron dispara el programador de tareas. Sin CDN en tiempo de
-ejecución: todos los recursos se sirven desde la instalación.
+ejecución: todos los recursos se sirven desde la instalación. `public/.htaccess` los comprime y los
+deja en caché (D-067, `docs/rendimiento-movil.md`).
 
 **Paquetes de país.** Lo que cambia por país (facturación, registro de viajeros, impuestos al
 hospedaje, privacidad, documentos de identidad, formatos) va detrás de interfaces con una
@@ -226,6 +227,7 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 - `desarrollo/` — no se instala ni va en los paquetes:
   - `apache-prueba/`: Apache de Wamp que lee `.htaccess`, y la prueba de punta a punta del instalador;
   - `principal-simulada/`: principal falsa para demostraciones;
+  - `rendimiento/`: mide con Lighthouse y compara la primera visita con la segunda (`docs/rendimiento-movil.md`);
   - `servidor-instalacion.php`: sirve una instalación hecha desde el zip con límites de subida altos.
 
 ## Comandos
@@ -248,6 +250,7 @@ PHP vendor/bin/pest                       # pruebas, contra la base MySQL alojaf
 PHP vendor/bin/pint --test                # formato PSR-12 + cabecera de licencia + strict_types
 PHP vendor/bin/phpstan analyse --memory-limit=1G   # Larastan nivel 6
 PHP artisan filament:assets               # tras cambiar resources/css/alojaflow.css
+PHP artisan vendor:publish --tag=livewire:assets --force  # JavaScript de Livewire en public/ (lo hace composer al instalar)
 PHP artisan alojaflow:empaquetar          # dist/alojaflow-x.y.z.zip firmado (git sin cambios)
 PHP artisan alojaflow:actualizar ruta.zip # actualizar una instalación desde la consola
 PHP .herramientas/composer.phar licenses  # licencias PHP
@@ -272,6 +275,12 @@ npx license-checker --summary             # licencias npm
   tareas corren de verdad, y la limpieza, el reinicio de la demo y las copias borrarían los datos locales del equipo.
 - Una prueba que cambia `$this->app['env']` enciende `ProgramadorPorVisitas`: cada petición correría todas las tareas.
   Esa prueba va con `withoutMiddleware(ProgramadorPorVisitas::class)`.
+- En el teléfono, una pantalla sin `<form>` se ve antes de que arranque Alpine (D-067): lo que deba estar oculto hasta
+  entonces lleva `x-cloak`, y un campo con `wire:model` que se vea de entrada, su `value`.
+- Livewire añade dos comentarios a cada `@if` y `@foreach` de Blade. En un bucle de miles de celdas pesan: el del
+  calendario va con PHP directo.
+- `public/.htaccess`: nada de directivas que solo admita la configuración del servidor (`DeflateCompressionLevel`) y todo
+  dentro de su `IfModule`. Cualquier error ahí es un 500 en todo el sitio; `RendimientoPanelTest` lo revisa.
 
 ## Referencias locales (solo lectura)
 

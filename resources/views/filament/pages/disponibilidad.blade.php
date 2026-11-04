@@ -7,15 +7,15 @@
             @include('filament.partes.selector-propiedad')
             <label class="af-campo">
                 <span>{{ __('ui.comun.llegada') }}</span>
-                <x-filament::input.wrapper><x-filament::input type="date" wire:model.live="llegada" /></x-filament::input.wrapper>
+                <x-filament::input.wrapper><x-filament::input type="date" :value="$this->llegada" wire:model.live="llegada" /></x-filament::input.wrapper>
             </label>
             <label class="af-campo">
                 <span>{{ __('ui.comun.salida') }}</span>
-                <x-filament::input.wrapper><x-filament::input type="date" wire:model.live="salida" /></x-filament::input.wrapper>
+                <x-filament::input.wrapper><x-filament::input type="date" :value="$this->salida" wire:model.live="salida" /></x-filament::input.wrapper>
             </label>
             <label class="af-campo" style="min-width: 6rem">
                 <span>{{ __('ui.disponibilidad.personas') }}</span>
-                <x-filament::input.wrapper><x-filament::input type="number" min="1" max="100" wire:model.live.debounce.400ms="personas" /></x-filament::input.wrapper>
+                <x-filament::input.wrapper><x-filament::input type="number" min="1" max="100" :value="$this->personas" wire:model.live.debounce.400ms="personas" /></x-filament::input.wrapper>
             </label>
         </div>
 

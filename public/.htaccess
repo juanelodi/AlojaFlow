@@ -1,3 +1,4 @@
+# AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
@@ -22,4 +23,39 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+
+    # Hojas de estilo y scripts con su versión en la dirección (?v=…, ?id=…): ver mod_headers, abajo.
+    RewriteCond %{QUERY_STRING} (^|&)(v|id)=
+    RewriteRule \.(css|js)$ - [E=ALOJAFLOW_CON_VERSION:1]
 </IfModule>
+
+# Lo que hay de aquí para abajo solo acelera la carga en un teléfono con mala red (docs/rendimiento-movil.md). Sin alguno de
+# estos módulos, su parte se ignora y todo funciona igual. Aquí solo van directivas que un .htaccess admite con «FileInfo», la
+# misma autorización que necesita RewriteEngine: una que no se admita daría error 500 en todo el sitio.
+<IfModule mod_filter.c>
+    # La primera que el navegador acepte: el segundo filtro deja pasar lo que ya viene comprimido.
+    <IfModule mod_brotli.c>
+        AddOutputFilterByType BROTLI_COMPRESS text/html text/css text/javascript application/javascript application/x-javascript application/json image/svg+xml
+    </IfModule>
+    <IfModule mod_deflate.c>
+        AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/x-javascript application/json image/svg+xml
+    </IfModule>
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Una versión nueva cambia la dirección, así que estos no hace falta volver a pedirlos ni a comprobarlos.
+    Header set Cache-Control "public, max-age=31536000, immutable" env=ALOJAFLOW_CON_VERSION
+
+    # Las fuentes llevan la versión en el nombre del archivo.
+    <FilesMatch "\.woff2$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+
+    # El logo y el icono no llevan versión: una semana.
+    <FilesMatch "\.(svg|ico)$">
+        Header set Cache-Control "public, max-age=604800"
+    </FilesMatch>
+</IfModule>
+
+# Sin ETag: mod_deflate le añade «-gzip», la comprobación nunca coincide y el archivo se vuelve a bajar. Queda Last-Modified.
+FileETag None

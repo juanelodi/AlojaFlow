@@ -49,7 +49,10 @@ class PanelAplicacionProvider extends PanelProvider
 {
     public function boot(): void
     {
-        FilamentAsset::register([Css::make('alojaflow', resource_path('css/alojaflow.css'))], 'alojaflow');
+        // Con la fecha del archivo: public/.htaccess deja en caché un año lo que lleva versión, y la de Filament no cambia con este archivo.
+        FilamentAsset::register([Css::make('alojaflow', resource_path('css/alojaflow.css'))->html(
+            fn (): string => asset('css/alojaflow/alojaflow.css').'?v='.(int) @filemtime(public_path('css/alojaflow/alojaflow.css')),
+        )], 'alojaflow');
         Table::configureUsing(fn (Table $tabla) => $tabla->defaultDateDisplayFormat('j M Y')->defaultDateTimeDisplayFormat('j M Y H:i'));
     }
 
@@ -86,6 +89,9 @@ class PanelAplicacionProvider extends PanelProvider
             ->darkModeBrandLogo(asset('img/logo-alojaflow-oscuro.svg'))
             ->brandLogoHeight('2.25rem')
             ->favicon(asset('img/icono-alojaflow.svg'))
+            // La misma fuente, sin adelantarla: con mala red le quita ancho de banda a la hoja de estilos, y sin esa hoja no se
+            // ve nada. Mientras llega, el texto se lee con la del sistema.
+            ->font(null, preload: [])
             ->colors([
                 'primary' => self::recorrerTono(Color::Teal),
                 'warning' => Color::Amber,

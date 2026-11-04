@@ -477,6 +477,17 @@ marca en rojo y el instalador avisa, sin bloquear: un hosting puede haber llevad
 está en `App\Instalacion\VersionPhp` y en el instalador; se actualiza cuando PHP publique otra corrección crítica.
 `composer.json` no sube el mínimo por lo mismo. Además, la aplicación ya no dice su versión de PHP en las cabeceras.
 
+### D-067 · 2026-11-04 · El panel en un teléfono con mala red
+Hoy daba 56 puntos y 9.8 s en Lighthouse móvil. Había dos causas: nada se comprimía, y Filament deja el contenido invisible hasta que
+corre todo el JavaScript. Ahora `public/.htaccess` comprime y deja en caché un año lo que lleva versión en la dirección. En
+pantallas de menos de 64rem, el contenido se ve sin esperar a Alpine. Livewire se sirve como archivo, sin arrancar PHP. Ya no van
+`echo.js` ni la precarga de la fuente, y las celdas del calendario pesan un quinto. **Por qué así:** no hay CDN ni se compila
+nada en el hosting, y todo lo del `.htaccess` se ignora si falta el módulo. **Los formularios siguen esperando a Alpine:** sin
+JavaScript sus campos salen vacíos y lo que se escriba se perdería. **Riesgos que quedan:** comprimir HTML con un token abre en teoría
+la puerta a BREACH, pero hace falta espiar el tráfico y forzar miles de peticiones con la sesión de la víctima; la fuente hace un
+pequeño salto al llegar la primera vez; y no se ha comprobado en DreamHost si `mod_deflate` está disponible. Cifras, lo que se
+descartó y cómo comprobarlo, en `docs/rendimiento-movil.md`.
+
 ---
 
 ## Pendientes

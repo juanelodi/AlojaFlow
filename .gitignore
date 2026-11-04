@@ -53,3 +53,5 @@ desktop.ini
 /public/fonts/filament/
 .claude/launch.json
 /public/css/alojaflow/
+# El JavaScript de Livewire como archivo (se regenera con composer install)
+/public/vendor/

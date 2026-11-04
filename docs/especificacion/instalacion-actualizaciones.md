@@ -15,6 +15,8 @@ El zip tiene una sola carpeta, `alojaflow-x.y.z/`, con:
   --optimize-autoloader`), sin `vendor/bin/`;
 - los recursos que publica Filament y no están en git: `public/css/filament`,
   `public/js/filament`, `public/fonts/filament` y `public/css/alojaflow`;
+- el JavaScript de Livewire, `public/vendor/livewire`, para que lo sirva Apache sin arrancar PHP
+  (D-067);
 - el esqueleto de `storage/` y `bootstrap/cache/` (sus `.gitignore`), para instalar desde cero;
 - `manifiesto.json`: producto, versión, fecha, `php_minimo`, extensiones de PHP necesarias y el
   SHA-256 de cada archivo. Es JSON canónico (claves ordenadas): son los bytes que se firman;
@@ -37,7 +39,8 @@ La 1.0.2 tiene unos 15 000 archivos: 21 MB comprimida y 64 MB descomprimida.
 
 1. exige que git no tenga cambios sin confirmar (con `--permitir-cambios`, solo para pruebas) y
    avisa si `CAMBIOS.md` no tiene la sección de la versión;
-2. publica los recursos de Filament (`filament:assets`);
+2. publica los recursos de Filament (`filament:assets`) y de Livewire
+   (`vendor:publish --tag=livewire:assets`);
 3. copia lo versionado a una carpeta de trabajo temporal y ejecuta allí `composer install --no-dev`;
 4. calcula el manifiesto, lo firma con la clave secreta y escribe `dist/alojaflow-x.y.z.zip` y
    `dist/alojaflow-x.y.z.zip.sha256`;

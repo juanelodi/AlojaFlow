@@ -11,8 +11,10 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Demo\ModoDemo;
+use App\Filament\RecursosDelPanel;
 use App\Seguridad\MemoriaAcceso;
 use App\Support\ClaveCliente;
+use Filament\Support\Assets\AssetManager;
 use Filament\Tables\Table;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -29,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(MemoriaAcceso::class);
+        $this->app->scoped(AssetManager::class, RecursosDelPanel::class);
     }
 
     /**

@@ -104,9 +104,9 @@ Lighthouse sobre una instalación nueva, con accesibilidad y buenas prácticas e
 | Hoy, escritorio | 92 | 1.7 s |
 | Hoy, móvil | 56 | 9.8 s |
 
-La prueba móvil simula un teléfono lento con mala red. **Queda sin resolver** el peso del panel en esas condiciones: viene
-sobre todo de los recursos de Filament y el servidor de prueba no los comprimía. En SEO, las páginas privadas y la demo
-salen bajo porque piden no indexarse, a propósito.
+La prueba móvil simula un teléfono lento con mala red. Esta auditoría dejó sin resolver el peso del panel en esas condiciones;
+se resolvió después (D-067, `docs/rendimiento-movil.md`): en una instalación nueva, Hoy en móvil pasó a 99 puntos y 1.5 s. En
+SEO, las páginas privadas y la demo salen bajo porque piden no indexarse, a propósito.
 
 ## Accesibilidad
 

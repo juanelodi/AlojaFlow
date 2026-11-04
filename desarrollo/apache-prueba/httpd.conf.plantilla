@@ -1,7 +1,8 @@
 # AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Apache de Wamp con PHP 8.3 para probar el instalador como en un hosting real: lee .htaccess y el
-# dominio apunta a la carpeta de la instalación. No se instala ni va en los paquetes.
+# Apache de Wamp con PHP 8.3 para probar el instalador como en un hosting real: lee .htaccess, el
+# dominio apunta a la carpeta de la instalación y están los módulos con los que public/.htaccess
+# comprime y deja en caché. No se instala ni va en los paquetes.
 # La arranca desarrollo/apache-prueba/arrancar.sh, que cambia los @@VALORES@@.
 ServerRoot "@@APACHE@@"
 Listen 127.0.0.1:@@PUERTO@@
@@ -14,8 +15,11 @@ LoadModule actions_module modules/mod_actions.so
 LoadModule alias_module modules/mod_alias.so
 LoadModule authz_core_module modules/mod_authz_core.so
 LoadModule authz_host_module modules/mod_authz_host.so
+LoadModule deflate_module modules/mod_deflate.so
 LoadModule dir_module modules/mod_dir.so
 LoadModule env_module modules/mod_env.so
+LoadModule filter_module modules/mod_filter.so
+LoadModule headers_module modules/mod_headers.so
 LoadModule log_config_module modules/mod_log_config.so
 LoadModule mime_module modules/mod_mime.so
 LoadModule negotiation_module modules/mod_negotiation.so
