@@ -34,6 +34,8 @@ class RegistroAuditoriaResource extends Resource
 {
     protected static ?string $model = RegistroAuditoria::class;
 
+    protected static bool $hasTitleCaseModelLabel = false;
+
     protected static ?string $slug = 'auditoria';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShieldCheck;

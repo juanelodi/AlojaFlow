@@ -36,6 +36,8 @@ class HuespedResource extends Resource
 {
     protected static ?string $model = Huesped::class;
 
+    protected static bool $hasTitleCaseModelLabel = false;
+
     protected static ?string $slug = 'huespedes';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;

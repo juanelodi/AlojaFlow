@@ -33,6 +33,8 @@ class UnidadResource extends Resource
 {
     protected static ?string $model = Unidad::class;
 
+    protected static bool $hasTitleCaseModelLabel = false;
+
     protected static ?string $slug = 'unidades';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedKey;

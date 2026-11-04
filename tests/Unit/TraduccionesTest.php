@@ -139,6 +139,10 @@ it('toda clave citada en el código existe', function () {
     expect($faltan)->toBe([]);
 });
 
+it('el título de crear no le impone un género al nombre en italiano', function () {
+    expect(__('filament-panels::resources/pages/create-record.title', ['label' => 'prenotazione'], 'it'))->toBe('Crea prenotazione');
+});
+
 // Las ayudas citan menús, botones y estados: deben decirlo igual que la pantalla, o quien lee no los encuentra.
 it('lo que un texto cita de otro coincide', function (string $idioma) {
     $citas = [

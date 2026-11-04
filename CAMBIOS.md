@@ -13,6 +13,8 @@ El panel del personal, en los seis idiomas, y correcciones que salieron al revis
 - **Hoy y Limpieza:** la fecha larga decía «Mittwoch 4 de November de 2026»; ahora se escribe según el idioma.
 - **Tablas de Hoy:** el estado de cada reserva se veía cortado («Confir…»); ahora se lee completo.
 - **Accesibilidad:** once campos con la etiqueta oculta se anunciaban en español a los lectores de pantalla.
+- **Títulos:** «Crear Reserva» ahora es «Crear reserva», igual que en las demás pantallas; en italiano, «Nuovo
+  prenotazione» ahora es «Crea prenotazione».
 
 ## 1.0.6 — 2026-11-04
 

@@ -39,6 +39,8 @@ class ReservaResource extends Resource
 {
     protected static ?string $model = Reserva::class;
 
+    protected static bool $hasTitleCaseModelLabel = false;
+
     protected static ?string $slug = 'reservas';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;

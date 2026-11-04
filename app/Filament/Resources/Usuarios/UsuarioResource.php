@@ -32,6 +32,8 @@ class UsuarioResource extends Resource
 {
     protected static ?string $model = User::class;
 
+    protected static bool $hasTitleCaseModelLabel = false;
+
     protected static ?string $slug = 'usuarios';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;

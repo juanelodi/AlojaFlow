@@ -33,6 +33,8 @@ class PropiedadResource extends Resource
 {
     protected static ?string $model = Propiedad::class;
 
+    protected static bool $hasTitleCaseModelLabel = false;
+
     protected static ?string $slug = 'propiedades';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;

@@ -32,6 +32,8 @@ class TarifaResource extends Resource
 {
     protected static ?string $model = Tarifa::class;
 
+    protected static bool $hasTitleCaseModelLabel = false;
+
     protected static ?string $slug = 'tarifas';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCurrencyDollar;
