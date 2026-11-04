@@ -2,7 +2,9 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
-## Sin publicar
+## 1.0.7 — 2026-11-04
+
+El panel del personal, en los seis idiomas, y correcciones que salieron al revisarlo. No cambia la base de datos.
 
 - **Panel del personal en francés, italiano, portugués y alemán.** Antes salía en inglés. Cada usuario elige su idioma
   en el perfil. Estas traducciones no las ha revisado un hablante nativo.

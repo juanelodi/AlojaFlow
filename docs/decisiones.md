@@ -389,7 +389,8 @@ los textos genéricos. Vocabulario, el mismo que ya veía el huésped: propiedad
 *alojamento* y *Unterkunft*; huésped es *client*, *ospite*, *hóspede* y *Gast*; se trata de *vous*, *tu*, tercera persona
 y *Sie*; el portugués es el de Portugal. Lo que se guarda como dato sigue en el idioma en que se escribió, y
 `THIRD-PARTY-NOTICES.md` se muestra en español. Las traducciones son mías, sin revisión de hablantes nativos, que
-`docs/producto.md` §8.5 pide antes de publicarlas: queda pendiente. **Por qué:** lo pidió el usuario.
+`docs/producto.md` §8.5 pide antes de publicarlas: queda pendiente, y el usuario pidió sacarlas así en la 1.0.7, que
+sigue siendo versión de prueba. **Por qué:** lo pidió el usuario.
 
 ---
 
