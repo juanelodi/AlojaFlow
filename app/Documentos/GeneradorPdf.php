@@ -10,8 +10,12 @@ declare(strict_types=1);
 
 namespace App\Documentos;
 
+use App\Models\Aceptacion;
+use App\Models\DocumentoLegal;
 use App\Models\Pago;
+use App\Models\RegistroLlegada;
 use App\Models\Reserva;
+use App\Paises\Paises;
 use App\Reservas\Cotizador;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -31,6 +35,25 @@ final class GeneradorPdf
         $reserva = $pago->reserva;
 
         return $this->pdf('documentos.recibo', $this->datos($reserva) + ['pago' => $pago], $reserva->idioma);
+    }
+
+    public function copiaAceptacion(Aceptacion $aceptacion, DocumentoLegal $documento, RegistroLlegada $registro): string
+    {
+        return $this->pdf('documentos.copia-aceptacion', ['aceptacion' => $aceptacion, 'documento' => $documento, 'registro' => $registro], $documento->idioma);
+    }
+
+    public function registroLlegada(RegistroLlegada $registro): string
+    {
+        $registro->loadMissing(['personas', 'reserva.unidad', 'propiedad']);
+        $pais = Paises::de($registro->propiedad);
+
+        return $this->pdf('documentos.registro-llegada', [
+            'registro' => $registro,
+            'reserva' => $registro->reserva,
+            'propiedad' => $registro->propiedad,
+            'tipos' => $pais->tiposDocumento(),
+            'campos' => $pais->camposLlegada(),
+        ], $registro->propiedad->idioma);
     }
 
     /**

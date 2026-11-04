@@ -12,6 +12,7 @@ use App\Http\Controllers\ActualizacionController;
 use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\CodigoFuenteController;
 use App\Http\Controllers\IcalController;
+use App\Http\Controllers\LlegadaController;
 use App\Http\Controllers\MotorReservasController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,17 +26,27 @@ Route::get('/codigo-fuente', CodigoFuenteController::class)
 // Calendario de una unidad para los portales: lo identifica un token, y solo lleva fechas.
 Route::get('/ical/{token}.ics', IcalController::class)->where('token', '[0-9a-f]{40}')->middleware('throttle:60,1')->name('ical.exportar');
 
+// Llegada en línea: lo identifica un token; el huésped no tiene cuenta.
+Route::prefix('llegada/{token}')->where(['token' => '[0-9a-f]{40}'])->name('llegada.')->middleware('throttle:publico')->group(function (): void {
+    Route::get('/', [LlegadaController::class, 'formulario'])->name('formulario');
+    Route::post('/', [LlegadaController::class, 'guardar'])->middleware('throttle:publico-envio')->name('guardar');
+    Route::get('/verificar', [LlegadaController::class, 'verificar'])->name('verificar');
+    Route::post('/verificar', [LlegadaController::class, 'comprobar'])->middleware('throttle:publico-envio')->name('comprobar');
+    Route::post('/reenviar', [LlegadaController::class, 'reenviar'])->middleware('throttle:publico-codigo')->name('reenviar');
+    Route::get('/listo', [LlegadaController::class, 'listo'])->name('listo');
+});
+
 // Archivos privados: solo con sesión y según el permiso de su clase.
 Route::get('/archivos/{archivo}', ArchivoController::class)->middleware(['auth', 'throttle:120,1'])->name('archivos.ver');
 
 // Motor de reservas: páginas públicas del alojamiento (D-042).
-Route::prefix('reservar/{codigo}')->name('motor.')->middleware('throttle:60,1')->group(function (): void {
+Route::prefix('reservar/{codigo}')->name('motor.')->middleware('throttle:publico')->group(function (): void {
     Route::get('/', [MotorReservasController::class, 'buscar'])->name('buscar');
     Route::get('/datos', [MotorReservasController::class, 'datos'])->name('datos');
-    Route::post('/', [MotorReservasController::class, 'reservar'])->middleware('throttle:10,1')->name('reservar');
+    Route::post('/', [MotorReservasController::class, 'reservar'])->middleware('throttle:publico-envio')->name('reservar');
     Route::get('/r/{publico}', [MotorReservasController::class, 'reserva'])->name('reserva');
     Route::get('/r/{publico}/confirmacion.pdf', [MotorReservasController::class, 'confirmacionPdf'])->name('pdf');
-    Route::post('/r/{publico}/pagar/{pasarela}', [MotorReservasController::class, 'pagar'])->middleware('throttle:10,1')->name('pagar');
+    Route::post('/r/{publico}/pagar/{pasarela}', [MotorReservasController::class, 'pagar'])->middleware('throttle:publico-envio')->name('pagar');
     Route::get('/r/{publico}/retorno/{pasarela}', [MotorReservasController::class, 'retorno'])->name('retorno');
 });
 Route::post('/avisos-pago/{codigo}/{pasarela}', [MotorReservasController::class, 'aviso'])->middleware('throttle:120,1')->name('motor.aviso');

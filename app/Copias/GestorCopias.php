@@ -93,9 +93,10 @@ class GestorCopias
 
         Ajustes::guardar('copias.ultima', ['nombre' => $nombre, 'en' => now('UTC')->toIso8601String(), 'origen' => $origen]);
         RegistroAuditoria::anotar('copia.crear', null, ['copia' => $nombre, 'origen' => $origen]);
-        $this->borrarAntiguas();
+        $tamano = (int) filesize($this->carpeta().'/'.$nombre);
+        $this->borrarAntiguas($nombre);
 
-        return ['nombre' => $nombre, 'tamano' => (int) filesize($this->carpeta().'/'.$nombre), 'tablas' => $tablas];
+        return ['nombre' => $nombre, 'tamano' => $tamano, 'tablas' => $tablas];
     }
 
     /**
@@ -183,11 +184,16 @@ class GestorCopias
         RegistroAuditoria::anotar('copia.restaurar', null, ['copia' => $nombre, 'seguridad' => $seguridad['nombre']]);
     }
 
-    public function borrarAntiguas(): int
+    /**
+     * @param  string|null  $recien  la copia recién creada cuenta, pero nunca se borra: dos copias en
+     *                               el mismo segundo no tienen un orden seguro
+     */
+    public function borrarAntiguas(?string $recien = null): int
     {
-        $conservar = max(1, (int) Ajustes::obtener('copias.conservar', self::CONSERVAR_POR_OMISION));
+        $conservar = max(1, (int) Ajustes::obtener('copias.conservar', self::CONSERVAR_POR_OMISION)) - ($recien === null ? 0 : 1);
+        $otras = array_values(array_filter($this->listar(), fn (array $copia): bool => $copia['nombre'] !== $recien));
         $borradas = 0;
-        foreach (array_slice($this->listar(), $conservar) as $copia) {
+        foreach (array_slice($otras, $conservar) as $copia) {
             File::delete($this->carpeta().'/'.$copia['nombre']);
             $borradas++;
         }

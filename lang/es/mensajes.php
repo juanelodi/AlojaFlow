@@ -31,7 +31,7 @@ return [
         'recordatorio' => [
             'nombre' => 'Recordatorio de llegada',
             'asunto' => 'Te esperamos en {propiedad}',
-            'cuerpo' => "Hola, {nombre}:\n\nYa falta poco para tu llegada, el {llegada}.\n\nPendiente de pago: {pendiente}\n\nSi tienes alguna duda, llámanos al {telefono_propiedad}.\n\n{propiedad}",
+            'cuerpo' => "Hola, {nombre}:\n\nYa falta poco para tu llegada, el {llegada}.\n\nPendiente de pago: {pendiente}\n\nAdelanta tu registro aquí: {enlace_llegada}\n\nSi tienes alguna duda, llámanos al {telefono_propiedad}.\n\n{propiedad}",
         ],
         'gracias' => [
             'nombre' => 'Gracias por tu visita',

@@ -34,6 +34,7 @@ class ViewReserva extends ViewRecord
             EditAction::make()->visible(fn (Reserva $record): bool => ReservaResource::canEdit($record)),
             AccionesReserva::reactivar(),
             ActionGroup::make([
+                AccionesReserva::enlaceLlegada(),
                 AccionesReserva::confirmacionPdf(),
                 AccionesReserva::deshacerRegistro(),
                 AccionesReserva::cancelar(),

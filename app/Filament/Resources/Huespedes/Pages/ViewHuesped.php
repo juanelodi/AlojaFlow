@@ -12,10 +12,14 @@ namespace App\Filament\Resources\Huespedes\Pages;
 
 use App\Filament\Resources\Huespedes\HuespedResource;
 use App\Models\Huesped;
+use App\Privacidad\GestorPrivacidad;
 use App\Reservas\FusionHuespedes;
+use App\Seguridad\Acceso;
 use Filament\Actions\Action;
+use Filament\Actions\Action as NotificationAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Icons\Heroicon;
@@ -29,6 +33,31 @@ class ViewHuesped extends ViewRecord
     {
         return [
             EditAction::make()->visible(fn (Huesped $record): bool => HuespedResource::canEdit($record)),
+            Action::make('exportarDatos')
+                ->label(__('llegada.privacidad.exportar'))
+                ->icon(Heroicon::OutlinedArrowDownTray)
+                ->color('gray')
+                ->requiresConfirmation()
+                ->modalDescription(__('llegada.privacidad.exportar_ayuda'))
+                ->visible(fn (Huesped $record): bool => Acceso::puede(Acceso::usuarioActual(), Acceso::HUESPEDES, $record->propiedad_id))
+                ->action(function (Huesped $record, GestorPrivacidad $privacidad): void {
+                    $archivo = $privacidad->exportar($record);
+                    Notification::make()->success()->persistent()->title(__('llegada.privacidad.exportado'))
+                        ->actions([NotificationAction::make('descargar')->label(__('llegada.privacidad.descargar'))->url(route('archivos.ver', $archivo), shouldOpenInNewTab: true)])->send();
+                }),
+            Action::make('anonimizar')
+                ->label(__('llegada.privacidad.anonimizar'))
+                ->icon(Heroicon::OutlinedEyeSlash)
+                ->color('danger')
+                ->outlined()
+                ->modalDescription(fn (Huesped $record): string => $record->sincronizada ? __('llegada.privacidad.anonimizar_ayuda_sub') : __('llegada.privacidad.anonimizar_ayuda'))
+                ->visible(fn (Huesped $record): bool => Acceso::puede(Acceso::usuarioActual(), Acceso::HUESPEDES, $record->propiedad_id))
+                ->schema([TextInput::make('confirmacion')->label(__('llegada.privacidad.confirmacion'))->required()->in([__('llegada.privacidad.palabra')])->autocomplete('off')])
+                ->action(function (Huesped $record, GestorPrivacidad $privacidad): void {
+                    $completa = $privacidad->anonimizar($record);
+                    Notification::make()->success()->title($completa ? __('llegada.privacidad.anonimizado_ok') : __('llegada.privacidad.anonimizado_sub'))->send();
+                    $this->redirect(static::getUrl(['record' => $record]));
+                }),
             Action::make('fusionar')
                 ->label(__('ui.huespedes.fusionar'))
                 ->icon(Heroicon::OutlinedArrowsPointingIn)

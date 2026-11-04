@@ -113,4 +113,27 @@ return [
         'bloqueo_reserva' => 'Portal and booking',
         'reserva_reserva' => 'Two bookings',
     ],
+
+    'TipoDocumentoLegal' => [
+        'aviso_privacidad' => 'Privacy notice',
+        'contrato' => 'Accommodation terms',
+        'reglamento' => 'House rules',
+        'politica_cancelacion' => 'Cancellation policy',
+    ],
+
+    'EstadoRegistroLlegada' => [
+        'pendiente' => 'Not finished',
+        'recibido' => 'To review',
+        'revisado' => 'Reviewed',
+    ],
+
+    'VerificacionAceptacion' => [
+        'casilla' => 'Box ticked',
+        'otp_correo' => 'Code by email',
+    ],
+
+    'TipoSolicitudPrivacidad' => [
+        'exportacion' => 'Export',
+        'anonimizacion' => 'Anonymization',
+    ],
 ];

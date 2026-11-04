@@ -336,6 +336,27 @@ solo hacia redes públicas con la IP fija, y un fallo de lectura conserva lo que
 tarda en propagarse y un portal puede fallar: una regla dura dejaría a recepción sin poder trabajar,
 y borrar bloqueos ante un error abriría dobles reservas.
 
+### D-047 · 2026-11-04 · Llegada en línea sin cuenta, documentos inmutables y datos personales con plazo
+El huésped entra con un enlace con token (D-022) que solo vale para su reserva y vence al día
+siguiente de su salida. Lo que manda se queda en tablas propias: en una subordinada nunca llega a la
+principal, y en una independiente pasa a las fichas solo si el personal lo decide. Número de documento,
+fotos, copias firmadas y exportaciones van cifrados.
+Publicar un documento legal fija su texto y su huella; un cambio es otra versión. Cada aceptación guarda
+la huella, la hora, la IP, cómo se verificó y un PDF de lo aceptado. El código por correo es opcional y
+necesita correo configurado; sin él basta la casilla, para no dejar a nadie sin poder registrarse. No
+hay OTP por WhatsApp ni SMS: necesitarían un proveedor de pago.
+Los plazos de §8 se aplican cada noche. Anonimizar respeta lo que viene de la principal: allá hay que
+hacerlo, y la pantalla lo dice. **Por qué:** es un dato personal delicado y la regla 12 pide guardar lo
+mínimo el menor tiempo.
+
+### D-048 · 2026-11-04 · Todo lo legal, detrás de un paquete de país
+`App\Paises\Pais` da tipos de documento, campos extra, plazos y textos de partida; `Paises::de()` es el
+único sitio que elige el paquete. México es el completo, con aviso de privacidad al estilo LFPDPPP y
+tarjeta de registro; España, Estados Unidos y Genérico son básicos y `legalRevisado()` dice que no. Los
+textos son de partida y **hay que revisarlos con un abogado** antes de publicarlos: la pantalla lo avisa.
+Sin `symfony/intl` (decenas de MB de datos para un selector): nacionalidad y país van como texto.
+No se envía nada a autoridades: SES.Hospedajes de España queda fuera, sin su tabla `envios_autoridad`.
+
 ---
 
 ## Pendientes

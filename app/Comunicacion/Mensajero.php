@@ -19,6 +19,7 @@ use App\Enums\NivelAviso;
 use App\Enums\TipoContacto;
 use App\Enums\TipoEventoReserva;
 use App\Enums\TipoReserva;
+use App\Llegada\GestorLlegadas;
 use App\Models\Automatizacion;
 use App\Models\Aviso;
 use App\Models\Envio;
@@ -220,10 +221,15 @@ final class Mensajero
     public static function textoDe(Plantilla $plantilla, Reserva $reserva, string $idioma): array
     {
         $variables = VariablesMensaje::de($reserva, $idioma);
+        $cuerpo = $plantilla->texto('cuerpo', $idioma);
+        // El enlace se crea solo si la plantilla lo usa: no hace falta uno por cada mensaje.
+        if (str_contains($cuerpo, '{enlace_llegada}')) {
+            $variables['enlace_llegada'] = app(GestorLlegadas::class)->urlDe($reserva, $idioma);
+        }
 
         return [
             'asunto' => VariablesMensaje::aplicar($plantilla->texto('asunto', $idioma), $variables),
-            'cuerpo' => VariablesMensaje::aplicar($plantilla->texto('cuerpo', $idioma), $variables),
+            'cuerpo' => VariablesMensaje::aplicar($cuerpo, $variables),
         ];
     }
 

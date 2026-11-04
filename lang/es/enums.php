@@ -113,4 +113,27 @@ return [
         'bloqueo_reserva' => 'Portal y reserva',
         'reserva_reserva' => 'Dos reservas',
     ],
+
+    'TipoDocumentoLegal' => [
+        'aviso_privacidad' => 'Aviso de privacidad',
+        'contrato' => 'Condiciones de hospedaje',
+        'reglamento' => 'Reglamento interno',
+        'politica_cancelacion' => 'Política de cancelación',
+    ],
+
+    'EstadoRegistroLlegada' => [
+        'pendiente' => 'Sin terminar',
+        'recibido' => 'Por revisar',
+        'revisado' => 'Revisado',
+    ],
+
+    'VerificacionAceptacion' => [
+        'casilla' => 'Casilla marcada',
+        'otp_correo' => 'Código por correo',
+    ],
+
+    'TipoSolicitudPrivacidad' => [
+        'exportacion' => 'Exportación',
+        'anonimizacion' => 'Anonimización',
+    ],
 ];

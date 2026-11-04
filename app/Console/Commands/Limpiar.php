@@ -16,6 +16,7 @@ use App\Models\Actualizacion;
 use App\Models\EjecucionSincronizacion;
 use App\Models\Envio;
 use App\Models\Principal;
+use App\Privacidad\GestorPrivacidad;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -29,7 +30,7 @@ class Limpiar extends Command
 
     protected $description = 'Borra los registros vencidos (ejecuciones de sincronización, copias de actualizaciones…)';
 
-    public function handle(Actualizador $actualizador): int
+    public function handle(Actualizador $actualizador, GestorPrivacidad $privacidad): int
     {
         $vigentes = Principal::query()->whereNotNull('ejecucion_vigente_id')->pluck('ejecucion_vigente_id');
         $borradas = EjecucionSincronizacion::query()
@@ -38,6 +39,9 @@ class Limpiar extends Command
             ->delete();
 
         $this->info("Ejecuciones de sincronización borradas: $borradas");
+
+        $vencidos = $privacidad->aplicarPlazos();
+        $this->info('Plazos de conservación: '.json_encode($vencidos));
 
         // El texto de los mensajes lleva datos personales: el historial se queda, el cuerpo no (§8).
         Envio::query()->whereNotNull('cuerpo')->where('creado_en', '<', now()->subDays(90))->whereNotIn('estado', [EstadoEnvio::Pendiente->value])->update(['cuerpo' => null]);

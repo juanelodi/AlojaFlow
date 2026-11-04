@@ -31,7 +31,7 @@ return [
         'recordatorio' => [
             'nombre' => 'Arrival reminder',
             'asunto' => 'We look forward to seeing you at {propiedad}',
-            'cuerpo' => "Hello {nombre},\n\nYour arrival on {llegada} is coming up soon.\n\nStill to pay: {pendiente}\n\nIf you have any questions, call {telefono_propiedad}.\n\n{propiedad}",
+            'cuerpo' => "Hello {nombre},\n\nYour arrival on {llegada} is coming up soon.\n\nStill to pay: {pendiente}\n\nComplete your check-in here: {enlace_llegada}\n\nIf you have any questions, call {telefono_propiedad}.\n\n{propiedad}",
         ],
         'gracias' => [
             'nombre' => 'Thank you for your visit',

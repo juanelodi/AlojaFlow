@@ -19,12 +19,15 @@ use App\Enums\ModoTarifa;
 use App\Enums\PaquetePais;
 use App\Enums\TipoContacto;
 use App\Enums\TipoCupon;
+use App\Enums\TipoDocumentoLegal;
 use App\Enums\TipoMovimiento;
 use App\Enums\TipoReserva;
+use App\Llegada\GestorDocumentosLegales;
 use App\Models\Caja;
 use App\Models\Canal;
 use App\Models\ConceptoCargo;
 use App\Models\Cupon;
+use App\Models\DocumentoLegal;
 use App\Models\Huesped;
 use App\Models\Impuesto;
 use App\Models\Movimiento;
@@ -188,6 +191,9 @@ final class GeneradorDemo
     {
         PlantillasBase::sembrar($propiedad);
         PlantillasBase::automatizacionesDemo($propiedad);
+        $documentos = app(GestorDocumentosLegales::class);
+        $documentos->crearBase($propiedad);
+        DocumentoLegal::query()->where('propiedad_id', $propiedad->id)->where('tipo', TipoDocumentoLegal::AvisoPrivacidad->value)->each(fn (DocumentoLegal $documento) => $documentos->publicar($documento));
     }
 
     private function crearCatalogosExtra(Propiedad $propiedad): void

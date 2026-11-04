@@ -19,6 +19,7 @@ use App\Enums\EstadoReserva;
 use App\Enums\FrecuenciaLimpieza;
 use App\Enums\TipoReserva;
 use App\Limpieza\GestorLimpieza;
+use App\Llegada\GestorLlegadas;
 use App\Models\Plantilla;
 use App\Models\ReglaLimpieza;
 use App\Models\Reserva;
@@ -57,6 +58,25 @@ final class AccionesReserva
     /**
      * Limpiezas fijas durante la estancia. Vale también en subordinadas: es un dato propio.
      */
+    public static function enlaceLlegada(): Action
+    {
+        return Action::make('enlaceLlegada')
+            ->label(__('llegada.panel.enlace'))
+            ->icon(Heroicon::OutlinedIdentification)
+            ->color('gray')
+            ->visible(fn (Reserva $record): bool => $record->tipo === TipoReserva::Reserva && $record->estado !== EstadoReserva::Cancelada && Acceso::puede(Acceso::usuarioActual(), Acceso::HUESPEDES, $record->propiedad_id))
+            ->modalHeading(__('llegada.panel.enlace'))
+            ->modalContent(function (Reserva $record) {
+                $idioma = Mensajero::idiomaDe($record);
+                $enlace = app(GestorLlegadas::class)->urlDe($record, $idioma);
+                $texto = __('llegada.panel.mensaje_whatsapp', ['nombre' => (string) ($record->titular->nombre ?? ''), 'propiedad' => $record->propiedad->nombre, 'enlace' => $enlace], $idioma);
+
+                return view('filament.modales.enlace-llegada', ['enlace' => $enlace, 'whatsapp' => VariablesMensaje::enlaceWhatsapp(Mensajero::telefonoDe($record), $texto)]);
+            })
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel(__('ui.comun.cerrar'));
+    }
+
     public static function mandarMensaje(): Action
     {
         return Action::make('mandarMensaje')

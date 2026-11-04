@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\TipoEnlace;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
@@ -77,7 +78,7 @@ class EnlacePublico extends ModeloBase
     /**
      * Crea un enlace con un token nuevo. Hay que darle después el objeto, si tiene.
      */
-    public static function nuevo(int $propiedadId, TipoEnlace $tipo, ?\Illuminate\Database\Eloquent\Model $objeto = null, ?Carbon $expiraEn = null): self
+    public static function nuevo(int $propiedadId, TipoEnlace $tipo, ?\Illuminate\Database\Eloquent\Model $objeto = null, ?CarbonInterface $expiraEn = null): self
     {
         $token = bin2hex(random_bytes(20));
         $enlace = new self([
