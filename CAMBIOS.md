@@ -2,6 +2,35 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.9 — 2026-11-04
+
+**El panel carga mucho más rápido en un teléfono con mala red.** En una instalación nueva, Hoy pasó de 56 a 99 puntos en Lighthouse móvil
+y de 9.8 a 1.5 s hasta el contenido principal. Con la red y la CPU limitadas de verdad, de 10.4 a 2.1 s, y de 2.5 a 0.8 s en las visitas
+siguientes. No cambia la base de datos. Cifras y método en `docs/rendimiento-movil.md`.
+
+**Lo que vas a notar**
+- En el teléfono, las pantallas sin formulario se ven en cuanto llega la página. Los botones pueden tardar un momento más en responder, hasta
+  que termina de cargar. Los formularios siguen esperando, para que no se pierda lo que escribas.
+- La primera vez, el texto puede dar un pequeño salto cuando llega la fuente.
+- El calendario pesa menos de la mitad y responde antes: con 40 unidades, de 1.4 MB a 0.5 MB. Un día ocupado ya no es un enlace, así que con
+  el teclado solo se pasa por los días libres.
+
+**Comprueba tu hosting.** Esto depende de que comprima, y casi todos pueden. Después de actualizar, este comando debe mostrar
+`content-encoding` y `immutable`; sin compresión todo funciona igual, solo que más lento:
+
+```bash
+curl -sI -H "Accept-Encoding: gzip" "https://tu-dominio/css/filament/filament/app.css?v=1" | grep -iE "content-encoding|cache-control"
+```
+
+**Por dentro**
+- `public/.htaccess` comprime con Brotli o gzip, y deja en caché un año lo que lleva versión en la dirección. Sin esos módulos, se ignora.
+- Livewire se sirve como archivo, sin arrancar PHP. Ya no se cargan `echo.js`, que nadie usaba, ni la precarga de la fuente.
+- Se midió el modo SPA de Filament y se descartó: la pantalla aparecía más tarde y, al volver atrás, enseñaba datos viejos (D-068).
+- El código fuente descargable incluye `public/.htaccess`.
+- Las pruebas ya no tocan los archivos, las copias ni las actualizaciones del equipo donde corren.
+
+**Sin verificar:** no se ha medido en DreamHost ni en un teléfono real.
+
 ## 1.0.8 — 2026-11-04
 
 Resultado de una auditoría completa de seguridad, rendimiento, accesibilidad y diseño (`docs/auditoria-2026-11.md`). No
