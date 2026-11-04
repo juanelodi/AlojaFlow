@@ -11,8 +11,31 @@ declare(strict_types=1);
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\File;
 
 abstract class TestCase extends BaseTestCase
 {
-    //
+    private string $almacenDePrueba;
+
+    /**
+     * Las pruebas corren de verdad lo que borra archivos (limpieza, reinicio de la demo, rotación de
+     * copias): cada una con su propio almacén, para no tocar los datos locales de este equipo.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->almacenDePrueba = storage_path('framework/testing/'.uniqid('almacen'));
+        // El modo de mantenimiento escribe aquí sin crear la carpeta.
+        File::ensureDirectoryExists($this->almacenDePrueba.'/framework');
+        $this->app->useStoragePath($this->almacenDePrueba);
+        config(['filesystems.disks.local.root' => storage_path('app/private')]);
+    }
+
+    protected function tearDown(): void
+    {
+        File::deleteDirectory($this->almacenDePrueba);
+
+        parent::tearDown();
+    }
 }

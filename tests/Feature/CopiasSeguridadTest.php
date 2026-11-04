@@ -26,19 +26,11 @@ use Livewire\Livewire;
 beforeEach(function () {
     $this->seed(RolesYPermisosSeeder::class);
     Filament::setCurrentPanel(Filament::getPanel('app'));
-    $this->carpetaOriginal = app()->storagePath();
-    $this->almacen = storage_path('framework/testing/'.uniqid('copias', true));
-    File::ensureDirectoryExists($this->almacen);
-    app()->useStoragePath($this->almacen);
     $this->copias = app(GestorCopias::class);
     $this->propiedad = Propiedad::query()->create(['nombre' => 'Posada', 'codigo' => 'posada', 'modo' => ModoPropiedad::Nativa, 'zona_horaria' => 'UTC', 'moneda' => 'MXN']);
 });
 
-afterEach(function () {
-    File::deleteDirectory($this->almacen);
-    app()->useStoragePath($this->carpetaOriginal);
-    Ajustes::olvidar();
-});
+afterEach(fn () => Ajustes::olvidar());
 
 function restaurable(): void
 {

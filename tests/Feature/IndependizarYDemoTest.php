@@ -202,8 +202,6 @@ describe('demostración pública', function () {
         while (DB::transactionLevel() > 0) {
             DB::rollBack();
         }
-        $marca = storage_path('app/private/demo-reinicio.txt');
-        @unlink($marca);
         try {
             Propiedad::query()->create(['nombre' => 'Basura', 'codigo' => 'basura', 'modo' => ModoPropiedad::Nativa, 'zona_horaria' => 'UTC', 'moneda' => 'MXN']);
 
@@ -217,7 +215,6 @@ describe('demostración pública', function () {
             $this->artisan('alojaflow:demo-reiniciar --si-toca')->assertSuccessful();
             expect(Propiedad::query()->where('codigo', 'basura')->exists())->toBeTrue();
         } finally {
-            @unlink($marca);
             // Las demás pruebas esperan una base vacía.
             Artisan::call('migrate:fresh', ['--force' => true]);
         }

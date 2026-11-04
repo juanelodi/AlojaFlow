@@ -268,9 +268,10 @@ npx license-checker --summary             # licencias npm
 - En `lang/`, una clave con punto (`'a.b' => 'x'`) está en el archivo pero `__()` no la encuentra y sale cruda: se anida.
 - Un campo de Filament sin `->label()` toma su etiqueta del identificador en español, en todos los idiomas, aunque
   lleve `hiddenLabel()` (la leen los lectores de pantalla y los mensajes de validación).
-- `TareasPorVisita::ejecutarPendientes()` corre las tareas de verdad, con la copia de seguridad, y `ProgramadorPorVisitas`
-  la llama en cuanto una prueba cambia `$this->app['env']`. Esas pruebas van con `app()->useStoragePath()` o
-  `withoutMiddleware()`: si no, dejan copias en el `storage/` del equipo y sacan de la rotación las de verdad.
+- Cada prueba tiene su propio `storage_path()` y su disco `local`, que se borran al terminar (`tests/TestCase.php`): las
+  tareas corren de verdad, y la limpieza, el reinicio de la demo y las copias borrarían los datos locales del equipo.
+- Una prueba que cambia `$this->app['env']` enciende `ProgramadorPorVisitas`: cada petición correría todas las tareas.
+  Esa prueba va con `withoutMiddleware(ProgramadorPorVisitas::class)`.
 
 ## Referencias locales (solo lectura)
 
