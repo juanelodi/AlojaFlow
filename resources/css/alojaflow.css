@@ -182,3 +182,7 @@
 
 /* Visible solo para lectores de pantalla */
 .af-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+/* Comandos para copiar */
+.af-comando { margin: .5rem 0; padding: .75rem; border-radius: .5rem; background: var(--gray-100); color: var(--gray-900); font-size: .8125rem; white-space: pre-wrap; word-break: break-all; }
+.dark .af-comando { background: var(--gray-950); color: var(--gray-100); }

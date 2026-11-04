@@ -1,0 +1,49 @@
+# AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Apache de Wamp con PHP 8.3 para probar el instalador como en un hosting real: lee .htaccess y el
+# dominio apunta a la carpeta de la instalación. No se instala ni va en los paquetes.
+# La arranca desarrollo/apache-prueba/arrancar.sh, que cambia los @@VALORES@@.
+ServerRoot "@@APACHE@@"
+Listen 127.0.0.1:@@PUERTO@@
+ServerName 127.0.0.1:@@PUERTO@@
+PidFile "@@TRABAJO@@/httpd.pid"
+ErrorLog "@@TRABAJO@@/error.log"
+
+LoadModule access_compat_module modules/mod_access_compat.so
+LoadModule actions_module modules/mod_actions.so
+LoadModule alias_module modules/mod_alias.so
+LoadModule authz_core_module modules/mod_authz_core.so
+LoadModule authz_host_module modules/mod_authz_host.so
+LoadModule dir_module modules/mod_dir.so
+LoadModule env_module modules/mod_env.so
+LoadModule log_config_module modules/mod_log_config.so
+LoadModule mime_module modules/mod_mime.so
+LoadModule negotiation_module modules/mod_negotiation.so
+LoadModule rewrite_module modules/mod_rewrite.so
+LoadModule setenvif_module modules/mod_setenvif.so
+
+PHPIniDir "@@PHP@@"
+LoadFile "@@PHP@@/php8ts.dll"
+LoadFile "@@PHP@@/libsodium.dll"
+LoadFile "@@PHP@@/libssh2.dll"
+LoadFile "@@PHP@@/libcrypto-3-x64.dll"
+LoadFile "@@PHP@@/libssl-3-x64.dll"
+LoadFile "@@PHP@@/libsqlite3.dll"
+LoadFile "@@PHP@@/nghttp2.dll"
+LoadModule php_module "@@PHP@@/php8apache2_4.dll"
+
+TypesConfig conf/mime.types
+AddType application/x-httpd-php .php
+DirectoryIndex index.php index.html
+
+<Directory />
+    AllowOverride None
+    Require all denied
+</Directory>
+
+DocumentRoot "@@RAIZ@@"
+<Directory "@@RAIZ@@">
+    Options FollowSymLinks
+    AllowOverride All
+    Require all granted
+</Directory>

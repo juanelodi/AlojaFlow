@@ -11,7 +11,7 @@ declare(strict_types=1);
 return [
 
     // Versión instalada; la usa el enlace «Código fuente» (regla 8).
-    'version' => '1.0.3',
+    'version' => '1.0.4',
 
     // Idiomas de la interfaz (regla 7). El español es la fuente.
     'idiomas' => ['es', 'en', 'fr', 'it', 'pt', 'de'],
@@ -46,7 +46,7 @@ return [
         // Copias (base de datos y archivos sustituidos) que se guardan: las de las últimas N.
         'copias_conservadas' => 3,
         // Requisitos mínimos de PHP que comprueba cada paquete además de los suyos.
-        'extensiones' => ['ctype', 'curl', 'fileinfo', 'intl', 'mbstring', 'openssl', 'pdo_mysql', 'sodium', 'tokenizer', 'xml', 'zip'],
+        'extensiones' => ['ctype', 'curl', 'dom', 'fileinfo', 'intl', 'mbstring', 'openssl', 'pdo_mysql', 'sodium', 'tokenizer', 'xml', 'zip', 'zlib'],
     ],
 
 ];

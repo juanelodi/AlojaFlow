@@ -1,0 +1,20 @@
+# AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Solo cuenta si la raíz web del dominio es esta carpeta (la instalación sencilla). Todo se envía a
+# public/, así que la configuración, el código y los datos de aquí nunca salen a internet. Si el
+# dominio ya apunta a public/, Apache ni siquiera lee este archivo.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # El instalador, mientras existe: se borra solo al terminar y no hace nada si ya se instaló.
+    RewriteRule ^instalar[^/]*\.php$ - [L]
+
+    RewriteRule ^$ public/index.php [L]
+    RewriteRule ^public/ - [L]
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Sin mod_rewrite no hay forma de proteger esta carpeta: mejor no servir nada.
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>

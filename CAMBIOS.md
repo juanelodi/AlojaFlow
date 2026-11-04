@@ -2,6 +2,25 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.4 — 2026-11-04
+
+Instalar AlojaFlow ya es subir un archivo y abrirlo en el navegador.
+
+**Instalador de un solo archivo:** `instalar-alojaflow-1.0.4.php` analiza el servidor, pide solo la
+base de datos y tu usuario, hace todo lo demás y se borra solo. Ya no hace falta apuntar el dominio a
+`public/` ni usar SSH, y funciona en la raíz de un dominio, en un subdominio o en una subcarpeta.
+
+**Copias de seguridad:** en **Sistema → Copias de seguridad**, crear, descargar, subir y restaurar
+copias completas, con una automática cada noche. Antes de restaurar se guarda el estado actual. Aparte
+se puede descargar el archivo de configuración, que lleva la llave de cifrado.
+
+**Sin cron también funciona:** las tareas programadas corren por turnos cuando alguien usa el sistema.
+
+**Estado del sistema y auditoría:** dos pantallas nuevas en **Sistema**: qué le falta a la instalación
+(con la línea del cron lista para copiar) y quién cambió qué.
+
+**Correcciones:** los mensajes de validación salen en español.
+
 ## 1.0.3 — 2026-11-04
 
 AlojaFlow también trabaja por su cuenta: al crear una propiedad eliges si es independiente o si

@@ -59,10 +59,47 @@ Tarda unos dos minutos.
 
 ## 2. Instalación desde cero
 
-Hasta que haya instalador web (§9):
+### 2.1 Con el instalador (lo normal)
+
+`alojaflow:empaquetar` deja también `dist/instalar-alojaflow-x.y.z.php`: **un solo archivo** con el
+instalador y el zip firmado dentro, después de `__halt_compiler` (plantilla:
+`instalador/instalar.php`).
+
+1. Se sube ese archivo a la carpeta del dominio o subdominio, y se abre en el navegador.
+2. **Revisa el servidor** y dice en lenguaje claro qué falta: PHP, extensiones, permisos, espacio,
+   memoria, límites, HTTPS, y si la carpeta ya tiene otros archivos. Lo rojo impide seguir.
+3. **Pide solo lo básico:** servidor, nombre, usuario y contraseña de la base, y nombre, correo y
+   contraseña del administrador. Antes de seguir prueba la conexión, la versión de la base, que esté
+   vacía y que el usuario pueda crear tablas.
+4. **Hace lo demás:** comprueba la firma, copia los archivos por tandas (no le afecta un límite de
+   30 segundos), escribe el `.env` con su `APP_KEY`, crea las tablas y al administrador, comprueba
+   que el sistema abre, muestra la línea del cron y se borra solo.
+
+**Dónde queda instalado.**
+
+- **El dominio apunta a la carpeta donde se subió** (lo más sencillo): la instalación queda ahí y el
+  `.htaccess` de la raíz manda todo a `public/`. El navegador comprueba que `composer.json`,
+  `.env.example` y `artisan` ya no se pueden abrir **antes de escribir el `.env`**. Si no están
+  protegidos (por ejemplo, en nginx), el instalador se detiene y pide apuntar el dominio a `public/`,
+  donde ya dejó una copia suya para continuar.
+- **El dominio ya apunta a una carpeta `public/`** vacía: la instalación va en la carpeta de arriba.
+- **Una subcarpeta** (`dominio.com/sistema/`) también funciona: `public/index.php` corrige la ruta.
+
+**Seguridad del instalador.**
+
+- Va sin sintaxis moderna: se puede leer en un PHP viejo para avisar de que es viejo.
+- Solo lo usa el navegador que lo abrió primero (cookie y candado en `.alojaflow-instalacion/`, que
+  caduca a las 6 horas).
+- No toca una instalación terminada (`storage/app/private/instalado.json`).
+- Solo extrae lo que lista el manifiesto firmado, y comprueba cada archivo.
+
+Para probarlo como en un hosting real: `desarrollo/apache-prueba/` arranca el Apache de Wamp, que sí
+lee `.htaccess`, y `probar-instalador.php` hace todo el recorrido.
+
+### 2.2 A mano
 
 1. Descomprimir el zip: su carpeta es la instalación. La raíz pública del dominio **debe** ser
-   `public/`; nunca la carpeta de la instalación, que tiene el `.env`.
+   `public/` o la carpeta de la instalación con su `.htaccess`.
 2. Crear la base MySQL 8 o MariaDB 10.6+ y el `.env` a partir de `.env.example`:
    - `APP_KEY`, con `php artisan key:generate`;
    - `APP_URL`;
@@ -73,6 +110,13 @@ Hasta que haya instalador web (§9):
 `manifiesto.json` y `manifiesto.firma` quedan en la raíz. La siguiente actualización los usa para
 saber qué archivos obsoletos puede borrar. Al primer arranque Laravel genera
 `bootstrap/cache/packages.php` solo; no hace falta `package:discover` ni `filament:assets`.
+
+### 2.3 El programador sin cron
+
+Las tareas programadas corren con el cron (`schedule:run`). Si no hay cron, o el hosting no lo
+permite, corren por turnos al terminar de atender una visita, como mucho una vez por minuto y con un
+tiempo máximo (`App\Programador\TareasPorVisita`, D-039). Cuando el cron da señales de vida, esto se
+apaga solo. **Sistema → Estado del sistema** dice cuál de los dos está funcionando.
 
 ## 3. Actualizar
 
@@ -232,10 +276,6 @@ Si alguna vez hace falta cambiarlo, la versión nueva tiene que aceptar las dos 
 
 ## 9. Pendiente
 
-- Instalador web para hosting sin SSH: comprobar requisitos, crear el `.env`, migrar y crear el
-  administrador.
 - Avisar en el panel de que hay una versión nueva y descargarla desde ahí, con la firma como
   garantía.
 - Publicar los zips firmados como *releases* de GitHub.
-- Copia de seguridad completa (base y archivos) desde el panel, también fuera de las
-  actualizaciones.

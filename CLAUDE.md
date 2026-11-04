@@ -112,7 +112,7 @@ spatie/laravel-permission 8, Pest 4, Larastan 3.
 | Panel de administración | Filament (gratuito) para catálogos y configuración; las pantallas operativas (calendario, «Hoy», limpieza…) y las públicas, propias con Livewire | MIT |
 | Autenticación y 2FA | La de Filament (inicio de sesión, perfil, app de códigos con códigos de recuperación). Sustituye a Fortify (D-026) | MIT |
 | Roles y permisos | spatie/laravel-permission | MIT |
-| Copias de seguridad | spatie/laravel-backup | MIT |
+| Copias de seguridad | Propias, sin `mysqldump` (`App\Copias`, D-038) | — |
 | Calendarios iCal (Airbnb, Booking, Vrbo) | sabre/vobject | BSD-3 |
 | PDF (facturas, contratos) | barryvdh/laravel-dompdf (dompdf) | MIT / LGPL-2.1 |
 | Pagos (más adelante) | SDK oficiales de Stripe / Mercado Pago (verificar licencia) | — |
@@ -191,6 +191,9 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   - `CopiaBaseDatos`, `Firma`, `Manifiesto` y `Rutas` (qué no toca nunca una actualización).
 - `app/Reservas/` — propiedades independientes: `GestorReservas` es el único que escribe reservas,
   noches y pagos propios, y `Cotizador` calcula el precio con la tarifa y sus temporadas.
+- `instalador/instalar.php` — plantilla del instalador de un solo archivo (D-040); sin sintaxis
+  moderna a propósito. `app/Instalacion/Instalador.php`, lo que hace dentro de la aplicación.
+- `app/Copias/GestorCopias.php` — copias de seguridad (D-038). `app/Programador/`, tareas sin cron (D-039).
 - `app/Demo/GeneradorDemo.php` — la propiedad de demostración con datos inventados (D-037).
 - `app/Models/` — modelos en español sobre `ModeloBase` (`creado_en`/`actualizado_en`). Las
   filas con `sincronizada = true` solo las cambia la sincronización
@@ -205,6 +208,7 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 - `tests/Support/ConstructorCopia.php` — genera copias sintéticas de HotelDruid para las pruebas;
   `ConstructorPaquete.php`, paquetes de versión firmados con una clave de prueba.
 - `desarrollo/` — no se instala ni va en los paquetes:
+  - `apache-prueba/`: Apache de Wamp que lee `.htaccess`, y la prueba de punta a punta del instalador;
   - `principal-simulada/`: principal falsa para demostraciones;
   - `servidor-instalacion.php`: sirve una instalación hecha desde el zip con límites de subida altos.
 

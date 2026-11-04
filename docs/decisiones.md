@@ -260,6 +260,24 @@ automatizaciones futuras no deben escribir a sus huéspedes. No crea un usuario 
 conocida, como la 1.2.x. **Por qué:** el usuario quiere probar sin riesgo, y una contraseña pública en
 una instalación que puede tener datos reales sería un riesgo.
 
+### D-038 · 2026-11-04 · Copias de seguridad propias, sin spatie/laravel-backup
+Zip con la base (`CopiaBaseDatos`, sin depender de `mysqldump`), los archivos subidos y una ficha.
+Se crean a mano o cada noche, se conservan las últimas 14 y se pueden restaurar desde el panel:
+antes se guarda el estado actual y, si falla, se vuelve a él. No llevan el `.env`; se descarga aparte
+con la contraseña. **Por qué:** en hosting compartido no suele haber `mysqldump`, y el paquete de
+spatie lo necesita. Sustituye a la dependencia prevista en CLAUDE.md.
+
+### D-039 · 2026-11-04 · Las tareas programadas también corren sin cron
+Si el cron no ha dado señales en 30 minutos, las tareas corren al terminar de atender una visita.
+**Por qué:** hay hostings sin cron o con mínimos de 10 minutos (DreamHost), y el usuario quiere que
+instalar sea lo más simple posible: el cron pasa a ser una mejora, no un requisito.
+
+### D-040 · 2026-11-04 · Instalador de un solo archivo
+`instalar-alojaflow-x.y.z.php` lleva dentro el zip firmado. Solo pide la base de datos y el
+administrador, analiza el servidor y se borra solo. Sustituye al instalador por pasos dentro de
+Laravel que preveía INICIO.md. **Por qué:** lo pidió el usuario: lo más sencillo posible. Un archivo
+evita subir 15 000 por FTP; la copia por tandas evita los límites de tiempo.
+
 ---
 
 ## Pendientes

@@ -1,4 +1,4 @@
-# Guía para probar AlojaFlow 1.0.3
+# Guía para probar AlojaFlow
 
 Versión de prueba para usar en tu equipo con Windows. Cada propiedad trabaja de una de dos formas:
 **independiente**, con AlojaFlow como su sistema, o **subordinada**, donde AlojaFlow lee los datos
@@ -21,8 +21,8 @@ de HotelDruid (o AlojaFlow 1.2.x) y **nunca escribe en él**.
 Para empezar una propiedad de verdad: **Propiedades → Crear** y elige **Independiente**. Luego da de
 alta las **Tarifas**, después las **Unidades** y ya puedes crear reservas.
 
-En una independiente, AlojaFlow tiene la **única copia** de los datos y todavía no hay copia de
-seguridad completa desde el panel: usa las copias de tu hosting antes de guardar datos reales.
+En una independiente, AlojaFlow tiene la **única copia** de los datos: descarga de vez en cuando una
+copia desde **Sistema → Copias de seguridad** y guárdala fuera del servidor.
 
 ## Qué trae esta versión
 
@@ -46,7 +46,6 @@ seguridad completa desde el panel: usa las copias de tu hosting antes de guardar
 - pantalla de cierre del día;
 - en las independientes: cargos adicionales, precios por persona o por semana, asignación automática de unidad, grupos, cupones, gastos y caja, documentos, y motor de reservas;
 - pasar una propiedad subordinada a independiente;
-- instalador web para hosting compartido ni copias de seguridad completas desde el panel.
 
 La interfaz está completa en español e inglés; en francés, italiano, portugués y alemán solo
 están traducidos los textos de Filament.

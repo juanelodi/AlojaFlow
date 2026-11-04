@@ -13,6 +13,14 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+// Instalación sencilla: el dominio apunta a la carpeta de arriba y su .htaccess lo manda todo aquí.
+// Las direcciones se calculan como si public/ no existiera, también dentro de una subcarpeta.
+$carpetaPublica = dirname((string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+if (str_ends_with($carpetaPublica, '/public') && ! str_starts_with((string) ($_SERVER['REQUEST_URI'] ?? ''), $carpetaPublica.'/')) {
+    $_SERVER['SCRIPT_NAME'] = substr($carpetaPublica, 0, -7).'/index.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+}
+
 // Determine if the application is in maintenance mode...
 if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
     require $maintenance;

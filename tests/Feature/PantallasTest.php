@@ -123,3 +123,15 @@ it('la interfaz sale en el idioma del usuario', function () {
 
     $this->actingAs($usuario)->get('/hoy')->assertOk()->assertSee('Arriving');
 });
+
+it('el administrador ve el estado del sistema y la auditoría; nadie más', function () {
+    $this->actingAs(usuarioCon(null, null, administrador: true));
+    $this->get('/estado-del-sistema')->assertOk()->assertSee('artisan schedule:run');
+    $this->get('/auditoria')->assertOk();
+});
+
+it('un gerente no ve el estado del sistema ni la auditoría', function () {
+    $this->actingAs(usuarioCon('gerente', $this->propiedades['Lago']));
+    $this->get('/estado-del-sistema')->assertForbidden();
+    $this->get('/auditoria')->assertForbidden();
+});

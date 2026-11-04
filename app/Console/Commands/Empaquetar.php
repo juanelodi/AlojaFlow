@@ -99,11 +99,13 @@ class Empaquetar extends Command
         $this->table(['', ''], [
             ['Zip', $resultado['zip']],
             ['SHA-256', $resultado['sha256']],
+            ['Instalador', $resultado['instalador']],
             ['Archivos', (string) $resultado['archivos']],
             ['Tamaño', Number::fileSize((int) filesize($resultado['zip']), 1).' (descomprimido '.Number::fileSize($resultado['bytes'], 1).')'],
         ]);
         $this->line('Para actualizar una instalación: súbelo en Sistema → '.__('actualizaciones.titulo').', o en su consola:');
         $this->line('  php artisan alojaflow:actualizar /ruta/a/'.basename($resultado['zip']));
+        $this->line('Para instalar desde cero: sube '.basename($resultado['instalador']).' al hosting y ábrelo en el navegador.');
 
         return self::SUCCESS;
     }

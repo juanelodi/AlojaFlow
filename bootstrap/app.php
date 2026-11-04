@@ -8,6 +8,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\ProgramadorPorVisitas;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // storage/framework/maintenance.php antes de arrancar Laravel (y ya va firmada).
         $middleware->preventRequestsDuringMaintenance(except: ['actualizaciones/*/aplicar', 'actualizaciones/*/finalizar']);
         $middleware->encryptCookies(except: ['laravel_maintenance']);
+        $middleware->append(ProgramadorPorVisitas::class);
         // Sin sesión, al inicio de sesión del panel.
         $middleware->redirectGuestsTo(fn () => route('filament.app.auth.login'));
     })
