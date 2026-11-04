@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Schedule;
 // tareas corren al usar el sistema: App\Programador\TareasPorVisita.
 Schedule::call(fn () => TareasPorVisita::anotarLatido())->name('latido')->everyMinute()->evenInMaintenanceMode();
 Schedule::command('alojaflow:sincronizar')->everyMinute()->withoutOverlapping(60);
+Schedule::command('alojaflow:reservas-vencidas')->everyFiveMinutes()->withoutOverlapping(10);
 Schedule::command('alojaflow:limpiar')->dailyAt('03:30');
 Schedule::command('alojaflow:copia --programada')->dailyAt('03:10')->withoutOverlapping(60);
 

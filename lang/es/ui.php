@@ -278,6 +278,8 @@ return [
         'mas_impuestos' => 'Incluye :importe de impuestos que se suman.',
         'impuestos_incluidos' => 'De los cuales :importe son impuestos incluidos.',
         'error_cancelada' => 'Esta reserva está cancelada.',
+        'confirmar' => 'Confirmar',
+        'confirmada_ok' => 'Reserva confirmada.',
     ],
 
     'huespedes' => [
@@ -371,6 +373,9 @@ return [
         'fin_semana' => 'Precio de viernes y sábado',
         'fin_semana_ayuda' => 'Déjalo vacío si cuesta igual toda la semana.',
         'estancia_minima' => 'Noches mínimas',
+        'visible_motor' => 'Se ofrece en el motor de reservas',
+        'descripcion_publica' => 'Descripción para el huésped',
+        'descripcion_publica_ayuda' => 'Se muestra en el motor de reservas: camas, vista, qué incluye…',
     ],
 
     'pagos' => [
@@ -407,6 +412,7 @@ return [
         'documento' => 'Identificación',
         'caja' => 'Recepción',
         'cupon' => '10 % de descuento de bienvenida',
+        'instrucciones_pago' => 'Datos de ejemplo: transfiere a la cuenta 000 000 000 y manda el comprobante a hotel@example.com.',
     ],
 
     'usuarios' => [

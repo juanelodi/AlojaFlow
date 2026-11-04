@@ -278,6 +278,8 @@ return [
         'mas_impuestos' => 'Includes :importe in added taxes.',
         'impuestos_incluidos' => 'Of which :importe are included taxes.',
         'error_cancelada' => 'This booking is cancelled.',
+        'confirmar' => 'Confirm',
+        'confirmada_ok' => 'Booking confirmed.',
     ],
 
     'huespedes' => [
@@ -371,6 +373,9 @@ return [
         'fin_semana' => 'Friday and Saturday price',
         'fin_semana_ayuda' => 'Leave empty if it costs the same all week.',
         'estancia_minima' => 'Minimum nights',
+        'visible_motor' => 'Offered in the booking engine',
+        'descripcion_publica' => 'Description for guests',
+        'descripcion_publica_ayuda' => 'Shown in the booking engine: beds, view, what is included…',
     ],
 
     'pagos' => [
@@ -407,6 +412,7 @@ return [
         'documento' => 'ID',
         'caja' => 'Front desk',
         'cupon' => '10% welcome discount',
+        'instrucciones_pago' => 'Sample details: transfer to account 000 000 000 and send the receipt to hotel@example.com.',
     ],
 
     'usuarios' => [

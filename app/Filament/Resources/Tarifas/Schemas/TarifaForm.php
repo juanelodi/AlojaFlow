@@ -17,6 +17,7 @@ use App\Models\Propiedad;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -56,6 +57,8 @@ class TarifaForm
                         ->dehydrateStateUsing(fn (mixed $state, Get $get): ?int => blank($state) ? null : \App\Support\Dinero::aUnidadMenor((string) $state, CampoDinero::moneda($get('propiedad_id')))),
                     TextInput::make('estancia_minima')->label(__('ui.tarifas.estancia_minima'))->numeric()->minValue(1)->default(1)->required(),
                     Toggle::make('activa')->label(__('ui.tarifas.activa'))->helperText(__('ui.tarifas.activa_ayuda'))->default(true),
+                    Toggle::make('visible_motor')->label(__('ui.tarifas.visible_motor'))->default(true),
+                    Textarea::make('descripcion_publica')->label(__('ui.tarifas.descripcion_publica'))->helperText(__('ui.tarifas.descripcion_publica_ayuda'))->rows(2)->maxLength(1000)->columnSpanFull(),
                 ]),
             Section::make(__('ui.tarifas.temporadas'))->columnSpanFull()
                 ->description(__('ui.tarifas.temporadas_ayuda'))

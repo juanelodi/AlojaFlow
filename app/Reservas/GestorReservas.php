@@ -185,6 +185,29 @@ final class GestorReservas
         });
     }
 
+    /**
+     * Confirma una reserva sin confirmar y quita su retención.
+     */
+    public function confirmar(Reserva $reserva): Reserva
+    {
+        return DB::transaction(function () use ($reserva): Reserva {
+            $actual = $this->bloquear($reserva);
+            if ($actual->estado === EstadoReserva::Cancelada) {
+                throw new ReservaRechazada(__('ui.reservas.error_cancelada'));
+            }
+            $yaEstaba = $actual->estado === EstadoReserva::Confirmada;
+            $actual->estado = EstadoReserva::Confirmada;
+            $actual->expira_en = null;
+            $actual->version++;
+            $actual->save();
+            if (! $yaEstaba) {
+                $this->anotar($actual, TipoEventoReserva::Modificada, 'reserva.confirmar', ['accion' => 'confirmar']);
+            }
+
+            return $actual;
+        });
+    }
+
     public function registrarEntrada(Reserva $reserva): Reserva
     {
         return DB::transaction(function () use ($reserva): Reserva {

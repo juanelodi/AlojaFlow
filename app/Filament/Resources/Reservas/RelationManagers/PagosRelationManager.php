@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Reservas\RelationManagers;
 
+use App\Documentos\GeneradorPdf;
 use App\Enums\MetodoPago;
 use App\Enums\TipoReserva;
 use App\Filament\Resources\Reservas\ReservaResource;
@@ -31,6 +32,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Cobros y devoluciones de una reserva propia. Los recalcula GestorReservas: reservas.pagado es
@@ -73,7 +75,7 @@ class PagosRelationManager extends RelationManager
             ])
             ->emptyStateHeading(__('ui.pagos.vacio'))
             ->headerActions([$this->accionRegistrar()])
-            ->recordActions([$this->accionQuitar()]);
+            ->recordActions([$this->accionRecibo(), $this->accionQuitar()]);
     }
 
     private function reserva(): Reserva
@@ -127,6 +129,21 @@ class PagosRelationManager extends RelationManager
                 }
                 Notification::make()->success()->title(__('ui.pagos.registrado'))->send();
                 $this->redirect(ReservaResource::getUrl('view', ['record' => $reserva]));
+            });
+    }
+
+    private function accionRecibo(): Action
+    {
+        return Action::make('reciboPdf')
+            ->label(__('documentos.descargar_recibo'))
+            ->icon(Heroicon::OutlinedDocumentArrowDown)
+            ->color('gray')
+            ->action(function (Pago $record): StreamedResponse {
+                abort_unless($record->reserva_id === $this->reserva()->id, 404);
+
+                return response()->streamDownload(function () use ($record): void {
+                    echo app(GeneradorPdf::class)->recibo($record);
+                }, 'recibo-'.$record->id.'.pdf', ['Content-Type' => 'application/pdf']);
             });
     }
 

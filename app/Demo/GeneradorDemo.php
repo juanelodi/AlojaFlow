@@ -110,6 +110,7 @@ final class GeneradorDemo
                 'idioma' => 'es',
                 'activa' => true,
                 'es_demo' => true,
+                'ajustes' => ['motor' => ['activo' => true, 'anticipo_porcentaje' => 30, 'instrucciones' => __('ui.demo.instrucciones_pago')]],
             ]);
             $unidades = $this->crearCatalogo($propiedad);
             $this->crearCatalogosExtra($propiedad);

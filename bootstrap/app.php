@@ -27,6 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->preventRequestsDuringMaintenance(except: ['actualizaciones/*/aplicar', 'actualizaciones/*/finalizar']);
         $middleware->encryptCookies(except: ['laravel_maintenance']);
         $middleware->append(ProgramadorPorVisitas::class);
+        // El motor de reservas no da permisos por sesión y debe funcionar dentro de un iframe; los
+        // avisos de pago llegan de la pasarela y se comprueban con su firma.
+        $middleware->validateCsrfTokens(except: ['reservar/*', 'avisos-pago/*']);
         // Sin sesión, al inicio de sesión del panel.
         $middleware->redirectGuestsTo(fn () => route('filament.app.auth.login'));
     })

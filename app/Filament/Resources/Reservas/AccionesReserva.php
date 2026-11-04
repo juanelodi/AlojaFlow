@@ -37,6 +37,16 @@ final class AccionesReserva
             ->action(fn (Reserva $record) => self::ejecutar($record, fn (GestorReservas $g) => $g->registrarEntrada($record), __('ui.reservas.entrada_ok')));
     }
 
+    public static function confirmar(): Action
+    {
+        return Action::make('confirmar')
+            ->label(__('ui.reservas.confirmar'))
+            ->icon(Heroicon::OutlinedCheckBadge)
+            ->color('success')
+            ->visible(fn (Reserva $record): bool => self::gestionable($record) && $record->estado === EstadoReserva::SinConfirmar)
+            ->action(fn (Reserva $record) => self::ejecutar($record, fn (GestorReservas $g) => $g->confirmar($record), __('ui.reservas.confirmada_ok')));
+    }
+
     public static function salida(): Action
     {
         return Action::make('registrarSalida')

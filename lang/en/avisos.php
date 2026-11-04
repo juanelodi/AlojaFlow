@@ -11,5 +11,7 @@ declare(strict_types=1);
 return [
     'sincronizacion_fallida' => 'Synchronisation with the main installation is failing (:codigo): :mensaje',
     'principal_sin_inicio_sesion' => 'The main installation :url does not require login: anyone who knows the address can download its data backup. Enable login in HotelDruid (Configure → Users).',
+    'pago_no_coincide' => 'An online charge for booking :reserva does not match the expected amount. Check it in your gateway account.',
+    'pago_sin_lugar' => 'An online payment was received for booking :reserva, but its nights had already been sold. Resolve it with the guest.',
     'copia_no_borrada' => 'The backup could not be deleted from the main installation; it remains in its dati/ folder. Check that folder’s permissions.',
 ];

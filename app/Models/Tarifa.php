@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $precio_persona_extra
  * @property int|null $precio_fin_semana
  * @property int $estancia_minima
+ * @property string|null $descripcion_publica
+ * @property bool $visible_motor
  * @property bool $activa
  * @property-read Propiedad $propiedad
  * @property-read \Illuminate\Database\Eloquent\Collection<int, TemporadaTarifa> $temporadas
@@ -45,6 +47,7 @@ class Tarifa extends ModeloBase
             'precio_persona_extra' => 'integer',
             'precio_fin_semana' => 'integer',
             'estancia_minima' => 'integer',
+            'visible_motor' => 'boolean',
             'activa' => 'boolean',
         ];
     }

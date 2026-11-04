@@ -1,0 +1,30 @@
+<?php
+
+/*
+ * AlojaFlow — sistema de gestión de alojamientos
+ * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+declare(strict_types=1);
+
+namespace App\Motor;
+
+use App\Models\Tarifa;
+use App\Reservas\Presupuesto;
+
+/**
+ * Lo que se puede reservar para unas fechas: una tarifa con unidades libres y su precio.
+ */
+final readonly class Oferta
+{
+    public function __construct(
+        public Tarifa $tarifa,
+        public int $libres,
+        public int $capacidad,
+        public Presupuesto $presupuesto,
+        public int $estanciaMinima,
+        public bool $cumpleEstancia,
+    ) {
+    }
+}

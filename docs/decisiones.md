@@ -278,6 +278,29 @@ administrador, analiza el servidor y se borra solo. Sustituye al instalador por 
 Laravel que preveía INICIO.md. **Por qué:** lo pidió el usuario: lo más sencillo posible. Un archivo
 evita subir 15 000 por FTP; la copia por tandas evita los límites de tiempo.
 
+### D-041 · 2026-11-04 · Tarifas completas y dinero de las propiedades independientes
+Revisa D-036: cada tarifa elige si cobra por noche con persona extra o por persona, y puede tener
+precio de fin de semana, estancia mínima y temporadas con esos mismos campos. El presupuesto
+(`App\Reservas\Cotizador`) suma alojamiento, cargos, descuentos e impuestos, y guarda en
+`reservas_cargos` el nombre y el importe de cada cargo: un cambio de catálogo no toca lo ya vendido.
+**Por qué:** lo decidió el usuario («cada tarifa elige»); un motor de reservas no puede vender
+sin este cálculo. Los impuestos pueden ir incluidos en el precio o sumarse.
+
+### D-042 · 2026-11-04 · Motor de reservas sin sesión y con la página de pago de la pasarela
+Páginas públicas en Blade con CSS propio, sin Livewire ni JavaScript obligatorio. Los errores se
+muestran en la misma respuesta y los avisos van en la dirección, porque dentro de un iframe de otro
+sitio no hay cookies; por eso esas rutas no llevan CSRF (no dan permisos: quien las usa solo puede
+pedir una reserva para sí, y tienen límite de peticiones y campo trampa). Se vende por tarifa y el
+sistema asigna la unidad. Con pasarela, la reserva se retiene `minutos_retencion` y
+`alojaflow:reservas-vencidas` libera las que no se pagan.
+Stripe Checkout y Mercado Pago Checkout Pro por su API REST, sin SDK: los datos de la tarjeta nunca
+pasan por aquí. Solo cuenta lo que confirma la pasarela (su API o un aviso con firma válida), se
+comprueban importe y moneda, y anotar el pago es idempotente. Si el pago llega tarde y las noches ya
+se vendieron, se abre un aviso para que el alojamiento lo resuelva. **Por qué:** lo pidió el usuario;
+una pasarela con SDK agrega peso y el hosting compartido no siempre lo soporta.
+**Sin verificar con cuentas reales:** solo se ha probado con respuestas simuladas, según la
+documentación de cada pasarela. Hay que hacer un cobro de prueba con llaves de prueba antes de usarlo.
+
 ---
 
 ## Pendientes

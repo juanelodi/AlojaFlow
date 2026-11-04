@@ -26,6 +26,7 @@ class ViewReserva extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            AccionesReserva::confirmar(),
             AccionesReserva::entrada(),
             AccionesReserva::salida(),
             EditAction::make()->visible(fn (Reserva $record): bool => ReservaResource::canEdit($record)),

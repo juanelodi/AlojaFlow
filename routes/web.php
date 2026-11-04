@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\ActualizacionController;
 use App\Http\Controllers\CodigoFuenteController;
+use App\Http\Controllers\MotorReservasController;
 use Illuminate\Support\Facades\Route;
 
 // La aplicación vive en el panel de Filament (raíz «/»). Aquí solo van las rutas que no son del panel.
@@ -18,6 +19,18 @@ use Illuminate\Support\Facades\Route;
 Route::get('/codigo-fuente', CodigoFuenteController::class)
     ->middleware('throttle:10,1')
     ->name('codigo-fuente');
+
+// Motor de reservas: páginas públicas del alojamiento (D-042).
+Route::prefix('reservar/{codigo}')->name('motor.')->middleware('throttle:60,1')->group(function (): void {
+    Route::get('/', [MotorReservasController::class, 'buscar'])->name('buscar');
+    Route::get('/datos', [MotorReservasController::class, 'datos'])->name('datos');
+    Route::post('/', [MotorReservasController::class, 'reservar'])->middleware('throttle:10,1')->name('reservar');
+    Route::get('/r/{publico}', [MotorReservasController::class, 'reserva'])->name('reserva');
+    Route::get('/r/{publico}/confirmacion.pdf', [MotorReservasController::class, 'confirmacionPdf'])->name('pdf');
+    Route::post('/r/{publico}/pagar/{pasarela}', [MotorReservasController::class, 'pagar'])->middleware('throttle:10,1')->name('pagar');
+    Route::get('/r/{publico}/retorno/{pasarela}', [MotorReservasController::class, 'retorno'])->name('retorno');
+});
+Route::post('/avisos-pago/{codigo}/{pasarela}', [MotorReservasController::class, 'aviso'])->middleware('throttle:120,1')->name('motor.aviso');
 
 // Fases de una actualización desde el panel (instalacion-actualizaciones.md). Firmadas y solo
 // para administradores (lo comprueba el controlador).

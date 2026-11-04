@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $zona_horaria
  * @property string $moneda
  * @property string $idioma
+ * @property array<string, mixed>|null $ajustes
  * @property bool $activa
  * @property bool $es_demo
  * @property int $consecutivo_reserva
