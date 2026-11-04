@@ -12,6 +12,7 @@ use App\Enums\EstadoReserva;
 use App\Enums\ModoPropiedad;
 use App\Models\Aviso;
 use App\Models\Cupon;
+use App\Models\Huesped;
 use App\Models\PagoEnLinea;
 use App\Models\Propiedad;
 use App\Models\Reserva;
@@ -127,6 +128,32 @@ describe('reservas anónimas', function () {
         expect(fn () => $motor->reservar($this->propiedad, ($this->datos)(['correo' => 'otra@example.com', 'llegada' => ($this->fecha)(90), 'salida' => ($this->fecha)(91)])))
             ->toThrow(ReservaRechazada::class, __('motor.error.saturado'));
         expect(Aviso::query()->where('tipo', 'motor_saturado')->whereNull('resuelto_en')->count())->toBe(1);
+    });
+
+    it('las reservas que carga el personal no detienen el motor', function () {
+        $gestor = app(GestorReservas::class);
+        foreach (range(1, 30) as $i) {
+            $huesped = Huesped::query()->create(['propiedad_id' => $this->propiedad->id, 'nombre' => "H$i"]);
+            $gestor->crear($this->propiedad, ['unidad_id' => $this->unidad->id, 'titular_id' => $huesped->id, 'llegada' => ($this->fecha)($i * 2), 'salida' => ($this->fecha)($i * 2 + 1), 'personas' => 1, 'estado' => EstadoReserva::Confirmada->value, 'total' => 1000, 'cargos' => []]);
+        }
+
+        expect(app(MotorReservas::class)->reservar($this->propiedad, ($this->datos)(['llegada' => ($this->fecha)(90), 'salida' => ($this->fecha)(91)]))->exists)->toBeTrue();
+    });
+
+    it('reactivar quita la caducidad, y quien ya llegó no vence', function () {
+        $motor = app(MotorReservas::class);
+        $gestor = app(GestorReservas::class);
+        $reactivada = $motor->reservar($this->propiedad, ($this->datos)());
+        $enCasa = $motor->reservar($this->propiedad, ($this->datos)(['llegada' => $this->hoy->format('Y-m-d'), 'salida' => ($this->fecha)(3)]));
+        $gestor->registrarEntrada($enCasa);
+
+        $this->travel(49)->hours();
+        $this->artisan('alojaflow:reservas-vencidas')->assertSuccessful();
+        expect($reactivada->refresh()->estado)->toBe(EstadoReserva::Cancelada)->and($enCasa->refresh()->estado)->not->toBe(EstadoReserva::Cancelada);
+
+        $gestor->reactivar($reactivada);
+        $this->artisan('alojaflow:reservas-vencidas')->assertSuccessful();
+        expect($reactivada->refresh()->estado)->toBe(EstadoReserva::SinConfirmar);
     });
 
     it('limita por dirección los envíos del formulario', function () {

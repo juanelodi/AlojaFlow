@@ -364,7 +364,8 @@ Una fila por cada fila conservada de la copia (C1 de `subordinacion.md`):
 
 - **Columnas:** `id`, `principal_id`, `ejecucion_id`, `tabla` (nombre base: `prenota`,
   `clienti`…), `anio` (solo en las tablas por año) y `datos` (JSON con las columnas de HotelDruid
-  **como texto**, sin convertir). Las conversiones se hacen al proyectar.
+  **como texto**, sin convertir, cifrado con la llave de la aplicación: D-059). Las conversiones se hacen al
+  proyectar. No entra en las copias de seguridad.
 - **Índice:** (`ejecucion_id`, `tabla`, `anio`). La proyección lee tabla por tabla, en el orden de
   la copia.
 - No depende de las columnas de cada versión de HotelDruid (3.08 y 3.081 difieren).

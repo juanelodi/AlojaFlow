@@ -148,7 +148,8 @@ it('una copia con SQL que AlojaFlow no escribe no se ejecuta', function () {
     $copia = $this->copias->crear();
     $temporal = (string) tempnam(sys_get_temp_dir(), 'af-sql');
     $salida = gzopen($temporal, 'wb');
-    gzwrite($salida, "SET NAMES utf8mb4;\nCREATE USER 'intruso'@'%' IDENTIFIED BY 'x';\n");
+    // Primero lo permitido y, en la misma línea, lo que no: una lista de inicios de sentencia no bastaría.
+    gzwrite($salida, "SET NAMES utf8mb4; DROP TABLE propiedades;\nSET NAMES utf8mb4;\n");
     gzclose($salida);
     $zip = new ZipArchive();
     $zip->open($this->copias->ruta($copia['nombre']));

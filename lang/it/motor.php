@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 return [
     'titulo' => 'Prenota il tuo soggiorno',
+    'meta_descripcion' => 'Prenota direttamente da :propiedad: consulta date e prezzi online.',
     'idioma' => 'Lingua',
     'buscar' => 'Cerca',
     'reservar' => 'Prenota',

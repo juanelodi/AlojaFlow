@@ -183,6 +183,8 @@ final class GestorReservas
                 return $actual;
             }
             $actual->estado = $actual->tipo === TipoReserva::Bloqueo ? EstadoReserva::Confirmada : EstadoReserva::SinConfirmar;
+            // Si no, la tarea de vencidas la volvería a cancelar en su siguiente corrida.
+            $actual->expira_en = null;
             $actual->version++;
             $actual->save();
             $this->ocuparNoches($actual);

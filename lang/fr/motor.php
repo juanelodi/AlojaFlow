@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 return [
     'titulo' => 'Réservez votre séjour',
+    'meta_descripcion' => 'Réservez directement chez :propiedad : consultez les dates et les prix en ligne.',
     'idioma' => 'Langue',
     'buscar' => 'Rechercher',
     'reservar' => 'Réserver',

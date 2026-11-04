@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 return [
     'titulo' => 'Buchen Sie Ihren Aufenthalt',
+    'meta_descripcion' => 'Buchen Sie direkt bei :propiedad: Termine und Preise online ansehen.',
     'idioma' => 'Sprache',
     'buscar' => 'Suchen',
     'reservar' => 'Buchen',

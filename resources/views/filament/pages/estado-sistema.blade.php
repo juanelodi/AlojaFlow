@@ -25,7 +25,7 @@
         {{-- Lo pide el navegador, como lo pediría cualquiera desde fuera: desde el servidor, muchos hosting no se ven a sí mismos. --}}
         <x-filament::section :heading="__('ui.estado.expuestos_titulo')">
             <div x-data="{ estado: 'revisando', expuestos: [] }"
-                 x-init="Promise.all(['.env', 'composer.json', 'artisan', 'storage/logs/laravel.log', 'vendor/autoload.php'].map((ruta) => fetch(@js(url('/').'/') + ruta + '?comprobar=' + Date.now(), { credentials: 'omit', cache: 'no-store' }).then((r) => (r.ok && ! r.redirected) ? ruta : null).catch(() => null))).then((rutas) => { expuestos = rutas.filter(Boolean); estado = expuestos.length ? 'mal' : 'bien'; })">
+                 x-init="Promise.all(['.env', 'composer.json', 'artisan', 'storage/app/private/instalado.json', 'vendor/autoload.php'].map((ruta) => fetch(@js(url('/').'/') + ruta + '?comprobar=' + Date.now(), { credentials: 'omit', cache: 'no-store' }).then((r) => (r.ok && ! r.redirected) ? ruta : null).catch(() => null))).then((rutas) => { expuestos = rutas.filter(Boolean); estado = expuestos.length ? 'mal' : 'bien'; })">
                 <p class="af-prosa" x-show="estado === 'revisando'">{{ __('ui.estado.expuestos_revisando') }}</p>
                 <p class="af-prosa" x-show="estado === 'bien'" x-cloak>{{ __('ui.estado.expuestos_bien') }}</p>
                 <p class="af-aviso af-aviso--error" role="alert" x-show="estado === 'mal'" x-cloak>

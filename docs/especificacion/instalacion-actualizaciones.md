@@ -190,7 +190,8 @@ Cada fase es una petición firmada, solo para administradores y exenta del modo 
 **Fase 2, finalizar** (código nuevo, `GET /actualizaciones/{id}/finalizar`):
 
 1. `package:discover` y `migrate --force`.
-2. Se borran las cachés de configuración, rutas, eventos, vistas y componentes de Filament.
+2. Se borran las cachés de configuración, rutas, eventos, vistas y componentes de Filament, y al terminar se vuelven a
+   crear las de arranque (D-060).
 3. El manifiesto firmado se copia a la raíz y el zip sale de la carpeta de entrada.
 4. Fin del mantenimiento (`up`) y estado `completada`.
 

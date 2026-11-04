@@ -51,10 +51,11 @@ class PropiedadForm
                                 $set('codigo', Str::limit(Str::slug((string) $state), 40, ''));
                             }
                         }),
-                    Select::make('pais')->label(__('ui.propiedades.pais'))->helperText(__('ui.propiedades.pais_ayuda'))
+                    Select::make('pais')->label(__('ui.propiedades.pais'))->helperText(fn (string $operation): ?string => $operation === 'create' ? __('ui.propiedades.pais_ayuda') : null)
                         ->options(fn (): array => CatalogoPaises::opciones())->searchable()->native(false)->default('MX')->live()
-                        ->afterStateUpdated(function (Set $set, ?string $state): void {
-                            if (filled($state)) {
+                        ->afterStateUpdated(function (Set $set, ?string $state, string $operation): void {
+                            // Solo al crear: en una propiedad con reservas, cambiar la moneda sin avisar sería un error grave.
+                            if ($operation === 'create' && filled($state)) {
                                 foreach (CatalogoPaises::valoresDe($state) as $campo => $valor) {
                                     $set($campo, $valor);
                                 }

@@ -233,7 +233,9 @@ final class MotorReservas
         if ($delCorreo >= self::VIGENTES_POR_CORREO) {
             throw new ReservaRechazada(__('motor.error.demasiadas'));
         }
-        if ((clone $vigentes)->where('creado_en', '>=', now('UTC')->subHour())->count() >= self::NUEVAS_POR_HORA) {
+        // Solo las del formulario: recepción puede cargar un grupo entero sin detener el motor.
+        $delMotor = array_map(fn (string $idioma): string => __('motor.origen', [], $idioma), (array) config('alojaflow.idiomas'));
+        if ((clone $vigentes)->whereIn('origen_texto', $delMotor)->where('creado_en', '>=', now('UTC')->subHour())->count() >= self::NUEVAS_POR_HORA) {
             Aviso::abrir($propiedad->id, 'motor_saturado', NivelAviso::Advertencia);
             throw new ReservaRechazada(__('motor.error.saturado'));
         }

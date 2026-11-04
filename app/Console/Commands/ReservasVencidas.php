@@ -29,7 +29,7 @@ class ReservasVencidas extends Command
     {
         $canceladas = 0;
         Reserva::query()->whereNotNull('expira_en')->where('expira_en', '<', now('UTC'))
-            ->where('estado', EstadoReserva::SinConfirmar->value)->where('pagado', 0)
+            ->where('estado', EstadoReserva::SinConfirmar->value)->where('pagado', 0)->whereNull('entrada_registrada_en')
             ->each(function (Reserva $reserva) use ($gestor, &$canceladas): void {
                 try {
                     $gestor->cancelar($reserva, porVencimiento: true);

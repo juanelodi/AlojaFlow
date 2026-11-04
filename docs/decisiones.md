@@ -445,8 +445,8 @@ cachés: `bootstrap/app.php` descarta la configuración guardada si `.env` es m�
 Con 39 entradas en cuatro grupos, Configuración y Operación ya no se leían. Ahora son Operación, Reservas, Dinero,
 Comunicación, Configuración y Sistema, con los tres últimos plegados de inicio. Los botones ya usan `#0F766E`: Filament
 pinta con el tono 600, y el generado a partir del hexadecimal no daba contraste con el blanco, así que caía al 400 con
-texto oscuro. La paleta es el teal de Tailwind recorrido un tono. Las franjas de color en un costado se cambiaron por una
-franja superior en Limpieza y una marca dentro de la barra en el calendario.
+texto oscuro. La paleta es el teal de Tailwind recorrido un tono. Las franjas de color de las tarjetas y del calendario se cambiaron por una
+marca redonda junto al nombre.
 
 ### D-062 · 2026-11-04 · Verificación en dos pasos: se recomienda, no se obliga
 Un administrador sin ella ve un aviso en el inicio y una fila en Estado del sistema. `ALOJAFLOW_EXIGIR_DOS_PASOS=true`

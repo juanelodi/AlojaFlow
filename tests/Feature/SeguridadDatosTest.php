@@ -23,6 +23,7 @@ use App\Filament\Pages\IniciarSesion;
 use App\Filament\Pages\PedirRecuperacion;
 use App\Filament\Pages\Resumen;
 use App\Filament\Resources\Propiedades\Pages\CreatePropiedad;
+use App\Filament\Resources\Propiedades\Pages\EditPropiedad;
 use App\Models\Aceptacion;
 use App\Models\Aviso;
 use App\Models\DocumentoLegal;
@@ -162,7 +163,8 @@ describe('espejo de la principal', function () {
 
         expect(fn () => app(Independizador::class)->independizar($propiedad->refresh()))->toThrow(ErrorIndependizar::class, __('ui.independizar.error_sincronizando'));
 
-        $enCurso->update(['estado' => EstadoEjecucion::Fallida]);
+        // Una que quedó colgada hace rato ya no estorba.
+        $this->travel(31)->minutes();
         app(Independizador::class)->independizar($propiedad->refresh());
 
         expect($propiedad->refresh()->modo)->toBe(ModoPropiedad::Nativa);
@@ -224,9 +226,11 @@ describe('recuperar la contraseña', function () {
         $usuario = User::factory()->create(['activo' => true]);
 
         $this->get(Filament::getRequestPasswordResetUrl())->assertOk();
+        config(['app.url' => 'https://hotel.example']);
 
         Livewire::test(PedirRecuperacion::class)->set('data.email', $usuario->email)->call('request')->assertNotified(__('passwords.sent'));
-        Notification::assertSentTo($usuario, ResetPassword::class);
+        // El enlace sale de la dirección de la instalación, no de la petición.
+        expect((string) Notification::sent($usuario, ResetPassword::class)->first()?->url)->toContain('://hotel.example/');
 
         Livewire::test(PedirRecuperacion::class)->set('data.email', 'nadie@example.com')->call('request')->assertNotified(__('passwords.sent'));
     });
@@ -253,6 +257,9 @@ describe('pantallas', function () {
             ->and(CatalogoPaises::opciones()['MX'])->toBe('México');
 
         $this->actingAs(User::factory()->create(['activo' => true, 'es_administrador' => true]));
+        $existente = Propiedad::query()->create(['nombre' => 'Vieja', 'codigo' => 'vieja', 'modo' => ModoPropiedad::Nativa, 'pais' => 'MX', 'zona_horaria' => 'America/Mexico_City', 'moneda' => 'MXN', 'idioma' => 'es']);
+        Livewire::test(EditPropiedad::class, ['record' => $existente->getKey()])->set('data.pais', 'FR')->assertSet('data.moneda', 'MXN');
+
         Livewire::test(CreatePropiedad::class)->set('data.nombre', 'Mi Hotel Bonito')->assertSet('data.codigo', 'mi-hotel-bonito')
             ->set('data.pais', 'FR')->assertSet('data.moneda', 'EUR')->assertSet('data.zona_horaria', 'Europe/Paris')->assertSet('data.idioma', 'fr');
     });

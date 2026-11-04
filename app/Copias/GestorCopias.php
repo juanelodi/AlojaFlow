@@ -15,10 +15,13 @@ use App\Instalacion\CachesArranque;
 use App\Models\RegistroAuditoria;
 use App\Support\Ajustes;
 use FilesystemIterator;
+use Illuminate\Database\Connection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use PDO;
+use Pdo\Mysql;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
@@ -250,7 +253,7 @@ class GestorCopias
         if ($entrada === false) {
             throw new ErrorCopia(__('copias.error.no_es_copia'));
         }
-        $conexion = DB::connection();
+        $conexion = $this->conexionDeUnaSentencia();
         $conexion->unprepared('SET FOREIGN_KEY_CHECKS=0');
         try {
             // Lo que haya de más en la instalación actual (tablas nuevas) también debe irse.
@@ -272,7 +275,22 @@ class GestorCopias
         } finally {
             gzclose($entrada);
             $conexion->unprepared('SET FOREIGN_KEY_CHECKS=1');
+            DB::purge($conexion->getName());
         }
+    }
+
+    /**
+     * MySQL acepta por omisión varias sentencias en una llamada: con eso, la lista de lo permitido se
+     * saltaría escribiendo algo más después de un SET en la misma línea.
+     */
+    private function conexionDeUnaSentencia(): Connection
+    {
+        $configuracion = (array) config('database.connections.'.config('database.default'));
+        $opcion = PHP_VERSION_ID >= 80500 ? Mysql::ATTR_MULTI_STATEMENTS : PDO::MYSQL_ATTR_MULTI_STATEMENTS;
+        config(['database.connections.restauracion' => ['options' => [$opcion => false] + (array) ($configuracion['options'] ?? [])] + $configuracion]);
+        DB::purge('restauracion');
+
+        return DB::connection('restauracion');
     }
 
     /**

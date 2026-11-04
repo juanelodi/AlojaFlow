@@ -46,7 +46,8 @@
                         @endif
                     </dl>
 
-                    @foreach ($t['avisos'] as $aviso)
+                    {{-- Hablan de pagos, sincronización y mensajes: no son para limpieza ni mantenimiento. --}}
+                    @foreach (\App\Seguridad\Acceso::puede(\App\Seguridad\Acceso::usuarioActual(), \App\Seguridad\Acceso::DATOS, $propiedad->id) ? $t['avisos'] : [] as $aviso)
                         <div @class(['af-aviso', 'af-aviso--error' => $aviso->nivel === \App\Enums\NivelAviso::Error]) role="status">
                             {{ $aviso->mensaje() }}
                             @if (in_array($aviso->tipo, \App\Models\Aviso::SE_CIERRAN_A_MANO, true))

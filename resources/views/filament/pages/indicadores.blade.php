@@ -47,7 +47,7 @@
                     </dl>
 
                     <div class="af-dos-columnas">
-                        <div class="af-tabla-contenedor" tabindex="0" role="region" aria-label="{{ __('ui.indicadores.por_origen') }}">
+                        <div class="af-tabla-contenedor" tabindex="0" role="region" aria-label="{{ __('ui.indicadores.por_origen') }} · {{ $loop->iteration }}">
                             <table class="af-tabla">
                                 <caption class="af-sr">{{ __('ui.indicadores.por_origen') }}</caption>
                                 <thead><tr><th scope="col">{{ __('ui.indicadores.por_origen') }}</th><th scope="col" class="af-num">{{ __('ui.comun.noches') }}</th><th scope="col" class="af-num">{{ __('ui.indicadores.ingresos') }}</th></tr></thead>
@@ -60,7 +60,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="af-tabla-contenedor" tabindex="0" role="region" aria-label="{{ __('ui.indicadores.por_mes') }}">
+                        <div class="af-tabla-contenedor" tabindex="0" role="region" aria-label="{{ __('ui.indicadores.por_mes') }} · {{ $loop->iteration }}">
                             <table class="af-tabla">
                                 <caption class="af-sr">{{ __('ui.indicadores.por_mes') }}</caption>
                                 <thead><tr><th scope="col">{{ __('ui.indicadores.mes') }}</th><th scope="col" class="af-num">{{ __('ui.comun.noches') }}</th><th scope="col" class="af-num">{{ __('ui.indicadores.ingresos') }}</th></tr></thead>

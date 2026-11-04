@@ -54,19 +54,18 @@ class PanelAplicacionProvider extends PanelProvider
     }
 
     /**
-     * El color de la marca es #0F766E. Filament pinta los botones con el tono 600, y un tono generado a
-     * partir del hexadecimal no daba contraste con el blanco: los botones salían aguamarina. Es el teal
-     * de Tailwind recorrido un tono, para que el 600 sea exactamente la marca.
+     * Filament pinta los botones con el tono 600 y texto blanco, y varios de esos tonos no llegan a 4.5:1
+     * con el blanco. Un tono más oscuro lo arregla. En el teal, además, deja el 600 exactamente en
+     * #0F766E, el color de la marca: con uno generado desde el hexadecimal, los botones salían aguamarina.
      *
+     * @param  array<int, string>  $paleta
      * @return array<int, string>
      */
-    private static function paletaMarca(): array
+    private static function recorrerTono(array $paleta): array
     {
-        $teal = Color::Teal;
-
         return [
-            50 => $teal[50], 100 => $teal[100], 200 => $teal[200], 300 => $teal[300], 400 => $teal[400],
-            500 => $teal[600], 600 => $teal[700], 700 => $teal[800], 800 => $teal[900], 900 => $teal[950], 950 => $teal[950],
+            50 => $paleta[50], 100 => $paleta[100], 200 => $paleta[200], 300 => $paleta[300], 400 => $paleta[400],
+            500 => $paleta[600], 600 => $paleta[700], 700 => $paleta[800], 800 => $paleta[900], 900 => $paleta[950], 950 => $paleta[950],
         ];
     }
 
@@ -88,11 +87,11 @@ class PanelAplicacionProvider extends PanelProvider
             ->brandLogoHeight('2.25rem')
             ->favicon(asset('img/icono-alojaflow.svg'))
             ->colors([
-                'primary' => self::paletaMarca(),
+                'primary' => self::recorrerTono(Color::Teal),
                 'warning' => Color::Amber,
-                'danger' => Color::Rose,
-                'success' => Color::Emerald,
-                'info' => Color::Sky,
+                'danger' => self::recorrerTono(Color::Rose),
+                'success' => self::recorrerTono(Color::Emerald),
+                'info' => self::recorrerTono(Color::Sky),
                 'gray' => Color::Slate,
             ])
             ->navigationGroups([

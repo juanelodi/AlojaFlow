@@ -5,6 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>@yield('titulo') · {{ $propiedad->nombre }}</title>
+<meta name="description" content="{{ __('motor.meta_descripcion', ['propiedad' => $propiedad->nombre]) }}">
 @if ($propiedad->es_demo)<meta name="robots" content="noindex">@endif
 <style>
 :root{--marca:{{ $propiedad->color ?: '#0f766e' }};--tinta:#0b1f2a;--gris:#475569;--borde:#cbd5e1;--fondo:#f8fafc;--tarjeta:#fff;--campo:#fff;--rojo:#b91c1c;--verde:#15803d}

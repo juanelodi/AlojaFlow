@@ -13,6 +13,8 @@ tiene su prueba. Las decisiones están en `docs/decisiones.md`, de D-053 a D-065
   nuclei y sqlmap.
 - **Accesibilidad:** axe-core en 92 pantallas, en claro y oscuro, en escritorio y móvil (368 revisiones).
 - **Rendimiento:** consultas y tiempos por pantalla con una demo de 1341 reservas, y Lighthouse.
+- **Pruebas:** 411 en verde, con 85 % de las líneas cubiertas (Xdebug). Cada corrección de seguridad tiene su prueba.
+- **Revisión de código** de todo el cambio: encontró diez puntos más, ya corregidos.
 - **En línea:** solo `app.alojaflow.com`, sin entrar al panel y sin ataques: cabeceras, certificado y archivos expuestos.
   `alojaflow.com` quedó fuera del alcance.
 - **Sin tocar:** las copias reales con datos personales (regla 12).
@@ -96,9 +98,9 @@ hostiles de una principal que agotaban la memoria.
 ## Accesibilidad
 
 Contraste en el tema oscuro y en el menú activo, objetivos táctiles de menos de 24 px, tablas con desplazamiento que no se
-alcanzaba con el teclado, enlace vacío en Propiedades. Quedan dos avisos menores en el código de Filament: el botón de
-filtros con contador y la cabecera vacía de la columna de acciones. Las celdas libres del calendario miden menos de 24 px
-de alto cuando hay una barra encima; es propio de un calendario por habitaciones.
+alcanzaba con el teclado, enlace vacío en Propiedades. Los avisos de contraste bajaron de 1849 a ninguno. Quedan dos avisos en
+el código de Filament: el botón de filtros con contador y la cabecera vacía de la columna de acciones. Las celdas libres del
+calendario miden menos de 24 px de alto cuando hay una barra encima; es propio de un calendario por habitaciones.
 
 ## Diseño y experiencia
 
@@ -129,6 +131,8 @@ registros por día; lógica repetida en una sola pieza; HTML fuera del código P
 - **Servicios reales:** Stripe, Mercado Pago, SMTP y portales iCal solo se probaron con respuestas simuladas. El CFDI no
   se ha timbrado.
 - **El escaneo activo no entra bien a Livewire:** sus peticiones van firmadas, así que el panel se revisó sobre todo
-  leyendo el código y con pruebas que simulan la manipulación.
+  leyendo el código y con pruebas que simulan la manipulación. sqlmap revisó a fondo las rutas públicas; en el panel, la
+  prueba se cortó por tiempo en la búsqueda de reservas, sin haber encontrado nada.
+- **nuclei** corrió con las plantillas de PHP, Laravel, exposición y configuración, no con todas.
 - **Textos legales y traducciones:** sin revisión de abogado ni de hablante nativo.
 - **`alojaflow.com`:** fuera del alcance.

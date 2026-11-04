@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 return [
     'titulo' => 'Book your stay',
+    'meta_descripcion' => 'Book directly at :propiedad: check dates and prices online.',
     'idioma' => 'Language',
     'buscar' => 'Search',
     'reservar' => 'Book',

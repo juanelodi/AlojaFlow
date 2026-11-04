@@ -15,6 +15,7 @@ use App\Demo\ModoDemo;
 use Filament\Auth\Pages\PasswordReset\RequestPasswordReset;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\URL;
 
 /**
  * Pedir el enlace para cambiar la contraseña olvidada. Solo tiene sentido con correo configurado: sin
@@ -43,6 +44,9 @@ class PedirRecuperacion extends RequestPasswordReset
             'mail.default' => AjustesCorreo::MAILER,
             'mail.from' => ['address' => $correo->remitente(), 'name' => $correo->nombreRemitente()],
         ]);
+
+        // El enlace lleva el token: con la dirección de la instalación, nunca con la cabecera Host que mande quien lo pide.
+        URL::forceRootUrl((string) config('app.url'));
 
         parent::request();
     }

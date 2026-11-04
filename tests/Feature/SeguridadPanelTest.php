@@ -75,7 +75,8 @@ describe('limpieza y mantenimiento', function () {
 
         $this->actingAs($usuario)->get('/hoy')->assertOk()->assertSee('Lago-1')
             ->assertDontSee('5512345678')->assertDontSee('$2,000.00')->assertDontSee('tel:', false);
-        $this->get('/')->assertOk()->assertDontSee(__('ui.resumen.pendiente'));
+        App\Models\Aviso::abrir($this->lago->id, 'pago_duplicado', App\Enums\NivelAviso::Error, ['reserva' => '301']);
+        $this->get('/')->assertOk()->assertDontSee(__('ui.resumen.pendiente'))->assertDontSee(__('avisos.pago_duplicado', ['reserva' => '301']));
         $this->get('/calendario')->assertOk()->assertDontSee('/reservas/'.$this->reserva->id, false);
         $this->get('/reservas')->assertForbidden();
         $this->get('/reservas/'.$this->reserva->id)->assertNotFound();

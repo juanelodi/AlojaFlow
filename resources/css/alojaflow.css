@@ -27,10 +27,11 @@
 .af-tarjetas { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); }
 .af-tarjeta {
     background: white; border: 1px solid var(--gray-200); border-radius: .75rem;
-    border-top: 4px solid var(--af-color, var(--primary-600));
     padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: .875rem;
 }
-.dark .af-tarjeta { background: var(--gray-900); border-color: var(--gray-800); border-top-color: var(--af-color, var(--primary-500)); }
+.dark .af-tarjeta { background: var(--gray-900); border-color: var(--gray-800); }
+/* El color de la propiedad, en una marca junto a su nombre */
+.af-tarjeta__titulo::before { content: ""; display: inline-block; width: .625rem; height: .625rem; margin-inline-end: .5rem; border-radius: 50%; background: var(--af-color, var(--primary-600)); }
 .af-tarjeta__cabecera { display: flex; justify-content: space-between; gap: .5rem; align-items: baseline; flex-wrap: wrap; }
 .af-tarjeta__titulo { font-size: 1.0625rem; font-weight: 600; color: var(--gray-950); }
 .dark .af-tarjeta__titulo { color: white; }
@@ -208,12 +209,13 @@
 .af-limpieza { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); }
 .af-unidad-tarjeta {
     display: flex; flex-direction: column; gap: .75rem; padding: 1rem; border-radius: .75rem;
-    background: white; border: 1px solid var(--gray-200); border-top: 4px solid var(--success-600);
+    background: white; border: 1px solid var(--gray-200); --af-marca-estado: var(--success-600);
 }
-.dark .af-unidad-tarjeta { background: var(--gray-900); border-color: var(--gray-800); border-top-color: var(--success-500); }
-.af-unidad-tarjeta--sucia, .dark .af-unidad-tarjeta--sucia { border-top-color: var(--danger-600); }
-.af-unidad-tarjeta--inspeccion, .dark .af-unidad-tarjeta--inspeccion { border-top-color: var(--warning-500); }
-.af-unidad-tarjeta--fuera, .dark .af-unidad-tarjeta--fuera { border-left-color: var(--af-suave); }
+.dark .af-unidad-tarjeta { background: var(--gray-900); border-color: var(--gray-800); }
+.af-unidad-tarjeta__nombre::before { content: ""; display: inline-block; width: .625rem; height: .625rem; margin-inline-end: .5rem; border-radius: 50%; background: var(--af-marca-estado); }
+.af-unidad-tarjeta--sucia { --af-marca-estado: var(--danger-600); }
+.af-unidad-tarjeta--inspeccion { --af-marca-estado: var(--warning-500); }
+.af-unidad-tarjeta--fuera { --af-marca-estado: var(--gray-500); }
 .af-unidad-tarjeta__cabecera { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
 .af-unidad-tarjeta__nombre { font-size: 1.125rem; font-weight: 600; color: var(--gray-950); }
 .dark .af-unidad-tarjeta__nombre { color: white; }
@@ -277,3 +279,8 @@
 
 /* Lista de un grupo */
 .af-lista-simple { display: flex; flex-direction: column; gap: .25rem; padding-inline-start: 1.25rem; list-style: disc; font-size: .875rem; }
+
+/* Lo que Filament deja en un gris sin contraste suficiente */
+.fi-ta-placeholder, .fi-ta-text.fi-ta-placeholder { color: var(--af-suave); }
+.fi-ta-col { min-block-size: 1.5rem; }
+.dark .fi-input-wrp-label { color: var(--gray-300); }

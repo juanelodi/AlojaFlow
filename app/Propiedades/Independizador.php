@@ -19,6 +19,7 @@ use App\Models\EjecucionSincronizacion;
 use App\Models\Principal;
 use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
+use App\Seguridad\Acceso;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
@@ -91,7 +92,9 @@ final class Independizador
      */
     private function comprobarSinSincronizacion(Principal $principal): void
     {
-        if (EjecucionSincronizacion::query()->where('principal_id', $principal->id)->where('estado', EstadoEjecucion::EnCurso->value)->exists()) {
+        // Pasado el candado de 30 minutos ya no corre: quedó así porque el proceso murió a medias.
+        if (EjecucionSincronizacion::query()->where('principal_id', $principal->id)->where('estado', EstadoEjecucion::EnCurso->value)
+            ->where('iniciada_en', '>=', now()->subMinutes(30))->exists()) {
             throw new ErrorIndependizar(__('ui.independizar.error_sincronizando'));
         }
     }
@@ -120,6 +123,9 @@ final class Independizador
         $bloqueada->delete();
         Aviso::query()->where('propiedad_id', $propiedad->id)->whereNotNull('clave_unica')
             ->update(['clave_unica' => null, 'resuelto_en' => now()]);
+
+        // La propiedad cambió sin pasar por el modelo.
+        Acceso::olvidar();
 
         $reservas = DB::table('reservas')->where('propiedad_id', $propiedad->id)->count();
         RegistroAuditoria::anotar('propiedad.independizar', $propiedad, ['reservas' => $reservas], $propiedad->id);

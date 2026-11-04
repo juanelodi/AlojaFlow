@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 return [
     'titulo' => 'Reserva tu estancia',
+    'meta_descripcion' => 'Reserva directo en :propiedad: consulta fechas y precios en línea.',
     'idioma' => 'Idioma',
     'buscar' => 'Buscar',
     'reservar' => 'Reservar',

@@ -24,7 +24,9 @@ class MismoOrigen
     public function handle(Request $request, Closure $next): Response
     {
         $origen = $request->headers->get('Origin');
-        abort_if($origen !== null && parse_url($origen, PHP_URL_HOST) !== $request->getHost(), 403);
+        // También el de la instalación: detrás de un proxy, el Host que llega aquí puede ser otro.
+        $propios = [$request->getHost(), parse_url((string) config('app.url'), PHP_URL_HOST)];
+        abort_if($origen !== null && ! in_array(parse_url($origen, PHP_URL_HOST), $propios, true), 403);
 
         return $next($request);
     }

@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 return [
     'titulo' => 'Reserve a sua estadia',
+    'meta_descripcion' => 'Reserve diretamente em :propiedad: consulte datas e preços online.',
     'idioma' => 'Idioma',
     'buscar' => 'Pesquisar',
     'reservar' => 'Reservar',
