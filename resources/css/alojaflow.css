@@ -235,3 +235,14 @@
 .af-ficha { display: grid; grid-template-columns: minmax(7rem, 35%) 1fr; gap: .25rem .75rem; font-size: .875rem; margin: 0; }
 .af-ficha dt { color: var(--gray-500); }
 .af-ficha dd { margin: 0; word-break: break-word; }
+
+/* Plano */
+.af-plano { position: relative; width: 100%; aspect-ratio: 16 / 10; min-height: 22rem; border: 1px solid var(--gray-200); border-radius: .75rem; background: var(--gray-50) center / contain no-repeat; overflow: hidden; touch-action: none; }
+.dark .af-plano { background-color: var(--gray-900); border-color: var(--gray-800); }
+.af-plano-unidad { position: absolute; display: flex; flex-direction: column; min-width: 5rem; padding: .25rem .5rem; border-radius: .5rem; font-size: .75rem; line-height: 1.25; border: 1px solid var(--gray-300); background: white; color: var(--gray-900); }
+.af-plano-unidad--libre { background: var(--success-100); border-color: var(--success-400); color: var(--success-900); }
+.af-plano-unidad--llega { background: var(--info-100); border-color: var(--info-400); color: var(--info-900); }
+.af-plano-unidad--sale { background: var(--warning-100); border-color: var(--warning-400); color: var(--warning-900); }
+.af-plano-unidad--ocupada { background: var(--danger-100); border-color: var(--danger-400); color: var(--danger-900); }
+.af-plano-unidad--editando { cursor: grab; box-shadow: 0 1px 3px rgb(0 0 0 / .3); }
+.af-plano-marca { display: inline-block; width: .875rem; height: .875rem; border-radius: .25rem; border: 1px solid; vertical-align: middle; }

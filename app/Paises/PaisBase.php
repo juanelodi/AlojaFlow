@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Paises;
 
 use App\Enums\TipoDocumentoLegal;
+use App\Facturacion\GeneradorFiscal;
 use Illuminate\Support\Facades\Lang;
 
 /**
@@ -43,6 +44,11 @@ abstract class PaisBase implements Pais
     public function legalRevisado(): bool
     {
         return false;
+    }
+
+    public function generadorFiscal(): ?GeneradorFiscal
+    {
+        return null;
     }
 
     public function textosBase(string $idioma): array

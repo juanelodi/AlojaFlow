@@ -78,6 +78,6 @@ final class Formato
 
     public static function separadorDecimal(): string
     {
-        return in_array(app()->getLocale(), ['en'], true) ? '.' : ',';
+        return in_array(app()->getLocale(), ['en', 'es'], true) ? '.' : ',';
     }
 }

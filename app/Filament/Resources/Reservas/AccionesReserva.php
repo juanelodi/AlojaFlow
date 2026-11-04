@@ -12,20 +12,27 @@ namespace App\Filament\Resources\Reservas;
 
 use App\Comunicacion\Mensajero;
 use App\Comunicacion\VariablesMensaje;
+use App\Dinero\GestorPoliticas;
 use App\Documentos\GeneradorPdf;
 use App\Enums\CanalEnvio;
 use App\Enums\EstadoEnvio;
 use App\Enums\EstadoReserva;
 use App\Enums\FrecuenciaLimpieza;
 use App\Enums\TipoReserva;
+use App\Facturacion\ErrorFacturacion;
+use App\Facturacion\GestorFacturas;
 use App\Limpieza\GestorLimpieza;
 use App\Llegada\GestorLlegadas;
 use App\Models\Plantilla;
+use App\Models\ReceptorFiscal;
 use App\Models\ReglaLimpieza;
 use App\Models\Reserva;
+use App\Models\SerieFacturacion;
+use App\Paises\Paises;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
 use App\Seguridad\Acceso;
+use App\Support\Formato;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
@@ -58,6 +65,81 @@ final class AccionesReserva
     /**
      * Limpiezas fijas durante la estancia. Vale también en subordinadas: es un dato propio.
      */
+    /**
+     * Vale también en subordinadas: la marca es un dato propio.
+     */
+    public static function noShow(): Action
+    {
+        return Action::make('noShow')
+            ->label(__('dinero.politicas.no_show_accion'))
+            ->icon(Heroicon::OutlinedUserMinus)
+            ->color('warning')
+            ->modalDescription(__('dinero.politicas.no_show_ayuda'))
+            ->visible(fn (Reserva $record): bool => Acceso::puede(Acceso::usuarioActual(), Acceso::OPERACION, $record->propiedad_id) && app(GestorPoliticas::class)->puedeMarcarNoShow($record))
+            ->schema([Textarea::make('nota')->label(__('dinero.politicas.no_show_nota'))->rows(2)->maxLength(1000)])
+            ->action(function (Reserva $record, array $data, GestorPoliticas $politicas): void {
+                try {
+                    $marca = $politicas->marcarNoShow($record, $data['nota'] ?? null);
+                    Notification::make()->success()->title(__('dinero.politicas.no_show_ok', ['importe' => Formato::dinero($marca->penalizacion, $marca->moneda)]))->send();
+                } catch (ReservaRechazada $e) {
+                    Notification::make()->danger()->title($e->getMessage())->send();
+                }
+            });
+    }
+
+    public static function facturar(): Action
+    {
+        return Action::make('facturar')
+            ->label(__('dinero.facturas.facturar'))
+            ->icon(Heroicon::OutlinedDocumentCurrencyDollar)
+            ->color('gray')
+            ->visible(fn (Reserva $record): bool => $record->tipo === TipoReserva::Reserva && $record->estado !== EstadoReserva::Cancelada && Acceso::puede(Acceso::usuarioActual(), Acceso::FACTURACION, $record->propiedad_id))
+            ->fillForm(function (Reserva $record): array {
+                $guardado = ReceptorFiscal::query()->where('propiedad_id', $record->propiedad_id)->where('huesped_id', $record->titular_id)->latest('id')->first();
+
+                return [
+                    'identificador_fiscal' => $guardado->identificador_fiscal ?? ($record->titular->id_fiscal_empresa ?? $record->titular->id_fiscal_personal ?? null),
+                    'nombre' => $guardado->nombre ?? $record->titular?->nombreCompleto(),
+                    'regimen_fiscal' => $guardado->regimen_fiscal ?? null,
+                    'codigo_postal' => $guardado->codigo_postal ?? null,
+                    'uso' => $guardado->uso ?? null,
+                    'correo' => $guardado->correo ?? Mensajero::correoDe($record),
+                ];
+            })
+            ->schema(function (Reserva $record): array {
+                $catalogos = Paises::de($record->propiedad)->generadorFiscal()?->catalogos() ?? [];
+                $series = SerieFacturacion::query()->with('entidad')->where('activa', true)
+                    ->whereHas('entidad', fn ($q) => $q->where('propiedad_id', $record->propiedad_id))->get()
+                    ->mapWithKeys(fn (SerieFacturacion $s): array => [$s->id => $s->serie.' · '.$s->tipo_documento->etiqueta().' · '.$s->entidad->nombre])->all();
+                $campos = [
+                    Select::make('serie_id')->label(__('dinero.facturas.serie'))->native(false)->required()->options($series)->helperText($series === [] ? __('dinero.facturas.sin_entidad') : null)->default(array_key_first($series)),
+                    TextInput::make('identificador_fiscal')->label(__('dinero.facturas.identificador'))->required()->maxLength(30),
+                    TextInput::make('nombre')->label(__('dinero.facturas.nombre'))->required()->maxLength(200),
+                    TextInput::make('correo')->label(__('dinero.facturas.correo'))->email()->maxLength(150),
+                ];
+                if ($catalogos !== []) {
+                    $campos[] = Select::make('regimen_fiscal')->label(__('dinero.facturas.regimen'))->native(false)->options($catalogos['regimen'])->required();
+                    $campos[] = TextInput::make('codigo_postal')->label(__('dinero.facturas.codigo_postal'))->required()->maxLength(10);
+                    $campos[] = Select::make('uso')->label(__('dinero.facturas.uso'))->native(false)->options($catalogos['uso'])->required();
+                    $campos[] = Select::make('forma_pago')->label(__('dinero.facturas.forma_pago'))->native(false)->options($catalogos['forma_pago'])->required();
+                    $campos[] = Select::make('metodo_pago')->label(__('dinero.facturas.metodo_pago'))->native(false)->options($catalogos['metodo_pago'])->required()->default('PUE');
+                }
+
+                return $campos;
+            })
+            ->action(function (Reserva $record, array $data, GestorFacturas $facturas): void {
+                $serie = SerieFacturacion::query()->with('entidad')->findOrFail((int) $data['serie_id']);
+                $receptor = array_intersect_key($data, array_flip(['identificador_fiscal', 'nombre', 'regimen_fiscal', 'codigo_postal', 'uso', 'correo']));
+                try {
+                    $factura = $facturas->emitir($record, $serie, $receptor, $data['forma_pago'] ?? null, $data['metodo_pago'] ?? null);
+                    Notification::make()->success()->persistent()->title(__('dinero.facturas.emitida_ok', ['folio' => $factura->folio()]))
+                        ->actions([Action::make('pdf')->label(__('dinero.facturas.descargar_pdf'))->url(route('archivos.ver', (int) $factura->pdf_archivo_id), shouldOpenInNewTab: true)])->send();
+                } catch (ErrorFacturacion $e) {
+                    Notification::make()->danger()->persistent()->title($e->getMessage())->send();
+                }
+            });
+    }
+
     public static function enlaceLlegada(): Action
     {
         return Action::make('enlaceLlegada')
@@ -229,7 +311,7 @@ final class AccionesReserva
             ->icon(Heroicon::OutlinedXCircle)
             ->color('danger')
             ->requiresConfirmation()
-            ->modalDescription(__('ui.reservas.cancelar_ayuda'))
+            ->modalDescription(fn (Reserva $record): string => trim(__('ui.reservas.cancelar_ayuda').' '.app(GestorPoliticas::class)->resumenCancelacion($record)))
             ->visible(fn (Reserva $record): bool => self::gestionable($record) && $record->estado !== EstadoReserva::Cancelada && ! $record->estaEnCasa())
             ->action(fn (Reserva $record) => self::ejecutar($record, fn (GestorReservas $g) => $g->cancelar($record), __('ui.reservas.cancelada_ok')));
     }

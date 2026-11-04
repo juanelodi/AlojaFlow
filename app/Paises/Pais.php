@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace App\Paises;
 
+use App\Facturacion\GeneradorFiscal;
+
 /**
  * Lo que cambia de un país a otro. Todo lo legal va detrás de esta interfaz: el resto del código no
  * pregunta en qué país está (CLAUDE.md, regla de países).
@@ -43,6 +45,11 @@ interface Pais
      * Si los textos y plazos de este país están revisados contra sus fuentes oficiales.
      */
     public function legalRevisado(): bool;
+
+    /**
+     * El documento fiscal del país; null si solo se emiten recibos sin valor fiscal.
+     */
+    public function generadorFiscal(): ?GeneradorFiscal;
 
     /**
      * Los documentos que se proponen de partida, en un idioma.

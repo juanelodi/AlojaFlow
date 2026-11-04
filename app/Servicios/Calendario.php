@@ -13,6 +13,7 @@ namespace App\Servicios;
 use App\Enums\EstadoReserva;
 use App\Enums\TipoReserva;
 use App\Models\BloqueoExterno;
+use App\Models\ColorTipoCliente;
 use App\Models\Reserva;
 use App\Models\Unidad;
 use Carbon\CarbonImmutable;
@@ -41,7 +42,7 @@ final class Calendario
             ->orderBy('propiedades.nombre')->orderBy('unidades.orden')->orderBy('unidades.nombre')
             ->select('unidades.*')->get();
 
-        $reservas = Reserva::query()->vigentes()->with('titular')
+        $reservas = Reserva::query()->vigentes()->with('titular.campos')
             ->whereIn('propiedad_id', $propiedades)
             ->whereDate('llegada', '<', $fin->format('Y-m-d'))
             ->whereDate('salida', '>', $inicio->format('Y-m-d'))
@@ -52,6 +53,8 @@ final class Calendario
         $externos = BloqueoExterno::query()->with('fuente')->whereIn('propiedad_id', $propiedades)->whereNull('eliminado_en')
             ->whereDate('llegada', '<', $fin->format('Y-m-d'))->whereDate('salida', '>', $inicio->format('Y-m-d'))
             ->orderBy('llegada')->get()->groupBy('unidad_id');
+
+        $colores = ColorTipoCliente::query()->whereIn('propiedad_id', $propiedades)->get();
 
         $filas = [];
         foreach ($unidades as $unidad) {
@@ -67,6 +70,7 @@ final class Calendario
                     'sigue_antes' => $reserva->llegada->lt($inicio),
                     'sigue_despues' => $reserva->salida->gt($fin),
                     'clase' => self::clase($reserva),
+                    'color' => self::colorDe($reserva, $colores),
                 ];
             }
             $deportales = [];
@@ -86,6 +90,24 @@ final class Calendario
         }
 
         return ['dias' => $dias, 'filas' => $filas];
+    }
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Collection<int, ColorTipoCliente>  $colores
+     */
+    private static function colorDe(Reserva $reserva, \Illuminate\Database\Eloquent\Collection $colores): ?string
+    {
+        if ($colores->isEmpty() || $reserva->titular === null) {
+            return null;
+        }
+        foreach ($reserva->titular->campos as $campo) {
+            $color = $colores->first(fn (ColorTipoCliente $c): bool => $c->propiedad_id === $reserva->propiedad_id && mb_strtolower($c->campo) === mb_strtolower((string) $campo->campo) && mb_strtolower($c->valor) === mb_strtolower((string) $campo->valor));
+            if ($color !== null) {
+                return $color->color;
+            }
+        }
+
+        return null;
     }
 
     private static function clase(Reserva $reserva): string

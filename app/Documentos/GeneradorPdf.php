@@ -10,8 +10,10 @@ declare(strict_types=1);
 
 namespace App\Documentos;
 
+use App\Enums\TipoDocumentoFiscal;
 use App\Models\Aceptacion;
 use App\Models\DocumentoLegal;
+use App\Models\Factura;
 use App\Models\Pago;
 use App\Models\RegistroLlegada;
 use App\Models\Reserva;
@@ -40,6 +42,25 @@ final class GeneradorPdf
     public function copiaAceptacion(Aceptacion $aceptacion, DocumentoLegal $documento, RegistroLlegada $registro): string
     {
         return $this->pdf('documentos.copia-aceptacion', ['aceptacion' => $aceptacion, 'documento' => $documento, 'registro' => $registro], $documento->idioma);
+    }
+
+    public function factura(Factura $factura): string
+    {
+        $factura->loadMissing(['lineas.impuestos', 'propiedad']);
+        $impuestos = [];
+        foreach ($factura->lineas as $linea) {
+            foreach ($linea->impuestos as $impuesto) {
+                $impuestos[$impuesto->nombre.' '.(float) $impuesto->tasa.' %'] = ($impuestos[$impuesto->nombre.' '.(float) $impuesto->tasa.' %'] ?? 0) + $impuesto->importe;
+            }
+        }
+        $esFiscal = $factura->tipo === TipoDocumentoFiscal::Factura && Paises::de($factura->propiedad)->generadorFiscal() !== null;
+        $sinValidez = match (true) {
+            ! $esFiscal => __('dinero.facturas.no_fiscal'),
+            $factura->uuid_fiscal === null => __('dinero.facturas.sin_timbrar'),
+            default => null,
+        };
+
+        return $this->pdf('documentos.factura', ['factura' => $factura, 'impuestos' => $impuestos, 'sinValidez' => $sinValidez], $factura->propiedad->idioma);
     }
 
     public function registroLlegada(RegistroLlegada $registro): string

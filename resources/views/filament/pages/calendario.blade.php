@@ -97,7 +97,7 @@
                                    x-on:dragend="moviendo = null"
                                @endif
                                @class(['af-barra', $barra['clase'], 'af-barra--sigue-antes' => $barra['sigue_antes'], 'af-barra--sigue-despues' => $barra['sigue_despues']])
-                               style="grid-column: {{ $barra['columna'] + 1 }} / span {{ $barra['ancho'] }}"
+                               style="grid-column: {{ $barra['columna'] + 1 }} / span {{ $barra['ancho'] }}@if ($barra['color']); border-left: 6px solid {{ $barra['color'] }}@endif"
                                title="{{ __('ui.calendario.detalle', ['huesped' => $texto, 'noches' => $reserva->noches, 'llegada' => Formato::fechaCorta($reserva->llegada), 'salida' => Formato::fechaCorta($reserva->salida)]) }}"
                             >{{ $texto }}</a>
                         @endforeach

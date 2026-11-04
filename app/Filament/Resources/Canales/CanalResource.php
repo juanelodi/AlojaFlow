@@ -15,8 +15,10 @@ use App\Filament\Resources\Canales\Pages\CreateCanal;
 use App\Filament\Resources\Canales\Pages\EditCanal;
 use App\Filament\Resources\Canales\Pages\ListCanales;
 use App\Models\Canal;
+use App\Models\Politica;
 use BackedEnum;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -60,6 +62,8 @@ class CanalResource extends RecursoDePropiedad
                 TextInput::make('nombre')->label(__('ui.canales.nombre'))->helperText(__('ui.canales.nombre_ayuda'))->required()->maxLength(100)
                     ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', (int) $get('propiedad_id'))),
                 TextInput::make('comision_porcentaje')->label(__('ui.canales.comision'))->helperText(__('ui.canales.comision_ayuda'))->numeric()->minValue(0)->maxValue(100)->step('any')->suffix('%'),
+                Select::make('politica_id')->label(__('dinero.politicas.modelo'))->native(false)
+                    ->options(fn (Get $get): array => Politica::query()->where('propiedad_id', (int) $get('propiedad_id'))->orderBy('nombre')->pluck('nombre', 'id')->all()),
                 Toggle::make('activo')->label(__('ui.tarifas.activa'))->default(true),
             ]),
         ]);

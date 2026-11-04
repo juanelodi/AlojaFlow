@@ -16,6 +16,9 @@ return [
     // Idiomas de la interfaz (regla 7). El español es la fuente.
     'idiomas' => ['es', 'en', 'fr', 'it', 'pt', 'de'],
 
+    // Quién timbra los CFDI. Para conectar un PAC: implementar App\Facturacion\ConectorPac (D-049).
+    'pac' => App\Facturacion\SinPac::class,
+
     // Demostración pública: solo en una instalación aparte, sin datos reales (D-044).
     'modo_demo' => (bool) env('ALOJAFLOW_MODO_DEMO', false),
 

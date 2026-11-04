@@ -136,4 +136,20 @@ return [
         'exportacion' => 'Exportación',
         'anonimizacion' => 'Anonimización',
     ],
+
+    'EstadoFactura' => [
+        'emitida' => 'Emitida',
+        'registrada' => 'Timbrada',
+        'cancelada' => 'Cancelada',
+    ],
+
+    'TipoDocumentoFiscal' => [
+        'factura' => 'Factura',
+        'recibo' => 'Recibo sin valor fiscal',
+    ],
+
+    'ModoFiscal' => [
+        'pruebas' => 'Pruebas',
+        'produccion' => 'Producción',
+    ],
 ];

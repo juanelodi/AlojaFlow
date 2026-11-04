@@ -35,6 +35,8 @@ class ViewReserva extends ViewRecord
             AccionesReserva::reactivar(),
             ActionGroup::make([
                 AccionesReserva::enlaceLlegada(),
+                AccionesReserva::facturar(),
+                AccionesReserva::noShow(),
                 AccionesReserva::confirmacionPdf(),
                 AccionesReserva::deshacerRegistro(),
                 AccionesReserva::cancelar(),

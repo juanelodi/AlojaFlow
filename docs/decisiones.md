@@ -357,6 +357,23 @@ textos son de partida y **hay que revisarlos con un abogado** antes de publicarl
 Sin `symfony/intl` (decenas de MB de datos para un selector): nacionalidad y país van como texto.
 No se envía nada a autoridades: SES.Hospedajes de España queda fuera, sin su tabla `envios_autoridad`.
 
+### D-049 · 2026-11-04 · Facturación: CFDI 4.0 preparado, sin timbrar, con un conector para el PAC
+Una factura emitida es inmutable y lleva copia de emisor y receptor; el número se toma bloqueando la serie
+dentro de la misma transacción, sin huecos. Los impuestos se sacan del total de la reserva y lo que sobra
+por redondeo va al primero: base + impuestos siempre da lo cobrado. `App\Facturacion\Cfdi40` genera el XML
+con IVA en traslados e ISH en el complemento de impuestos locales; sello y certificado quedan vacíos. El
+PDF dice «SIN TIMBRAR» hasta que un PAC lo timbre. `ConectorPac` es la interfaz; hoy está `SinPac`, que dice
+con claridad que falta. Fuera de México se emiten recibos sin valor fiscal; VeriFactu queda fuera.
+**Por qué:** el usuario pidió dejarlo preparado sin contratar un PAC todavía. **Sin verificar:** el XML no se ha
+validado contra el XSD del SAT ni probado con un PAC; las claves (90111800, E48) las debe confirmar un contador.
+
+### D-050 · 2026-11-04 · Políticas que calculan pero no cobran solas
+La política del canal va antes que la predeterminada. Al cancelar se muestra la penalización y lo que hay que
+devolver o cobrar, pero mover el dinero lo decide recepción con un pago o una devolución. Marcar «No llegó» en una
+independiente cancela y libera noches; en una subordinada solo se anota. **Por qué:** cobrar solo una penalización
+por un error de captura sería peor que recordarla. El cierre del día guarda una foto y no bloquea correcciones,
+porque en un hotel pequeño siempre hay algo que corregir al día siguiente.
+
 ---
 
 ## Pendientes
