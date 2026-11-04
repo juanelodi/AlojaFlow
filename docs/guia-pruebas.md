@@ -35,20 +35,58 @@ copia desde **Sistema → Copias de seguridad** y guárdala fuera del servidor.
 | **Indicadores** | Ocupación, ingresos, ADR, RevPAR, reservas, estancia media, por origen y por mes; descarga CSV |
 | **Reservas / Huéspedes** | Listados con búsqueda y filtros, y ficha de cada uno. En una independiente se crean y se cambian, con pagos; en una subordinada, solo consulta |
 | **Propiedades** | Alta eligiendo independiente o subordinada. En una subordinada: probar la conexión, sincronizar ahora y reanudar, con historial. Botones para crear y quitar la demo |
-| **Unidades / Tarifas** | Habitaciones y precios por noche con temporadas, para las independientes |
+| **Unidades / Tarifas** | Habitaciones y precios: por noche con persona extra o por persona, con fin de semana, temporadas y estancia mínima |
+| **Impuestos, cargos, canales, cupones, cajas, gastos, grupos** | El dinero de una propiedad independiente. Al crear una reserva, el total sale de todo esto |
+| **Motor de reservas** | Página pública para reservar y pagar, con su enlace y su código para ponerlo en tu sitio. Llaves de Stripe y Mercado Pago |
+| **Limpieza / Tareas** | El estado de cada habitación y lo que hay que hacer, para usarse en el teléfono. Reportar problemas con foto, y aviso por WhatsApp |
+| **Plano** | Las habitaciones sobre un plano, con lo que pasa hoy en cada una |
+| **Cierre del día** | Lo que quedó por registrar, lo cobrado por método y la ocupación; guarda la foto del día |
+| **Mensajes** | Historial y cola. Sin correo configurado, aquí queda el texto listo para copiar o mandar por WhatsApp |
+| **Plantillas, Automatizaciones, Avisos a otros sistemas, Correo** | Qué se manda, cuándo y a quién |
+| **Calendarios iCal / Choques** | Enlaces para los portales, lectura de sus calendarios y aviso cuando una habitación está ocupada dos veces |
+| **Llegadas en línea / Documentos legales** | Lo que mandan los huéspedes antes de llegar, los textos que aceptan y la prueba de la aceptación |
+| **Facturas y recibos / Datos fiscales / Políticas** | Facturar desde la reserva, exportar para el contador; penalización al cancelar y marca de no-show |
+| **Informes** | Doce informes con CSV |
 | **Usuarios** | Usuarios con un rol en cada propiedad (gerente, recepción, limpieza, mantenimiento, contador) o administrador |
 | **Actualizaciones** | Subir el zip de una versión nueva, revisarlo e instalarlo; historial con la copia de la base de datos de cada actualización |
 | **Perfil** | Idioma, zona horaria, contraseña y verificación en dos pasos con app de códigos |
 | **Acerca de / Código fuente** | Licencia, créditos y descarga del código de la versión instalada |
 
 **Todavía no trae:**
-- limpieza y mantenimiento, llegada en línea, mensajes, iCal y facturación (entregas Operación, Huéspedes y Dinero);
-- pantalla de cierre del día;
-- en las independientes: cargos adicionales, precios por persona o por semana, asignación automática de unidad, grupos, cupones, gastos y caja, documentos, y motor de reservas;
-- pasar una propiedad subordinada a independiente;
+- timbrado real de CFDI (falta un PAC), factura global, complementos de pago y notas de crédito;
+- envío a SES.Hospedajes y VeriFactu de España;
+- código de confirmación por WhatsApp o SMS;
+- channel manager por API: con los portales se trabaja por iCal.
 
-La interfaz está completa en español e inglés; en francés, italiano, portugués y alemán solo
-están traducidos los textos de Filament.
+La interfaz está completa en español e inglés. Ver más abajo el estado de los demás idiomas.
+
+### Cosas nuevas que vale la pena probar
+
+Con la demo creada (**Hotel Bahía Serena**):
+
+1. **Motor:** abre `/reservar/<código de la propiedad>`, busca fechas, reserva y abre la página de la reserva.
+2. **Pagos con Stripe:** con tu cuenta en modo de prueba, pon la llave `sk_test_…` y el secreto de avisos en
+   **Motor de reservas**, y paga con la tarjeta de prueba `4242 4242 4242 4242`. **Esto no se ha podido probar
+   con una cuenta real:** dime qué pasa. Mercado Pago, igual con sus credenciales de prueba.
+3. **Limpieza:** en el teléfono, termina una tarea y reporta un problema con foto.
+4. **Mensajes:** en una reserva, **Mandar mensaje** con una plantilla; sin correo configurado, míralo en **Mensajes**.
+5. **Llegada en línea:** en una reserva, **Más → Enlace de llegada**, ábrelo en otra ventana y mándalo; revísalo
+   en **Llegadas en línea**.
+6. **Factura:** da de alta **Datos fiscales** con una serie y, en una reserva, **Más → Facturar**. Descarga PDF y XML.
+7. **iCal:** en **Calendarios iCal → Enlaces para los portales**, abre un enlace; agrega como fuente el de otra
+   habitación para ver un bloqueo y su choque.
+8. **Pasar a independiente:** en una propiedad subordinada de prueba, en **Propiedades → Editar**.
+
+### Demostración pública
+
+Para enseñar el sistema en internet, en una instalación **aparte** y sin datos reales:
+
+1. Instálala como cualquier otra y pon `ALOJAFLOW_MODO_DEMO=true` en su `.env`.
+2. Corre `php artisan alojaflow:demo-reiniciar`: **borra toda la base** y la deja con la demo y su usuario.
+
+El inicio de sesión ya viene lleno, hay un aviso en todas las pantallas, los correos van al log, y usuarios,
+actualizaciones, copias, contraseñas y llaves de pago quedan fuera. Cada noche se borra sola. Con el modo apagado,
+el comando se niega a correr.
 
 ## 1. Poner en marcha la base de datos
 

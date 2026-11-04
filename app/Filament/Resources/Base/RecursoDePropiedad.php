@@ -24,6 +24,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 abstract class RecursoDePropiedad extends Resource
 {
+    /** En español no se escribe cada palabra con mayúscula: «Llegadas en línea». */
+    protected static bool $hasTitleCaseModelLabel = false;
+
     protected static function permiso(): string
     {
         return Acceso::CATALOGO;

@@ -28,6 +28,7 @@ use Filament\PanelProvider;
 use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
+use Filament\Tables\Table;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -47,6 +48,7 @@ class PanelAplicacionProvider extends PanelProvider
     public function boot(): void
     {
         FilamentAsset::register([Css::make('alojaflow', resource_path('css/alojaflow.css'))], 'alojaflow');
+        Table::configureUsing(fn (Table $tabla) => $tabla->defaultDateDisplayFormat('j M Y')->defaultDateTimeDisplayFormat('j M Y H:i'));
     }
 
     public function panel(Panel $panel): Panel

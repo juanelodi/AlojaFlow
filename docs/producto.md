@@ -88,8 +88,8 @@ correo, dominio y hosting; más adelante, channel manager y pasarela de pagos.
 | Fase | Qué es | Incluye |
 |---|---|---|
 | **1 — Subordinada** | AlojaFlow lee la copia de una o varias principales (HotelDruid 3.0.8 / AlojaFlow 1.2.x) y nunca escribe en ellas | Los 11 módulos de §8 |
-| **2 — Núcleo propio** | AlojaFlow funciona sin HotelDruid | Reservas (alta, cambio, arrastrar y soltar), tarifas, temporadas y restricciones, clientes, cobros; grupos, cupones, fusionar clientes y anonimizar en origen (D-009); motor de reservas directas; migración completa desde HotelDruid |
-| **Posteriores** | Distribución y pagos | Channel manager por API (p. ej. Channex), feed de Google Hotel, pagos en línea (Stripe / Mercado Pago), PWA, más paquetes de país |
+| **2 — Núcleo propio** | AlojaFlow funciona sin HotelDruid | Reservas (alta, cambio, arrastrar y soltar), tarifas, temporadas y restricciones, clientes, cobros; grupos, cupones, fusionar clientes y anonimizar en origen (D-009); motor de reservas directas; pasar de subordinada a independiente. **Hecha en la 1.0.5** |
+| **Posteriores** | Distribución | Channel manager por API (p. ej. Channex), feed de Google Hotel, PWA, más paquetes de país. Los pagos en línea (Stripe / Mercado Pago) se adelantaron a la 1.0.5, sin probar con cuentas reales |
 
 ## 8. Alcance de la fase 1
 

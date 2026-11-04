@@ -173,7 +173,7 @@ class PlanoPropiedad extends Page
                     }
                     // Colocadas en cuadrícula, para que se vean todas y solo haya que arrastrarlas.
                     foreach (Unidad::query()->where('propiedad_id', $propiedad->id)->where('activa', true)->orderBy('orden')->orderBy('nombre')->get()->values() as $i => $unidad) {
-                        PlanoUnidad::query()->create(['plano_id' => $plano->id, 'unidad_id' => $unidad->id, 'x' => 4 + ($i % 8) * 12, 'y' => 6 + (int) floor($i / 8) * 14]);
+                        PlanoUnidad::query()->create(['plano_id' => $plano->id, 'unidad_id' => $unidad->id, 'x' => 2 + ($i % 7) * 13.5, 'y' => 4 + (int) floor($i / 7) * 16]);
                     }
                     $this->planoId = $plano->id;
                     $this->editando = true;

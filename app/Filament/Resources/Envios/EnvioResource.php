@@ -17,6 +17,7 @@ use App\Filament\Resources\Base\RecursoDeCualquierPropiedad;
 use App\Filament\Resources\Envios\Pages\ListEnvios;
 use App\Models\Envio;
 use App\Seguridad\Acceso;
+use App\Support\Formato;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -88,7 +89,7 @@ class EnvioResource extends RecursoDeCualquierPropiedad
             ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['propiedad', 'reserva']))
             ->defaultSort('id', 'desc')
             ->columns([
-                TextColumn::make('creado_en')->label(__('mensajes.envios.fecha'))->dateTime()->sortable(),
+                TextColumn::make('creado_en')->label(__('mensajes.envios.fecha'))->sortable()->formatStateUsing(fn (Envio $record): string => Formato::momento($record->creado_en, $record->propiedad->zona_horaria)),
                 TextColumn::make('destino')->label(__('mensajes.envios.destino'))->limit(40)->searchable(),
                 TextColumn::make('asunto')->label(__('mensajes.envios.asunto'))->limit(50)->searchable()->toggleable(),
                 TextColumn::make('reserva.numero')->label(__('mensajes.envios.reserva'))->toggleable(),

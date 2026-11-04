@@ -32,6 +32,25 @@ construyen después. Las tablas que aporta el framework y sus paquetes (`users`,
 
 ---
 
+## Diferencias con lo implementado (1.0.5)
+
+Lo programado sigue este diseño, salvo:
+
+- **`plantillas`:** sin columna `canal` ni fila «de la instalación»: cada propiedad tiene las suyas y se mandan por
+  el canal que se elija. El texto va en JSON por idioma, sin `spatie/laravel-translatable` (D-045).
+- **`automatizaciones`:** sin acción `webhook`; los avisos a otros sistemas se configuran aparte, en `webhooks`.
+- **`envios`:** un estado más, `manual` (listo para copiar, sin correo configurado), y `webhook_id`.
+- **`bloqueos_externos`, `fuentes_ical`:** llevan `propiedad_id`; `fuentes_ical` lleva `nombre`.
+- **`registros_llegada_personas`:** nacionalidad y país como texto, sin `symfony/intl` (D-048). Sin `tipos_documento`
+  ni `parentescos`: los tipos de documento los da el paquete de país.
+- **No creadas:** `envios_autoridad`, `fichas_huesped`, `exclusiones_aviso`, `canales_alias`, `subdivisiones`,
+  `equivalencias`, `reservas_dias_limpieza`.
+- **`facturas`:** sin encadenamiento de VeriFactu ni `sustituye_a_id`. `emisor` guarda copia, igual que `receptor`.
+- **`entidades_fiscales`:** pertenecen a una propiedad.
+- **`planos_unidades`:** solo posición, en porcentaje.
+
+---
+
 ## 1. Principios y convenciones
 
 ### 1.1 Nombres

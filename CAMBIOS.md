@@ -2,6 +2,50 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.5 — 2026-11-04
+
+La versión más grande hasta ahora: AlojaFlow ya funciona como sistema completo de una propiedad independiente,
+y añade limpieza, mensajes, iCal, llegada en línea, facturación e informes en cualquier propiedad.
+
+**Lo que hay que saber antes de usarlo en real**
+- **Stripe y Mercado Pago** están programados según su documentación, pero solo se probaron con respuestas
+  simuladas: haz un cobro de prueba con llaves de prueba.
+- **Las facturas CFDI 4.0 no están timbradas:** falta contratar un PAC. El PDF lo dice en grande.
+- **Los textos legales son de partida:** revísalos con un abogado antes de publicarlos.
+
+**Propiedades independientes**
+- Tarifas por noche con persona extra o por persona, con fin de semana, temporadas y estancia mínima.
+- Impuestos incluidos o que se suman, cargos adicionales, canales con comisión, cupones, cajas, gastos e ingresos.
+- Grupos, acompañantes, notas internas, fusionar fichas de huéspedes y arrastrar reservas en el calendario.
+- Confirmación de reserva y recibos en PDF.
+- **Pasar a independiente:** una propiedad subordinada conserva sus datos y deja de leer la principal.
+
+**Motor de reservas:** una página pública por propiedad para buscar, reservar y pagar, también dentro de tu
+sitio con un iframe. Se configura en **Configuración → Motor de reservas**.
+
+**Limpieza:** pantalla para el teléfono con el estado de cada habitación, tareas automáticas de salida y de
+estancia, problemas con fotos y aviso por WhatsApp.
+
+**Mensajes:** correo de salida desde el panel, plantillas por idioma, envíos automáticos por evento o por fecha
+y avisos firmados a otros sistemas. Sin correo configurado, los mensajes quedan listos para copiar.
+
+**Calendarios iCal:** un enlace por habitación para los portales, lectura de Airbnb, Booking.com y Vrbo, y aviso
+de choques.
+
+**Llegada en línea:** el huésped manda sus datos por un enlace, acepta los documentos legales y, si lo activas,
+lo confirma con un código por correo. Identificaciones cifradas y borradas a los 30 días.
+
+**Privacidad:** exportar y anonimizar los datos de un huésped; plazos de conservación aplicados cada noche.
+
+**Dinero:** políticas de cancelación y no-show, datos fiscales, series, facturas y recibos, exportación para el
+contador y doce informes con CSV.
+
+**También:** cierre del día, plano de habitaciones, colores por tipo de cliente y modo de demostración pública.
+
+**Correcciones**
+- Las fechas de las tablas y los decimales salen como en México.
+- Una copia de seguridad podía borrarse a sí misma si había otra en el mismo segundo.
+
 ## 1.0.4 — 2026-11-04
 
 Instalar AlojaFlow ya es subir un archivo y abrirlo en el navegador.

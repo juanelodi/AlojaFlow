@@ -51,7 +51,7 @@ class ViewLlegada extends Page
 
     public function getTitle(): string|Htmlable
     {
-        return __('llegada.panel.modelo').' · '.$this->registro()->reserva->numero;
+        return __('llegada.titulo').' · '.$this->registro()->reserva->numero;
     }
 
     /**

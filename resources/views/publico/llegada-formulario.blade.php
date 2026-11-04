@@ -45,7 +45,7 @@
                     </div>
                     <div class="campo"><label for="p{{ $i }}-docnum">{{ __('llegada.documento_numero') }}</label><input type="text" id="p{{ $i }}-docnum" name="personas[{{ $i }}][documento_numero]" value="{{ $old('documento_numero') }}" maxlength="50" autocomplete="off" @required($i === 0 || $pais->documentoDeTodos())></div>
                     @if ($pedirFoto)
-                        <div class="campo"><label for="p{{ $i }}-foto">{{ __('llegada.foto') }}</label><input type="file" id="p{{ $i }}-foto" name="personas[{{ $i }}][foto]" accept="image/*,application/pdf" capture="environment" style="width:100%"></div>
+                        <div class="campo"><label for="p{{ $i }}-foto">{{ __('llegada.foto') }}</label><input type="file" id="p{{ $i }}-foto" name="personas[{{ $i }}][foto]" accept="image/*,application/pdf" style="width:100%"></div>
                     @endif
                     @if ($i === 0)
                         <div class="campo"><label for="p0-correo">{{ __('llegada.correo') }}</label><input type="email" id="p0-correo" name="personas[0][correo]" value="{{ $old('correo') }}" maxlength="150" autocomplete="email" required></div>

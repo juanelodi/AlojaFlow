@@ -28,9 +28,10 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
    [docs/producto.md](docs/producto.md) §8.
 2. **Fase 2 — núcleo propio.** Reservas, tarifas y clientes propios para funcionar sin
    HotelDruid, más todo lo que escribe reservas (grupos, cupones, fusionar clientes, motor de
-   reservas…). El modelo de datos lo contempla desde la fase 1. **Desde la 1.0.3 ya existe su
-   parte mínima (D-035):** propiedades independientes (`modo = nativa`) con unidades, tarifas,
-   huéspedes, reservas, bloqueos y pagos. Las subordinadas siguen como en la fase 1.
+   reservas…). El modelo de datos lo contempla desde la fase 1. **Desde la 1.0.5 está completa
+   salvo la importación histórica (D-041 a D-043):** propiedades independientes (`modo = nativa`)
+   con su motor de reservas, y una subordinada puede pasar a independiente. Las subordinadas
+   siguen como en la fase 1.
 
 AlojaFlow 1.2.x queda **congelada** (solo correcciones de seguridad y errores): el esquema 3.081
 de la copia no cambia mientras se construye la fase 1.
@@ -191,10 +192,18 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   - `CopiaBaseDatos`, `Firma`, `Manifiesto` y `Rutas` (qué no toca nunca una actualización).
 - `app/Reservas/` — propiedades independientes: `GestorReservas` es el único que escribe reservas,
   noches y pagos propios, y `Cotizador` calcula el precio con la tarifa y sus temporadas.
-- `instalador/instalar.php` — plantilla del instalador de un solo archivo (D-040); sin sintaxis
+- `app/Motor/` y `app/Pagos/` — motor de reservas y pasarelas (D-042). `app/Propiedades/Independizador.php`,
+  pasar una subordinada a independiente (D-043).
+- `app/Limpieza/`, `app/Comunicacion/` (`Mensajero`, D-045), `app/Ical/` (D-046), `app/Llegada/` y
+  `app/Privacidad/` (D-047): datos propios, que valen igual en independientes y subordinadas.
+- `app/Paises/` — **todo lo que cambia por país** va detrás de `Pais` (D-048). `app/Facturacion/`,
+  facturas y CFDI (D-049). `app/Dinero/`, políticas (D-050).
+- `app/Archivos/GestorArchivos.php` — archivos privados, cifrados si llevan datos personales.
+  `app/Seguridad/ClienteExterno.php`, peticiones a direcciones que escribe un usuario, solo a redes públicas.- `instalador/instalar.php` — plantilla del instalador de un solo archivo (D-040); sin sintaxis
   moderna a propósito. `app/Instalacion/Instalador.php`, lo que hace dentro de la aplicación.
 - `app/Copias/GestorCopias.php` — copias de seguridad (D-038). `app/Programador/`, tareas sin cron (D-039).
-- `app/Demo/GeneradorDemo.php` — la propiedad de demostración con datos inventados (D-037).
+- `app/Demo/` — `GeneradorDemo`, la propiedad de demostración con datos inventados (D-037), y `ModoDemo`,
+  la demostración pública (D-044).
 - `app/Models/` — modelos en español sobre `ModeloBase` (`creado_en`/`actualizado_en`). Las
   filas con `sincronizada = true` solo las cambia la sincronización
   (`Concerns/ProtegidaPorSincronizacion`).
@@ -204,7 +213,8 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   Disponibilidad, Indicadores).
 - `app/Filament/Pages/` (pantallas propias, vistas en `resources/views/filament/pages/`) y
   `app/Filament/Resources/` (administración y listados).
-- `lang/es` (fuente) y `lang/en`; `resources/css/alojaflow.css` (estilos propios).
+- `lang/es` (fuente) y los demás idiomas; `resources/views/publico/`, páginas sin sesión del huésped;
+  `resources/css/alojaflow.css` (estilos propios).
 - `tests/Support/ConstructorCopia.php` — genera copias sintéticas de HotelDruid para las pruebas;
   `ConstructorPaquete.php`, paquetes de versión firmados con una clave de prueba.
 - `desarrollo/` — no se instala ni va en los paquetes:
