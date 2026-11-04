@@ -3,7 +3,7 @@
 Sistema de gestión de alojamientos (PMS) de código abierto, para alojamientos pequeños y
 propietarios con varias propiedades. Licencia **AGPL-3.0-or-later**.
 
-> **Estado:** versión de prueba 1.0.9. Cada propiedad puede trabajar de dos formas:
+> **Estado:** versión de prueba 1.0.10. Cada propiedad puede trabajar de dos formas:
 > - **Independiente:** AlojaFlow es su sistema: tarifas, cargos, impuestos, huéspedes, reservas, pagos, caja,
 >   grupos, cupones y un motor de reservas con Stripe y Mercado Pago.
 > - **Subordinada:** AlojaFlow lee los datos de una instalación de **HotelDruid** o

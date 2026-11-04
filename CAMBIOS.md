@@ -2,6 +2,17 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.10 — 2026-11-04
+
+Corrige los nueve avisos de seguridad que Symfony publicó el 4 de noviembre, y que también afectan a la 1.0.9 y a las anteriores.
+**Actualiza si ya tienes una instalación en internet.** No cambia la base de datos ni nada de cómo funciona, y trae también las mejoras de la 1.0.9.
+
+- `symfony/http-foundation`, `http-kernel`, `routing` y `html-sanitizer` pasan a la 7.4.23. Es el único cambio de código.
+- **Lo que se comprobó:** AlojaFlow no define rutas por dominio ni proxies de confianza, ni usa las reglas de acceso ni los fragmentos de Symfony, y
+  su propio código no usa `html-sanitizer`, aunque Filament sí lo trae. Las direcciones que señala el aviso sobre enlaces con otro dominio daban
+  404 en la 1.0.9, con el dominio en `public/`, en la raíz o en una subcarpeta, y ningún enlace apuntaba fuera.
+- **Lo que no:** no se analizó a fondo cada aviso, porque el parche es la solución para todos.
+
 ## 1.0.9 — 2026-11-04
 
 **El panel carga mucho más rápido en un teléfono con mala red.** En una instalación nueva, Hoy pasó de 56 a 99 puntos en Lighthouse móvil
