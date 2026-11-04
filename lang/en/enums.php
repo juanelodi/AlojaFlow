@@ -65,4 +65,34 @@ return [
         'factura_pdf' => 'Invoice (PDF)',
         'exportacion' => 'Export',
     ],
+
+    'CanalEnvio' => [
+        'correo' => 'Email',
+        'whatsapp_enlace' => 'WhatsApp',
+        'webhook' => 'Webhook',
+    ],
+
+    'EstadoEnvio' => [
+        'pendiente' => 'To send',
+        'enviado' => 'Sent',
+        'fallido' => 'Failed',
+        'omitido' => 'Not sent',
+        'manual' => 'Ready to copy',
+    ],
+
+    'DisparadorAutomatizacion' => [
+        'reserva.creada' => 'When the booking is created',
+        'reserva.confirmada' => 'When it is confirmed',
+        'reserva.modificada' => 'When it changes',
+        'reserva.cancelada' => 'When it is cancelled',
+        'antes_llegada' => 'Days before arrival',
+        'llegada' => 'On the day of arrival',
+        'salida' => 'On the day of departure',
+        'despues_salida' => 'Days after departure',
+    ],
+
+    'AccionAutomatizacion' => [
+        'correo_huesped' => 'Email to the guest',
+        'correo_fijo' => 'Email to a fixed address',
+    ],
 ];

@@ -27,6 +27,7 @@ class ViewReserva extends ViewRecord
     {
         return [
             AccionesReserva::confirmar(),
+            AccionesReserva::mandarMensaje(),
             AccionesReserva::limpiezaEstancia(),
             AccionesReserva::entrada(),
             AccionesReserva::salida(),

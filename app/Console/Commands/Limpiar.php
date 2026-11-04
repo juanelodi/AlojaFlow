@@ -11,11 +11,14 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Actualizacion\Actualizador;
+use App\Enums\EstadoEnvio;
 use App\Models\Actualizacion;
 use App\Models\EjecucionSincronizacion;
+use App\Models\Envio;
 use App\Models\Principal;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Borra lo vencido según los plazos de conservación (modelo-datos.md §8).
@@ -35,6 +38,15 @@ class Limpiar extends Command
             ->delete();
 
         $this->info("Ejecuciones de sincronización borradas: $borradas");
+
+        // El texto de los mensajes lleva datos personales: el historial se queda, el cuerpo no (§8).
+        Envio::query()->whereNotNull('cuerpo')->where('creado_en', '<', now()->subDays(90))->whereNotIn('estado', [EstadoEnvio::Pendiente->value])->update(['cuerpo' => null]);
+        $disco = Storage::disk('local');
+        foreach ($disco->files('subidas-temporales') as $temporal) {
+            if ($disco->lastModified($temporal) < now()->subDay()->getTimestamp()) {
+                $disco->delete($temporal);
+            }
+        }
 
         // Las copias de cada actualización (base de datos y archivos sustituidos) llevan datos
         // personales: solo se guardan las de las últimas.

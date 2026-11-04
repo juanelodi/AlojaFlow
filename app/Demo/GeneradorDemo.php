@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Demo;
 
+use App\Comunicacion\PlantillasBase;
 use App\Enums\BaseCargo;
 use App\Enums\EstadoReserva;
 use App\Enums\MetodoPago;
@@ -114,6 +115,7 @@ final class GeneradorDemo
             ]);
             $unidades = $this->crearCatalogo($propiedad);
             $this->crearCatalogosExtra($propiedad);
+            $this->crearMensajes($propiedad);
             $huespedes = $this->crearHuespedes($propiedad);
             foreach ($unidades as $indice => $unidad) {
                 $this->llenarUnidad($propiedad, $unidad, $indice, $huespedes);
@@ -182,6 +184,12 @@ final class GeneradorDemo
     /**
      * Lo demás que usa un alojamiento: impuestos de México, cargos, canales, una caja y un cupón.
      */
+    private function crearMensajes(Propiedad $propiedad): void
+    {
+        PlantillasBase::sembrar($propiedad);
+        PlantillasBase::automatizacionesDemo($propiedad);
+    }
+
     private function crearCatalogosExtra(Propiedad $propiedad): void
     {
         Impuesto::query()->create(['propiedad_id' => $propiedad->id, 'codigo' => 'IVA', 'nombre' => 'IVA', 'base' => BaseCargo::PorcentajeAlojamiento, 'tasa' => 16, 'incluido_en_precio' => true, 'orden' => 1]);

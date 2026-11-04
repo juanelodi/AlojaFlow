@@ -222,3 +222,7 @@
 .dark .af-tarea { background: var(--gray-800); }
 .af-tarea__titulo { font-weight: 500; }
 .af-unidad-tarjeta .fi-btn { min-height: 2.75rem; }
+
+/* Mensajes */
+.af-mensaje { white-space: pre-wrap; word-break: break-word; font: inherit; font-size: .875rem; padding: .75rem; border-radius: .5rem; background: var(--gray-50); max-height: 24rem; overflow: auto; }
+.dark .af-mensaje { background: var(--gray-800); }

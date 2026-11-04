@@ -48,6 +48,7 @@ return [
         'en_casa' => 'In house',
         'salio' => 'Checked out',
         'entrada_pendiente' => 'Check-in pending',
+        'cerrar' => 'Close',
     ],
 
     'roles' => [

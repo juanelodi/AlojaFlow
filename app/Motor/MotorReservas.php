@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Motor;
 
+use App\Comunicacion\Mensajero;
 use App\Enums\EstadoReserva;
 use App\Enums\TipoContacto;
 use App\Models\ConceptoCargo;
@@ -123,7 +124,7 @@ final class MotorReservas
         $cargos = array_values(array_intersect($datos['cargos'], $permitidos));
         $elegidos = array_fill_keys($cargos, 1.0);
 
-        return DB::transaction(function () use ($propiedad, $ajustes, $datos, $candidatas, $llegada, $salida, $cupon, $cargos, $elegidos): Reserva {
+        $reserva = DB::transaction(function () use ($propiedad, $ajustes, $datos, $candidatas, $llegada, $salida, $cupon, $cargos, $elegidos): Reserva {
             $huesped = $this->huesped($propiedad, $datos);
             /** @var Unidad $primera */
             $primera = $candidatas->first();
@@ -166,6 +167,9 @@ final class MotorReservas
 
             throw new ReservaRechazada(__('motor.error.sin_lugar'));
         });
+        app(Mensajero::class)->avisarNuevaReserva($reserva, $ajustes->correoAviso());
+
+        return $reserva;
     }
 
     /**

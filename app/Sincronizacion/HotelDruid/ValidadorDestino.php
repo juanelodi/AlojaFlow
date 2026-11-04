@@ -52,6 +52,36 @@ class ValidadorDestino
     }
 
     /**
+     * Una dirección completa que escribió un usuario (aviso, calendario): admite ruta y consulta,
+     * pero solo hacia redes públicas. Devuelve lo necesario para fijar la IP en la conexión.
+     *
+     * @return array{host: string, puerto: int, ip: string}
+     */
+    public function validarEnlace(string $url, bool $permitirHttp = false): array
+    {
+        $partes = parse_url($url);
+        $esquema = strtolower((string) ($partes['scheme'] ?? ''));
+        $host = (string) ($partes['host'] ?? '');
+        if ($host === '' || isset($partes['user']) || isset($partes['pass'])) {
+            throw $this->error(__('sincronizacion.destino.url_invalida'));
+        }
+        if ($esquema !== 'https' && ! ($esquema === 'http' && $permitirHttp)) {
+            throw $this->error(__('sincronizacion.destino.solo_https'));
+        }
+        $direcciones = $this->resolver(trim($host, '[]'));
+        if ($direcciones === []) {
+            throw new ErrorSincronizacion(CodigoError::Conexion, 'validar', __('sincronizacion.destino.sin_resolver', ['host' => $host]));
+        }
+        foreach ($direcciones as $ip) {
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+                throw $this->error(__('sincronizacion.destino.red_local', ['host' => $host]));
+            }
+        }
+
+        return ['host' => $host, 'puerto' => (int) ($partes['port'] ?? ($esquema === 'https' ? 443 : 80)), 'ip' => $direcciones[0]];
+    }
+
+    /**
      * @return list<string>
      */
     protected function resolver(string $host): array

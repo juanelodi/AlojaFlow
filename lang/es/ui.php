@@ -48,6 +48,7 @@ return [
         'en_casa' => 'En casa',
         'salio' => 'Salió',
         'entrada_pendiente' => 'Entrada pendiente',
+        'cerrar' => 'Cerrar',
     ],
 
     'roles' => [

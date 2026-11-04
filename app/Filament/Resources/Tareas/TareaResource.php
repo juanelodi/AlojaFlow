@@ -12,7 +12,7 @@ namespace App\Filament\Resources\Tareas;
 
 use App\Enums\EstadoTarea;
 use App\Enums\TipoTarea;
-use App\Filament\Resources\Base\RecursoDePropiedad;
+use App\Filament\Resources\Base\RecursoDeCualquierPropiedad;
 use App\Filament\Resources\Tareas\Pages\CreateTarea;
 use App\Filament\Resources\Tareas\Pages\EditTarea;
 use App\Filament\Resources\Tareas\Pages\ListTareas;
@@ -39,7 +39,7 @@ use Illuminate\Database\Eloquent\Builder;
 /**
  * Todas las tareas de limpieza, inspección y mantenimiento, también las de días futuros.
  */
-class TareaResource extends RecursoDePropiedad
+class TareaResource extends RecursoDeCualquierPropiedad
 {
     protected static ?string $model = Tarea::class;
 
@@ -52,14 +52,6 @@ class TareaResource extends RecursoDePropiedad
     protected static function permiso(): string
     {
         return Acceso::LIMPIEZA;
-    }
-
-    /**
-     * Las tareas son datos propios de AlojaFlow: también en las subordinadas.
-     */
-    public static function propiedadesGestionables(): array
-    {
-        return Acceso::propiedades(Acceso::usuarioActual(), self::permiso());
     }
 
     public static function getNavigationGroup(): ?string

@@ -10,11 +10,16 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Reservas;
 
+use App\Comunicacion\Mensajero;
+use App\Comunicacion\VariablesMensaje;
 use App\Documentos\GeneradorPdf;
+use App\Enums\CanalEnvio;
+use App\Enums\EstadoEnvio;
 use App\Enums\EstadoReserva;
 use App\Enums\FrecuenciaLimpieza;
 use App\Enums\TipoReserva;
 use App\Limpieza\GestorLimpieza;
+use App\Models\Plantilla;
 use App\Models\ReglaLimpieza;
 use App\Models\Reserva;
 use App\Reservas\GestorReservas;
@@ -24,9 +29,13 @@ use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Support\Icons\Heroicon;
+use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -48,6 +57,57 @@ final class AccionesReserva
     /**
      * Limpiezas fijas durante la estancia. Vale también en subordinadas: es un dato propio.
      */
+    public static function mandarMensaje(): Action
+    {
+        return Action::make('mandarMensaje')
+            ->label(__('mensajes.mandar.accion'))
+            ->icon(Heroicon::OutlinedChatBubbleLeftEllipsis)
+            ->color('gray')
+            ->visible(fn (Reserva $record): bool => $record->tipo === TipoReserva::Reserva && Acceso::puede(Acceso::usuarioActual(), Acceso::MENSAJES, $record->propiedad_id))
+            ->fillForm(fn (Reserva $record): array => [
+                'canal' => CanalEnvio::Correo->value,
+                'destino_correo' => Mensajero::correoDe($record),
+                'destino_telefono' => Mensajero::telefonoDe($record),
+            ])
+            ->schema(fn (Reserva $record): array => [
+                Select::make('plantilla')->label(__('mensajes.mandar.plantilla'))->native(false)->live()->placeholder(__('mensajes.mandar.sin_plantilla'))
+                    ->options(Plantilla::query()->where('propiedad_id', $record->propiedad_id)->where('activa', true)->orderBy('nombre')->pluck('nombre', 'id')->all())
+                    ->afterStateUpdated(function (mixed $state, Set $set) use ($record): void {
+                        $plantilla = Plantilla::query()->where('propiedad_id', $record->propiedad_id)->find((int) $state);
+                        if ($plantilla !== null) {
+                            $texto = Mensajero::textoDe($plantilla, $record, Mensajero::idiomaDe($record));
+                            $set('asunto', $texto['asunto']);
+                            $set('cuerpo', $texto['cuerpo']);
+                        }
+                    }),
+                Select::make('canal')->label(__('mensajes.mandar.canal'))->native(false)->live()->required()
+                    ->options([CanalEnvio::Correo->value => CanalEnvio::Correo->etiqueta(), CanalEnvio::WhatsappEnlace->value => CanalEnvio::WhatsappEnlace->etiqueta()]),
+                TextInput::make('destino_correo')->label(__('mensajes.mandar.destino_correo'))->email()->maxLength(255)
+                    ->visible(fn (Get $get): bool => $get('canal') === CanalEnvio::Correo->value)->required(fn (Get $get): bool => $get('canal') === CanalEnvio::Correo->value),
+                TextInput::make('destino_telefono')->label(__('mensajes.mandar.destino_telefono'))->tel()->maxLength(50)
+                    ->visible(fn (Get $get): bool => $get('canal') === CanalEnvio::WhatsappEnlace->value),
+                TextInput::make('asunto')->label(__('mensajes.plantillas.asunto'))->maxLength(200)
+                    ->visible(fn (Get $get): bool => $get('canal') === CanalEnvio::Correo->value)->required(fn (Get $get): bool => $get('canal') === CanalEnvio::Correo->value),
+                Textarea::make('cuerpo')->label(__('mensajes.plantillas.cuerpo'))->rows(10)->maxLength(10000)->required(),
+            ])
+            ->action(function (Reserva $record, array $data, Mensajero $mensajero, Component $livewire): void {
+                $idioma = Mensajero::idiomaDe($record);
+                if ($data['canal'] === CanalEnvio::WhatsappEnlace->value) {
+                    $mensajero->anotarWhatsapp($record, $data['destino_telefono'] ?? null, (string) $data['cuerpo'], $idioma);
+                    $enlace = VariablesMensaje::enlaceWhatsapp($data['destino_telefono'] ?? null, (string) $data['cuerpo']);
+                    $livewire->js('window.open('.json_encode($enlace).', "_blank", "noopener")');
+
+                    return;
+                }
+                $envio = $mensajero->mandarCorreo($record, (string) $data['destino_correo'], (string) ($data['asunto'] ?? ''), (string) $data['cuerpo'], $idioma);
+                match ($envio->estado) {
+                    EstadoEnvio::Enviado => Notification::make()->success()->title(__('mensajes.mandar.enviado'))->send(),
+                    EstadoEnvio::Manual => Notification::make()->warning()->persistent()->title(__('mensajes.mandar.manual'))->send(),
+                    default => Notification::make()->danger()->title(__('mensajes.mandar.fallo'))->body($envio->ultimo_error)->send(),
+                };
+            });
+    }
+
     public static function limpiezaEstancia(): Action
     {
         return Action::make('limpiezaEstancia')
