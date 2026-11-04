@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 use App\Enums\EstadoReserva;
 use App\Enums\ModoPropiedad;
+use App\Http\Middleware\ProgramadorPorVisitas;
 use App\Models\Aviso;
 use App\Models\Cupon;
 use App\Models\Huesped;
@@ -218,6 +219,8 @@ describe('cabeceras', function () {
     it('en producción con https manda a https y pide HSTS; sin https no hace nada', function () {
         config(['app.url' => 'https://hotel.example']);
         $this->app['env'] = 'production';
+        // Ya no es el entorno de pruebas: ProgramadorPorVisitas correría las tareas de verdad, copia incluida.
+        $this->withoutMiddleware(ProgramadorPorVisitas::class);
 
         $this->get('http://hotel.example/up')->assertRedirect('https://hotel.example/up')->assertStatus(301);
         $this->get('https://hotel.example/up')->assertOk()->assertHeader('Strict-Transport-Security', 'max-age=31536000');

@@ -102,6 +102,11 @@ it('crea el demo una sola vez y deja la marca de instalado', function () {
 });
 
 it('sin cron, las tareas corren por turnos y no se repiten; con cron, no corren', function () {
+    // Corren de verdad, y entre ellas van la copia de seguridad y el borrado de las copias de
+    // actualizaciones: en un almacén aparte, para no tocar las de verdad de este equipo.
+    $almacen = dirname(archivoTemporal('x'));
+    app()->useStoragePath($almacen);
+
     expect(TareasPorVisita::cronActivo())->toBeFalse();
 
     $primera = TareasPorVisita::ejecutarPendientes();
@@ -118,4 +123,5 @@ it('sin cron, las tareas corren por turnos y no se repiten; con cron, no corren'
     $this->travel(31)->minutes();
     expect(TareasPorVisita::cronActivo())->toBeFalse();
     expect(TareasPorVisita::comandoCron())->toContain('artisan schedule:run');
+    File::deleteDirectory($almacen);
 });
