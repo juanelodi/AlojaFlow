@@ -75,7 +75,7 @@ final class ProveedorMercadoPago implements ProveedorPago
     {
         $idPago = (string) ($request->query('payment_id') ?? $request->query('collection_id') ?? '');
 
-        return $idPago === '' ? null : $this->consultarPago($idPago, $referencia);
+        return $idPago === '' ? null : $this->consultarPago($idPago);
     }
 
     public function procesarAviso(Request $request): ?ResultadoPago
@@ -88,10 +88,10 @@ final class ProveedorMercadoPago implements ProveedorPago
             $this->comprobarFirma($request, $idPago);
         }
 
-        return $this->consultarPago($idPago, null);
+        return $this->consultarPago($idPago);
     }
 
-    private function consultarPago(string $idPago, ?string $referencia): ?ResultadoPago
+    private function consultarPago(string $idPago): ?ResultadoPago
     {
         if (preg_match('/^[0-9]+$/', $idPago) !== 1) {
             return null;
@@ -108,8 +108,9 @@ final class ProveedorMercadoPago implements ProveedorPago
         $moneda = strtoupper((string) ($pago['currency_id'] ?? ''));
 
         return new ResultadoPago(
-            // Para encontrar el cobro nuestro: external_reference es el id de pagos_en_linea.
-            $referencia ?? 'interna:'.(string) ($pago['external_reference'] ?? ''),
+            // El cobro lo dice el propio pago (external_reference es el id de pagos_en_linea), no la
+            // dirección: quien abre el retorno no puede aplicar un pago aprobado a otra reserva.
+            'interna:'.(string) ($pago['external_reference'] ?? ''),
             ($pago['status'] ?? '') === 'approved',
             Dinero::aUnidadMenor((string) ($pago['transaction_amount'] ?? 0), $moneda === '' ? 'MXN' : $moneda),
             $moneda,

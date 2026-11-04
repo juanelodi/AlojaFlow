@@ -190,7 +190,7 @@ class MotorReservasController extends Controller
         if ($proveedor !== null && $cobro !== null && $cobro->referencia !== null) {
             $resultado = $proveedor->consultarRetorno($request, $cobro->referencia);
             if ($resultado !== null) {
-                $this->cobros->confirmar($proveedor, $resultado);
+                $this->cobros->confirmar($proveedor, $resultado, $propiedad->id);
             }
         }
 
@@ -212,7 +212,7 @@ class MotorReservasController extends Controller
             return response('firma', 400);
         }
         if ($resultado !== null) {
-            $this->cobros->confirmar($proveedor, $resultado);
+            $this->cobros->confirmar($proveedor, $resultado, $propiedad->id);
         }
 
         return response('ok');

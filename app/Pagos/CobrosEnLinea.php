@@ -65,10 +65,10 @@ final class CobrosEnLinea
      * Anota lo que la pasarela confirma. Comprueba que coincidan el importe y la moneda: no se
      * da por pagada una reserva con un cobro de otra cantidad.
      */
-    public function confirmar(ProveedorPago $proveedor, ResultadoPago $resultado): ?PagoEnLinea
+    public function confirmar(ProveedorPago $proveedor, ResultadoPago $resultado, int $propiedadId): ?PagoEnLinea
     {
         $id = str_starts_with($resultado->referencia, 'interna:') ? (int) substr($resultado->referencia, 8) : null;
-        $consulta = PagoEnLinea::query()->where('pasarela', $proveedor->nombre());
+        $consulta = PagoEnLinea::query()->where('propiedad_id', $propiedadId)->where('pasarela', $proveedor->nombre());
         $cobro = $id !== null ? (clone $consulta)->find($id) : (clone $consulta)->where('referencia', $resultado->referencia)->first();
         if ($cobro === null) {
             return null;

@@ -2,6 +2,14 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.6 — 2026-11-04
+
+Correcciones de seguridad encontradas al revisar la 1.0.5. Actualiza si ya la instalaste.
+
+- **Mercado Pago:** quien tuviera un pago aprobado podía aplicarlo a otra reserva abriendo una dirección
+  preparada. Ahora el cobro lo dice el propio pago, y solo vale dentro de su propiedad.
+- **Exportaciones CSV:** un nombre que empezara con «=» podía ejecutarse como fórmula al abrir el archivo en Excel.
+
 ## 1.0.5 — 2026-11-04
 
 La versión más grande hasta ahora: AlojaFlow ya funciona como sistema completo de una propiedad independiente,

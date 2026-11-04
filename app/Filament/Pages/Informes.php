@@ -14,6 +14,7 @@ use App\Filament\Concerns\ConPropiedadSeleccionada;
 use App\Seguridad\Acceso;
 use App\Servicios\Informes as ServicioInformes;
 use App\Servicios\Operacion;
+use App\Support\Csv;
 use BackedEnum;
 use Carbon\CarbonImmutable;
 use Filament\Pages\Page;
@@ -120,7 +121,7 @@ class Informes extends Page
             fwrite($salida, "\xEF\xBB\xBF");
             fputcsv($salida, $datos['columnas']);
             foreach ($datos['filas'] as $fila) {
-                fputcsv($salida, $fila);
+                fputcsv($salida, Csv::fila($fila));
             }
             fclose($salida);
         }, $this->informe.'-'.$this->desde.'-'.$this->hasta.'.csv', ['Content-Type' => 'text/csv; charset=utf-8']);

@@ -264,6 +264,16 @@ describe('Mercado Pago', function () {
         expect($this->reserva->refresh()->pagado)->toBe(100000)->and($this->reserva->estado)->toBe(EstadoReserva::Confirmada);
     });
 
+    it('un pago aprobado de otra reserva no sirve para esta', function () {
+        $this->post('/reservar/posada/r/'.$this->reserva->codigo_publico.'/pagar/mercadopago');
+        $cobro = PagoEnLinea::query()->firstOrFail();
+        Http::fake(['api.mercadopago.com/v1/payments/777' => Http::response(['id' => 777, 'status' => 'approved', 'transaction_amount' => 1000.0, 'currency_id' => 'MXN', 'external_reference' => '999999'])]);
+
+        $this->get('/reservar/posada/r/'.$this->reserva->codigo_publico.'/retorno/mercadopago?cobro='.$cobro->id.'&payment_id=777')->assertRedirect();
+
+        expect($this->reserva->refresh()->pagado)->toBe(0)->and($this->reserva->estado)->toBe(EstadoReserva::SinConfirmar);
+    });
+
     it('el aviso con firma válida confirma; con firma mala, no', function () {
         $this->post('/reservar/posada/r/'.$this->reserva->codigo_publico.'/pagar/mercadopago');
         $ts = (string) time();

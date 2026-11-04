@@ -12,6 +12,7 @@ namespace App\Filament\Resources\Facturas\Pages;
 
 use App\Filament\Resources\Facturas\FacturaResource;
 use App\Models\Factura;
+use App\Support\Csv;
 use App\Support\Dinero;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -56,7 +57,7 @@ class ListFacturas extends ListRecords
             fputcsv($salida, array_map(fn (string $c): string => __('dinero.contador.'.$c), $campos));
             foreach ($facturas as $factura) {
                 /** @var Factura $factura */
-                fputcsv($salida, [
+                fputcsv($salida, Csv::fila([
                     $factura->serie,
                     $factura->numero,
                     $factura->emitida_en->format('Y-m-d H:i:s'),
@@ -69,7 +70,7 @@ class ListFacturas extends ListRecords
                     $factura->estado->etiqueta(),
                     $factura->uuid_fiscal,
                     $factura->reservas->pluck('numero')->implode(' '),
-                ]);
+                ]));
             }
             fclose($salida);
         }, 'facturas-'.$desde.'-'.$hasta.'.csv', ['Content-Type' => 'text/csv; charset=utf-8']);

@@ -309,6 +309,11 @@ describe('informes', function () {
         $this->generar = fn (string $informe): array => Informes::generar($informe, [$this->propiedad->id], $this->rango[0], $this->rango[1]);
     });
 
+    it('el CSV no deja pasar fórmulas', function () {
+        expect(App\Support\Csv::fila(['=HYPERLINK("x")', '+1', '@a', 'Ana', '-500', -500, '1000.50', null]))
+            ->toBe(["'=HYPERLINK(\"x\")", '+1', "'@a", 'Ana', '-500', '-500', '1000.50', '']);
+    });
+
     it('todos responden, también sin datos', function () {
         foreach (Informes::INFORMES as $informe) {
             expect(($this->generar)($informe))->toHaveKeys(['columnas', 'filas']);
