@@ -31,7 +31,7 @@ class PropiedadForm
             Section::make(__('ui.propiedades.modo'))->columnSpanFull()
                 ->schema([
                     // Se elige al crearla: pasar de una forma a la otra será una migración aparte.
-                    Radio::make('modo')->hiddenLabel()->required()->live()
+                    Radio::make('modo')->label(__('ui.propiedades.modo'))->hiddenLabel()->required()->live()
                         ->options(ModoPropiedad::opciones())
                         ->descriptions([
                             ModoPropiedad::Nativa->value => __('ui.propiedades.modo_independiente_ayuda'),

@@ -132,7 +132,7 @@ class GrupoResource extends RecursoDePropiedad
                 TextEntry::make('notas')->label(__('ui.huespedes.notas'))->placeholder('—'),
             ]),
             Section::make(__('ui.reservas.modelos'))->columnSpanFull()->schema([
-                TextEntry::make('lista')->hiddenLabel()->listWithLineBreaks()->bulleted()->html()
+                TextEntry::make('lista')->label(__('ui.reservas.modelos'))->hiddenLabel()->listWithLineBreaks()->bulleted()->html()
                     ->state(fn (Grupo $record): array => $record->reservas()->with('unidad')->orderBy('id')->get()
                         ->map(fn (Reserva $r): string => '<a class="af-enlace" href="'.e(ReservaResource::getUrl('view', ['record' => $r])).'">'.e($r->numero).'</a> · '.e($r->unidad->nombre).' · '.e(Formato::fecha($r->llegada)).' → '.e(Formato::fecha($r->salida)).' · '.e($r->estado->etiqueta()).' · '.e(Formato::dinero($r->total, $r->moneda)))
                         ->all()),

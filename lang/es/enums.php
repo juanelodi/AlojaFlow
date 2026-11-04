@@ -81,10 +81,12 @@ return [
     ],
 
     'DisparadorAutomatizacion' => [
-        'reserva.creada' => 'Al crear la reserva',
-        'reserva.confirmada' => 'Al confirmarla',
-        'reserva.modificada' => 'Al cambiarla',
-        'reserva.cancelada' => 'Al cancelarla',
+        'reserva' => [
+            'creada' => 'Al crear la reserva',
+            'confirmada' => 'Al confirmarla',
+            'modificada' => 'Al cambiarla',
+            'cancelada' => 'Al cancelarla',
+        ],
         'antes_llegada' => 'Días antes de la llegada',
         'llegada' => 'El día de la llegada',
         'salida' => 'El día de la salida',

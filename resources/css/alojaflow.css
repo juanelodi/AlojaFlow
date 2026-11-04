@@ -65,6 +65,8 @@
 .dark .af-tabla th { color: var(--gray-400); border-color: var(--gray-800); }
 .dark .af-tabla td { color: var(--gray-100); border-color: var(--gray-800); }
 .af-tabla tr:last-child td { border-bottom: 0; }
+/* El estado se lee completo en cualquier idioma: si falta lugar, se desplaza la tabla. */
+.af-tabla .fi-badge, .af-tabla .fi-badge-label { overflow: visible; }
 .af-accion-fila { margin-top: .375rem; }
 .af-tabla a { color: var(--primary-700); font-weight: 500; }
 .dark .af-tabla a { color: var(--primary-400); }

@@ -58,6 +58,11 @@ final class Formato
         return self::fecha($fecha, 'ddd D MMM');
     }
 
+    public static function fechaLarga(?CarbonInterface $fecha): string
+    {
+        return self::fecha($fecha, 'dddd, LL');
+    }
+
     /**
      * Fecha y hora en la zona del usuario (o la indicada).
      */

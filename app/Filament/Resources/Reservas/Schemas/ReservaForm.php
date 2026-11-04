@@ -149,7 +149,7 @@ class ReservaForm
                 ->visible(fn (Get $get): bool => $esReserva($get) && self::hayConceptosOpcionales($get('propiedad_id')))
                 ->collapsible()
                 ->schema([
-                    Repeater::make('cargos')->hiddenLabel()->defaultItems(0)
+                    Repeater::make('cargos')->label(__('ui.cargos.modelos'))->hiddenLabel()->defaultItems(0)
                         ->addActionLabel(__('ui.reservas.anadir_cargo'))
                         ->columns(['default' => 1, 'md' => 2])
                         ->live()
@@ -198,7 +198,7 @@ class ReservaForm
             Section::make(__('ui.reservas.comentario'))->columnSpanFull()
                 ->collapsible()
                 ->schema([
-                    Textarea::make('comentario')->hiddenLabel()->rows(3)->maxLength(5000),
+                    Textarea::make('comentario')->label(__('ui.reservas.comentario'))->hiddenLabel()->rows(3)->maxLength(5000),
                 ]),
         ]);
     }

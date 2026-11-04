@@ -58,9 +58,11 @@ copia desde **Sistema → Copias de seguridad** y guárdala fuera del servidor.
 - código de confirmación por WhatsApp o SMS;
 - channel manager por API: con los portales se trabaja por iCal.
 
-**Idiomas:** todo está en español e inglés. Lo que ve el huésped (motor de reservas, llegada en línea, mensajes,
-documentos en PDF y textos legales de partida) también está en francés, italiano, portugués y alemán, sin revisar
-por hablantes nativos. El panel del personal en esos cuatro idiomas sale en inglés, salvo los textos de Filament.
+**Idiomas:** todo está en español, inglés, francés, italiano, portugués y alemán, también el panel del personal:
+cada usuario elige el suyo en su perfil. Lo traducido a esos últimos cuatro no lo ha revisado un hablante nativo.
+Lo que se guarda como dato (tarifas, plantillas, tareas ya creadas) sigue en el idioma en que se escribió, y los
+avisos de terceros de «Acerca de» están en español. Los textos legales de México solo existen en español e inglés;
+en otro idioma se parte de los genéricos.
 
 ### Cosas nuevas que vale la pena probar
 

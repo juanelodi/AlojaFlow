@@ -59,7 +59,7 @@ class HuespedForm
                 ]),
             Section::make(__('ui.huespedes.contactos'))->columnSpanFull()
                 ->schema([
-                    Repeater::make('contactos')->hiddenLabel()->relationship()
+                    Repeater::make('contactos')->label(__('ui.huespedes.contactos'))->hiddenLabel()->relationship()
                         ->orderColumn('orden')
                         ->columns(['default' => 1, 'md' => 2])
                         ->defaultItems(0)
@@ -99,7 +99,7 @@ class HuespedForm
             Section::make(__('ui.huespedes.notas'))->columnSpanFull()
                 ->collapsible()
                 ->schema([
-                    Textarea::make('notas')->hiddenLabel()->rows(3)->maxLength(5000),
+                    Textarea::make('notas')->label(__('ui.huespedes.notas'))->hiddenLabel()->rows(3)->maxLength(5000),
                 ]),
         ]);
     }

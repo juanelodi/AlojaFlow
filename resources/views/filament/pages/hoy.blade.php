@@ -22,7 +22,7 @@
             </div>
         </div>
 
-        <p class="af-nota">{{ \App\Support\Formato::fecha($this->fechaElegida(), 'dddd D [de] MMMM [de] YYYY') }}@if ($this->haySubordinadas()) · {{ __('ui.comun.solo_consulta') }}@endif</p>
+        <p class="af-nota">{{ \App\Support\Formato::fechaLarga($this->fechaElegida()) }}@if ($this->haySubordinadas()) · {{ __('ui.comun.solo_consulta') }}@endif</p>
 
         @foreach (['llegan', 'salen', 'continuan'] as $lista)
             <x-filament::section :heading="__('ui.hoy.'.$lista).' ('.$listas[$lista]->count().')'">

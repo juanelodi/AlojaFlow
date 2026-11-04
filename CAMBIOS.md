@@ -2,6 +2,16 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## Sin publicar
+
+- **Panel del personal en francés, italiano, portugués y alemán.** Antes salía en inglés. Cada usuario elige su idioma
+  en el perfil. Estas traducciones no las ha revisado un hablante nativo.
+- **Automatizaciones:** en cuatro de sus disparadores, la lista «Cuándo se manda» mostraba una clave interna en lugar del
+  texto, en todos los idiomas.
+- **Hoy y Limpieza:** la fecha larga decía «Mittwoch 4 de November de 2026»; ahora se escribe según el idioma.
+- **Tablas de Hoy:** el estado de cada reserva se veía cortado («Confir…»); ahora se lee completo.
+- **Accesibilidad:** once campos con la etiqueta oculta se anunciaban en español a los lectores de pantalla.
+
 ## 1.0.6 — 2026-11-04
 
 Correcciones de seguridad encontradas al revisar la 1.0.5. Actualiza si ya la instalaste.

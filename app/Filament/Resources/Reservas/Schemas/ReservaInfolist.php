@@ -91,7 +91,7 @@ class ReservaInfolist
                 ->collapsible()
                 ->collapsed()
                 ->schema([
-                    TextEntry::make('lista_eventos')->hiddenLabel()
+                    TextEntry::make('lista_eventos')->label(__('ui.reservas.eventos'))->hiddenLabel()
                         ->state(fn (Reserva $record): array => $record->eventos()->latest('ocurrido_en')->limit(20)->get()
                             ->map(fn (EventoReserva $e): string => Formato::momento($e->ocurrido_en).' · '.$e->tipo->etiqueta())->all())
                         ->listWithLineBreaks()->bulleted()->placeholder('—'),

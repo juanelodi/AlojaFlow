@@ -63,7 +63,7 @@ class TarifaForm
             Section::make(__('ui.tarifas.temporadas'))->columnSpanFull()
                 ->description(__('ui.tarifas.temporadas_ayuda'))
                 ->schema([
-                    Repeater::make('temporadas')->hiddenLabel()->relationship()
+                    Repeater::make('temporadas')->label(__('ui.tarifas.temporadas'))->hiddenLabel()->relationship()
                         ->defaultItems(0)
                         ->addActionLabel(__('ui.tarifas.anadir_temporada'))
                         ->columns(['default' => 1, 'md' => 3])

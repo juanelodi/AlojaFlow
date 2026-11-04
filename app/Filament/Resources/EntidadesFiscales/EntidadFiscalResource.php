@@ -87,7 +87,7 @@ class EntidadFiscalResource extends RecursoDeCualquierPropiedad
                 Select::make('modo')->label(__('dinero.entidades.modo'))->options(ModoFiscal::opciones())->required()->native(false)->default(ModoFiscal::Pruebas->value),
             ]),
             Section::make(__('dinero.entidades.series'))->columnSpanFull()->schema([
-                Repeater::make('series')->hiddenLabel()->relationship()->addActionLabel(__('dinero.entidades.anadir_serie'))->defaultItems(1)->minItems(1)
+                Repeater::make('series')->label(__('dinero.entidades.series'))->hiddenLabel()->relationship()->addActionLabel(__('dinero.entidades.anadir_serie'))->defaultItems(1)->minItems(1)
                     ->columns(['default' => 1, 'md' => 4])
                     ->schema([
                         TextInput::make('serie')->label(__('dinero.entidades.serie'))->required()->maxLength(25)->alphaNum()->default('A'),

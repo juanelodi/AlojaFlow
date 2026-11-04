@@ -62,7 +62,7 @@ class HuespedInfolist
                 ]),
             Section::make(__('ui.huespedes.reservas'))->columnSpanFull()
                 ->schema([
-                    TextEntry::make('lista_reservas')->hiddenLabel()
+                    TextEntry::make('lista_reservas')->label(__('ui.huespedes.reservas'))->hiddenLabel()
                         ->state(fn (Huesped $record): array => $record->reservasComoTitular()->with('unidad')->latest('llegada')->limit(30)->get()
                             ->map(fn (Reserva $r): string => $r->numero.' · '.$r->unidad->nombre.' · '.Formato::fecha($r->llegada).' → '.Formato::fecha($r->salida).' · '.$r->estado->etiqueta())->all())
                         ->listWithLineBreaks()->bulleted()->placeholder('—'),

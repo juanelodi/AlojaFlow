@@ -4,7 +4,7 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-04): versión de prueba 1.0.3**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-04): versión de prueba 1.0.6**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
   D-029) y D-036 se revisan con el usuario.
@@ -69,6 +69,7 @@ de la copia no cambia mientras se construye la fase 1.
 7. **Español primero, en varios idiomas.** Ningún texto visible escrito directamente en el
    código: todo pasa por los archivos de traducción (`lang/<idioma>/…`). El español es la
    fuente; idiomas de la fase 1: español, inglés, francés, italiano, portugués y alemán. Cada
+   texto nuevo va en los seis: `tests/Unit/TraduccionesTest.php` falla si falta alguno (D-052). Cada
    usuario y cada huésped ven su idioma. Fechas, números, monedas y zonas horarias según la
    propiedad y el idioma, nunca con formatos fijos en el código.
 8. **Enlace «Código fuente»** visible en la aplicación (obligación de la AGPL por uso en red),
@@ -116,8 +117,8 @@ spatie/laravel-permission 8, Pest 4, Larastan 3.
 | Copias de seguridad | Propias, sin `mysqldump` (`App\Copias`, D-038) | — |
 | Calendarios iCal (Airbnb, Booking, Vrbo) | sabre/vobject | BSD-3 |
 | PDF (facturas, contratos) | barryvdh/laravel-dompdf (dompdf) | MIT / LGPL-2.1 |
-| Pagos (más adelante) | SDK oficiales de Stripe / Mercado Pago (verificar licencia) | — |
-| Facturación electrónica México (si aplica) | paquetes de phpcfdi | MIT |
+| Pagos en línea | Stripe y Mercado Pago por su API, sin SDK (`App\Pagos`, D-042) | — |
+| Facturación electrónica México | XML de CFDI 4.0 propio, sin timbrar hasta conectar un PAC (`App\Facturacion`, D-049) | — |
 | Colas y tareas | driver `database` + programador de Laravel con un solo cron por minuto (sin Redis ni Supervisor) | — |
 | Pruebas | Pest | MIT |
 | Análisis estático | Larastan (PHPStan) | MIT |
@@ -199,7 +200,8 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 - `app/Paises/` — **todo lo que cambia por país** va detrás de `Pais` (D-048). `app/Facturacion/`,
   facturas y CFDI (D-049). `app/Dinero/`, políticas (D-050).
 - `app/Archivos/GestorArchivos.php` — archivos privados, cifrados si llevan datos personales.
-  `app/Seguridad/ClienteExterno.php`, peticiones a direcciones que escribe un usuario, solo a redes públicas.- `instalador/instalar.php` — plantilla del instalador de un solo archivo (D-040); sin sintaxis
+  `app/Seguridad/ClienteExterno.php`, peticiones a direcciones que escribe un usuario, solo a redes públicas.
+- `instalador/instalar.php` — plantilla del instalador de un solo archivo (D-040); sin sintaxis
   moderna a propósito. `app/Instalacion/Instalador.php`, lo que hace dentro de la aplicación.
 - `app/Copias/GestorCopias.php` — copias de seguridad (D-038). `app/Programador/`, tareas sin cron (D-039).
 - `app/Demo/` — `GeneradorDemo`, la propiedad de demostración con datos inventados (D-037), y `ModoDemo`,
@@ -259,6 +261,9 @@ npx license-checker --summary             # licencias npm
 - En Windows, `ZipArchive::addFile()` no admite rutas de más de 260 caracteres y devuelve
   `false`: comprobar siempre lo que devuelve.
 - La batería de pruebas pasa de 128 MB de memoria: `phpunit.xml` sube `memory_limit`.
+- En `lang/`, una clave con punto (`'a.b' => 'x'`) está en el archivo pero `__()` no la encuentra y sale cruda: se anida.
+- Un campo de Filament sin `->label()` toma su etiqueta del identificador en español, en todos los idiomas, aunque
+  lleve `hiddenLabel()` (la leen los lectores de pantalla y los mensajes de validación).
 
 ## Referencias locales (solo lectura)
 

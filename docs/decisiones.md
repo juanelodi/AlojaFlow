@@ -379,7 +379,17 @@ Motor, llegada en línea, mensajes de partida, documentos y textos legales gené
 prueba lo comprueba, junto con que cada traducción conserve sus variables. El panel del personal está en español
 e inglés, y en los otros cuatro cae al inglés. Las traducciones son mías, sin revisión de hablantes nativos. **Por qué:**
 México va primero; un huésped extranjero sí necesita leer su idioma, y el personal de un hotel mexicano no usa el
-panel en alemán. Revisa parcialmente la previsión de CLAUDE.md de traducirlo todo al final de la Base.
+panel en alemán. Revisa parcialmente la previsión de CLAUDE.md de traducirlo todo al final de la Base. **Superada por
+D-052** en lo que toca al panel.
+
+### D-052 · 2026-11-04 · El panel del personal, en los seis idiomas
+Francés, italiano, portugués y alemán tienen todas las claves de `lang/es`, también las de validación. Una prueba exige
+que cada texto nuevo llegue a los seis. Solo `legal.mexico.*` se queda en español e inglés: en otro idioma se parte de
+los textos genéricos. Vocabulario, el mismo que ya veía el huésped: propiedad es *établissement*, *struttura*,
+*alojamento* y *Unterkunft*; huésped es *client*, *ospite*, *hóspede* y *Gast*; se trata de *vous*, *tu*, tercera persona
+y *Sie*; el portugués es el de Portugal. Lo que se guarda como dato sigue en el idioma en que se escribió, y
+`THIRD-PARTY-NOTICES.md` se muestra en español. Las traducciones son mías, sin revisión de hablantes nativos, que
+`docs/producto.md` §8.5 pide antes de publicarlas: queda pendiente. **Por qué:** lo pidió el usuario.
 
 ---
 

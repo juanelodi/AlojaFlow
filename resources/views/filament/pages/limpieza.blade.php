@@ -22,7 +22,7 @@
             </label>
         </div>
 
-        <p class="af-nota">{{ \App\Support\Formato::fecha($this->fechaElegida(), 'dddd D [de] MMMM [de] YYYY') }}</p>
+        <p class="af-nota">{{ \App\Support\Formato::fechaLarga($this->fechaElegida()) }}</p>
 
         @php($tablero = $this->tablero())
         @if ($tablero === [])

@@ -46,7 +46,7 @@ class UsuarioForm
                 ->description(__('ui.usuarios.acceso_ayuda'))
                 ->schema([
                     // No es una relación: lo guardan las páginas con Acceso::asignarRoles().
-                    Repeater::make('accesos')->hiddenLabel()
+                    Repeater::make('accesos')->label(__('ui.usuarios.acceso'))->hiddenLabel()
                         ->schema([
                             Select::make('propiedad_id')->label(__('ui.comun.propiedad'))->required()->native(false)
                                 ->options(fn (): array => Propiedad::query()->orderBy('nombre')->pluck('nombre', 'id')->all())
