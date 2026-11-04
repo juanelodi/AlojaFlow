@@ -318,6 +318,24 @@ correr sin el modo activo. **Por qué:** se quiere poder enseñar el sistema sin
 preocupaba en D-037 (una contraseña pública en una instalación con datos reales) se evita porque
 es otra instalación y se borra sola.
 
+### D-045 · 2026-11-04 · Correo desde el panel y mensajes listos para copiar
+El servidor SMTP se configura en **Configuración → Correo**, con la contraseña cifrada en `ajustes`:
+quien no sabe editar un `.env` también puede. Sin configurar, ningún mensaje se pierde: queda en
+**Mensajes** como «Listo para copiar», con enlaces a su correo y a WhatsApp. WhatsApp va por enlace
+(`wa.me`), sin API de Meta. Las plantillas guardan su texto en JSON por idioma, como pide D-021, pero
+sin `spatie/laravel-translatable`: son dos columnas y no compensa otra dependencia. **Por qué:** lo pidió
+el usuario. Los mensajes por evento y fecha se generan en `envios`; la clave única impide duplicados.
+No se escribe por lo ocurrido antes de crear la regla, ni a quien ya se fue.
+
+### D-046 · 2026-11-04 · iCal: lo ocupado en un portal no se vende, pero no impide reservar a mano
+Las fechas de un portal se guardan como `bloqueos_externos`, separados de las reservas. El motor y las
+listas de libres no las ofrecen. La recepción puede reservar encima a sabiendas: aparece un choque y un
+aviso. El calendario exportado solo lleva fechas, con identificadores que no revelan nada, e incluye lo
+ocupado en otros portales para cerrarlo también allá. Las direcciones se guardan cifradas, se consultan
+solo hacia redes públicas con la IP fija, y un fallo de lectura conserva lo que había. **Por qué:** iCal
+tarda en propagarse y un portal puede fallar: una regla dura dejaría a recepción sin poder trabajar,
+y borrar bloqueos ante un error abriría dobles reservas.
+
 ---
 
 ## Pendientes

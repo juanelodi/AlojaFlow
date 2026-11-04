@@ -11,6 +11,7 @@ declare(strict_types=1);
 use App\Http\Controllers\ActualizacionController;
 use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\CodigoFuenteController;
+use App\Http\Controllers\IcalController;
 use App\Http\Controllers\MotorReservasController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/codigo-fuente', CodigoFuenteController::class)
     ->middleware('throttle:10,1')
     ->name('codigo-fuente');
+
+// Calendario de una unidad para los portales: lo identifica un token, y solo lleva fechas.
+Route::get('/ical/{token}.ics', IcalController::class)->where('token', '[0-9a-f]{40}')->middleware('throttle:60,1')->name('ical.exportar');
 
 // Archivos privados: solo con sesión y según el permiso de su clase.
 Route::get('/archivos/{archivo}', ArchivoController::class)->middleware(['auth', 'throttle:120,1'])->name('archivos.ver');

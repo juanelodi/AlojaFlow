@@ -42,6 +42,13 @@ final class Disponibilidad
                     ->where('reservas_noches.fecha', '>=', $llegada)
                     ->where('reservas_noches.fecha', '<', $salida);
             })
+            ->whereNotExists(function (Builder $q) use ($llegada, $salida): void {
+                $q->selectRaw('1')->from('bloqueos_externos')
+                    ->whereColumn('bloqueos_externos.unidad_id', 'unidades.id')
+                    ->whereNull('bloqueos_externos.eliminado_en')
+                    ->where('bloqueos_externos.llegada', '<', $salida)
+                    ->where('bloqueos_externos.salida', '>', $llegada);
+            })
             ->orderBy('propiedad_id')->orderBy('orden')->orderBy('nombre')
             ->get();
     }

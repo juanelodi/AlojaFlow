@@ -95,4 +95,22 @@ return [
         'correo_huesped' => 'Email to the guest',
         'correo_fijo' => 'Email to a fixed address',
     ],
+
+    'TipoEnlace' => [
+        'ical' => 'iCal calendar',
+        'llegada' => 'Online check-in',
+        'contrato' => 'Contract',
+        'factura' => 'Invoice',
+    ],
+
+    'EstadoFuenteIcal' => [
+        'sin_leer' => 'Not read',
+        'correcta' => 'OK',
+        'error' => 'With error',
+    ],
+
+    'TipoChoque' => [
+        'bloqueo_reserva' => 'Portal and booking',
+        'reserva_reserva' => 'Two bookings',
+    ],
 ];

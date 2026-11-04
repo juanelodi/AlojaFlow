@@ -82,6 +82,11 @@
                                 <div @class(['af-cal-dia', 'af-cal-dia--finde' => $dia->isWeekend(), 'af-cal-dia--hoy' => $dia->format('Y-m-d') === $hoy]) style="grid-column: {{ $i + 2 }}"></div>
                             @endif
                         @endforeach
+                        @foreach ($fila['externos'] as $externo)
+                            <div @class(['af-barra', 'af-barra--externo', 'af-barra--sigue-antes' => $externo['sigue_antes'], 'af-barra--sigue-despues' => $externo['sigue_despues']])
+                                 style="grid-column: {{ $externo['columna'] + 1 }} / span {{ $externo['ancho'] }}"
+                                 title="{{ __('ical.calendario_externo', ['fuente' => $externo['fuente']]) }}">{{ $externo['fuente'] }}</div>
+                        @endforeach
                         @foreach ($fila['barras'] as $barra)
                             @php($reserva = $barra['reserva'])
                             @php($texto = $reserva->tipo === \App\Enums\TipoReserva::Bloqueo ? ($reserva->origen_texto ?? __('ui.calendario.bloqueo')) : ($reserva->titular?->nombreCompleto() ?? $reserva->numero))

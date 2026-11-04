@@ -12,6 +12,7 @@ namespace App\Servicios;
 
 use App\Enums\EstadoReserva;
 use App\Enums\TipoReserva;
+use App\Models\BloqueoExterno;
 use App\Models\Reserva;
 use App\Models\Unidad;
 use Carbon\CarbonImmutable;
@@ -23,7 +24,7 @@ final class Calendario
 {
     /**
      * @param  list<int>  $propiedades
-     * @return array{dias: list<CarbonImmutable>, filas: list<array{unidad: Unidad, barras: list<array<string, mixed>>}>}
+     * @return array{dias: list<CarbonImmutable>, filas: list<array{unidad: Unidad, barras: list<array<string, mixed>>, externos: list<array<string, mixed>>}>}
      */
     public static function mes(array $propiedades, CarbonImmutable $inicio): array
     {
@@ -48,6 +49,10 @@ final class Calendario
             ->get()
             ->groupBy('unidad_id');
 
+        $externos = BloqueoExterno::query()->with('fuente')->whereIn('propiedad_id', $propiedades)->whereNull('eliminado_en')
+            ->whereDate('llegada', '<', $fin->format('Y-m-d'))->whereDate('salida', '>', $inicio->format('Y-m-d'))
+            ->orderBy('llegada')->get()->groupBy('unidad_id');
+
         $filas = [];
         foreach ($unidades as $unidad) {
             $barras = [];
@@ -64,7 +69,20 @@ final class Calendario
                     'clase' => self::clase($reserva),
                 ];
             }
-            $filas[] = ['unidad' => $unidad, 'barras' => $barras];
+            $deportales = [];
+            foreach ($externos->get($unidad->id, collect()) as $externo) {
+                /** @var BloqueoExterno $externo */
+                $desde = $externo->llegada->max($inicio);
+                $hasta = $externo->salida->min($fin);
+                $deportales[] = [
+                    'columna' => (int) $inicio->diffInDays($desde) + 1,
+                    'ancho' => max(1, (int) $desde->diffInDays($hasta)),
+                    'sigue_antes' => $externo->llegada->lt($inicio),
+                    'sigue_despues' => $externo->salida->gt($fin),
+                    'fuente' => $externo->fuente->nombre,
+                ];
+            }
+            $filas[] = ['unidad' => $unidad, 'barras' => $barras, 'externos' => $deportales];
         }
 
         return ['dias' => $dias, 'filas' => $filas];

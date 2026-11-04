@@ -95,4 +95,22 @@ return [
         'correo_huesped' => 'Correo al huésped',
         'correo_fijo' => 'Correo a una dirección fija',
     ],
+
+    'TipoEnlace' => [
+        'ical' => 'Calendario iCal',
+        'llegada' => 'Llegada en línea',
+        'contrato' => 'Contrato',
+        'factura' => 'Factura',
+    ],
+
+    'EstadoFuenteIcal' => [
+        'sin_leer' => 'Sin leer',
+        'correcta' => 'Correcto',
+        'error' => 'Con error',
+    ],
+
+    'TipoChoque' => [
+        'bloqueo_reserva' => 'Portal y reserva',
+        'reserva_reserva' => 'Dos reservas',
+    ],
 ];
