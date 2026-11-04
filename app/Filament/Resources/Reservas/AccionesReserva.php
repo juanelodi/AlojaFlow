@@ -97,7 +97,11 @@ final class AccionesReserva
             ->fillForm(function (Reserva $record): array {
                 $guardado = ReceptorFiscal::query()->where('propiedad_id', $record->propiedad_id)->where('huesped_id', $record->titular_id)->latest('id')->first();
 
+                $primeraSerie = SerieFacturacion::query()->where('activa', true)->whereHas('entidad', fn ($q) => $q->where('propiedad_id', $record->propiedad_id))->value('id');
+
                 return [
+                    'serie_id' => $primeraSerie,
+                    'metodo_pago' => 'PUE',
                     'identificador_fiscal' => $guardado->identificador_fiscal ?? ($record->titular->id_fiscal_empresa ?? $record->titular->id_fiscal_personal ?? null),
                     'nombre' => $guardado->nombre ?? $record->titular?->nombreCompleto(),
                     'regimen_fiscal' => $guardado->regimen_fiscal ?? null,
@@ -112,7 +116,7 @@ final class AccionesReserva
                     ->whereHas('entidad', fn ($q) => $q->where('propiedad_id', $record->propiedad_id))->get()
                     ->mapWithKeys(fn (SerieFacturacion $s): array => [$s->id => $s->serie.' · '.$s->tipo_documento->etiqueta().' · '.$s->entidad->nombre])->all();
                 $campos = [
-                    Select::make('serie_id')->label(__('dinero.facturas.serie'))->native(false)->required()->options($series)->helperText($series === [] ? __('dinero.facturas.sin_entidad') : null)->default(array_key_first($series)),
+                    Select::make('serie_id')->label(__('dinero.facturas.serie'))->native(false)->required()->options($series)->helperText($series === [] ? __('dinero.facturas.sin_entidad') : null),
                     TextInput::make('identificador_fiscal')->label(__('dinero.facturas.identificador'))->required()->maxLength(30),
                     TextInput::make('nombre')->label(__('dinero.facturas.nombre'))->required()->maxLength(200),
                     TextInput::make('correo')->label(__('dinero.facturas.correo'))->email()->maxLength(150),
@@ -122,7 +126,7 @@ final class AccionesReserva
                     $campos[] = TextInput::make('codigo_postal')->label(__('dinero.facturas.codigo_postal'))->required()->maxLength(10);
                     $campos[] = Select::make('uso')->label(__('dinero.facturas.uso'))->native(false)->options($catalogos['uso'])->required();
                     $campos[] = Select::make('forma_pago')->label(__('dinero.facturas.forma_pago'))->native(false)->options($catalogos['forma_pago'])->required();
-                    $campos[] = Select::make('metodo_pago')->label(__('dinero.facturas.metodo_pago'))->native(false)->options($catalogos['metodo_pago'])->required()->default('PUE');
+                    $campos[] = Select::make('metodo_pago')->label(__('dinero.facturas.metodo_pago'))->native(false)->options($catalogos['metodo_pago'])->required();
                 }
 
                 return $campos;
