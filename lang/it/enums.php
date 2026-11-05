@@ -135,6 +135,7 @@ return [
         'factura_pdf' => 'Fattura (PDF)',
         'exportacion' => 'Esportazione',
         'comprobante' => 'Ricevuta di pagamento',
+        'foto_publica' => 'Foto della pagina pubblica',
     ],
     'CanalEnvio' => [
         'correo' => 'E-mail',
@@ -174,6 +175,8 @@ return [
         'contrato' => 'Contratto',
         'factura' => 'Fattura',
         'grupo' => 'Gruppo',
+        'mi_reserva' => 'La mia prenotazione',
+        'guia' => 'Guida',
     ],
     'EstadoFuenteIcal' => [
         'sin_leer' => 'Non letto',
@@ -247,5 +250,21 @@ return [
         'por_anular' => 'Da annullare',
         'anulando' => 'Annullamento',
         'anulado' => 'Annullato',
+    ],
+    'MomentoGuia' => [
+        'siempre' => 'Sempre',
+        'antes' => 'Prima dell’arrivo',
+        'durante' => 'Durante il soggiorno',
+        'despues' => 'Alla partenza',
+    ],
+    'TipoSeccionGuia' => [
+        'llegada' => 'Come arrivare',
+        'wifi' => 'Wi-Fi',
+        'reglas' => 'Regole della casa',
+        'equipo' => 'Come usare le attrezzature',
+        'recomendaciones' => 'Consigli',
+        'contactos' => 'Contatti',
+        'salida' => 'Prima di partire',
+        'otro' => 'Altro',
     ],
 ];

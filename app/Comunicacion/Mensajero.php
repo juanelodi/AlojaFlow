@@ -35,6 +35,7 @@ use App\Models\Tarea;
 use App\Models\Webhook;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
+use App\Publico\MiReserva;
 use App\Seguridad\ClienteExterno;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -229,6 +230,28 @@ final class Mensajero
         ]);
     }
 
+    /**
+     * Lo que un huésped pidió desde su página, para quien atiende el correo del alojamiento.
+     */
+    public function avisarSolicitud(Reserva $reserva, string $mensaje, ?string $destino): void
+    {
+        if (blank($destino) || $reserva->propiedad->es_demo) {
+            return;
+        }
+        $idioma = $reserva->propiedad->idioma;
+        $variables = VariablesMensaje::de($reserva, $idioma) + ['mensaje' => $mensaje];
+        $this->crearUnaVez('portal:pide:'.$reserva->id.':'.sha1($mensaje), [
+            'propiedad_id' => $reserva->propiedad_id,
+            'reserva_id' => $reserva->id,
+            'canal' => CanalEnvio::Correo,
+            'destino' => $destino,
+            'idioma' => $idioma,
+            'asunto' => mb_substr(VariablesMensaje::aplicar(__('mensajes.aviso_portal.asunto', [], $idioma), $variables), 0, 255),
+            'cuerpo' => VariablesMensaje::aplicar(__('mensajes.aviso_portal.cuerpo', [], $idioma), $variables),
+            'estado' => $this->correo->configurado() ? EstadoEnvio::Pendiente : EstadoEnvio::Manual,
+        ]);
+    }
+
     public static function telefonoDe(Reserva $reserva): ?string
     {
         return self::contactoDe($reserva, TipoContacto::Telefono);
@@ -261,6 +284,9 @@ final class Mensajero
         // El enlace se crea solo si la plantilla lo usa: no hace falta uno por cada mensaje.
         if (str_contains($cuerpo, '{enlace_llegada}')) {
             $variables['enlace_llegada'] = Modulos::activo(Modulo::Llegada) ? app(GestorLlegadas::class)->urlDe($reserva, $idioma) : '';
+        }
+        if (str_contains($cuerpo, '{enlace_mi_reserva}')) {
+            $variables['enlace_mi_reserva'] = Modulos::activo(Modulo::Portal) ? app(MiReserva::class)->urlDe($reserva, $idioma) : '';
         }
         if (str_contains($cuerpo, '{enlace_opinion}')) {
             $variables['enlace_opinion'] = Modulos::activo(Modulo::Opiniones) ? app(Opiniones::class)->urlDe($reserva, $idioma) : '';

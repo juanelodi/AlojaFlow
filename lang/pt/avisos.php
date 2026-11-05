@@ -27,4 +27,5 @@ return [
     'autoridad_faltan_datos' => 'Faltam dados a algumas comunicações do registo. Complete-os em Operação → Registo de viajantes.',
     'autoridad_atrasadas' => 'Há comunicações ao registo fora de prazo: são 24 horas. Trate delas em Operação → Registo de viajantes.',
     'autoridad_sin_conexion' => 'Não foi possível contactar o registo em várias tentativas. Reveja a ligação em Operação → Registo de viajantes.',
+    'huesped_pide' => 'Um hóspede escreveu a partir da sua página: está nas notas da reserva. Veja e feche este aviso.',
 ];

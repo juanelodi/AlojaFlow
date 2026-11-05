@@ -14,6 +14,12 @@ return [
     'webhook_borrado' => 'Die Benachrichtigung an das andere System gibt es nicht mehr.',
     'error_tamano' => 'Die Antwort ist zu groß.',
     'error_redirecciones' => 'Die Adresse leitet zu oft weiter.',
+    'aviso_portal' => [
+        'asunto' => 'Ein Gast hat zur Buchung {numero} geschrieben',
+        'cuerpo' => '{huesped} hat von seiner Seite aus zur Buchung in {propiedad} geschrieben ({llegada} bis {salida}):
+
+{mensaje}',
+    ],
     'aviso_motor' => [
         'asunto' => 'Neue Buchung {numero} in der Buchungsmaschine',
         'cuerpo' => "{huesped} hat bei {propiedad} gebucht:\n\nAnkunft: {llegada}\nAbreise: {salida}\nPersonen: {personas}\nZimmer: {unidad}\nGesamt: {total}",

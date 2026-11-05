@@ -14,6 +14,12 @@ return [
     'webhook_borrado' => 'La notifica a un altro sistema non esiste più.',
     'error_tamano' => 'La risposta è troppo grande.',
     'error_redirecciones' => 'L’indirizzo reindirizza troppe volte.',
+    'aviso_portal' => [
+        'asunto' => 'Un ospite ha scritto sulla prenotazione {numero}',
+        'cuerpo' => '{huesped} ha scritto dalla sua pagina, sulla prenotazione presso {propiedad} ({llegada} - {salida}):
+
+{mensaje}',
+    ],
     'aviso_motor' => [
         'asunto' => 'Nuova prenotazione {numero} nel motore di prenotazione',
         'cuerpo' => "{huesped} ha fatto una prenotazione presso {propiedad}:\n\nArrivo: {llegada}\nPartenza: {salida}\nPersone: {personas}\nCamera: {unidad}\nTotale: {total}",

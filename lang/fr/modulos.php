@@ -42,6 +42,7 @@ return [
         'plano' => ['nombre' => 'Plan de l\'établissement', 'descripcion' => 'Voir les unités disposées sur un dessin de votre hébergement.'],
         'llegada' => ['nombre' => 'Arrivée en ligne', 'descripcion' => 'Le client remplit ses données et accepte les documents avant d\'arriver.'],
         'mensajes' => ['nombre' => 'Messages aux clients', 'descripcion' => 'Modèles, envois par e-mail et WhatsApp, et messages automatiques.'],
+        'portal' => ['nombre' => 'Ma réservation et guide numérique', 'descripcion' => 'Une page pour chaque client, avec sa réservation et ce qu’il doit savoir, et un code QR dans chaque unité.'],
         'bitacora' => ['nombre' => 'Journal des équipes', 'descripcion' => 'Ce qu’une équipe laisse à la suivante. L’important apparaît dans Aujourd’hui.'],
         'empresas' => ['nombre' => 'Entreprises et agences', 'descripcion' => 'Qui réserve ou paie pour ses clients, avec ses conditions et son relevé de compte.'],
         'opiniones' => ['nombre' => 'Avis des clients', 'descripcion' => 'Une enquête après le séjour, avec un lien vers votre page d’avis.'],

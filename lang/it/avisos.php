@@ -27,4 +27,5 @@ return [
     'autoridad_faltan_datos' => 'Ad alcune comunicazioni del registro mancano dati. Completali in Operazioni → Registro dei viaggiatori.',
     'autoridad_atrasadas' => 'Ci sono comunicazioni al registro fuori termine: sono 24 ore. Gestiscile in Operazioni → Registro dei viaggiatori.',
     'autoridad_sin_conexion' => 'Impossibile contattare il registro dopo vari tentativi. Controlla la connessione in Operazioni → Registro dei viaggiatori.',
+    'huesped_pide' => 'Un ospite ha scritto dalla sua pagina: è nelle note della prenotazione. Leggilo e chiudi questo avviso.',
 ];

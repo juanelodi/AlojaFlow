@@ -25,6 +25,7 @@ enum ClaseArchivo: string
     case FacturaPdf = 'factura_pdf';
     case Exportacion = 'exportacion';
     case Comprobante = 'comprobante';
+    case FotoPublica = 'foto_publica';
 
     /**
      * El permiso que hace falta para verlo.
@@ -35,6 +36,7 @@ enum ClaseArchivo: string
             self::FotoTarea => Acceso::LIMPIEZA,
             self::Plano => Acceso::OPERACION,
             self::Comprobante => Acceso::RESERVAS,
+            self::FotoPublica => Acceso::CATALOGO,
             self::FacturaXml, self::FacturaPdf => Acceso::FACTURACION,
             self::DocumentoIdentidad, self::Firma, self::CopiaAceptacion, self::Exportacion => Acceso::HUESPEDES,
         };

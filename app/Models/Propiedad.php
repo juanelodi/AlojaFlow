@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $moneda
  * @property string $idioma
  * @property array<string, mixed>|null $ajustes
+ * @property array<string, mixed>|null $pagina_publica
  * @property bool $activa
  * @property bool $es_demo
  * @property int $consecutivo_reserva
@@ -41,7 +42,7 @@ class Propiedad extends ModeloBase
 
     protected $fillable = [
         'nombre', 'codigo', 'color', 'modo', 'paquete_pais', 'pais', 'subdivision', 'responsable', 'autoridad_quejas',
-        'zona_horaria', 'moneda', 'idioma', 'domicilio', 'telefono', 'correo', 'ajustes', 'activa', 'es_demo',
+        'zona_horaria', 'moneda', 'idioma', 'domicilio', 'telefono', 'correo', 'ajustes', 'pagina_publica', 'activa', 'es_demo',
     ];
 
     protected static function booted(): void
@@ -57,6 +58,7 @@ class Propiedad extends ModeloBase
             'modo' => ModoPropiedad::class,
             'paquete_pais' => PaquetePais::class,
             'ajustes' => 'array',
+            'pagina_publica' => 'array',
             'activa' => 'boolean',
             'es_demo' => 'boolean',
             'consecutivo_reserva' => 'integer',

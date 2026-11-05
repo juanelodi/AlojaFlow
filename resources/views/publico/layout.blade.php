@@ -42,7 +42,12 @@ footer{margin-top:24px;font-size:.8125rem;color:var(--gris)}
 .idiomas a{color:var(--gris);text-decoration:none;padding:4px 0}
 .idiomas a[aria-current]{color:var(--tinta);font-weight:700}
 footer a{color:inherit}
+.galeria{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 0 14px;padding-bottom:6px}
+.galeria a{flex:0 0 82%;max-width:420px;scroll-snap-align:start}
+.galeria img{display:block;width:100%;height:220px;object-fit:cover;border-radius:10px;background:var(--borde)}
+.galeria:focus-visible{outline:3px solid var(--marca);outline-offset:2px}
 </style>
+@yield('cabeza')
 </head>
 <body>
 <main>

@@ -23,7 +23,7 @@ use Illuminate\Support\Str;
  */
 final class VariablesMensaje
 {
-    public const DISPONIBLES = ['huesped', 'nombre', 'propiedad', 'telefono_propiedad', 'correo_propiedad', 'numero', 'codigo', 'llegada', 'salida', 'noches', 'personas', 'unidad', 'total', 'pagado', 'pendiente', 'enlace_reserva', 'enlace_llegada', 'enlace_opinion'];
+    public const DISPONIBLES = ['huesped', 'nombre', 'propiedad', 'telefono_propiedad', 'correo_propiedad', 'numero', 'codigo', 'llegada', 'salida', 'noches', 'personas', 'unidad', 'total', 'pagado', 'pendiente', 'enlace_reserva', 'enlace_llegada', 'enlace_opinion', 'enlace_mi_reserva'];
 
     public const AJUSTE_PROPIAS = 'mensajes.variables.';
 

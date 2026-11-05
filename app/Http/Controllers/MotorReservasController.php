@@ -12,9 +12,12 @@ namespace App\Http\Controllers;
 
 use App\Comprobantes\ComprobanteRechazado;
 use App\Comprobantes\GestorComprobantes;
+use App\Dinero\GestorPoliticas;
 use App\Documentos\GeneradorPdf;
 use App\Enums\EstadoReserva;
+use App\Models\Foto;
 use App\Models\PagoEnLinea;
+use App\Models\Politica;
 use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Tarifa;
@@ -24,6 +27,7 @@ use App\Motor\Pasarelas;
 use App\Pagos\CobrosEnLinea;
 use App\Pagos\ErrorPago;
 use App\Pagos\PagoConFormulario;
+use App\Publico\PaginaPublica;
 use App\Reservas\ReservaRechazada;
 use App\Support\Dinero;
 use Carbon\CarbonImmutable;
@@ -80,8 +84,14 @@ class MotorReservasController extends Controller
             }
         }
 
+        $pagina = new PaginaPublica($propiedad);
+
         return view('publico.motor-buscar', [
             'propiedad' => $propiedad,
+            'pagina' => $pagina,
+            'fotos' => $pagina->fotos(),
+            'fotosTarifa' => Foto::query()->where('propiedad_id', $propiedad->id)->whereNotNull('tarifa_id')->orderBy('orden')->orderBy('id')->get()->groupBy('tarifa_id'),
+            'politica' => $pagina->mostrarPoliticas() ? $this->politicaGeneral($propiedad) : null,
             'llegada' => $llegada?->format('Y-m-d') ?? $hoy->format('Y-m-d'),
             'salida' => $salida?->format('Y-m-d') ?? $hoy->addDay()->format('Y-m-d'),
             'personas' => $personas,
@@ -279,6 +289,16 @@ class MotorReservasController extends Controller
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="reserva-'.$reserva->codigo_publico.'.pdf"',
         ]);
+    }
+
+    /**
+     * La que se aplicaría a quien reserva ahora, para que lo sepa antes de reservar.
+     */
+    private function politicaGeneral(Propiedad $propiedad): ?string
+    {
+        $politica = Politica::query()->where('propiedad_id', $propiedad->id)->where('predeterminada', true)->first();
+
+        return $politica === null ? null : app(GestorPoliticas::class)->textoDe($politica);
     }
 
     private function propiedad(Request $request, string $codigo, bool $soloActivo = true): Propiedad

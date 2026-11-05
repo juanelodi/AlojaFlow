@@ -27,4 +27,5 @@ return [
     'autoridad_faltan_datos' => 'A algunas comunicaciones del registro de viajeros les faltan datos. Complétalos en Operación → Registro de viajeros.',
     'autoridad_atrasadas' => 'Hay comunicaciones al registro de viajeros fuera de plazo: son 24 horas. Atiéndelas en Operación → Registro de viajeros.',
     'autoridad_sin_conexion' => 'No se ha podido hablar con el registro de viajeros en varios intentos. Revisa la conexión en Operación → Registro de viajeros.',
+    'huesped_pide' => 'Un huésped escribió desde su página: está en las notas de su reserva. Míralo y cierra este aviso.',
 ];

@@ -2,6 +2,33 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.21 — 2026-11-05
+
+**Lo que ve el huésped: una página con fotos, «Mi reserva» y una guía digital.**
+
+**Página pública (Configuración → Página pública y Fotos)**
+- La misma de reservar, ahora con **fotos** de la propiedad y de cada tarifa, que se recorren con el dedo.
+- **Descripción, dónde está y qué ofrece**, en los seis idiomas; lo que no traduzcas sale en el idioma de la propiedad.
+- **Botones de WhatsApp, llamar, correo y mapa**, y las **condiciones de cancelación** antes de reservar.
+- **Sirve aunque no tengas sitio web:** compartes el enlace, y los buscadores entienden qué es.
+- Las fotos se reducen y se les quita la ubicación y lo demás que traigan escondido. En el teléfono baja la pequeña.
+
+**Mi reserva (módulo nuevo, con la guía)**
+- Una página para cada huésped, sin cuenta, con un enlace personal: `{enlace_mi_reserva}` en tus plantillas. Deja de valer una semana después de la salida.
+- Ve su reserva, lo que debe, su ficha de pago, la confirmación en PDF, el formulario de llegada y la guía.
+- **Puede pedirte algo:** otra hora, otras fechas, una cuna. Te llega como nota de la reserva, aviso en el inicio y correo. **No cambia nada solo.**
+- **Puede cancelar solo si tú lo prendes**, y solo sin pagos hechos, antes del día de llegada y dentro de la cancelación gratuita. En lo demás te escribe.
+
+**Guía digital (Configuración → Guía digital)**
+- Por partes: Wi-Fi, reglas, cómo llegar, cómo usar el equipo, recomendaciones, contactos. Para todas las unidades o para una, en los seis idiomas.
+- **Cada parte sale cuando sirve:** antes, durante o al salir.
+- **Un código QR por unidad**, para imprimirlo y dejarlo a la vista.
+- **Lo delicado, como la clave de la puerta, nunca sale en el QR**, que cualquiera puede fotografiar: solo en Mi reserva, mientras dura la estancia y, si quieres, cuando ya no deba nada.
+
+**Corregido:** en un enlace de pago, Chrome podía bloquear el paso a la página de la pasarela, por una regla de seguridad de la propia página. Salía desde la 1.0.16, y no se había visto porque nunca se ha probado con un cobro real de Stripe o Mercado Pago.
+
+**Sin verificar:** no se ha probado en un teléfono de verdad ni con un huésped real. Los correos al alojamiento se revisaron en la cola de envíos, sin mandarlos. El lector de QR de un teléfono no se probó: el código se comprobó decodificándolo en el equipo.
+
 ## 1.0.20 — 2026-11-05
 
 **España: comunicar a SES.Hospedajes, tasa turística, Redsys y Bizum.** Los detalles y las fuentes están en `docs/paises/espana.md`.

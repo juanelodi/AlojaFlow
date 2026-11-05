@@ -27,4 +27,5 @@ return [
     'autoridad_faltan_datos' => 'Il manque des données à certaines communications du registre. Complétez-les dans Exploitation → Registre des voyageurs.',
     'autoridad_atrasadas' => 'Des communications au registre sont en retard : le délai est de 24 heures. Traitez-les dans Exploitation → Registre des voyageurs.',
     'autoridad_sin_conexion' => 'Le registre des voyageurs est injoignable après plusieurs tentatives. Vérifiez la connexion dans Exploitation → Registre des voyageurs.',
+    'huesped_pide' => 'Un client a écrit depuis sa page : c’est dans les notes de sa réservation. Lisez-le et fermez cet avis.',
 ];

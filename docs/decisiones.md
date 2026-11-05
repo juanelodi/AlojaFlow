@@ -645,6 +645,15 @@ Redirección con `HMAC_SHA256_V1`, sin SDK. Redsys no se abre con un enlace sino
 ### D-103 · 2026-11-05 · VeriFactu: todavía no
 AlojaFlow en España emite recibos sin valor fiscal, y exporta las facturas por tipo de impuesto para pasarlas a un programa certificado. **No se genera el registro encadenado:** la ley dice 2027, Hacienda anunció octubre de 2028 sin que esté en el BOE, y hacerlo pide una declaración responsable del productor que hay que ver con un asesor, más aún en software libre con muchas instalaciones. Hacerlo mal sería peor que no tenerlo.
 
+### D-104 · 2026-11-05 · La página pública es la de reservar
+No hay otra página: la que ya se comparte se vuelve la del alojamiento, porque quien no tiene sitio web es justo quien más la necesita y dos páginas se desactualizan. Los textos van por idioma en `propiedades.pagina_publica`, y lo no traducido sale en el idioma de la propiedad: mejor en otro idioma que vacío. **Las fotos se vuelven a dibujar**, con lo mismo que los comprobantes: una foto de teléfono trae dónde se tomó, y son públicas. Se guardan como cualquier archivo, para entrar en las copias y al borrar la propiedad, pero se sirven sin sesión desde su propia ruta, con caché de un año: una foto nueva es otra dirección. Dos tamaños, porque la página debe abrir en un teléfono con mala señal. La tira de fotos no lleva JavaScript. Sin mapa incrustado: traería cookies de un tercero y rompería la promesa de no cargar nada de fuera; es un enlace.
+
+### D-105 · 2026-11-05 · Mi reserva: un enlace, y pedir no cambia nada
+Sin cuenta, con un enlace personal que ya tiene quien recibe el correo, y por eso no enseña documentos ni nada que no esté ya en ese correo. Caduca una semana después de la salida y sobrevive a un cambio de fechas: es el que tiene guardado. **Pedir un cambio solo le avisa al alojamiento**, como nota de la reserva, aviso y correo: mover una reserva tiene precio y disponibilidad, y decide una persona. **Cancelar solo está apagado de entrada**, y aun prendido solo vale cuando no hay nada que decidir: sin pagos que devolver, antes del día de llegada y sin penalización. Esto vale también en subordinadas, salvo pagar y cancelar, que escriben en la principal. Es un módulo, junto con la guía.
+
+### D-106 · 2026-11-05 · La guía tiene dos puertas
+El QR de la unidad es público en la práctica, porque cualquiera puede fotografiarlo y no caduca; Mi reserva es personal y caduca. **Lo delicado solo sale por la segunda, y solo durante la estancia.** Se puede además condicionar a que no deba nada, como las automatizaciones de datos de acceso. Cambiar el código deja de validar el impreso, por si alguien se llevó la foto. El QR es SVG, para imprimirlo nítido, con `chillerlan/php-qrcode` (MIT/Apache 2.0), que ya venía con Filament para la verificación en dos pasos.
+
 ---
 
 ## Pendientes

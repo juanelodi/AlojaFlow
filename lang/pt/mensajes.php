@@ -14,6 +14,12 @@ return [
     'webhook_borrado' => 'O aviso a outro sistema já não existe.',
     'error_tamano' => 'A resposta é demasiado grande.',
     'error_redirecciones' => 'O endereço redireciona demasiadas vezes.',
+    'aviso_portal' => [
+        'asunto' => 'Um hóspede escreveu sobre a reserva {numero}',
+        'cuerpo' => '{huesped} escreveu a partir da sua página, sobre a reserva em {propiedad} ({llegada} a {salida}):
+
+{mensaje}',
+    ],
     'aviso_motor' => [
         'asunto' => 'Nova reserva {numero} no motor de reservas',
         'cuerpo' => "{huesped} fez uma reserva em {propiedad}:\n\nChegada: {llegada}\nSaída: {salida}\nPessoas: {personas}\nQuarto: {unidad}\nTotal: {total}",

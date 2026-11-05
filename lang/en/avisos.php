@@ -27,4 +27,5 @@ return [
     'autoridad_faltan_datos' => 'Some guest register reports are missing details. Complete them in Operations → Guest register.',
     'autoridad_atrasadas' => 'Guest register reports are overdue: the limit is 24 hours. Handle them in Operations → Guest register.',
     'autoridad_sin_conexion' => 'The guest register could not be reached after several attempts. Check the connection in Operations → Guest register.',
+    'huesped_pide' => 'A guest wrote from their page: it is in their booking’s notes. Read it and close this notice.',
 ];

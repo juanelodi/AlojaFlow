@@ -42,6 +42,7 @@ return [
         'plano' => ['nombre' => 'Lageplan der Unterkunft', 'descripcion' => 'Die Einheiten auf einer Zeichnung Ihrer Unterkunft sehen.'],
         'llegada' => ['nombre' => 'Online-Anreise', 'descripcion' => 'Der Gast trägt seine Daten ein und akzeptiert die Dokumente vor der Ankunft.'],
         'mensajes' => ['nombre' => 'Nachrichten an Gäste', 'descripcion' => 'Vorlagen, Versand per E-Mail und WhatsApp sowie automatische Nachrichten.'],
+        'portal' => ['nombre' => 'Meine Buchung und digitaler Führer', 'descripcion' => 'Eine Seite für jeden Gast mit seiner Buchung und allem Wissenswerten, und ein QR-Code in jeder Einheit.'],
         'bitacora' => ['nombre' => 'Schichtbuch', 'descripcion' => 'Was eine Schicht der nächsten hinterlässt. Wichtiges erscheint unter Heute.'],
         'empresas' => ['nombre' => 'Unternehmen und Agenturen', 'descripcion' => 'Wer für seine Gäste bucht oder zahlt, mit Konditionen und Kontoauszug.'],
         'opiniones' => ['nombre' => 'Gästemeinungen', 'descripcion' => 'Eine Umfrage nach dem Aufenthalt, mit Link zu Ihrer Bewertungsseite.'],

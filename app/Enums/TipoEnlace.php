@@ -21,4 +21,6 @@ enum TipoEnlace: string
     case Pago = 'pago';
     case Opinion = 'opinion';
     case Grupo = 'grupo';
+    case MiReserva = 'mi_reserva';
+    case Guia = 'guia';
 }

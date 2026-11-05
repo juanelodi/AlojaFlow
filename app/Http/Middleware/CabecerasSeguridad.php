@@ -36,7 +36,7 @@ class CabecerasSeguridad
         // 'same-origin' y no 'no-referrer': con este último, los formularios mandan «Origin: null».
         $cabeceras->set('Referrer-Policy', 'same-origin');
         $cabeceras->set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(), payment=(), usb=()');
-        $cabeceras->set('Content-Security-Policy', $this->politica($publica));
+        $cabeceras->set('Content-Security-Policy', $this->politica($publica, $publica || $request->is('pagar/*', 'mi-reserva/*')));
         if (! $publica) {
             $cabeceras->set('X-Frame-Options', 'SAMEORIGIN');
         }
@@ -55,7 +55,7 @@ class CabecerasSeguridad
         return $respuesta;
     }
 
-    private function politica(bool $publica): string
+    private function politica(bool $publica, bool $mandaAPasarela): string
     {
         $reglas = [
             "default-src 'self'",
@@ -69,13 +69,11 @@ class CabecerasSeguridad
             "object-src 'none'",
             "base-uri 'self'",
         ];
-        // El motor manda a la página de la pasarela, y form-action también se aplica a esa redirección.
-        if ($publica) {
-            $reglas[] = 'frame-ancestors *';
-        } else {
+        // Estas páginas mandan a la de la pasarela, y form-action también se aplica a esa redirección: con él, Chrome la bloquea.
+        if (! $mandaAPasarela) {
             $reglas[] = "form-action 'self'";
-            $reglas[] = "frame-ancestors 'self'";
         }
+        $reglas[] = $publica ? 'frame-ancestors *' : "frame-ancestors 'self'";
 
         return implode('; ', $reglas);
     }

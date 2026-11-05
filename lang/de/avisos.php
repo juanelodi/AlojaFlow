@@ -27,4 +27,5 @@ return [
     'autoridad_faltan_datos' => 'Einigen Meldungen des Gästeregisters fehlen Daten. Ergänzen Sie sie unter Betrieb → Gästeregister.',
     'autoridad_atrasadas' => 'Meldungen an das Gästeregister sind überfällig: Die Frist beträgt 24 Stunden. Bearbeiten Sie sie unter Betrieb → Gästeregister.',
     'autoridad_sin_conexion' => 'Das Gästeregister war nach mehreren Versuchen nicht erreichbar. Prüfen Sie die Verbindung unter Betrieb → Gästeregister.',
+    'huesped_pide' => 'Ein Gast hat von seiner Seite geschrieben: Es steht in den Notizen der Buchung. Lesen Sie es und schließen Sie diesen Hinweis.',
 ];

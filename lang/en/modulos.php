@@ -42,6 +42,7 @@ return [
         'plano' => ['nombre' => 'Property map', 'descripcion' => 'See the units laid out on a drawing of your place.'],
         'llegada' => ['nombre' => 'Online check-in', 'descripcion' => 'The guest fills in their details and accepts the documents before arriving.'],
         'mensajes' => ['nombre' => 'Messages to guests', 'descripcion' => 'Templates, sending by email and WhatsApp, and automatic messages.'],
+        'portal' => ['nombre' => 'My booking and digital guide', 'descripcion' => 'A page for each guest with their booking and what they need to know, and a QR code in each unit.'],
         'bitacora' => ['nombre' => 'Shift log', 'descripcion' => 'What one shift leaves for the next. Important notes appear on Today.'],
         'empresas' => ['nombre' => 'Companies and agencies', 'descripcion' => 'Who books or pays for their guests, with their terms and statement of account.'],
         'opiniones' => ['nombre' => 'Guest reviews', 'descripcion' => 'A survey after the stay, with a link to your reviews page.'],

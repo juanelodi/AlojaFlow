@@ -14,6 +14,12 @@ return [
     'webhook_borrado' => 'The webhook no longer exists.',
     'error_tamano' => 'The response is too large.',
     'error_redirecciones' => 'The address redirects too many times.',
+    'aviso_portal' => [
+        'asunto' => 'A guest wrote about booking {numero}',
+        'cuerpo' => '{huesped} wrote from their page about their booking at {propiedad} ({llegada} to {salida}):
+
+{mensaje}',
+    ],
     'aviso_motor' => [
         'asunto' => 'New booking {numero} from the booking engine',
         'cuerpo' => "{huesped} made a booking at {propiedad}:\n\nArrival: {llegada}\nDeparture: {salida}\nPeople: {personas}\nRoom: {unidad}\nTotal: {total}",

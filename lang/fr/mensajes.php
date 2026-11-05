@@ -14,6 +14,12 @@ return [
     'webhook_borrado' => 'La notification vers un autre système n’existe plus.',
     'error_tamano' => 'La réponse est trop volumineuse.',
     'error_redirecciones' => 'L’adresse redirige trop de fois.',
+    'aviso_portal' => [
+        'asunto' => 'Un client a écrit au sujet de la réservation {numero}',
+        'cuerpo' => '{huesped} a écrit depuis sa page, au sujet de sa réservation à {propiedad} ({llegada} au {salida}) :
+
+{mensaje}',
+    ],
     'aviso_motor' => [
         'asunto' => 'Nouvelle réservation {numero} dans le moteur de réservation',
         'cuerpo' => "{huesped} a fait une réservation à {propiedad} :\n\nArrivée : {llegada}\nDépart : {salida}\nPersonnes : {personas}\nChambre : {unidad}\nTotal : {total}",

@@ -18,6 +18,7 @@ use App\Http\Controllers\IcalController;
 use App\Http\Controllers\LlegadaController;
 use App\Http\Controllers\MotorReservasController;
 use App\Http\Controllers\OpinionController;
+use App\Http\Controllers\PortalController;
 use App\Http\Middleware\MismoOrigen;
 use App\Http\Middleware\ModuloActivo;
 use App\Http\Middleware\UsuarioActivo;
@@ -71,6 +72,16 @@ Route::prefix('llegada/{token}')->where(['token' => '[0-9a-f]{40}'])->name('lleg
     Route::post('/reenviar', [LlegadaController::class, 'reenviar'])->middleware(['throttle:publico-codigo', 'throttle:llegada-codigo'])->name('reenviar');
     Route::get('/listo', [LlegadaController::class, 'listo'])->name('listo');
 });
+
+// La página del huésped y la guía de cada unidad (D-105, D-106). Las fotos, para el motor y para la guía.
+Route::prefix('mi-reserva/{token}')->where(['token' => '[0-9a-f]{40}'])->name('mi-reserva.')->middleware([ModuloActivo::class.':portal', 'throttle:publico'])->group(function (): void {
+    Route::get('/', [PortalController::class, 'miReserva'])->name('ver');
+    Route::get('/confirmacion.pdf', [PortalController::class, 'confirmacion'])->name('pdf');
+    Route::post('/pedir', [PortalController::class, 'pedir'])->middleware('throttle:publico-envio')->name('pedir');
+    Route::post('/cancelar', [PortalController::class, 'cancelar'])->middleware('throttle:publico-envio')->name('cancelar');
+});
+Route::get('/guia/{token}', [PortalController::class, 'guia'])->where('token', '[0-9a-f]{40}')->middleware([ModuloActivo::class.':portal', 'throttle:publico'])->name('guia.ver');
+Route::get('/fotos/{foto}/{tamano}', [PortalController::class, 'foto'])->whereNumber('foto')->whereIn('tamano', ['grande', 'chica'])->middleware('throttle:600,1')->name('fotos.ver');
 
 // Archivos privados: solo con sesión y según el permiso de su clase.
 Route::get('/archivos/{archivo}', ArchivoController::class)->middleware(['auth', AuthenticateSession::class, UsuarioActivo::class, 'throttle:120,1'])->name('archivos.ver');

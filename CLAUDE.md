@@ -4,7 +4,7 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-05): versión de prueba 1.0.20**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-05): versión de prueba 1.0.21**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
   D-029) y D-036 se revisan con el usuario. En curso: el plan de [docs/plan-paridad.md](docs/plan-paridad.md), hasta la 1.0.24.
@@ -211,6 +211,7 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 - `app/Paises/` — **todo lo que cambia por país** va detrás de `Pais` (D-048). `app/Facturacion/`,
   facturas y CFDI (D-049). `app/Dinero/`, políticas (D-050).
 - `app/Autoridades/` — registro de viajeros: `GestorEnvios` concilia reservas con lo comunicado y `Ses/` es SES.Hospedajes (D-100).
+- `app/Publico/` — lo que ve el huésped sin cuenta: `PaginaPublica` y `GestorFotos` (D-104), `MiReserva` (D-105), `GuiaDigital` (D-106).
 - `app/Archivos/GestorArchivos.php` — archivos privados, cifrados si llevan datos personales.
   `app/Seguridad/ClienteExterno.php`, peticiones a direcciones que escribe un usuario, solo a redes públicas.
 - `instalador/instalar.php` — plantilla del instalador de un solo archivo (D-040, D-071); sin sintaxis
@@ -299,6 +300,8 @@ npx license-checker --summary             # licencias npm
 - `public/.htaccess`: nada de directivas que solo admita la configuración del servidor (`DeflateCompressionLevel`) y todo
   dentro de su `IfModule`. Cualquier error ahí es un 500 en todo el sitio; `RendimientoPanelTest` lo revisa.
 - dompdf ignora `word-break: break-all`, y un texto largo sin espacios se sale de la página: `overflow-wrap: anywhere`.
+- `@json` de Blade corta su expresión en las comas: un arreglo escrito ahí truena. Se arma en PHP y se imprime con `{!! !!}` y `JSON_HEX_TAG`.
+- `form-action` de la CSP también se aplica a una redirección: una página con un botón que acaba en una pasarela no puede llevarlo (`CabecerasSeguridad`).
 - `Http::fake` compara contra la dirección con su query: un GET con `?expand[]=…` necesita `*` al final del patrón.
 - `$this->travel()` no mueve `time()`: en el código que se prueba así, `now()`.
 - Eloquent guarda un `datetime` en la zona que traiga la instancia, sin convertirla: a las columnas en UTC, `->utc()`.

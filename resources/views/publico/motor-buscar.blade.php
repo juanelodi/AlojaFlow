@@ -2,7 +2,29 @@
 @use('App\Support\Formato')
 @extends('publico.layout')
 @section('titulo', __('motor.titulo'))
+@section('cabeza')
+    <script type="application/ld+json">{!! $pagina->datosEstructurados() !!}</script>
+@endsection
 @section('contenido')
+    @include('publico.fotos', ['fotos' => $fotos, 'nombre' => $propiedad->nombre])
+    @if ($pagina->descripcion() || $pagina->ubicacion() || $pagina->servicios())
+        <section class="tarjeta">
+            @if ($pagina->descripcion())
+                <p style="white-space:pre-line;margin:0 0 8px">{{ $pagina->descripcion() }}</p>
+            @endif
+            @if ($pagina->servicios())
+                <h2>{{ __('portal.servicios') }}</h2>
+                <p class="gris" style="white-space:pre-line;margin:0 0 8px">{{ $pagina->servicios() }}</p>
+            @endif
+            @if ($pagina->ubicacion())
+                <h2>{{ __('portal.ubicacion') }}</h2>
+                <p class="gris" style="white-space:pre-line;margin:0">{{ $pagina->ubicacion() }}</p>
+            @endif
+            @include('publico.contacto')
+        </section>
+    @elseif ($pagina->whatsapp() || $pagina->mapaUrl())
+        <section class="tarjeta" style="padding-top:6px">@include('publico.contacto')</section>
+    @endif
     <form method="get" class="tarjeta" action="{{ route('motor.buscar', ['codigo' => $propiedad->codigo]) }}">
         <h2>{{ __('motor.titulo') }}</h2>
         <input type="hidden" name="idioma" value="{{ app()->getLocale() }}">
@@ -30,6 +52,7 @@
     @if ($ofertas !== null)
         @forelse ($ofertas as $oferta)
             <section class="tarjeta">
+                @include('publico.fotos', ['fotos' => $fotosTarifa->get($oferta->tarifa->id, collect()), 'nombre' => $oferta->tarifa->nombre])
                 <div class="oferta">
                     <div>
                         <h2>{{ $oferta->tarifa->nombre }}</h2>
@@ -55,5 +78,11 @@
         @empty
             <p class="mensaje">{{ __('motor.sin_resultados') }}</p>
         @endforelse
+    @endif
+    @if ($politica)
+        <section class="tarjeta">
+            <h2>{{ __('portal.politicas') }}</h2>
+            <p class="gris" style="white-space:pre-line;margin:0">{{ $politica }}</p>
+        </section>
     @endif
 @endsection
