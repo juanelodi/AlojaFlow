@@ -542,6 +542,14 @@ modos: la revisión no ve cualquier cambio. Lo que llega se trata como dato ajen
 copia lleva todos los datos de la instalación, y aquí se comparte solo una propiedad. **Lo que aún no viaja:** los pagos y la caja uno por uno; llegan con la 1.0.15, igual que
 los de HotelDruid. El total pagado de cada reserva sí. **Riesgo que queda:** las dos puntas deben tener la 1.0.12 o posterior. Contrato en `docs/especificacion/subordinacion-alojaflow.md`.
 
+### D-074 · 2026-11-05 · Aviso de entradas y salidas y clientes omitidos
+El aviso se arma de las reservas de cada día y se puede retocar antes de mandarlo. Viene del plugin de la 1.2.3, reescrito, y es un módulo aparte: como lo nuevo, en una instalación
+existente llega apagado. **Clientes omitidos** es una pantalla propia, con una casilla por lugar: aviso, informes y mensajes automáticos. El usuario pidió casillas y no una sola lista. Se omite
+una ficha o todos los de un tipo, con un campo de la ficha y su valor, como los colores del calendario. **Omitir no oculta la reserva:** sigue ocupando sus fechas, porque de otro modo se vendería
+dos veces. **En informes no cuentan sus noches ni ingresos, pero los cobros y la caja sí:** ese dinero es real y tiene que cuadrar. Solo se omite al titular, no a los acompañantes. Las tareas de
+limpieza se siguen generando: alguien tiene que limpiar. **Listas de comprobación:** una por tipo de tarea, y cada tarea guarda su copia. **Mantenimiento recurrente:** genera su tarea una semana antes, y si
+la fecha ya pasó no acumula las atrasadas. WhatsApp usa el prefijo del país de la propiedad si el teléfono no lo trae.
+
 ---
 
 ## Pendientes

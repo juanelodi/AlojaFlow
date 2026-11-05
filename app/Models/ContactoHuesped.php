@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\TipoContacto;
+use App\Support\Contactos;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -43,14 +44,12 @@ class ContactoHuesped extends ModeloBase
     }
 
     /**
-     * Enlace de WhatsApp (wa.me) si es un teléfono con prefijo de país.
+     * Enlace de WhatsApp (wa.me). Sin prefijo escrito, usa el del país de la propiedad.
      */
-    public function enlaceWhatsapp(): ?string
+    public function enlaceWhatsapp(?string $pais = null): ?string
     {
-        if ($this->tipo !== TipoContacto::Telefono || ! str_starts_with($this->valor_normalizado, '+')) {
-            return null;
-        }
+        $numero = $this->tipo === TipoContacto::Telefono ? Contactos::internacional($this->valor_normalizado, $pais) : null;
 
-        return 'https://wa.me/'.ltrim($this->valor_normalizado, '+');
+        return $numero === null ? null : 'https://wa.me/'.ltrim($numero, '+');
     }
 }

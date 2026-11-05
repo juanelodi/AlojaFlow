@@ -62,6 +62,7 @@ return [
         'frecuencia' => 'Wie oft?',
         'sin_limpieza' => 'Nur bei der Abreise',
         'dias' => 'Tage',
+        'fechas' => 'Tage',
         'guardada' => 'Reinigung während des Aufenthalts gespeichert.',
     ],
     'inspeccion' => 'Einheiten nach der Reinigung prüfen',

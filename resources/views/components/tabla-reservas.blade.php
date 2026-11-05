@@ -85,8 +85,8 @@
                                     <a href="tel:{{ $telefono->valor_normalizado }}" title="{{ __('ui.comun.llamar') }}" aria-label="{{ __('ui.comun.llamar') }}: {{ $telefono->valor }}">
                                         <x-filament::icon icon="heroicon-o-phone" class="h-5 w-5" />
                                     </a>
-                                    @if ($telefono->enlaceWhatsapp())
-                                        <a href="{{ $telefono->enlaceWhatsapp() }}" target="_blank" rel="noopener noreferrer" title="{{ __('ui.comun.whatsapp') }}" aria-label="{{ __('ui.comun.whatsapp') }}">
+                                    @if ($whatsapp = $telefono->enlaceWhatsapp($reserva->propiedad->pais))
+                                        <a href="{{ $whatsapp }}" target="_blank" rel="noopener noreferrer" title="{{ __('ui.comun.whatsapp') }}" aria-label="{{ __('ui.comun.whatsapp') }}">
                                             <x-filament::icon icon="heroicon-o-chat-bubble-left-ellipsis" class="h-5 w-5" />
                                         </a>
                                     @endif

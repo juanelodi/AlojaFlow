@@ -26,7 +26,7 @@ use Illuminate\Contracts\Support\Htmlable;
 class PrimerasPreguntas extends Page
 {
     /** Lo que se marca de entrada la primera vez: no se usan siempre, pero casi nadie se arrepiente. */
-    private const RECOMENDADOS = [Modulo::Limpieza, Modulo::Mensajes, Modulo::Informes];
+    private const RECOMENDADOS = [Modulo::Limpieza, Modulo::AvisoEquipo, Modulo::Mensajes, Modulo::Informes];
 
     public const PASOS = 5;
 

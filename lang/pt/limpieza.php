@@ -62,6 +62,7 @@ return [
         'frecuencia' => 'Com que frequência?',
         'sin_limpieza' => 'Só à saída',
         'dias' => 'Dias',
+        'fechas' => 'Datas',
         'guardada' => 'Limpeza da estadia guardada.',
     ],
     'inspeccion' => 'Verificar as unidades depois de as limpar',

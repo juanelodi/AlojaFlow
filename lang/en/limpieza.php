@@ -62,6 +62,7 @@ return [
         'frecuencia' => 'How often?',
         'sin_limpieza' => 'Only at check-out',
         'dias' => 'Days',
+        'fechas' => 'Dates',
         'guardada' => 'Stay cleaning saved.',
     ],
     'inspeccion' => 'Inspect units after cleaning them',

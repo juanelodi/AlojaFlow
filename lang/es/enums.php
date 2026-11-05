@@ -54,6 +54,7 @@ return [
     'FrecuenciaLimpieza' => [
         'diaria' => 'Todos los días',
         'semanal' => 'Algunos días de la semana',
+        'fechas' => 'Días elegidos',
     ],
 
     'ClaseArchivo' => [

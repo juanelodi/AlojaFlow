@@ -13,6 +13,7 @@ namespace App\Comunicacion;
 use App\Models\Reserva;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
+use App\Support\Contactos;
 use App\Support\Formato;
 
 /**
@@ -85,8 +86,10 @@ final class VariablesMensaje
     /**
      * Enlace de WhatsApp con el texto listo; sin teléfono, WhatsApp pregunta a quién mandarlo.
      */
-    public static function enlaceWhatsapp(?string $telefono, string $texto): string
+    public static function enlaceWhatsapp(?string $telefono, string $texto, ?string $pais = null): string
     {
-        return 'https://wa.me/'.preg_replace('/\D+/', '', (string) $telefono).'?text='.rawurlencode($texto);
+        $numero = Contactos::internacional($telefono, $pais) ?? (string) $telefono;
+
+        return 'https://wa.me/'.preg_replace('/\D+/', '', $numero).'?text='.rawurlencode($texto);
     }
 }

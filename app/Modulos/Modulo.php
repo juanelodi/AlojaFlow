@@ -24,6 +24,7 @@ enum Modulo: string
     case Cupones = 'cupones';
     case Grupos = 'grupos';
     case Limpieza = 'limpieza';
+    case AvisoEquipo = 'aviso_equipo';
     case Plano = 'plano';
     case Llegada = 'llegada';
     case Mensajes = 'mensajes';
@@ -69,7 +70,7 @@ enum Modulo: string
         return match ($this) {
             self::VariasPropiedades, self::Subordinacion => 'propiedades',
             self::Motor, self::Pagos, self::Ical, self::Cupones, self::Grupos => 'reservas',
-            self::Limpieza, self::Plano, self::Llegada, self::Mensajes => 'operacion',
+            self::Limpieza, self::AvisoEquipo, self::Plano, self::Llegada, self::Mensajes => 'operacion',
             self::Caja, self::Facturacion, self::Informes => 'dinero',
             self::Integraciones => 'sistema',
         };

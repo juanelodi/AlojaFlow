@@ -15,10 +15,12 @@ use App\Enums\CanalEnvio;
 use App\Enums\DisparadorAutomatizacion;
 use App\Enums\EstadoEnvio;
 use App\Enums\EstadoReserva;
+use App\Enums\LugarOmision;
 use App\Enums\NivelAviso;
 use App\Enums\TipoContacto;
 use App\Enums\TipoEventoReserva;
 use App\Enums\TipoReserva;
+use App\Limpieza\Omisiones;
 use App\Llegada\GestorLlegadas;
 use App\Models\Automatizacion;
 use App\Models\Aviso;
@@ -334,6 +336,9 @@ final class Mensajero
     {
         $reserva->loadMissing(['titular.contactos', 'unidad']);
         $aHuesped = $automatizacion->accion === AccionAutomatizacion::CorreoHuesped;
+        if ($aHuesped && Omisiones::estaOmitido($reserva->titular_id, $reserva->propiedad_id, LugarOmision::Mensajes)) {
+            return null;
+        }
         $idioma = $aHuesped ? self::idiomaDe($reserva) : $automatizacion->propiedad->idioma;
         $destino = $aHuesped ? self::correoDe($reserva) : $automatizacion->destino;
         $texto = self::textoDe($automatizacion->plantilla, $reserva, $idioma);

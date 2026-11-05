@@ -38,6 +38,7 @@ return [
         'cupones' => ['nombre' => 'Cupones', 'descripcion' => 'Códigos de descuento para las reservas.'],
         'grupos' => ['nombre' => 'Grupos', 'descripcion' => 'Reservar varias unidades juntas y llevarlas como una sola.'],
         'limpieza' => ['nombre' => 'Limpieza y mantenimiento', 'descripcion' => 'Estado de cada unidad, tareas para el personal y reglas de limpieza.'],
+        'aviso_equipo' => ['nombre' => 'Aviso de entradas y salidas', 'descripcion' => 'Un parte para el equipo con quién sale, quién llega y qué se limpia, listo para mandar por WhatsApp.'],
         'plano' => ['nombre' => 'Plano de la propiedad', 'descripcion' => 'Ver las unidades acomodadas en un dibujo de tu alojamiento.'],
         'llegada' => ['nombre' => 'Llegada en línea', 'descripcion' => 'El huésped llena sus datos y acepta los documentos antes de llegar.'],
         'mensajes' => ['nombre' => 'Mensajes a huéspedes', 'descripcion' => 'Plantillas, envíos por correo y WhatsApp, y mensajes automáticos.'],

@@ -64,6 +64,7 @@ return [
         'frecuencia' => '¿Cada cuándo?',
         'sin_limpieza' => 'Solo a la salida',
         'dias' => 'Días',
+        'fechas' => 'Días',
         'guardada' => 'Limpieza de la estancia guardada.',
     ],
     'inspeccion' => 'Revisar las unidades después de limpiarlas',

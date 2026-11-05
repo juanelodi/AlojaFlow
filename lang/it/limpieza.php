@@ -62,6 +62,7 @@ return [
         'frecuencia' => 'Ogni quanto?',
         'sin_limpieza' => 'Solo alla partenza',
         'dias' => 'Giorni',
+        'fechas' => 'Date',
         'guardada' => 'Pulizia del soggiorno salvata.',
     ],
     'inspeccion' => 'Controlla le unità dopo averle pulite',

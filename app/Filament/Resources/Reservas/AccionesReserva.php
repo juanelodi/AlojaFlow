@@ -159,7 +159,7 @@ final class AccionesReserva
                 $enlace = app(GestorLlegadas::class)->urlDe($record, $idioma);
                 $texto = __('llegada.panel.mensaje_whatsapp', ['nombre' => (string) ($record->titular->nombre ?? ''), 'propiedad' => $record->propiedad->nombre, 'enlace' => $enlace], $idioma);
 
-                return view('filament.modales.enlace-llegada', ['enlace' => $enlace, 'whatsapp' => VariablesMensaje::enlaceWhatsapp(Mensajero::telefonoDe($record), $texto)]);
+                return view('filament.modales.enlace-llegada', ['enlace' => $enlace, 'whatsapp' => VariablesMensaje::enlaceWhatsapp(Mensajero::telefonoDe($record), $texto, $record->propiedad->pais)]);
             })
             ->modalSubmitAction(false)
             ->modalCancelActionLabel(__('ui.comun.cerrar'));
@@ -202,7 +202,7 @@ final class AccionesReserva
                 $idioma = Mensajero::idiomaDe($record);
                 if ($data['canal'] === CanalEnvio::WhatsappEnlace->value) {
                     $mensajero->anotarWhatsapp($record, $data['destino_telefono'] ?? null, (string) $data['cuerpo'], $idioma);
-                    $enlace = VariablesMensaje::enlaceWhatsapp($data['destino_telefono'] ?? null, (string) $data['cuerpo']);
+                    $enlace = VariablesMensaje::enlaceWhatsapp($data['destino_telefono'] ?? null, (string) $data['cuerpo'], $record->propiedad->pais);
                     $livewire->js('window.open('.json_encode($enlace).', "_blank", "noopener")');
 
                     return;
@@ -232,10 +232,21 @@ final class AccionesReserva
                     }
                 }
 
-                return ['frecuencia' => $regla->frecuencia->value ?? '', 'dias' => $dias];
+                return ['frecuencia' => $regla->frecuencia->value ?? '', 'dias' => $dias, 'fechas' => (array) $regla?->fechas];
             })
-            ->schema([
+            ->schema(fn (Reserva $record): array => [
                 Select::make('frecuencia')->label(__('limpieza.regla.frecuencia'))->native(false)->live()->placeholder(__('limpieza.regla.sin_limpieza'))->options(FrecuenciaLimpieza::opciones()),
+                // Sin el día de llegada ni el de salida: esos no llevan limpieza aparte.
+                CheckboxList::make('fechas')->label(__('limpieza.regla.fechas'))->columns(3)->required()
+                    ->visible(fn (Get $get): bool => $get('frecuencia') === FrecuenciaLimpieza::Fechas->value || $get('frecuencia') === FrecuenciaLimpieza::Fechas)
+                    ->options(function () use ($record): array {
+                        $opciones = [];
+                        for ($dia = $record->llegada->addDay(); $dia->lt($record->salida); $dia = $dia->addDay()) {
+                            $opciones[$dia->format('Y-m-d')] = Formato::fecha($dia, 'ddd D MMM');
+                        }
+
+                        return $opciones;
+                    }),
                 CheckboxList::make('dias')->label(__('limpieza.regla.dias'))->columns(4)->required()
                     ->visible(fn (Get $get): bool => $get('frecuencia') === FrecuenciaLimpieza::Semanal->value || $get('frecuencia') === FrecuenciaLimpieza::Semanal)
                     ->options(function (): array {
@@ -259,6 +270,7 @@ final class AccionesReserva
                     ReglaLimpieza::query()->updateOrCreate(['reserva_id' => $record->id], [
                         'frecuencia' => $frecuencia,
                         'dias_semana' => $frecuencia === FrecuenciaLimpieza::Semanal ? $mascara : null,
+                        'fechas' => $frecuencia === FrecuenciaLimpieza::Fechas ? array_values((array) ($data['fechas'] ?? [])) : null,
                         'creada_por' => auth()->id(),
                     ]);
                 }

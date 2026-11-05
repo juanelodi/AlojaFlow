@@ -179,6 +179,11 @@ class Limpieza extends Page
         app(GestorLimpieza::class)->empezar($this->tarea($tareaId));
     }
 
+    public function marcarPunto(int $tareaId, int $indice): void
+    {
+        app(GestorLimpieza::class)->marcarPunto($this->tarea($tareaId), $indice);
+    }
+
     public function terminar(int $tareaId): void
     {
         $tarea = $this->tarea($tareaId);

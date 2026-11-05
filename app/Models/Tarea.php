@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property TipoTarea $tipo
  * @property string $titulo
  * @property string|null $descripcion
+ * @property list<array{texto: string, hecho: bool}>|null $puntos
  * @property CarbonImmutable $fecha
  * @property int $prioridad
  * @property EstadoTarea $estado
@@ -51,6 +52,7 @@ class Tarea extends ModeloBase
             'estado' => EstadoTarea::class,
             'fecha' => 'immutable_date',
             'prioridad' => 'integer',
+            'puntos' => 'array',
             'hecha_en' => 'datetime',
         ];
     }

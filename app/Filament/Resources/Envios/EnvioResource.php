@@ -144,7 +144,7 @@ class EnvioResource extends RecursoDeCualquierPropiedad
 
     public static function enlaceWhatsapp(Envio $envio): string
     {
-        return VariablesMensaje::enlaceWhatsapp($envio->canal === CanalEnvio::WhatsappEnlace ? $envio->destino : null, (string) $envio->cuerpo);
+        return VariablesMensaje::enlaceWhatsapp($envio->canal === CanalEnvio::WhatsappEnlace ? $envio->destino : null, (string) $envio->cuerpo, $envio->propiedad->pais);
     }
 
     public static function getPages(): array

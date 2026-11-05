@@ -38,6 +38,7 @@ return [
         'cupones' => ['nombre' => 'Coupon', 'descripcion' => 'Codici sconto per le prenotazioni.'],
         'grupos' => ['nombre' => 'Gruppi', 'descripcion' => 'Prenotare più unità insieme e gestirle come una sola.'],
         'limpieza' => ['nombre' => 'Pulizie e manutenzione', 'descripcion' => 'Stato di ogni unità, attività per il personale e regole di pulizia.'],
+        'aviso_equipo' => ['nombre' => 'Avviso di arrivi e partenze', 'descripcion' => 'Un bollettino per il team con chi parte, chi arriva e cosa pulire, pronto da inviare su WhatsApp.'],
         'plano' => ['nombre' => 'Pianta della struttura', 'descripcion' => 'Vedere le unità disposte su un disegno del tuo alloggio.'],
         'llegada' => ['nombre' => 'Arrivo online', 'descripcion' => 'L\'ospite compila i suoi dati e accetta i documenti prima di arrivare.'],
         'mensajes' => ['nombre' => 'Messaggi agli ospiti', 'descripcion' => 'Modelli, invii via e-mail e WhatsApp, e messaggi automatici.'],

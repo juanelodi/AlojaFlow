@@ -2,6 +2,27 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.13 — 2026-11-05
+
+**Vuelve el aviso de entradas y salidas, y ya puedes omitir clientes eligiendo dónde.**
+
+**Llega apagado:** es un módulo nuevo. Préndelo en Sistema → Módulos, en «Aviso de entradas y salidas».
+
+**Lo que hay**
+- **Aviso de entradas y salidas:** el parte para el equipo de hasta 3 meses, con quién sale, quién llega y qué se limpia. Con casillas para añadir nombre, personas, origen, noches, teléfono y comentario.
+  El texto se puede retocar y se manda por WhatsApp o se copia; el teléfono se recuerda en ese navegador. Quien limpia no ve teléfonos ni comentarios.
+- **Clientes omitidos,** en Reservas: una casilla por lugar, y un cliente o todos los de un tipo.
+  - *Aviso:* no sale en el parte.
+  - *Informes e indicadores:* sus noches e ingresos no cuentan. Los cobros y la caja sí, porque ese dinero es real.
+  - *Mensajes automáticos:* no le llegan. Los que mandes a mano, sí.
+  - Su reserva sigue ocupando las fechas en el calendario y su limpieza se sigue generando.
+- **Limpieza durante la estancia en días sueltos,** además de diaria o por días de la semana.
+- **WhatsApp con el prefijo del país de la propiedad** si el teléfono no lo trae. Antes, esos teléfonos se quedaban sin enlace.
+- **Listas de comprobación** por tipo de tarea, como casillas en la pantalla de Limpieza. Solo en las tareas que se creen desde ahora.
+- **Mantenimiento recurrente:** cambiar filtros, fumigar… Una semana antes se crea su tarea. Prendido con Limpieza.
+
+**Sin verificar:** en un hosting real ni con un teléfono de verdad. Los prefijos de país salen de la lista de la UIT, escrita de memoria y comprobada solo para México, España y Estados Unidos.
+
 ## 1.0.12 — 2026-11-05
 
 **Una instalación de AlojaFlow ya puede subordinar a otra.** La subordinada tiene una copia de solo lectura de una propiedad, y le suma lo suyo: limpieza, llegada en línea, mensajes.

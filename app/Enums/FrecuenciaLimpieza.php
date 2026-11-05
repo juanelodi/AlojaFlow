@@ -16,4 +16,5 @@ enum FrecuenciaLimpieza: string
 
     case Diaria = 'diaria';
     case Semanal = 'semanal';
+    case Fechas = 'fechas';
 }

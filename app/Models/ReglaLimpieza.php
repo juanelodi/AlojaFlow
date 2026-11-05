@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $reserva_id
  * @property FrecuenciaLimpieza $frecuencia
  * @property int|null $dias_semana
+ * @property list<string>|null $fechas
  * @property int|null $creada_por
  */
 class ReglaLimpieza extends ModeloBase
@@ -34,6 +35,7 @@ class ReglaLimpieza extends ModeloBase
         return [
             'frecuencia' => FrecuenciaLimpieza::class,
             'dias_semana' => 'integer',
+            'fechas' => 'array',
         ];
     }
 
@@ -45,7 +47,10 @@ class ReglaLimpieza extends ModeloBase
 
     public function tocaEl(CarbonInterface $fecha): bool
     {
-        return $this->frecuencia === FrecuenciaLimpieza::Diaria
-            || ((int) $this->dias_semana & (1 << ($fecha->dayOfWeekIso - 1))) !== 0;
+        return match ($this->frecuencia) {
+            FrecuenciaLimpieza::Diaria => true,
+            FrecuenciaLimpieza::Semanal => ((int) $this->dias_semana & (1 << ($fecha->dayOfWeekIso - 1))) !== 0,
+            FrecuenciaLimpieza::Fechas => in_array($fecha->format('Y-m-d'), (array) $this->fechas, true),
+        };
     }
 }

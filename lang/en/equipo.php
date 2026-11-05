@@ -1,0 +1,79 @@
+<?php
+
+/*
+ * AlojaFlow — sistema de gestión de alojamientos
+ * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+declare(strict_types=1);
+
+return [
+    'aviso' => [
+        'titulo' => 'Arrivals and departures notice',
+        'desde' => 'From',
+        'dias' => 'Days',
+        'anadir' => 'Add to each unit',
+        'nombre' => 'Name',
+        'personas' => 'People',
+        'origen' => 'Source',
+        'noches' => 'Nights',
+        'telefono' => 'Phone',
+        'comentario' => 'Comment',
+        'mostrar_limpieza' => 'Show housekeeping',
+        'texto' => 'Notice text (you can adjust it before sending)',
+        'telefono_destino' => 'WhatsApp of the person receiving it',
+        'salen' => 'Leaving',
+        'llegan' => 'Arriving',
+        'limpieza' => 'Housekeeping',
+        'n_personas' => ':count person|:count people',
+        'sin_movimiento' => 'No movement on these dates.',
+        'omitidos_ayuda' => 'Should an internal or maintenance client not appear here? Mark them in',
+    ],
+
+    'omisiones' => [
+        'modelo' => 'omitted client',
+        'modelos' => 'Omitted clients',
+        'ayuda' => 'Choose where this client should not appear: for example, your relatives or maintenance stays. Nothing is deleted, and the booking still takes up its dates on the calendar.',
+        'por' => 'Who?',
+        'por_huesped' => 'One client',
+        'por_tipo' => 'Everyone of a type',
+        'campo' => 'Record field',
+        'campo_ayuda' => 'The name of the custom field, as in the calendar colours. For example, «Client type».',
+        'valor' => 'Value',
+        'donde' => 'Where is it omitted?',
+        'en_aviso' => 'Arrivals and departures notice',
+        'en_aviso_ayuda' => 'Does not appear in the notice for the team.',
+        'en_informes' => 'Reports and indicators',
+        'en_informes_ayuda' => 'Their nights and income do not count. Payments and cash do, because that money is real.',
+        'en_mensajes' => 'Automatic messages',
+        'en_mensajes_ayuda' => 'Automations do not reach them. The ones you send by hand do.',
+        'motivo' => 'Reason',
+        'quien' => 'Client',
+        'vacio' => 'There are no omitted clients',
+    ],
+
+    'listas' => [
+        'modelo' => 'checklist',
+        'modelos' => 'Checklists',
+        'ayuda' => 'What must be checked for each type of task. It appears as tick boxes on the Housekeeping screen, in tasks created from now on.',
+        'tipo' => 'Task type',
+        'nombre' => 'Name',
+        'puntos' => 'Items',
+        'punto' => 'Item',
+        'anadir' => 'Add item',
+        'vacio' => 'There are no checklists',
+    ],
+
+    'recurrentes' => [
+        'modelo' => 'recurring maintenance',
+        'modelos' => 'Recurring maintenance',
+        'ayuda' => 'Jobs that repeat, such as changing filters or fumigating. Its task is created a week before.',
+        'unidad_ayuda' => 'Leave it empty if it is for the whole place.',
+        'titulo' => 'Job',
+        'descripcion' => 'Description',
+        'cada_dias' => 'Every how many days',
+        'proxima' => 'Next date',
+        'vacio' => 'There is no recurring maintenance',
+    ],
+];

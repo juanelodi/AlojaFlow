@@ -51,6 +51,18 @@
                             <div>
                                 <div class="af-tarea__titulo">@if ($tarea->prioridad > 0)<span class="af-pastilla af-pastilla--sucia">{{ __('limpieza.urgente_corto') }}</span> @endif{{ $tarea->titulo }}</div>
                                 @if ($tarea->descripcion)<div class="af-nota">{{ $tarea->descripcion }}</div>@endif
+                                @if ($tarea->puntos)
+                                    <ul class="af-puntos" aria-label="{{ __('equipo.listas.puntos') }}">
+                                        @foreach ($tarea->puntos as $indice => $punto)
+                                            <li wire:key="tarea-{{ $tarea->id }}-punto-{{ $indice }}">
+                                                <label class="af-casilla">
+                                                    <input type="checkbox" @checked($punto['hecho'] ?? false) wire:click="marcarPunto({{ $tarea->id }}, {{ $indice }})">
+                                                    <span>{{ $punto['texto'] ?? '' }}</span>
+                                                </label>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
                                 @foreach ($tarea->archivos as $foto)
                                     <a class="af-enlace" href="{{ route('archivos.ver', $foto) }}" target="_blank" rel="noopener">{{ __('limpieza.ver_foto', ['n' => $loop->iteration]) }}</a>
                                 @endforeach

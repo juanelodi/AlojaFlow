@@ -316,7 +316,10 @@ describe('super administrador', function () {
             ->and(User::query()->where('es_superadministrador', true)->count())->toBe(1)
             // Lo que había sigue prendido, y no se preguntan cosas a quien ya usa el sistema.
             ->and(Modulos::faltanPreguntas())->toBeFalse()
-            ->and(Modulos::prendidos())->toBe(Modulo::cases());
+            ->and(Modulos::prendidos())->toContain(Modulo::Motor, Modulo::Limpieza)
+            // Lo que llegó después de esa versión, apagado y con aviso.
+            ->and(Modulos::prendidos())->not->toContain(Modulo::AvisoEquipo)
+            ->and(Modulos::nuevos())->toContain(Modulo::AvisoEquipo);
     });
 
     it('un administrador no nombra administradores ni toca a otro', function () {

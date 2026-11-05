@@ -43,7 +43,8 @@ Lo programado sigue este diseño, salvo:
 - **`bloqueos_externos`, `fuentes_ical`:** llevan `propiedad_id`; `fuentes_ical` lleva `nombre`.
 - **`registros_llegada_personas`:** nacionalidad y país como texto, sin `symfony/intl` (D-048). Sin `tipos_documento`
   ni `parentescos`: los tipos de documento los da el paquete de país.
-- **No creadas:** `envios_autoridad`, `fichas_huesped`, `exclusiones_aviso`, `canales_alias`, `subdivisiones`,
+- **`exclusiones_aviso`** se creó como `omisiones`, con una casilla por lugar (D-074).
+- **No creadas:** `envios_autoridad`, `fichas_huesped`, `canales_alias`, `subdivisiones`,
   `equivalencias`, `reservas_dias_limpieza`.
 - **`facturas`:** sin encadenamiento de VeriFactu ni `sustituye_a_id`. `emisor` guarda copia, igual que `receptor`.
 - **`entidades_fiscales`:** pertenecen a una propiedad.

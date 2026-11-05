@@ -12,10 +12,12 @@ namespace App\Servicios;
 
 use App\Enums\EstadoReserva;
 use App\Enums\EstadoTarea;
+use App\Enums\LugarOmision;
 use App\Enums\MetodoPago;
 use App\Enums\TipoMovimiento;
 use App\Enums\TipoReserva;
 use App\Enums\TipoTarea;
+use App\Limpieza\Omisiones;
 use App\Models\Propiedad;
 use App\Support\Dinero;
 use App\Support\Formato;
@@ -326,9 +328,11 @@ final class Informes
      */
     private static function noches(array $propiedades, CarbonImmutable $desde, CarbonImmutable $hasta): Builder
     {
-        return DB::table('reservas_noches as n')->join('reservas as r', 'r.id', '=', 'n.reserva_id')
+        $consulta = DB::table('reservas_noches as n')->join('reservas as r', 'r.id', '=', 'n.reserva_id')
             ->whereIn('n.propiedad_id', $propiedades)->where('r.tipo', TipoReserva::Reserva->value)
             ->whereBetween('n.fecha', [$desde->format('Y-m-d'), $hasta->format('Y-m-d')]);
+
+        return Omisiones::excluir($consulta, 'r.titular_id', $propiedades, LugarOmision::Informes);
     }
 
     /**
@@ -336,7 +340,9 @@ final class Informes
      */
     private static function reservas(array $propiedades): Builder
     {
-        return DB::table('reservas')->whereIn('propiedad_id', $propiedades)->where('tipo', TipoReserva::Reserva->value)->whereNull('eliminada_en_principal_en');
+        $consulta = DB::table('reservas')->whereIn('propiedad_id', $propiedades)->where('tipo', TipoReserva::Reserva->value)->whereNull('eliminada_en_principal_en');
+
+        return Omisiones::excluir($consulta, 'titular_id', $propiedades, LugarOmision::Informes);
     }
 
     /**

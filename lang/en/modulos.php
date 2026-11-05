@@ -38,6 +38,7 @@ return [
         'cupones' => ['nombre' => 'Coupons', 'descripcion' => 'Discount codes for bookings.'],
         'grupos' => ['nombre' => 'Groups', 'descripcion' => 'Book several units together and handle them as one.'],
         'limpieza' => ['nombre' => 'Housekeeping and maintenance', 'descripcion' => 'Status of each unit, tasks for the staff and cleaning rules.'],
+        'aviso_equipo' => ['nombre' => 'Arrivals and departures notice', 'descripcion' => 'A report for the team with who leaves, who arrives and what gets cleaned, ready to send by WhatsApp.'],
         'plano' => ['nombre' => 'Property map', 'descripcion' => 'See the units laid out on a drawing of your place.'],
         'llegada' => ['nombre' => 'Online check-in', 'descripcion' => 'The guest fills in their details and accepts the documents before arriving.'],
         'mensajes' => ['nombre' => 'Messages to guests', 'descripcion' => 'Templates, sending by email and WhatsApp, and automatic messages.'],

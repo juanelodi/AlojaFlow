@@ -11,7 +11,9 @@ declare(strict_types=1);
 namespace App\Servicios;
 
 use App\Enums\EstadoReserva;
+use App\Enums\LugarOmision;
 use App\Enums\TipoReserva;
+use App\Limpieza\Omisiones;
 use App\Models\Propiedad;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -39,7 +41,7 @@ final class Indicadores
                 ->selectRaw('SUM(CASE WHEN r.tipo = ? AND n.importe > 0 THEN 1 ELSE 0 END) as con_importe', [TipoReserva::Reserva->value])
                 ->selectRaw('SUM(CASE WHEN r.tipo = ? THEN n.importe ELSE 0 END) as ingresos', [TipoReserva::Reserva->value])
                 ->first();
-            $reservas = DB::table('reservas')->where('propiedad_id', $propiedad->id)->whereNull('eliminada_en_principal_en')
+            $reservas = Omisiones::excluir(DB::table('reservas'), 'titular_id', [$propiedad->id], LugarOmision::Informes)->where('propiedad_id', $propiedad->id)->whereNull('eliminada_en_principal_en')
                 ->where('tipo', TipoReserva::Reserva->value)
                 ->whereBetween('llegada', [$desde->format('Y-m-d'), $hasta->format('Y-m-d')])
                 ->selectRaw('SUM(CASE WHEN estado <> ? THEN 1 ELSE 0 END) as reservas', [EstadoReserva::Cancelada->value])
@@ -107,9 +109,11 @@ final class Indicadores
 
     private static function noches(int $propiedadId, CarbonImmutable $desde, CarbonImmutable $hasta): \Illuminate\Database\Query\Builder
     {
-        return DB::table('reservas_noches as n')
+        $consulta = DB::table('reservas_noches as n')
             ->join('reservas as r', 'r.id', '=', 'n.reserva_id')
             ->where('n.propiedad_id', $propiedadId)
             ->whereBetween('n.fecha', [$desde->format('Y-m-d'), $hasta->format('Y-m-d')]);
+
+        return Omisiones::excluir($consulta, 'r.titular_id', [$propiedadId], LugarOmision::Informes);
     }
 }

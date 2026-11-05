@@ -124,6 +124,8 @@ final class GestorPrivacidad
             Envio::query()->where(fn ($q) => $q->where('huesped_id', $huesped->id)->orWhereIn('reserva_id', $reservas))
                 ->update(['destino' => null, 'asunto' => null, 'cuerpo' => null, 'ultimo_error' => null]);
             DB::table('notas_reserva')->whereIn('reserva_id', $reservas)->delete();
+            // El motivo es texto libre, y puede decir quién es.
+            DB::table('omisiones')->where('huesped_id', $huesped->id)->update(['motivo' => null]);
             DB::table('pagos')->whereIn('reserva_id', $reservas)->update(['referencia' => null]);
             DB::table('grupos')->where('coordinador_id', $huesped->id)->update(['notas' => null]);
             // Las facturas guardan su propia copia del receptor, que la ley obliga a conservar; esto es solo

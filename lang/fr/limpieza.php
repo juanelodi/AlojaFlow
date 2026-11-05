@@ -62,6 +62,7 @@ return [
         'frecuencia' => 'À quelle fréquence ?',
         'sin_limpieza' => 'Uniquement au départ',
         'dias' => 'Jours',
+        'fechas' => 'Dates',
         'guardada' => 'Ménage du séjour enregistré.',
     ],
     'inspeccion' => 'Vérifier les unités après le ménage',

@@ -38,6 +38,7 @@ return [
         'cupones' => ['nombre' => 'Gutscheine', 'descripcion' => 'Rabattcodes für Buchungen.'],
         'grupos' => ['nombre' => 'Gruppen', 'descripcion' => 'Mehrere Einheiten zusammen buchen und wie eine behandeln.'],
         'limpieza' => ['nombre' => 'Reinigung und Wartung', 'descripcion' => 'Zustand jeder Einheit, Aufgaben für das Personal und Reinigungsregeln.'],
+        'aviso_equipo' => ['nombre' => 'Meldung zu An- und Abreisen', 'descripcion' => 'Ein Bericht für das Team: wer abreist, wer anreist und was gereinigt wird, bereit zum Senden per WhatsApp.'],
         'plano' => ['nombre' => 'Lageplan der Unterkunft', 'descripcion' => 'Die Einheiten auf einer Zeichnung Ihrer Unterkunft sehen.'],
         'llegada' => ['nombre' => 'Online-Anreise', 'descripcion' => 'Der Gast trägt seine Daten ein und akzeptiert die Dokumente vor der Ankunft.'],
         'mensajes' => ['nombre' => 'Nachrichten an Gäste', 'descripcion' => 'Vorlagen, Versand per E-Mail und WhatsApp sowie automatische Nachrichten.'],

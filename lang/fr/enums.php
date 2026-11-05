@@ -122,6 +122,7 @@ return [
     'FrecuenciaLimpieza' => [
         'diaria' => 'Tous les jours',
         'semanal' => 'Certains jours de la semaine',
+        'fechas' => 'Jours choisis',
     ],
     'ClaseArchivo' => [
         'documento_identidad' => 'Pièce d’identité',

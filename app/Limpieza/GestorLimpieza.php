@@ -17,6 +17,8 @@ use App\Enums\TipoReserva;
 use App\Enums\TipoTarea;
 use App\Models\CambioEstadoUnidad;
 use App\Models\EstadoUnidad;
+use App\Models\ListaComprobacion;
+use App\Models\MantenimientoRecurrente;
 use App\Models\Propiedad;
 use App\Models\ReglaLimpieza;
 use App\Models\Reserva;
@@ -138,7 +140,11 @@ final class GestorLimpieza
             }
         }
 
+        $nuevas += $this->generarRecurrentes($propiedad, $hoy, $hasta);
+
+        // Las recurrentes no dependen de ninguna reserva: no hay nada que las deje sin efecto.
         Tarea::query()->where('propiedad_id', $propiedad->id)->whereNotNull('clave_generacion')
+            ->where('clave_generacion', 'not like', 'recurrente:%')
             ->where('estado', EstadoTarea::Pendiente->value)->where('fecha', '>=', $hoy->format('Y-m-d'))
             ->when($vigentes !== [], fn ($q) => $q->whereNotIn('clave_generacion', $vigentes))
             ->update(['estado' => EstadoTarea::Cancelada->value]);
@@ -149,6 +155,64 @@ final class GestorLimpieza
         }
 
         return $nuevas;
+    }
+
+    /**
+     * Una tarea por cada mantenimiento que se acerca. Si la fecha ya pasó (el módulo estuvo apagado), no se acumulan: toca la siguiente.
+     */
+    private function generarRecurrentes(Propiedad $propiedad, CarbonImmutable $hoy, CarbonImmutable $hasta): int
+    {
+        $nuevas = 0;
+        foreach (MantenimientoRecurrente::query()->where('propiedad_id', $propiedad->id)->where('activo', true)->where('proxima_fecha', '<=', $hasta->format('Y-m-d'))->get() as $trabajo) {
+            $cada = max(1, $trabajo->cada_dias);
+            $fecha = $trabajo->proxima_fecha;
+            while ($fecha->lt($hoy)) {
+                $fecha = $fecha->addDays($cada);
+            }
+            while ($fecha->lte($hasta)) {
+                $nuevas += Tarea::query()->insertOrIgnore([
+                    'propiedad_id' => $propiedad->id,
+                    'unidad_id' => $trabajo->unidad_id,
+                    'tipo' => TipoTarea::Mantenimiento->value,
+                    'titulo' => $trabajo->titulo,
+                    'descripcion' => $trabajo->descripcion,
+                    'puntos' => $this->puntosDe($propiedad, TipoTarea::Mantenimiento),
+                    'fecha' => $fecha->format('Y-m-d'),
+                    'prioridad' => 0,
+                    'estado' => EstadoTarea::Pendiente->value,
+                    'clave_generacion' => 'recurrente:'.$trabajo->id.':'.$fecha->format('Y-m-d'),
+                    'creado_en' => now('UTC'),
+                    'actualizado_en' => now('UTC'),
+                ]);
+                $fecha = $fecha->addDays($cada);
+            }
+            $trabajo->update(['proxima_fecha' => $fecha->format('Y-m-d')]);
+        }
+
+        return $nuevas;
+    }
+
+    /**
+     * Cada tarea guarda su copia de la lista: cambiarla después no altera lo ya revisado.
+     */
+    private function puntosDe(Propiedad $propiedad, TipoTarea $tipo): ?string
+    {
+        $lista = ListaComprobacion::query()->where('propiedad_id', $propiedad->id)->where('tipo_tarea', $tipo->value)->where('activa', true)->first();
+        if ($lista === null) {
+            return null;
+        }
+
+        return (string) json_encode(array_map(fn (string $punto): array => ['texto' => $punto, 'hecho' => false], array_values($lista->puntos)), JSON_UNESCAPED_UNICODE);
+    }
+
+    public function marcarPunto(Tarea $tarea, int $indice): void
+    {
+        $puntos = (array) $tarea->puntos;
+        if (! isset($puntos[$indice])) {
+            return;
+        }
+        $puntos[$indice]['hecho'] = ! $puntos[$indice]['hecho'];
+        $tarea->update(['puntos' => $puntos]);
     }
 
     /**
@@ -251,6 +315,7 @@ final class GestorLimpieza
             'reserva_id' => $reserva->id,
             'tipo' => $tipo->value,
             'titulo' => mb_substr($titulo, 0, 150),
+            'puntos' => $this->puntosDe($propiedad, $tipo),
             'fecha' => $fecha->format('Y-m-d'),
             'prioridad' => $prioridad,
             'estado' => EstadoTarea::Pendiente->value,
