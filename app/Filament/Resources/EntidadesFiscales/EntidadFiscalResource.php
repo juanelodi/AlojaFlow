@@ -10,23 +10,30 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\EntidadesFiscales;
 
+use App\Demo\ModoDemo;
 use App\Enums\ModoFiscal;
 use App\Enums\TipoDocumentoFiscal;
+use App\Facturacion\ConectorSw;
+use App\Facturacion\ErrorFacturacion;
+use App\Facturacion\FabricaPac;
 use App\Filament\Resources\Base\RecursoDeCualquierPropiedad;
 use App\Filament\Resources\EntidadesFiscales\Pages\CreateEntidadFiscal;
 use App\Filament\Resources\EntidadesFiscales\Pages\EditEntidadFiscal;
 use App\Filament\Resources\EntidadesFiscales\Pages\ListEntidadesFiscales;
 use App\Models\EntidadFiscal;
 use App\Models\Propiedad;
+use App\Models\RegistroAuditoria;
 use App\Modulos\Modulo;
 use App\Paises\Paises;
 use App\Seguridad\Acceso;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
@@ -115,7 +122,49 @@ class EntidadFiscalResource extends RecursoDeCualquierPropiedad
                 self::columnaPropiedad(),
             ])
             ->emptyStateHeading(__('dinero.entidades.vacio'))
-            ->recordActions([EditAction::make()->visible(fn (EntidadFiscal $record): bool => self::canEdit($record))]);
+            ->recordActions([self::accionConectarPac(), EditAction::make()->visible(fn (EntidadFiscal $record): bool => self::canEdit($record))]);
+    }
+
+    /**
+     * El token se guarda solo si funciona: un error de dedo se ve aquí y no al timbrar la primera factura de un huésped.
+     */
+    private static function accionConectarPac(): Action
+    {
+        return Action::make('conectarPac')
+            ->label(__('dinero.pac.conectar'))
+            ->icon(Heroicon::OutlinedLink)
+            ->color('gray')
+            ->visible(fn (EntidadFiscal $record): bool => ! ModoDemo::activo() && self::canEdit($record) && Paises::de($record->propiedad)->generadorFiscal() !== null)
+            ->modalDescription(fn (EntidadFiscal $record): string => __('dinero.pac.ayuda', ['modo' => $record->modo->etiqueta()]))
+            ->fillForm(fn (EntidadFiscal $record): array => ['pac' => ((array) $record->configuracion)['pac'] ?? null])
+            ->schema([
+                Select::make('pac')->label(__('dinero.pac.proveedor'))->native(false)->live()->placeholder(__('dinero.pac.ninguno'))->options([FabricaPac::SW => 'SW Sapien']),
+                TextInput::make('token')->label(__('dinero.pac.token'))->helperText(fn (EntidadFiscal $record): ?string => filled(((array) $record->configuracion)['pac_token'] ?? null) ? __('dinero.pac.token_guardado') : null)
+                    ->password()->revealable()->autocomplete('new-password')->maxLength(2000)
+                    ->visible(fn (Get $get): bool => filled($get('pac')))
+                    ->required(fn (Get $get, EntidadFiscal $record): bool => filled($get('pac')) && blank(((array) $record->configuracion)['pac_token'] ?? null)),
+            ])
+            ->action(function (EntidadFiscal $record, array $data): void {
+                $configuracion = (array) $record->configuracion;
+                if (blank($data['pac'] ?? null)) {
+                    unset($configuracion['pac'], $configuracion['pac_token']);
+                    $record->update(['configuracion' => $configuracion]);
+                    Notification::make()->success()->title(__('dinero.pac.quitado'))->send();
+
+                    return;
+                }
+                $token = filled($data['token'] ?? null) ? (string) $data['token'] : (string) ($configuracion['pac_token'] ?? '');
+                try {
+                    $timbres = (new ConectorSw($token, $record->modo))->probar();
+                } catch (ErrorFacturacion $e) {
+                    Notification::make()->danger()->persistent()->title(__('dinero.pac.no_conecto'))->body($e->getMessage())->send();
+
+                    return;
+                }
+                $record->update(['configuracion' => ['pac' => (string) $data['pac'], 'pac_token' => $token] + $configuracion]);
+                RegistroAuditoria::anotar('factura.pac_conectado', $record, ['pac' => (string) $data['pac'], 'modo' => $record->modo->value], $record->propiedad_id);
+                Notification::make()->success()->title(__('dinero.pac.conectado'))->body($timbres === null ? null : __('dinero.pac.timbres', ['timbres' => $timbres]))->send();
+            });
     }
 
     public static function getPages(): array

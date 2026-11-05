@@ -46,7 +46,7 @@ final class Pasarelas
         $ajustes = new AjustesMotor($this->propiedad);
         $disponibles = [];
         if ($ajustes->tieneLlave('stripe_secreta')) {
-            $disponibles[self::STRIPE] = new ProveedorStripe((string) $ajustes->llave('stripe_secreta'), $ajustes->llave('stripe_webhook'));
+            $disponibles[self::STRIPE] = new ProveedorStripe((string) $ajustes->llave('stripe_secreta'), $ajustes->llave('stripe_webhook'), $ajustes->opcionesStripe());
         }
         if ($ajustes->tieneLlave('mercadopago_token')) {
             $disponibles[self::MERCADOPAGO] = new ProveedorMercadoPago((string) $ajustes->llave('mercadopago_token'), $ajustes->llave('mercadopago_webhook'));

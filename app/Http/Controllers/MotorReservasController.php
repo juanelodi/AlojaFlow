@@ -150,6 +150,7 @@ class MotorReservasController extends Controller
             'porCobrar' => $this->cobros->porCobrar($reserva),
             'pasarelas' => $reserva->estado === EstadoReserva::Cancelada ? [] : array_keys((new Pasarelas($propiedad))->disponibles()),
             'comprobantes' => $reserva->comprobantes()->latest('id')->limit(20)->get(),
+            'espera' => $reserva->estado === EstadoReserva::Cancelada || $this->cobros->porCobrar($reserva) <= 0 ? null : $this->cobros->enEspera($reserva),
         ]);
     }
 

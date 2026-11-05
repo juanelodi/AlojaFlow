@@ -17,10 +17,12 @@ use App\Models\Aviso;
 use App\Models\EnlacePago;
 use App\Models\PagoEnLinea;
 use App\Models\Reserva;
+use App\Motor\AjustesMotor;
 use App\Motor\Pasarelas;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -30,6 +32,8 @@ use Illuminate\Support\Facades\DB;
 final class CobrosEnLinea
 {
     private const MINUTOS_COBRO_ABIERTO = 20;
+
+    private const HORAS_ESPERA_TRANSFERENCIA = 72;
 
     public function __construct(private readonly GestorReservas $reservas)
     {
@@ -48,6 +52,11 @@ final class CobrosEnLinea
         $importe = $enlace === null ? $this->porCobrar($reserva) : $enlace->importe;
         if ($importe <= 0) {
             throw new ErrorPago(__('motor.error.nada_que_cobrar'));
+        }
+        // Ya tiene una ficha sin pagar: otra podría pagarse además de ella.
+        $espera = $this->enEspera($reserva, $enlace);
+        if (is_string($espera->datos['instrucciones'] ?? null)) {
+            return $espera->datos['instrucciones'];
         }
         // Volver a pulsar «Pagar» sigue en el mismo cobro: con dos abiertos a la vez se pueden pagar los dos.
         $abierto = PagoEnLinea::query()->where('reserva_id', $reserva->id)->where('pasarela', $proveedor->nombre())
@@ -74,6 +83,17 @@ final class CobrosEnLinea
     }
 
     /**
+     * El cobro de OXXO o transferencia que falta pagar, si no ha vencido.
+     */
+    public function enEspera(Reserva $reserva, ?EnlacePago $enlace = null): ?PagoEnLinea
+    {
+        $cobro = PagoEnLinea::query()->where('reserva_id', $reserva->id)->where('enlace_pago_id', $enlace?->id)->where('estado', 'en_espera')->orderByDesc('id')->first();
+        $vence = $cobro->datos['vence'] ?? null;
+
+        return is_numeric($vence) && (int) $vence < now()->getTimestamp() ? null : $cobro;
+    }
+
+    /**
      * Anota lo que la pasarela confirma. Comprueba que coincidan el importe y la moneda: no se
      * da por pagada una reserva con un cobro de otra cantidad.
      */
@@ -89,7 +109,16 @@ final class CobrosEnLinea
         if ($cobro === null) {
             return null;
         }
+        if ($resultado->fallido) {
+            $this->marcarFallido($cobro);
+
+            return $cobro;
+        }
         if (! $resultado->pagado) {
+            if ($resultado->enEspera) {
+                $this->ponerEnEspera($cobro, $resultado);
+            }
+
             return $cobro;
         }
         if ($resultado->importe !== $cobro->importe || $resultado->moneda !== $cobro->moneda) {
@@ -114,7 +143,7 @@ final class CobrosEnLinea
             $pago = $this->reservas->registrarPago(
                 $reserva,
                 $bloqueado->importe,
-                MetodoPago::Tarjeta,
+                $resultado->metodo ?? MetodoPago::Tarjeta,
                 CarbonImmutable::now($reserva->propiedad->zona_horaria),
                 mb_substr($proveedor->nombre().' '.($resultado->idPago ?? $bloqueado->referencia), 0, 100),
                 $enlace?->caja_id,
@@ -126,6 +155,65 @@ final class CobrosEnLinea
             $this->asegurarReserva($reserva->refresh());
 
             return $bloqueado;
+        });
+    }
+
+    /**
+     * Se fue a pagar en una tienda o desde su banco. Sus noches no se sueltan a los 30 minutos: esperan lo que dure la ficha (D-099). Si la retención ya
+     * había vencido, se intenta recuperar: el vale ya existe, y puede pagarlo.
+     */
+    private function ponerEnEspera(PagoEnLinea $cobro, ResultadoPago $resultado): void
+    {
+        DB::transaction(function () use ($cobro, $resultado): void {
+            $bloqueado = PagoEnLinea::query()->lockForUpdate()->findOrFail($cobro->id);
+            if (! in_array($bloqueado->estado, ['pendiente', 'en_espera'], true)) {
+                return;
+            }
+            // Un segundo aviso puede traer menos que el primero: lo que ya se sabe de la ficha no se borra.
+            $datos = array_filter(['instrucciones' => $resultado->instrucciones, 'vence' => $resultado->venceEn], fn (mixed $valor): bool => $valor !== null) + (array) $bloqueado->datos;
+            $bloqueado->update(['estado' => 'en_espera', 'datos' => $datos]);
+            $reserva = $bloqueado->reserva;
+            // La que no tiene retención (la hizo recepción y mandó un enlace de pago) no empieza a caducar por esto.
+            if ($reserva->expira_en === null) {
+                return;
+            }
+            try {
+                if ($reserva->estado === EstadoReserva::Cancelada) {
+                    $this->reservas->reactivar($reserva);
+                }
+                $this->reservas->fijarVencimiento($reserva->refresh(), $this->hastaCuandoEspera($reserva, $datos['vence'] ?? null));
+            } catch (ReservaRechazada) {
+                // Las noches ya se vendieron. Si paga, se avisa: lo resuelve el alojamiento.
+            }
+        });
+    }
+
+    /**
+     * Lo que dura la ficha, y nunca después del día de llegada: una ficha sin pagar no aparta noches que ya pasaron.
+     */
+    private function hastaCuandoEspera(Reserva $reserva, mixed $vence): Carbon
+    {
+        $hasta = is_numeric($vence) ? Carbon::createFromTimestamp((int) $vence)->addHour() : now('UTC')->addHours(self::HORAS_ESPERA_TRANSFERENCIA);
+        $finDeLlegada = Carbon::parse($reserva->llegada->format('Y-m-d'), $reserva->propiedad->zona_horaria)->endOfDay();
+
+        return ($hasta->lessThan($finDeLlegada) ? $hasta : $finDeLlegada)->utc();
+    }
+
+    /**
+     * No pagó. Las noches se sueltan pronto, pero no de golpe: puede volver a intentarlo con otro medio.
+     */
+    private function marcarFallido(PagoEnLinea $cobro): void
+    {
+        DB::transaction(function () use ($cobro): void {
+            $bloqueado = PagoEnLinea::query()->lockForUpdate()->findOrFail($cobro->id);
+            if ($bloqueado->estado === 'pagado') {
+                return;
+            }
+            $bloqueado->update(['estado' => 'fallido']);
+            $reserva = $bloqueado->reserva;
+            if ($reserva->expira_en !== null) {
+                $this->reservas->fijarVencimiento($reserva, now('UTC')->addMinutes((new AjustesMotor($reserva->propiedad))->minutosRetencion()));
+            }
         });
     }
 

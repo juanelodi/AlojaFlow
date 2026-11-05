@@ -232,4 +232,10 @@ return [
         'confirmado' => 'Confirmado',
         'rechazado' => 'Rejeitado',
     ],
+    'MotivoCancelacionCfdi' => [
+        '01' => '01 · Com erros, com fatura que a substitui',
+        '02' => '02 · Com erros, sem fatura que a substitua',
+        '03' => '03 · A operação não se realizou',
+        '04' => '04 · Operação incluída numa fatura global',
+    ],
 ];

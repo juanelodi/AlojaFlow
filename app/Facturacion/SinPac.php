@@ -22,7 +22,7 @@ final class SinPac implements ConectorPac
         throw new ErrorFacturacion(__('dinero.facturas.sin_pac'));
     }
 
-    public function cancelar(string $uuid, string $motivo, EntidadFiscal $entidad): void
+    public function cancelar(string $uuid, string $motivo, EntidadFiscal $entidad, ?string $folioSustitucion = null): array
     {
         throw new ErrorFacturacion(__('dinero.facturas.sin_pac'));
     }

@@ -198,7 +198,7 @@ describe('Stripe', function () {
     it('al volver consulta a Stripe y anota el pago una sola vez', function () {
         Http::fake([
             'api.stripe.com/v1/checkout/sessions' => Http::response(['id' => 'cs_test_1', 'url' => 'https://checkout.stripe.test/1']),
-            'api.stripe.com/v1/checkout/sessions/cs_test_1' => Http::response(['id' => 'cs_test_1', 'payment_status' => 'paid', 'amount_total' => 100000, 'currency' => 'mxn', 'payment_intent' => 'pi_1']),
+            'api.stripe.com/v1/checkout/sessions/cs_test_1*' => Http::response(['id' => 'cs_test_1', 'payment_status' => 'paid', 'amount_total' => 100000, 'currency' => 'mxn', 'payment_intent' => 'pi_1']),
         ]);
         $this->post('/reservar/posada/r/'.$this->reserva->codigo_publico.'/pagar/stripe');
         $cobro = PagoEnLinea::query()->firstOrFail();
@@ -219,7 +219,7 @@ describe('Stripe', function () {
     it('no cree lo que diga la dirección si Stripe dice que no se pagó', function () {
         Http::fake([
             'api.stripe.com/v1/checkout/sessions' => Http::response(['id' => 'cs_test_1', 'url' => 'https://checkout.stripe.test/1']),
-            'api.stripe.com/v1/checkout/sessions/cs_test_1' => Http::response(['id' => 'cs_test_1', 'payment_status' => 'unpaid', 'amount_total' => 100000, 'currency' => 'mxn']),
+            'api.stripe.com/v1/checkout/sessions/cs_test_1*' => Http::response(['id' => 'cs_test_1', 'payment_status' => 'unpaid', 'amount_total' => 100000, 'currency' => 'mxn']),
         ]);
         $this->post('/reservar/posada/r/'.$this->reserva->codigo_publico.'/pagar/stripe');
         $cobro = PagoEnLinea::query()->firstOrFail();
@@ -229,7 +229,8 @@ describe('Stripe', function () {
     });
 
     it('el aviso firmado confirma; sin firma válida o con otro importe, no', function () {
-        Http::fake(['api.stripe.com/v1/checkout/sessions' => Http::response(['id' => 'cs_test_1', 'url' => 'https://checkout.stripe.test/1'])]);
+        // Si Stripe no contesta al preguntar por la sesión, vale lo que trae el aviso.
+        Http::fake(['api.stripe.com/v1/checkout/sessions' => Http::response(['id' => 'cs_test_1', 'url' => 'https://checkout.stripe.test/1']), 'api.stripe.com/v1/checkout/sessions/*' => Http::response([], 500)]);
         $this->post('/reservar/posada/r/'.$this->reserva->codigo_publico.'/pagar/stripe');
 
         $evento = fn (int $importe): string => (string) json_encode(['type' => 'checkout.session.completed', 'data' => ['object' => ['id' => 'cs_test_1', 'payment_status' => 'paid', 'amount_total' => $importe, 'currency' => 'mxn']]]);
@@ -312,7 +313,7 @@ it('un pago que llega después de vencer recupera la reserva; si ya no hay lugar
     (new AjustesMotor($this->propiedad))->guardarLlave('stripe_secreta', 'sk_test_x');
     Http::fake([
         'api.stripe.com/v1/checkout/sessions' => Http::response(['id' => 'cs_1', 'url' => 'https://s.test/1']),
-        'api.stripe.com/v1/checkout/sessions/cs_1' => Http::response(['id' => 'cs_1', 'payment_status' => 'paid', 'amount_total' => 100000, 'currency' => 'mxn']),
+        'api.stripe.com/v1/checkout/sessions/cs_1*' => Http::response(['id' => 'cs_1', 'payment_status' => 'paid', 'amount_total' => 100000, 'currency' => 'mxn']),
     ]);
     $this->post('/reservar/posada', ($this->formulario)());
     $reserva = Reserva::query()->firstOrFail();

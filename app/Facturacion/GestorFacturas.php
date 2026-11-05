@@ -15,7 +15,9 @@ use App\Documentos\GeneradorPdf;
 use App\Enums\BaseCargo;
 use App\Enums\ClaseArchivo;
 use App\Enums\EstadoFactura;
+use App\Enums\MotivoCancelacionCfdi;
 use App\Enums\TipoDocumentoFiscal;
+use App\Models\Archivo;
 use App\Models\EventoFiscal;
 use App\Models\Factura;
 use App\Models\Impuesto;
@@ -25,7 +27,9 @@ use App\Models\Reserva;
 use App\Models\SerieFacturacion;
 use App\Paises\Paises;
 use App\Support\Dinero;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 /**
  * Emite y cancela facturas y recibos. Una factura emitida no se edita: guarda copia de los datos del
@@ -33,6 +37,8 @@ use Illuminate\Support\Facades\DB;
  */
 final class GestorFacturas
 {
+    private const SEGUNDOS_CANDADO_TIMBRADO = 120;
+
     public function __construct(private readonly GestorArchivos $archivos)
     {
     }
@@ -121,36 +127,76 @@ final class GestorFacturas
     public function timbrar(Factura $factura): void
     {
         $generador = Paises::de($factura->propiedad)->generadorFiscal();
-        if ($generador === null || $factura->xml === null) {
+        $original = $factura->xml;
+        if ($generador === null || $original === null) {
             throw new ErrorFacturacion(__('dinero.facturas.no_se_timbra'));
         }
-        /** @var ConectorPac $pac */
-        $pac = app((string) config('alojaflow.pac', SinPac::class));
+        // Dos clics serían dos timbres: dos CFDI vigentes ante el SAT, y uno sin dueño.
+        $candado = Cache::lock('timbrado:factura:'.$factura->id, self::SEGUNDOS_CANDADO_TIMBRADO);
+        if (! $candado->get()) {
+            throw new ErrorFacturacion(__('dinero.pac.en_proceso'));
+        }
         try {
-            $resultado = $pac->timbrar($this->archivos->contenido($factura->xml), $factura->entidad);
+            if ($factura->refresh()->uuid_fiscal === null) {
+                $this->timbrarAhora($factura, $generador, $original);
+            }
+        } finally {
+            $candado->release();
+        }
+    }
+
+    private function timbrarAhora(Factura $factura, GeneradorFiscal $generador, Archivo $original): void
+    {
+        $pac = app(FabricaPac::class)->de($factura->entidad);
+        try {
+            $resultado = $pac->timbrar($this->archivos->contenido($original), $factura->entidad);
         } catch (ErrorFacturacion $e) {
             EventoFiscal::query()->create(['factura_id' => $factura->id, 'tipo' => 'timbrado', 'estado' => 'rechazado', 'respuesta' => ['mensaje' => $e->getMessage()]]);
 
             throw $e;
         }
         $xml = $this->archivos->guardar($resultado['xml'], $generador->nombreArchivo($factura), 'application/xml', ClaseArchivo::FacturaXml, $factura, $factura->propiedad_id);
-        $factura->update(['estado' => EstadoFactura::Registrada, 'uuid_fiscal' => $resultado['uuid'], 'xml_archivo_id' => $xml->id]);
+        $qr = $resultado['qr'] ?? null;
+        $factura->update([
+            'estado' => EstadoFactura::Registrada,
+            'uuid_fiscal' => $resultado['uuid'],
+            'xml_archivo_id' => $xml->id,
+            // Viene de fuera y va a un PDF: solo si de verdad es base64.
+            'qr_timbrado' => is_string($qr) && preg_match('/^[A-Za-z0-9+\/=\r\n]+$/', $qr) === 1 ? $qr : null,
+        ]);
         EventoFiscal::query()->create(['factura_id' => $factura->id, 'tipo' => 'timbrado', 'estado' => 'aceptado', 'respuesta' => ['uuid' => $resultado['uuid']]]);
+        $this->rehacerPdf($factura->refresh());
     }
 
-    public function cancelar(Factura $factura, string $motivo): void
+    /**
+     * Una timbrada se cancela ante el SAT, con su clave de motivo (D-098). Ahí solo se pide: si hace falta que el receptor acepte, la decisión llega
+     * después, y eso lo dice quien la cancela al confirmar.
+     */
+    public function cancelar(Factura $factura, string $motivo, ?MotivoCancelacionCfdi $clave = null, ?string $folioSustitucion = null): void
     {
         if ($factura->estado === EstadoFactura::Cancelada) {
             return;
         }
         if ($factura->uuid_fiscal !== null) {
-            /** @var ConectorPac $pac */
-            $pac = app((string) config('alojaflow.pac', SinPac::class));
-            $pac->cancelar($factura->uuid_fiscal, $motivo, $factura->entidad);
-            EventoFiscal::query()->create(['factura_id' => $factura->id, 'tipo' => 'cancelacion', 'estado' => 'aceptado']);
+            if ($clave === null) {
+                throw new ErrorFacturacion(__('dinero.cancelacion.falta_motivo'));
+            }
+            if ($clave === MotivoCancelacionCfdi::ConErroresConRelacion && blank($folioSustitucion)) {
+                throw new ErrorFacturacion(__('dinero.cancelacion.falta_sustituta'));
+            }
+            $respuesta = app(FabricaPac::class)->de($factura->entidad)->cancelar($factura->uuid_fiscal, $clave->value, $factura->entidad, $clave === MotivoCancelacionCfdi::ConErroresConRelacion ? $folioSustitucion : null);
+            EventoFiscal::query()->create(['factura_id' => $factura->id, 'tipo' => 'cancelacion', 'estado' => 'aceptado', 'respuesta' => $respuesta + ['motivo' => $clave->value]]);
+            $motivo = $clave->etiqueta();
         }
-        $factura->update(['estado' => EstadoFactura::Cancelada, 'cancelada_en' => now('UTC'), 'motivo_cancelacion' => mb_substr($motivo, 0, 255)]);
+        $factura->update([
+            'estado' => EstadoFactura::Cancelada,
+            'cancelada_en' => now('UTC'),
+            'motivo_cancelacion' => mb_substr($motivo, 0, 255),
+            'motivo_cancelacion_clave' => $clave?->value,
+            'folio_sustitucion' => $clave === MotivoCancelacionCfdi::ConErroresConRelacion ? $folioSustitucion : null,
+        ]);
         RegistroAuditoria::anotar('factura.cancelar', $factura, ['folio' => $factura->folio()], $factura->propiedad_id);
+        $this->rehacerPdf($factura->refresh());
     }
 
     public function facturaVigenteDe(Reserva $reserva): ?Factura
@@ -200,6 +246,22 @@ final class GestorFacturas
         }
 
         return $lineas;
+    }
+
+    /**
+     * El que se guardó al emitir ya no dice la verdad: «sin timbrar», o vigente. Lo fiscal ya pasó ante el SAT: si esto falla, se anota y la acción sigue siendo un éxito.
+     */
+    private function rehacerPdf(Factura $factura): void
+    {
+        try {
+            $anterior = $factura->pdf;
+            $factura->update(['pdf_archivo_id' => $this->archivos->guardar(app(GeneradorPdf::class)->factura($factura), $factura->folio().'.pdf', 'application/pdf', ClaseArchivo::FacturaPdf, $factura, $factura->propiedad_id)->id]);
+            if ($anterior !== null) {
+                $this->archivos->eliminar($anterior);
+            }
+        } catch (Throwable $e) {
+            report($e);
+        }
     }
 
     /**

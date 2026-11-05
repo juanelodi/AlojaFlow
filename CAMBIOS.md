@@ -2,6 +2,30 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.19 — 2026-11-05
+
+**México: timbrar facturas de verdad, y cobrar en OXXO, a meses y por transferencia.**
+
+**Facturas**
+- **Conectar PAC**, en Datos fiscales: pegas el token de tu cuenta de SW Sapien. Solo se guarda si funciona, va cifrado y te dice cuántos timbres te quedan. Cada razón social usa su propia cuenta. El certificado de sello digital (CSD) se queda en SW: AlojaFlow no lo recibe.
+- **Timbrar** guarda el XML y el folio fiscal que devuelve el PAC, y rehace el PDF, que ya no dice «sin timbrar»: lleva el código QR, los sellos, los certificados, la cadena original y la dirección para verificarla en el SAT.
+- **Cancelar una timbrada** pide uno de los motivos del SAT (01 a 04). El 01 pide además cuál la sustituye, y solo deja elegir una ya timbrada. Se guarda el acuse. El PDF de una cancelada lo dice arriba, en rojo; también el de un recibo.
+- **Dos clics no timbran dos veces.**
+
+**Cobros en pesos**
+- **OXXO, meses sin intereses y transferencia SPEI con Stripe.** Se prenden en Motor de reservas, en una sección que solo aparece si tu moneda es el peso, y además hay que activarlos en tu panel de Stripe. Lo que Stripe enseña depende de tu cuenta.
+- **Meses sin intereses te cuestan aparte:** según Stripe, 5 % a 3 meses (mínimo 300 pesos), 7.5 % a 6 (600), 10 % a 9 (900), 12.5 % a 12 (1,200), 17.5 % a 18 (1,800) y 22.5 % a 24 (2,400).
+- **Las noches esperan.** Quien elige OXXO o transferencia ya no pierde su reserva a los 30 minutos: sigue apartada lo que dure su ficha, que ve en la página de su reserva. Se confirma sola cuando llega el dinero, y se anota como lo que fue: transferencia, u «otro» si pagó en la tienda.
+- **Sin apartar de más.** Una ficha de OXXO no dura más que lo que falta para llegar, y las noches se sueltan a más tardar al terminar el día de llegada. Si la ficha vence sin pagarse, se sueltan al poco, y puede volver a intentarlo.
+- **Mercado Pago hace lo mismo** con sus fichas de OXXO y transferencias, que ya ofrecía y que hasta ahora soltaban la reserva a los 30 minutos.
+- **Una reserva sin plazo no empieza a caducar por esto:** si la hizo recepción y mandó un enlace de pago, sigue como estaba.
+
+**No está igual que en la 1.2.3:** se conecta SW Sapien por su servicio de emisión, sin subir el certificado a AlojaFlow. Otro PAC es otra clase detrás de la misma interfaz.
+
+**Límites que conviene saber:** quien ya tiene una ficha no puede cambiar a tarjeta desde su página hasta que venza: dos a la vez se podrían pagar las dos. Para SPEI, Stripe guarda un cliente con el nombre y el correo del huésped; al anonimizarlo, AlojaFlow olvida el vínculo, pero ese registro sigue en Stripe y se borra desde su panel. Cancelar se pide al SAT y queda como cancelada: si el receptor tiene que aceptarla, esa respuesta no se consulta todavía. Siguen fuera la factura global, el complemento de pago y que el huésped se facture solo.
+
+**Sin verificar:** **nunca se ha timbrado de verdad ni se ha cobrado con estos medios.** SW, Stripe y Mercado Pago se programaron con sus documentos y se probaron con respuestas simuladas, porque no hay cuentas de prueba. Lo que sí se comprobó: las rutas de timbrar, cancelar y saldo de SW existen en sus dos ambientes, y sin token contestan el error de credenciales con el formato que se esperaba; un CFDI generado valida contra los XSD del SAT, salvo el número de certificado, que pone el PAC, y el PDF se revisó a ojo con sellos de tamaño real. Ese XSD no revisa las reglas de negocio del SAT: esas solo se ven al timbrar. Antes de usarlo en real, una factura y un cobro en el ambiente de pruebas de cada uno.
+
 ## 1.0.18 — 2026-11-05
 
 **Grupos completos, con su propia página para el coordinador, y comprobantes de transferencia también en la reserva.**

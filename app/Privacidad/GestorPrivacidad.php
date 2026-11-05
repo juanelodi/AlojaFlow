@@ -324,6 +324,6 @@ final class GestorPrivacidad
      */
     private function camposHuespedVacios(): array
     {
-        return array_fill_keys(['apellido1', 'apellido2', 'apodo', 'tratamiento', 'sexo', 'fecha_nacimiento', 'lugar_nacimiento', 'pais_nacimiento_texto', 'nacionalidad', 'nacionalidad_texto', 'documento_tipo_texto', 'documento_numero', 'documento_vencimiento', 'documento_expedicion', 'documento_pais_texto', 'domicilio_calle', 'domicilio_numero', 'domicilio_ciudad', 'domicilio_region', 'domicilio_codigo_postal', 'domicilio_pais_texto', 'id_fiscal_personal', 'id_fiscal_empresa', 'notas'], null);
+        return array_fill_keys(['stripe_cliente', 'apellido1', 'apellido2', 'apodo', 'tratamiento', 'sexo', 'fecha_nacimiento', 'lugar_nacimiento', 'pais_nacimiento_texto', 'nacionalidad', 'nacionalidad_texto', 'documento_tipo_texto', 'documento_numero', 'documento_vencimiento', 'documento_expedicion', 'documento_pais_texto', 'domicilio_calle', 'domicilio_numero', 'domicilio_ciudad', 'domicilio_region', 'domicilio_codigo_postal', 'domicilio_pais_texto', 'id_fiscal_personal', 'id_fiscal_empresa', 'notas'], null);
     }
 }

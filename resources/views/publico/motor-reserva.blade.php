@@ -8,6 +8,8 @@
         <p class="mensaje error" role="status">{{ __('motor.estado_cancelada') }}</p>
     @elseif ($reserva->estado === EstadoReserva::Confirmada)
         <p class="mensaje bien" role="status">{{ __('motor.estado_confirmada') }}</p>
+    @elseif ($espera !== null)
+        <p class="mensaje" role="status">{{ __('motor.espera.titulo') }}</p>
     @elseif ($porCobrar > 0 && $pasarelas !== [])
         <p class="mensaje" role="status">{{ __('motor.estado_pagar', ['fecha' => Formato::momento($reserva->expira_en, $propiedad->zona_horaria)]) }}</p>
     @else
@@ -32,7 +34,9 @@
         <p style="margin:12px 0 0"><a class="boton secundario" href="{{ route('motor.pdf', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico, 'idioma' => app()->getLocale()]) }}">{{ __('documentos.descargar_confirmacion') }}</a></p>
     </section>
 
-    @if ($porCobrar > 0 && $pasarelas !== [])
+    @if ($espera !== null)
+        @include('publico.pago-en-espera')
+    @elseif ($porCobrar > 0 && $pasarelas !== [])
         <section class="tarjeta">
             <h2>{{ __('motor.pagar_titulo', ['importe' => Formato::dinero($porCobrar, $reserva->moneda)]) }}</h2>
             <p class="gris">{{ __('motor.pagar_ayuda') }}</p>

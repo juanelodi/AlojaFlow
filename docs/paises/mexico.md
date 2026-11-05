@@ -25,16 +25,34 @@ de partida. Antes de usarlos con huéspedes y facturas reales, revísalos con un
 
 ## Para timbrar facturas
 
-El XML está preparado pero **no tiene validez fiscal** hasta que un PAC lo selle y lo timbre, y el PDF lo
-dice en grande. Hace falta:
+El XML **no tiene validez fiscal** hasta que un PAC lo selle y lo timbre, y el PDF lo dice en grande. Hace falta:
 
-1. Contratar un PAC y tener el certificado de sello digital (CSD) del emisor.
-2. Programar su conector: implementar `App\Facturacion\ConectorPac` y registrarlo en
-   `config('alojaflow.pac')`.
-3. Validar el XML generado contra el XSD del SAT, y hacer una factura de prueba en el ambiente de pruebas
-   del PAC. **Esto todavía no se ha hecho:** el XML solo se ha revisado con pruebas propias de estructura.
+1. Crear una cuenta en [SW Sapien](https://sw.com.mx/) y subir ahí el certificado de sello digital (CSD) del emisor.
+   AlojaFlow no recibe ni guarda el certificado: usa su servicio de emisión, que sella con el que tiene la cuenta.
+2. En **Datos fiscales → Conectar PAC**, pegar el token de la cuenta. Solo se guarda si funciona. El **modo** de la
+   entidad decide si habla con el ambiente de pruebas de SW o con el real.
+3. Hacer una factura de prueba en el ambiente de pruebas.
+
+Para otro PAC: implementar `App\Facturacion\ConectorPac` y agregarlo a `FabricaPac`.
+
+**Lo que está comprobado (2026-11-05):** un CFDI generado valida contra `cfdv40.xsd` e `implocal.xsd` del SAT, salvo
+`NoCertificado`, que pone el PAC. Las claves 90111800 y 90111802 existen las dos en el catálogo `c_ClaveProdServ`:
+cuál corresponde sigue siendo pregunta para el contador. Sin token, las rutas de timbrar, cancelar y saldo de SW contestan en sus dos ambientes con el error de
+credenciales y el formato esperados. **Lo que no:** nunca se ha timbrado de verdad: la conexión con SW se programó con
+su SDK público y se probó con respuestas simuladas. El XSD no revisa las reglas de negocio del SAT
+(la matriz de errores), y esas solo se ven al timbrar.
+
+**Cosas del SAT y de SW que conviene tener presentes:** un CFDI debe timbrarse dentro de las 72 horas de su fecha: después el PAC lo rechaza y hay que emitir otra. Si se corta la conexión justo al timbrar, la factura puede haber quedado timbrada en SW aunque aquí no se vea: revisar en su portal antes de repetirlo.
+
+## Cobros en pesos
+
+Con Stripe, en **Motor de reservas**, y además activados en el panel de Stripe: **OXXO**, **meses sin intereses** (cuentas mexicanas, tarjetas de crédito de consumidor, con comisión aparte) y **transferencia SPEI** (Stripe da una CLABE para cada cliente, con su nombre y correo). Mercado Pago los ofrece en su propia pantalla, sin ajustes aquí.
+
+Quien paga en una tienda o desde su banco queda **en espera**: no es un pago, pero sus noches siguen apartadas lo que dure la ficha (72 horas si es transferencia), y nunca después del día de llegada. Se confirma sola cuando la pasarela avisa, así que **hace falta el aviso (webhook) configurado**. Stripe tarda hasta un día hábil en avisar un pago de OXXO, según su documentación.
+
+**Lo que está comprobado:** con respuestas simuladas. Ningún cobro real ni de prueba con cuenta verdadera.
 
 ## Fuera por ahora
 
 Factura global a público en general (nodo `InformacionGlobal`), complementos de pago para método PPD, notas de
-crédito y retenciones.
+crédito, retenciones y consultar en el SAT si una cancelación ya se aceptó.

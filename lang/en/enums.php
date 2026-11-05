@@ -179,4 +179,10 @@ return [
         'confirmado' => 'Confirmed',
         'rechazado' => 'Rejected',
     ],
+    'MotivoCancelacionCfdi' => [
+        '01' => '01 · With errors, with a replacing invoice',
+        '02' => '02 · With errors, without a replacing invoice',
+        '03' => '03 · The transaction did not take place',
+        '04' => '04 · Transaction included in a global invoice',
+    ],
 ];

@@ -22,7 +22,9 @@
             <p class="gris" style="margin:8px 0 0">{{ __('operacion.enlaces.vence', ['fecha' => Formato::momento($enlace->vence_en, $propiedad->zona_horaria)]) }}</p>
         @endif
     </section>
-    @if ($estado === 'vigente' && $pasarelas !== [])
+    @if ($espera !== null)
+        @include('publico.pago-en-espera')
+    @elseif ($estado === 'vigente' && $pasarelas !== [])
         <section class="tarjeta">
             @foreach ($pasarelas as $pasarela)
                 <form method="post" action="{{ route('pagar.pagar', ['token' => $token, 'pasarela' => $pasarela, 'idioma' => app()->getLocale()]) }}" style="margin-bottom:8px">

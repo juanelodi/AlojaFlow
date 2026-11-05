@@ -232,4 +232,10 @@ return [
         'confirmado' => 'Bestätigt',
         'rechazado' => 'Abgelehnt',
     ],
+    'MotivoCancelacionCfdi' => [
+        '01' => '01 · Mit Fehlern, mit Ersatzrechnung',
+        '02' => '02 · Mit Fehlern, ohne Ersatzrechnung',
+        '03' => '03 · Der Vorgang fand nicht statt',
+        '04' => '04 · Vorgang in einer Sammelrechnung enthalten',
+    ],
 ];

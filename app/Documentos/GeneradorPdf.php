@@ -10,8 +10,11 @@ declare(strict_types=1);
 
 namespace App\Documentos;
 
+use App\Archivos\GestorArchivos;
+use App\Enums\EstadoFactura;
 use App\Enums\EstadoReserva;
 use App\Enums\TipoDocumentoFiscal;
+use App\Facturacion\DatosTimbre;
 use App\Models\Aceptacion;
 use App\Models\DocumentoLegal;
 use App\Models\Factura;
@@ -21,6 +24,7 @@ use App\Models\RegistroLlegada;
 use App\Models\Reserva;
 use App\Paises\Paises;
 use App\Reservas\Cotizador;
+use App\Support\Formato;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 /**
@@ -84,12 +88,15 @@ final class GeneradorPdf
         }
         $esFiscal = $factura->tipo === TipoDocumentoFiscal::Factura && Paises::de($factura->propiedad)->generadorFiscal() !== null;
         $sinValidez = match (true) {
+            $factura->estado === EstadoFactura::Cancelada => __('dinero.cancelacion.aviso_pdf', ['fecha' => Formato::momento($factura->cancelada_en, $factura->propiedad->zona_horaria)]),
             ! $esFiscal => __('dinero.facturas.no_fiscal'),
             $factura->uuid_fiscal === null => __('dinero.facturas.sin_timbrar'),
             default => null,
         };
 
-        return $this->pdf('documentos.factura', ['factura' => $factura, 'impuestos' => $impuestos, 'sinValidez' => $sinValidez], $factura->propiedad->idioma);
+        $timbre = $factura->uuid_fiscal !== null && $factura->xml !== null ? DatosTimbre::de(app(GestorArchivos::class)->contenido($factura->xml)) : null;
+
+        return $this->pdf('documentos.factura', ['factura' => $factura, 'impuestos' => $impuestos, 'sinValidez' => $sinValidez, 'timbre' => $timbre], $factura->propiedad->idioma);
     }
 
     public function registroLlegada(RegistroLlegada $registro): string

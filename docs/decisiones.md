@@ -627,6 +627,12 @@ La lógica es la de `hd_grp_calcula`, reescrita en `App\Grupos\CalculadorPrecio`
 ### D-097 · 2026-11-05 · Comprobantes de pago
 Un comprobante no es un pago hasta que alguien lo confirma, y no cuenta en ningún saldo. Es la misma tabla para grupos y para reservas del motor. **Mientras se revisa, la reserva no caduca:** ya mandaron el dinero. Si se rechaza, le vuelve a correr el plazo, para que un comprobante falso no aparte noches para siempre. **La imagen se vuelve a dibujar** con GD y se guarda cifrada: se mira el tipo real, se cuentan los píxeles antes de abrirla y se aplica la orientación del teléfono, que se perdería. PDF no: no hay cómo limpiarlo. Límite de 20 por hora y 300 por objeto. Las imágenes se borran a los 24 meses de la salida, y con ellas los nombres de la lista y los mensajes del grupo; las reservas y los importes se quedan.
 
+### D-098 · 2026-11-05 · PAC: cada entidad el suyo, y el certificado se queda allá
+**SW Sapien, por su API y sin SDK, con su servicio de emisión** (`/cfdi33/issue/v4`): recibe el XML sin sellar y lo sella con el certificado que el alojamiento subió a su cuenta. Se eligió porque así AlojaFlow nunca toca un CSD ni su contraseña, que son lo más delicado que tiene un contribuyente, y porque un hosting compartido no es lugar para guardarlos. **Cada entidad fiscal guarda su token,** cifrado junto con su configuración: dos razones sociales no comparten cuenta. Se guarda solo si funciona, para que un error de dedo se vea al conectar y no al facturarle a un huésped. El modo de la entidad decide si va al ambiente de pruebas o al real. Lo que devuelve el PAC es lo único que se cree: **los datos del timbre en el PDF se leen del XML timbrado,** no se guardan aparte, para que no puedan diferir; el QR, que viene de fuera y va a un PDF, solo si es base64. **Timbrar lleva candado:** cada timbre es un CFDI vigente ante el SAT, y dos clics dejarían uno sin dueño. **Cancelar no deshace nada:** se pide con la clave del SAT y queda como cancelada; consultar si el receptor la aceptó queda para después. Rehacer el PDF no puede hacer fallar lo fiscal, que ya pasó: si falla, se anota.
+
+### D-099 · 2026-11-05 · Cobros que tardan: OXXO y transferencia
+Stripe usa métodos dinámicos: lo que enseña se activa en su panel, y aquí solo se le dice lo que hace falta (días de la ficha, meses, y el cliente que exige la transferencia). **Un cobro «en espera» no es un pago:** no cuenta en ningún saldo, pero sus noches no se sueltan a los 30 minutos. Se apartan lo que dure la ficha más una hora; una transferencia, que no vence, 72 horas; y nunca después del día de llegada, porque una ficha sin pagar no debe apartar noches que ya pasaron. Tampoco se ofrece una ficha más larga que lo que falta para llegar. **Solo se toca el plazo de quien ya tiene uno:** una reserva hecha por recepción, sin plazo, no empieza a caducar porque alguien abrió un enlace de pago. Si la retención ya había vencido, el vale existe y puede pagarlo: se intenta recuperar, como con un pago tardío. **Mientras haya una ficha abierta no se abre otra,** porque se podrían pagar las dos; el costo es que no puede cambiar a tarjeta hasta que venza. Se anota el medio real del pago, y lo que no es tarjeta ni transferencia queda como «otro». Mercado Pago ya ofrecía estos medios en su propia pantalla, y sus fichas pasan por el mismo camino. El cliente de Stripe lleva nombre y correo porque Stripe los pide para una CLABE personal; se guarda su id en el huésped para no crear uno por cobro, y si cambian las llaves se crea otro.
+
 ---
 
 ## Pendientes
@@ -634,5 +640,5 @@ Un comprobante no es un pago hasta que alguien lo confirma, y no cuenta en ning�
 - Precios y modelo de venta.
 - El sitio alojaflow.com y su wiki.
 - Titular del copyright en las cabeceras de licencia.
-- PAC para CFDI, proveedor de correo y canal del OTP.
+- Proveedor de correo y canal del OTP.
 - Inventario, almacenes y punto de venta: fase 2 o posterior.

@@ -39,7 +39,7 @@
                 <h1>{{ $factura->tipo === TipoDocumentoFiscal::Factura ? __('dinero.facturas.factura') : __('dinero.facturas.recibo') }}</h1>
                 <div><strong>{{ $factura->folio() }}</strong></div>
                 <div class="gris">{{ Formato::momento($factura->emitida_en, $factura->propiedad->zona_horaria) }}</div>
-                @if ($factura->uuid_fiscal)<div class="gris">{{ $factura->uuid_fiscal }}</div>@endif
+                @if ($factura->uuid_fiscal)<div class="gris">{{ __('dinero.pac.folio_fiscal') }}: {{ $factura->uuid_fiscal }}</div>@endif
             </td>
         </tr>
     </table>
@@ -62,5 +62,22 @@
         </tbody>
     </table>
     @if ($factura->forma_pago)<p class="gris">{{ __('dinero.facturas.forma_pago') }}: {{ $factura->forma_pago }}@if ($factura->metodo_pago) · {{ __('dinero.facturas.metodo_pago') }}: {{ $factura->metodo_pago }}@endif</p>@endif
+    @if ($timbre)
+        <table style="margin-top: 14px; font-size: 8px; width: 100%; overflow-wrap: anywhere">
+            <tr>
+                @if ($factura->qr_timbrado)
+                    <td style="width: 110px; vertical-align: top"><img src="data:image/png;base64,{{ $factura->qr_timbrado }}" alt="" style="width: 100px"></td>
+                @endif
+                <td style="vertical-align: top">
+                    <div>{{ __('dinero.pac.representacion') }}</div>
+                    <div><strong>{{ __('dinero.pac.fecha_timbrado') }}:</strong> {{ $timbre['fecha'] }} · <strong>{{ __('dinero.pac.certificado_emisor') }}:</strong> {{ $timbre['certificado_emisor'] }} · <strong>{{ __('dinero.pac.certificado_sat') }}:</strong> {{ $timbre['certificado_sat'] }}</div>
+                    <div><strong>{{ __('dinero.pac.sello_emisor') }}:</strong> {{ $timbre['sello_emisor'] }}</div>
+                    <div><strong>{{ __('dinero.pac.sello_sat') }}:</strong> {{ $timbre['sello_sat'] }}</div>
+                    <div><strong>{{ __('dinero.pac.cadena') }}:</strong> {{ $timbre['cadena'] }}</div>
+                    <div><strong>{{ __('dinero.pac.verificar') }}:</strong> {{ $timbre['verificacion'] }}</div>
+                </td>
+            </tr>
+        </table>
+    @endif
 </body>
 </html>

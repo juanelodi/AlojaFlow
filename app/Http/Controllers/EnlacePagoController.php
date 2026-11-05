@@ -39,6 +39,7 @@ class EnlacePagoController extends Controller
             'propiedad' => $enlace->reserva->propiedad,
             'pasarelas' => $enlace->estado() === 'vigente' ? array_keys((new Pasarelas($enlace->reserva->propiedad))->disponibles()) : [],
             'aviso' => $request->query('aviso'),
+            'espera' => $enlace->estado() === 'vigente' ? $this->cobros->enEspera($enlace->reserva, $enlace) : null,
         ]);
     }
 

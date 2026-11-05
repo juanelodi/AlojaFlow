@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Facturas;
 
 use App\Enums\EstadoFactura;
+use App\Enums\MotivoCancelacionCfdi;
 use App\Enums\TipoDocumentoFiscal;
 use App\Facturacion\ErrorFacturacion;
 use App\Facturacion\GestorFacturas;
@@ -23,8 +24,10 @@ use App\Seguridad\Acceso;
 use App\Support\Formato;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -126,11 +129,21 @@ class FacturaResource extends RecursoDeCualquierPropiedad
                     }),
                 Action::make('cancelar')->label(__('dinero.facturas.cancelar'))->icon(Heroicon::OutlinedXCircle)->color('danger')
                     ->visible(fn (Factura $record): bool => $record->estado !== EstadoFactura::Cancelada)
-                    ->schema([TextInput::make('motivo')->label(__('dinero.facturas.motivo'))->required()->maxLength(255)])
+                    ->modalDescription(fn (Factura $record): ?string => $record->uuid_fiscal !== null ? __('dinero.cancelacion.ayuda') : null)
+                    ->schema(fn (Factura $record): array => $record->uuid_fiscal !== null
+                        ? [
+                            Select::make('clave')->label(__('dinero.facturas.motivo'))->options(MotivoCancelacionCfdi::opciones())->required()->native(false)->live(),
+                            Select::make('sustituta')->label(__('dinero.cancelacion.sustituta'))->helperText(__('dinero.cancelacion.sustituta_ayuda'))->native(false)
+                                ->options(fn (): array => self::posiblesSustitutas($record))
+                                ->visible(fn (Get $get): bool => $get('clave') === MotivoCancelacionCfdi::ConErroresConRelacion->value)
+                                ->required(fn (Get $get): bool => $get('clave') === MotivoCancelacionCfdi::ConErroresConRelacion->value),
+                        ]
+                        : [TextInput::make('motivo')->label(__('dinero.facturas.motivo'))->required()->maxLength(255)])
                     ->action(function (Factura $record, array $data, GestorFacturas $facturas): void {
                         try {
-                            $facturas->cancelar($record, (string) $data['motivo']);
-                            Notification::make()->success()->title(__('dinero.facturas.cancelada_ok'))->send();
+                            $clave = isset($data['clave']) ? MotivoCancelacionCfdi::from((string) $data['clave']) : null;
+                            $facturas->cancelar($record, (string) ($data['motivo'] ?? ''), $clave, isset($data['sustituta']) ? (string) $data['sustituta'] : null);
+                            Notification::make()->success()->title(__($clave !== null ? 'dinero.cancelacion.solicitada' : 'dinero.facturas.cancelada_ok'))->send();
                         } catch (ErrorFacturacion $e) {
                             Notification::make()->danger()->persistent()->title($e->getMessage())->send();
                         }
@@ -141,5 +154,17 @@ class FacturaResource extends RecursoDeCualquierPropiedad
     public static function getPages(): array
     {
         return ['index' => ListFacturas::route('/')];
+    }
+
+    /**
+     * Las timbradas por la misma entidad que no están canceladas: el motivo 01 pide que la que sustituye ya exista.
+     *
+     * @return array<string, string> folio fiscal => folio
+     */
+    private static function posiblesSustitutas(Factura $factura): array
+    {
+        return Factura::query()->where('entidad_fiscal_id', $factura->entidad_fiscal_id)->whereKeyNot($factura->id)->whereNotNull('uuid_fiscal')
+            ->where('estado', '!=', EstadoFactura::Cancelada->value)->orderByDesc('id')->limit(100)->get()
+            ->mapWithKeys(fn (Factura $f): array => [(string) $f->uuid_fiscal => $f->folio().' · '.(string) $f->uuid_fiscal])->all();
     }
 }

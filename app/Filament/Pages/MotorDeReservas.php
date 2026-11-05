@@ -25,6 +25,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
@@ -142,6 +143,12 @@ class MotorDeReservas extends Page
                     TextInput::make('stripe_webhook')->label(__('motor.panel.stripe_webhook'))->password()->revealable()->autocomplete('new-password')->maxLength(300)
                         ->helperText(fn (): string => $ayudaLlave('stripe_webhook')),
                     Toggle::make('stripe_quitar')->label(__('motor.panel.quitar_llaves')),
+                    Section::make(__('motor.panel.stripe_mexico'))->description(__('motor.panel.stripe_mexico_ayuda'))->visible(fn (): bool => $this->propiedad()?->moneda === 'MXN')->columnSpanFull()->columns(['default' => 1, 'md' => 2])->schema([
+                        Toggle::make('stripe_oxxo')->label(__('motor.panel.stripe_oxxo'))->helperText(__('motor.panel.stripe_oxxo_ayuda'))->live(),
+                        TextInput::make('stripe_oxxo_dias')->label(__('motor.panel.stripe_oxxo_dias'))->numeric()->integer()->minValue(1)->maxValue(7)->visible(fn (Get $get): bool => (bool) $get('stripe_oxxo')),
+                        Toggle::make('stripe_meses')->label(__('motor.panel.stripe_meses'))->helperText(__('motor.panel.stripe_meses_ayuda')),
+                        Toggle::make('stripe_spei')->label(__('motor.panel.stripe_spei'))->helperText(__('motor.panel.stripe_spei_ayuda')),
+                    ]),
                 ]),
                 Section::make(__('motor.panel.mercadopago'))->description(__('motor.panel.mercadopago_ayuda'))->hidden(fn (): bool => ModoDemo::activo() || ! Modulos::activo(Modulo::Pagos))->collapsible()->columns(['default' => 1, 'md' => 2])->schema([
                     TextInput::make('mercadopago_token')->label(__('motor.panel.mercadopago_token'))->password()->revealable()->autocomplete('new-password')->maxLength(300)
@@ -168,6 +175,10 @@ class MotorDeReservas extends Page
             'dias_antelacion' => (int) $datos['dias_antelacion'],
             'instrucciones' => $datos['instrucciones'] ?? null,
             'acepta_comprobantes' => (bool) ($datos['acepta_comprobantes'] ?? false),
+            'stripe_oxxo' => (bool) ($datos['stripe_oxxo'] ?? false),
+            'stripe_oxxo_dias' => (int) ($datos['stripe_oxxo_dias'] ?? 3),
+            'stripe_meses' => (bool) ($datos['stripe_meses'] ?? false),
+            'stripe_spei' => (bool) ($datos['stripe_spei'] ?? false),
             'condiciones' => $datos['condiciones'] ?? null,
         ]);
         foreach (ModoDemo::activo() ? [] : ['stripe' => ['stripe_secreta', 'stripe_webhook'], 'mercadopago' => ['mercadopago_token', 'mercadopago_webhook']] as $pasarela => $llaves) {
@@ -201,6 +212,10 @@ class MotorDeReservas extends Page
             'dias_antelacion' => $motor['dias_antelacion'] ?? 0,
             'instrucciones' => $motor['instrucciones'] ?? null,
             'acepta_comprobantes' => (bool) ($motor['acepta_comprobantes'] ?? true),
+            'stripe_oxxo' => (bool) ($motor['stripe_oxxo'] ?? false),
+            'stripe_oxxo_dias' => (int) ($motor['stripe_oxxo_dias'] ?? 3),
+            'stripe_meses' => (bool) ($motor['stripe_meses'] ?? false),
+            'stripe_spei' => (bool) ($motor['stripe_spei'] ?? false),
             'condiciones' => $motor['condiciones'] ?? null,
         ]);
     }

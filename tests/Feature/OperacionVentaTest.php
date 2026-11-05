@@ -425,13 +425,13 @@ describe('enlaces de pago', function (): void {
         app(GestorReservas::class)->registrarPago($this->reserva, 100000, MetodoPago::Efectivo, $this->hoy);
         Http::fake([
             'api.stripe.com/v1/checkout/sessions' => Http::response(['id' => 'cs_e1', 'url' => 'https://checkout.stripe.test/e1']),
-            'api.stripe.com/v1/checkout/sessions/cs_e1' => Http::response(['id' => 'cs_e1', 'payment_status' => 'paid', 'amount_total' => 25000, 'currency' => 'mxn', 'client_reference_id' => null]),
+            'api.stripe.com/v1/checkout/sessions/cs_e1*' => Http::response(['id' => 'cs_e1', 'payment_status' => 'paid', 'amount_total' => 25000, 'currency' => 'mxn', 'client_reference_id' => null]),
         ]);
         $this->post('/pagar/'.$this->token.'/stripe')->assertRedirect('https://checkout.stripe.test/e1');
         $cobro = App\Models\PagoEnLinea::query()->sole();
         expect($cobro->importe)->toBe(25000)->and($cobro->enlace_pago_id)->toBe($this->enlace->id);
 
-        Http::fake(['api.stripe.com/v1/checkout/sessions/cs_e1' => Http::response(['id' => 'cs_e1', 'payment_status' => 'paid', 'amount_total' => 25000, 'currency' => 'mxn', 'client_reference_id' => App\Pagos\CobrosEnLinea::referenciaInterna($cobro->id)])]);
+        Http::fake(['api.stripe.com/v1/checkout/sessions/cs_e1*' => Http::response(['id' => 'cs_e1', 'payment_status' => 'paid', 'amount_total' => 25000, 'currency' => 'mxn', 'client_reference_id' => App\Pagos\CobrosEnLinea::referenciaInterna($cobro->id)])]);
         $this->get('/pagar/'.$this->token.'/retorno/stripe?cobro='.$cobro->id.'&session_id=cs_e1')->assertRedirect();
         $this->get('/pagar/'.$this->token.'/retorno/stripe?cobro='.$cobro->id.'&session_id=cs_e1')->assertRedirect();
 
@@ -462,7 +462,7 @@ describe('enlaces de pago', function (): void {
         $this->post('/pagar/'.$this->token.'/stripe')->assertRedirect('https://checkout.stripe.test/e2');
         $cobro = App\Models\PagoEnLinea::query()->sole();
         $this->travel(4)->days();
-        Http::fake(['api.stripe.com/v1/checkout/sessions/cs_e2' => Http::response(['id' => 'cs_e2', 'payment_status' => 'paid', 'amount_total' => 25000, 'currency' => 'mxn', 'client_reference_id' => App\Pagos\CobrosEnLinea::referenciaInterna($cobro->id)])]);
+        Http::fake(['api.stripe.com/v1/checkout/sessions/cs_e2*' => Http::response(['id' => 'cs_e2', 'payment_status' => 'paid', 'amount_total' => 25000, 'currency' => 'mxn', 'client_reference_id' => App\Pagos\CobrosEnLinea::referenciaInterna($cobro->id)])]);
         $this->get('/pagar/'.$this->token.'/retorno/stripe?cobro='.$cobro->id.'&session_id=cs_e2')->assertRedirect();
         expect($this->enlace->refresh()->estado())->toBe('pagado');
     });

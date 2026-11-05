@@ -230,8 +230,9 @@ describe('facturación', function () {
                 return ['xml' => str_replace('Sello=""', 'Sello="ABC"', $xml), 'uuid' => 'AAAA-BBBB'];
             }
 
-            public function cancelar(string $uuid, string $motivo, EntidadFiscal $entidad): void
+            public function cancelar(string $uuid, string $motivo, EntidadFiscal $entidad, ?string $folioSustitucion = null): array
             {
+                return [];
             }
         });
         config(['alojaflow.pac' => 'pac-de-prueba']);

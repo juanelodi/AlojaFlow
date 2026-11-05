@@ -57,6 +57,21 @@ final class AjustesMotor
         return max(0, (int) $this->valor('horas_revision', 48));
     }
 
+    /**
+     * Lo que se ofrece en pesos, además de la tarjeta (D-099).
+     *
+     * @return array{oxxo: bool, oxxo_dias: int, meses: bool, spei: bool}
+     */
+    public function opcionesStripe(): array
+    {
+        return [
+            'oxxo' => (bool) $this->valor('stripe_oxxo', false),
+            'oxxo_dias' => min(7, max(1, (int) $this->valor('stripe_oxxo_dias', 3))),
+            'meses' => (bool) $this->valor('stripe_meses', false),
+            'spei' => (bool) $this->valor('stripe_spei', false),
+        ];
+    }
+
     public function diasMinimosAntelacion(): int
     {
         return max(0, (int) $this->valor('dias_antelacion', 0));

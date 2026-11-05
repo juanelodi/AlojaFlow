@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Pagos;
 
+use App\Enums\MetodoPago;
 use App\Models\Reserva;
 use App\Motor\Pasarelas;
 use App\Support\Dinero;
@@ -106,15 +107,30 @@ final class ProveedorMercadoPago implements ProveedorPago
         }
         $pago = (array) $respuesta->json();
         $moneda = strtoupper((string) ($pago['currency_id'] ?? ''));
+        $estado = (string) ($pago['status'] ?? '');
+        // En OXXO o por transferencia el pago existe desde que se genera la ficha, y queda así hasta que lo paga (D-099).
+        $enEspera = $estado === 'pending' && str_starts_with((string) ($pago['status_detail'] ?? ''), 'pending_waiting');
+        $instrucciones = $pago['transaction_details']['external_resource_url'] ?? $pago['point_of_interaction']['transaction_data']['ticket_url'] ?? null;
+        $vence = strtotime((string) ($pago['date_of_expiration'] ?? ''));
 
         return new ResultadoPago(
             // El cobro lo dice el propio pago (external_reference es el id de pagos_en_linea), no la
             // dirección: quien abre el retorno no puede aplicar un pago aprobado a otra reserva.
             'interna:'.(string) ($pago['external_reference'] ?? ''),
-            ($pago['status'] ?? '') === 'approved',
+            $estado === 'approved',
             Dinero::aUnidadMenor((string) ($pago['transaction_amount'] ?? 0), $moneda === '' ? 'MXN' : $moneda),
             $moneda,
             $idPago,
+            enEspera: $enEspera,
+            instrucciones: is_string($instrucciones) && str_starts_with($instrucciones, 'https://') ? $instrucciones : null,
+            venceEn: $vence !== false ? $vence : null,
+            fallido: $estado === 'cancelled',
+            metodo: match ($pago['payment_type_id'] ?? null) {
+                'credit_card', 'debit_card', 'prepaid_card' => MetodoPago::Tarjeta,
+                'bank_transfer' => MetodoPago::Transferencia,
+                'ticket', 'atm', 'account_money' => MetodoPago::Otro,
+                default => null,
+            },
         );
     }
 
