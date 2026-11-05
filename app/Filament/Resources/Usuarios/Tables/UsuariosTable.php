@@ -25,6 +25,7 @@ class UsuariosTable
             ->columns([
                 TextColumn::make('name')->label(__('ui.usuarios.nombre'))->searchable()->sortable(),
                 TextColumn::make('email')->label(__('ui.usuarios.correo'))->searchable(),
+                IconColumn::make('es_superadministrador')->label(__('ui.usuarios.super'))->boolean(),
                 IconColumn::make('es_administrador')->label(__('ui.usuarios.administrador'))->boolean(),
                 IconColumn::make('activo')->label(__('ui.usuarios.activo'))->boolean(),
                 IconColumn::make('dos_pasos')->label(__('ui.usuarios.dos_pasos'))->boolean()

@@ -6,12 +6,12 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
  * Instalador de un solo archivo (docs/especificacion/instalacion-actualizaciones.md §2). Se sube al
- * hosting y se abre en el navegador: analiza el servidor, pide la base de datos y el administrador,
- * descomprime el paquete firmado que lleva dentro y se borra solo.
+ * hosting y se abre en el navegador: analiza el servidor, pide la base de datos y el super administrador,
+ * baja el paquete firmado de GitHub (o lo lleva dentro, o se sube a mano), lo descomprime y se borra solo.
  *
  * Va sin sintaxis moderna a propósito: tiene que poder leerse en un PHP viejo para decirle a la
  * persona que su PHP es viejo, en vez de dejarla ante una página en blanco. `alojaflow:empaquetar`
- * cambia los @@VALORES@@ y añade el zip después de __halt_compiler.
+ * cambia los @@VALORES@@ y, en el instalador completo, añade el zip después de __halt_compiler.
  */
 
 error_reporting(E_ALL);
@@ -22,6 +22,9 @@ define('AF_VERSION', '@@VERSION@@');
 define('AF_CLAVE_PUBLICA', '@@CLAVE_PUBLICA@@');
 define('AF_PHP_MINIMO', '@@PHP_MINIMO@@');
 define('AF_EXTENSIONES', '@@EXTENSIONES@@');
+define('AF_URL_PAQUETE', '@@URL_PAQUETE@@');
+define('AF_TAMANO_MAXIMO', 314572800);
+define('AF_TAMANO_PARTE', 1048576);
 define('AF_AQUI', dirname(__FILE__));
 define('AF_COOKIE', 'alojaflow_instalador');
 
@@ -64,19 +67,27 @@ function af_textos()
             'analizando' => 'Revisando tu servidor…',
             'analisis_ok' => 'Tu servidor es compatible.',
             'analisis_avisos' => 'Tu servidor es compatible, con algunos avisos que puedes atender después.',
+            'analisis_detalle' => 'Ver el detalle',
             'analisis_error' => 'Hay que corregir lo que aparece en rojo para poder instalar.',
             'reanalizar' => 'Volver a revisar',
             'continuar' => 'Continuar',
             'base_titulo' => 'Base de datos',
             'base_ayuda' => 'Créala vacía en el panel de tu hosting y escribe aquí sus datos.',
             'base_servidor' => 'Servidor',
-            'base_servidor_ayuda' => 'Suele ser «localhost». En algunos hostings es otro nombre, como mysql.tudominio.com.',
+            'base_servidor_ayuda' => 'Si lo dejas vacío, lo buscamos solos: probamos localhost y mysql.tudominio.com.',
+            'base_avanzado' => 'Avanzado (casi nunca hace falta)',
+            'guia_titulo' => '¿Dónde creo la base de datos?',
+            'guia_general' => 'Entra al panel de tu hosting, busca «Bases de datos» o «MySQL», crea una base vacía y un usuario con todos los permisos sobre ella. Después escribe aquí esos mismos datos.',
+            'guia_cpanel' => 'cPanel: en «Bases de datos MySQL» crea la base, crea el usuario y añádelo a la base con «Todos los privilegios». cPanel les antepone el nombre de tu cuenta (cuenta_base, cuenta_usuario): escríbelos completos.',
+            'guia_dreamhost' => 'DreamHost: en «MySQL Databases» creas la base, su servidor (como mysql.tudominio.com) y su usuario, todo a la vez. Un servidor nuevo puede tardar unos minutos en responder.',
+            'guia_hostinger' => 'Hostinger: en «Bases de datos» → «Administración» creas la base y su usuario a la vez. Le antepone un código a los nombres (u123456789_base): escríbelos completos.',
+            'guia_plesk' => 'Plesk: en «Bases de datos» → «Añadir base de datos» creas la base y su usuario a la vez.',
             'base_nombre' => 'Nombre de la base',
             'base_usuario' => 'Usuario',
             'base_contrasena' => 'Contraseña',
             'base_puerto' => 'Puerto',
-            'admin_titulo' => 'Tu usuario',
-            'admin_ayuda' => 'Con este correo y contraseña vas a entrar a AlojaFlow.',
+            'admin_titulo' => 'Tu usuario: super administrador',
+            'admin_ayuda' => 'Quien instala es el super administrador: tiene acceso a todo, y es el único que cambia los módulos, instala actualizaciones y nombra a otros administradores. Entrarás con este correo y esta contraseña, así que guárdalos bien.',
             'admin_nombre' => 'Tu nombre',
             'admin_correo' => 'Correo',
             'admin_contrasena' => 'Contraseña (mínimo 12 caracteres)',
@@ -85,7 +96,16 @@ function af_textos()
             'instalar' => 'Instalar',
             'atras' => 'Atrás',
             'probando_base' => 'Probando la conexión con la base de datos…',
-            'p_preparar' => 'Comprobando el paquete firmado',
+            'p_preparar' => 'Consiguiendo y comprobando el paquete firmado',
+            'p_descargando' => 'Descargando AlojaFlow',
+            'p_subiendo' => 'Subiendo el paquete',
+            'manual_titulo' => 'No pudimos bajar el paquete desde tu servidor',
+            'manual_paso1' => 'Bájalo a tu computadora:',
+            'manual_paso2' => 'Elígelo aquí; se sube en partes pequeñas, así que no importa el límite de tu hosting.',
+            'manual_paso3' => 'O súbelo por FTP a esta misma carpeta, sin cambiarle el nombre, y pulsa Reintentar.',
+            'manual_subir' => 'Subir el paquete',
+            'e_subida' => 'El servidor no recibió la parte :parte. Vuelve a intentarlo.',
+            'e_descarga' => 'No se pudo descargar: :detalle',
             'p_extraer' => 'Copiando los archivos',
             'p_proteger' => 'Protegiendo los archivos privados',
             'p_configurar' => 'Guardando la configuración',
@@ -95,13 +115,8 @@ function af_textos()
             'p_comprobar' => 'Comprobando que abre',
             'p_terminar' => 'Terminando',
             'listo_titulo' => '¡AlojaFlow ya está instalado!',
-            'listo_texto' => 'Ya puedes entrar con tu correo y tu contraseña.',
+            'listo_texto' => 'Este botón te deja entrar una sola vez sin escribir la contraseña. Al entrar te haremos cinco preguntas para prender solo lo que te sirve, y verás una lista de primeros pasos.',
             'entrar' => 'Entrar a AlojaFlow',
-            'cron_titulo' => 'Un último paso recomendado: la tarea programada',
-            'cron_texto' => 'Sirve para que las sincronizaciones, los mensajes y las copias de seguridad corran a su hora. En el panel de tu hosting, crea una tarea programada (cron) cada minuto, o con el intervalo más corto que te permita, con este comando:',
-            'cron_sin' => 'Si no la creas, AlojaFlow igual funciona: esas tareas corren cuando alguien está usando el sistema.',
-            'copiar' => 'Copiar',
-            'copiado' => 'Copiado',
             'no_borrado' => 'No pude borrar este instalador. Bórralo tú por FTP: :archivo',
             'error_titulo' => 'No se pudo terminar',
             'reintentar' => 'Reintentar',
@@ -138,7 +153,7 @@ function af_textos()
             'a_tiempo_sin' => 'Sin límite',
             'a_tiempo_ayuda' => 'El instalador trabaja por partes, así que no es problema. Para sincronizaciones largas, conviene subirlo a 120 segundos.',
             'a_subida' => 'Tamaño máximo de subida',
-            'a_subida_ayuda' => 'Las actualizaciones pesan unos 25 MB. Si no alcanza, súbelas por FTP o aumenta upload_max_filesize y post_max_size.',
+            'a_subida_ayuda' => 'Las actualizaciones se suben en partes de 1 MB y este límite es menor. Súbelas por FTP o aumenta upload_max_filesize y post_max_size.',
             'a_https' => 'Conexión segura (HTTPS)',
             'a_https_si' => 'Activa',
             'a_https_no' => 'No está activa',
@@ -161,7 +176,7 @@ function af_textos()
             'e_nombre' => 'Escribe tu nombre.',
             'e_contrasena' => 'La contraseña debe tener al menos 12 caracteres.',
             'e_repite' => 'Las dos contraseñas no coinciden.',
-            'e_base_conexion' => 'No pude conectarme al servidor «:servidor». Revisa el nombre del servidor. Si acabas de crear la base, puede tardar unos minutos en estar disponible.',
+            'e_base_conexion' => 'No pude conectarme al servidor de la base de datos (probé: :servidor). Búscalo en el panel de tu hosting y escríbelo en «Avanzado». Si acabas de crear la base, puede tardar unos minutos en estar disponible.',
             'e_base_acceso' => 'El servidor rechazó ese usuario o contraseña.',
             'e_base_nombre' => 'No existe una base llamada «:base», o tu usuario no tiene acceso a ella. Revisa el nombre.',
             'e_base_version' => 'La base de datos es :version. AlojaFlow necesita MySQL 8.0.16 o MariaDB 10.6 o más nuevas.',
@@ -169,6 +184,11 @@ function af_textos()
             'e_base_permiso' => 'Tu usuario no puede crear tablas en esta base. Dale todos los permisos sobre ella en el panel de tu hosting.',
             'e_base_otro' => 'La base de datos respondió con un error: :detalle',
             'e_paquete_falta' => 'Este instalador no trae el paquete, y no encontré un archivo alojaflow-:version.zip junto a él. Súbelo a esta misma carpeta.',
+            'a_descarga' => 'Descarga del paquete',
+            'a_descarga_ok' => 'Tu servidor puede bajarlo de GitHub',
+            'a_descarga_no' => 'Tu servidor no pudo contactar a GitHub',
+            'a_descarga_ayuda' => 'No pasa nada: durante la instalación te pediremos subir el paquete tú mismo.',
+            'a_descarga_local' => 'Ya está aquí',
             'e_paquete_zip' => 'No se pudo abrir el paquete. Puede haberse dañado al subirlo: vuelve a subir el instalador en modo binario.',
             'e_paquete_firma' => 'La firma del paquete no es válida. El archivo se dañó o fue alterado: descárgalo otra vez.',
             'e_paquete_archivo' => 'El archivo :archivo del paquete no coincide con su firma. Vuelve a subir el instalador en modo binario.',
@@ -185,19 +205,27 @@ function af_textos()
             'analizando' => 'Checking your server…',
             'analisis_ok' => 'Your server is compatible.',
             'analisis_avisos' => 'Your server is compatible, with a few notes you can deal with later.',
+            'analisis_detalle' => 'See the details',
             'analisis_error' => 'What appears in red must be fixed before installing.',
             'reanalizar' => 'Check again',
             'continuar' => 'Continue',
             'base_titulo' => 'Database',
             'base_ayuda' => 'Create it empty in your hosting panel and enter its details here.',
             'base_servidor' => 'Server',
-            'base_servidor_ayuda' => 'Usually «localhost». Some hosts use another name, such as mysql.yourdomain.com.',
+            'base_servidor_ayuda' => 'If you leave it empty, we look for it ourselves: we try localhost and mysql.yourdomain.com.',
+            'base_avanzado' => 'Advanced (rarely needed)',
+            'guia_titulo' => 'Where do I create the database?',
+            'guia_general' => 'Go to your hosting panel, look for «Databases» or «MySQL», create an empty database and a user with all permissions on it. Then enter those same details here.',
+            'guia_cpanel' => 'cPanel: in «MySQL Databases» create the database, create the user and add it to the database with «All privileges». cPanel puts your account name in front (account_db, account_user): enter them in full.',
+            'guia_dreamhost' => 'DreamHost: in «MySQL Databases» you create the database, its server (such as mysql.yourdomain.com) and its user all at once. A new server may take a few minutes to respond.',
+            'guia_hostinger' => 'Hostinger: in «Databases» → «Management» you create the database and its user at once. It puts a code in front of the names (u123456789_db): enter them in full.',
+            'guia_plesk' => 'Plesk: in «Databases» → «Add database» you create the database and its user at once.',
             'base_nombre' => 'Database name',
             'base_usuario' => 'User',
             'base_contrasena' => 'Password',
             'base_puerto' => 'Port',
-            'admin_titulo' => 'Your user',
-            'admin_ayuda' => 'You will sign in to AlojaFlow with this email and password.',
+            'admin_titulo' => 'Your user: super administrator',
+            'admin_ayuda' => 'Whoever installs is the super administrator: they have access to everything, and are the only one who changes modules, installs updates and appoints other administrators. You will sign in with this email and password, so keep them safe.',
             'admin_nombre' => 'Your name',
             'admin_correo' => 'Email',
             'admin_contrasena' => 'Password (at least 12 characters)',
@@ -206,7 +234,16 @@ function af_textos()
             'instalar' => 'Install',
             'atras' => 'Back',
             'probando_base' => 'Testing the database connection…',
-            'p_preparar' => 'Checking the signed package',
+            'p_preparar' => 'Getting and checking the signed package',
+            'p_descargando' => 'Downloading AlojaFlow',
+            'p_subiendo' => 'Uploading the package',
+            'manual_titulo' => 'We could not download the package from your server',
+            'manual_paso1' => 'Download it to your computer:',
+            'manual_paso2' => 'Choose it here; it goes up in small parts, so your host\'s limit does not matter.',
+            'manual_paso3' => 'Or upload it by FTP to this same folder, without renaming it, and press Try again.',
+            'manual_subir' => 'Upload the package',
+            'e_subida' => 'The server did not receive part :parte. Try again.',
+            'e_descarga' => 'It could not be downloaded: :detalle',
             'p_extraer' => 'Copying the files',
             'p_proteger' => 'Protecting the private files',
             'p_configurar' => 'Saving the configuration',
@@ -216,13 +253,8 @@ function af_textos()
             'p_comprobar' => 'Checking that it opens',
             'p_terminar' => 'Finishing',
             'listo_titulo' => 'AlojaFlow is installed!',
-            'listo_texto' => 'You can now sign in with your email and password.',
+            'listo_texto' => 'This button lets you in once without typing your password. When you get in, we will ask you five questions to turn on only what serves you, and you will see a list of first steps.',
             'entrar' => 'Go to AlojaFlow',
-            'cron_titulo' => 'One last recommended step: the scheduled task',
-            'cron_texto' => 'It makes synchronisation, messages and backups run on time. In your hosting panel, create a scheduled task (cron) every minute, or at the shortest interval it allows, with this command:',
-            'cron_sin' => 'If you skip it, AlojaFlow still works: those tasks run while someone is using the system.',
-            'copiar' => 'Copy',
-            'copiado' => 'Copied',
             'no_borrado' => 'I could not delete this installer. Please delete it by FTP: :archivo',
             'error_titulo' => 'It could not finish',
             'reintentar' => 'Try again',
@@ -258,7 +290,7 @@ function af_textos()
             'a_tiempo_sin' => 'No limit',
             'a_tiempo_ayuda' => 'The installer works in parts, so this is not a problem. For long synchronisations, 120 seconds is better.',
             'a_subida' => 'Maximum upload size',
-            'a_subida_ayuda' => 'Updates weigh about 25 MB. If this is too low, upload them by FTP or raise upload_max_filesize and post_max_size.',
+            'a_subida_ayuda' => 'Updates go up in 1 MB parts and this limit is lower. Upload them by FTP or raise upload_max_filesize and post_max_size.',
             'a_https' => 'Secure connection (HTTPS)',
             'a_https_si' => 'Active',
             'a_https_no' => 'Not active',
@@ -280,7 +312,7 @@ function af_textos()
             'e_nombre' => 'Enter your name.',
             'e_contrasena' => 'The password must have at least 12 characters.',
             'e_repite' => 'The two passwords do not match.',
-            'e_base_conexion' => 'I could not connect to server «:servidor». Check the server name. If you just created the database, it may take a few minutes to become available.',
+            'e_base_conexion' => 'I could not connect to the database server (I tried: :servidor). Look for it in your hosting panel and enter it under «Advanced». If you just created the database, it may take a few minutes to become available.',
             'e_base_acceso' => 'The server rejected that user or password.',
             'e_base_nombre' => 'There is no database called «:base», or your user has no access to it. Check the name.',
             'e_base_version' => 'The database is :version. AlojaFlow needs MySQL 8.0.16 or MariaDB 10.6 or newer.',
@@ -288,6 +320,11 @@ function af_textos()
             'e_base_permiso' => 'Your user cannot create tables in this database. Give it all permissions on it in your hosting panel.',
             'e_base_otro' => 'The database replied with an error: :detalle',
             'e_paquete_falta' => 'This installer does not carry the package, and I found no alojaflow-:version.zip next to it. Upload it to this same folder.',
+            'a_descarga' => 'Package download',
+            'a_descarga_ok' => 'Your server can get it from GitHub',
+            'a_descarga_no' => 'Your server could not reach GitHub',
+            'a_descarga_ayuda' => 'That is fine: during the installation we will ask you to upload the package yourself.',
+            'a_descarga_local' => 'It is already here',
             'e_paquete_zip' => 'The package could not be opened. It may have been damaged while uploading: upload the installer again in binary mode.',
             'e_paquete_firma' => 'The package signature is not valid. The file was damaged or altered: download it again.',
             'e_paquete_archivo' => 'File :archivo in the package does not match its signature. Upload the installer again in binary mode.',
@@ -342,7 +379,7 @@ function af_contenido($carpeta, $ignorar = array())
         return $resultado;
     }
     foreach ($listado as $nombre) {
-        if (! in_array($nombre, $omitir, true) && strpos($nombre, 'instalar') !== 0) {
+        if (! in_array($nombre, $omitir, true) && strpos($nombre, 'instalar') !== 0 && ! preg_match('/^alojaflow-[0-9.]+\.zip$/', $nombre)) {
             $resultado[] = $nombre;
         }
     }
@@ -541,7 +578,7 @@ function af_analizar()
         : af_fila(af_t('a_tiempo'), af_t('a_tiempo_valor', array('segundos' => $tiempo)), $tiempo < 60 ? 'aviso' : 'ok', $tiempo < 60 ? af_t('a_tiempo_ayuda') : '');
 
     $subida = min(af_bytes(ini_get('upload_max_filesize')), af_bytes(ini_get('post_max_size')));
-    $filas[] = af_fila(af_t('a_subida'), (string) ini_get('upload_max_filesize').' / '.(string) ini_get('post_max_size'), ($subida !== -1.0 && $subida < 33554432) ? 'aviso' : 'ok', ($subida !== -1.0 && $subida < 33554432) ? af_t('a_subida_ayuda') : '');
+    $filas[] = af_fila(af_t('a_subida'), (string) ini_get('upload_max_filesize').' / '.(string) ini_get('post_max_size'), ($subida !== -1.0 && $subida < AF_TAMANO_PARTE + 65536) ? 'aviso' : 'ok', ($subida !== -1.0 && $subida < AF_TAMANO_PARTE + 65536) ? af_t('a_subida_ayuda') : '');
 
     $filas[] = af_es_https()
         ? af_fila(af_t('a_https'), af_t('a_https_si'), 'ok')
@@ -552,6 +589,14 @@ function af_analizar()
     $filas[] = $procesos
         ? af_fila(af_t('a_procesos'), af_t('a_procesos_si'), 'ok')
         : af_fila(af_t('a_procesos'), af_t('a_procesos_no'), 'aviso', af_t('a_procesos_ayuda'));
+
+    if (af_paquete_a_la_mano()) {
+        $filas[] = af_fila(af_t('a_descarga'), af_t('a_descarga_local'), 'ok');
+    } else {
+        $filas[] = af_se_puede_descargar()
+            ? af_fila(af_t('a_descarga'), af_t('a_descarga_ok'), 'ok')
+            : af_fila(af_t('a_descarga'), af_t('a_descarga_no'), 'aviso', af_t('a_descarga_ayuda'));
+    }
 
     $servidor = isset($_SERVER['SERVER_SOFTWARE']) ? (string) $_SERVER['SERVER_SOFTWARE'] : '';
     $nginx = stripos($servidor, 'nginx') !== false && basename(AF_AQUI) !== 'public';
@@ -583,13 +628,33 @@ function af_conectar($datos)
 {
     $dsn = 'mysql:host='.$datos['servidor'].';port='.(int) $datos['puerto'].';dbname='.$datos['base'].';charset=utf8mb4';
 
-    return new PDO($dsn, $datos['usuario'], $datos['contrasena'], array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 10));
+    return new PDO($dsn, $datos['usuario'], $datos['contrasena'], array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5));
+}
+
+/**
+ * Los servidores que se prueban si la persona no escribió uno: los dos usuales, y el que da DreamHost y otros
+ * hostings, mysql.tudominio.com, también con el dominio sin el subdominio.
+ */
+function af_servidores_candidatos()
+{
+    $candidatos = array('localhost', '127.0.0.1');
+    $anfitrion = isset($_SERVER['HTTP_HOST']) ? strtolower((string) $_SERVER['HTTP_HOST']) : '';
+    $anfitrion = preg_replace('/:[0-9]+$/', '', $anfitrion);
+    if (preg_match('/^[a-z0-9.\-]+\.[a-z]{2,}$/', $anfitrion)) {
+        $partes = explode('.', preg_replace('/^www\./', '', $anfitrion));
+        $candidatos[] = 'mysql.'.implode('.', $partes);
+        if (count($partes) > 2) {
+            $candidatos[] = 'mysql.'.implode('.', array_slice($partes, 1));
+        }
+    }
+
+    return $candidatos;
 }
 
 function af_datos_base($entrada)
 {
     return array(
-        'servidor' => isset($entrada['servidor']) && trim($entrada['servidor']) !== '' ? trim($entrada['servidor']) : 'localhost',
+        'servidor' => isset($entrada['servidor']) ? trim($entrada['servidor']) : '',
         'puerto' => isset($entrada['puerto']) && (int) $entrada['puerto'] > 0 ? (int) $entrada['puerto'] : 3306,
         'base' => isset($entrada['base']) ? trim($entrada['base']) : '',
         'usuario' => isset($entrada['usuario']) ? trim($entrada['usuario']) : '',
@@ -607,6 +672,28 @@ function af_probar_base($entrada)
         return af_error(af_t('e_datos'), 'usuario');
     }
 
+    $candidatos = $datos['servidor'] !== '' ? array($datos['servidor']) : af_servidores_candidatos();
+    $mejorError = null;
+    foreach ($candidatos as $candidato) {
+        $datos['servidor'] = $candidato;
+        $resultado = af_probar_servidor($datos);
+        if ($resultado['ok'] || ! isset($resultado['sin_conexion'])) {
+            // Contestó: lo demás (contraseña, base, permisos) no se arregla probando otro servidor, salvo que otro sí la acepte.
+            if ($resultado['ok'] || $resultado['campo'] !== 'contrasena') {
+                return $resultado;
+            }
+            $mejorError = $resultado;
+        }
+    }
+
+    return $mejorError !== null ? $mejorError : af_error(af_t('e_base_conexion', array('servidor' => implode(', ', $candidatos))), 'servidor');
+}
+
+/**
+ * Prueba un servidor. `sin_conexion` dice que no hubo quién contestara.
+ */
+function af_probar_servidor($datos)
+{
     try {
         $pdo = af_conectar($datos);
         $version = (string) $pdo->query('SELECT VERSION()')->fetchColumn();
@@ -626,7 +713,7 @@ function af_probar_base($entrada)
             return af_error(af_t('e_base_permiso'), 'usuario');
         }
 
-        return array('ok' => true, 'conexion' => $esMaria ? 'mariadb' : 'mysql', 'version' => $version);
+        return array('ok' => true, 'conexion' => $esMaria ? 'mariadb' : 'mysql', 'version' => $version, 'servidor' => $datos['servidor']);
     } catch (Exception $e) {
         $codigo = isset($e->errorInfo[1]) ? (int) $e->errorInfo[1] : (int) $e->getCode();
         if ($codigo === 1045) {
@@ -636,7 +723,7 @@ function af_probar_base($entrada)
             return af_error(af_t('e_base_nombre', array('base' => $datos['base'])), 'base');
         }
         if ($codigo === 2002 || $codigo === 2003 || $codigo === 2005 || $codigo === 2006) {
-            return af_error(af_t('e_base_conexion', array('servidor' => $datos['servidor'])), 'servidor');
+            return array_merge(af_error(af_t('e_base_conexion', array('servidor' => $datos['servidor'])), 'servidor'), array('sin_conexion' => true));
         }
 
         return af_error(af_t('e_base_otro', array('detalle' => $e->getMessage())), 'servidor');
@@ -650,9 +737,205 @@ function af_ruta_paquete()
     return af_temporal().'/paquete.zip';
 }
 
+function af_trae_paquete_dentro()
+{
+    return filesize(__FILE__) - __COMPILER_HALT_OFFSET__ > 1024;
+}
+
+function af_paquete_a_la_mano()
+{
+    return af_trae_paquete_dentro() || is_file(AF_AQUI.'/alojaflow-'.AF_VERSION.'.zip') || is_file(af_ruta_paquete());
+}
+
+/**
+ * Pide un rango del paquete. El cuerpo va a un archivo y la respuesta dice cuánto mide todo.
+ */
+function af_pedir_rango($desde, $hasta, $salida)
+{
+    $total = null;
+    $destino = @fopen($salida, 'wb');
+    if ($destino === false) {
+        return array('error' => af_t('e_escribir', array('archivo' => $salida)));
+    }
+    $curl = curl_init(AF_URL_PAQUETE);
+    $seguro = strpos(AF_URL_PAQUETE, 'https://') === 0;
+    curl_setopt_array($curl, array(
+        CURLOPT_FILE => $destino,
+        CURLOPT_RANGE => $desde.'-'.$hasta,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS => 5,
+        CURLOPT_PROTOCOLS => $seguro ? CURLPROTO_HTTPS : (CURLPROTO_HTTP | CURLPROTO_HTTPS),
+        CURLOPT_REDIR_PROTOCOLS => $seguro ? CURLPROTO_HTTPS : (CURLPROTO_HTTP | CURLPROTO_HTTPS),
+        CURLOPT_CONNECTTIMEOUT => 15,
+        CURLOPT_TIMEOUT => 90,
+        CURLOPT_USERAGENT => 'AlojaFlow-instalador/'.AF_VERSION,
+        CURLOPT_HEADERFUNCTION => function ($manejador, $cabecera) use (&$total) {
+            if (preg_match('/^content-range:\s*bytes\s+(?:[0-9]+-[0-9]+|\*)\/([0-9]+)/i', $cabecera, $coincide)) {
+                $total = (float) $coincide[1];
+            }
+
+            return strlen($cabecera);
+        },
+    ));
+    $bien = curl_exec($curl);
+    $codigo = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $detalle = curl_error($curl);
+    curl_close($curl);
+    fclose($destino);
+    clearstatcache(true, $salida);
+    $recibidos = (float) @filesize($salida);
+
+    // Pedir más allá del final: lo que ya está aquí es todo el archivo.
+    if ($bien !== false && $codigo === 416 && $total !== null && $desde >= $total) {
+        return array('codigo' => 416, 'recibidos' => 0.0, 'total' => $total);
+    }
+    if ($bien === false || ($codigo !== 200 && $codigo !== 206)) {
+        return array('error' => af_t('e_descarga', array('detalle' => $detalle !== '' ? $detalle : 'HTTP '.$codigo)));
+    }
+
+    return array('codigo' => $codigo, 'recibidos' => $recibidos, 'total' => $codigo === 206 && $total !== null ? $total : $recibidos);
+}
+
+/**
+ * Baja un pedazo del paquete y dice por dónde va, como la extracción: cada petición cabe en el límite de
+ * tiempo del hosting, y si algo falla se sigue desde ahí.
+ */
+function af_descargar()
+{
+    if (! function_exists('curl_init') || strpos(AF_URL_PAQUETE, 'http') !== 0) {
+        return af_error(af_t('e_paquete_falta', array('version' => AF_VERSION)));
+    }
+    @set_time_limit(120);
+    $temporal = af_temporal();
+    if (! is_dir($temporal) && ! @mkdir($temporal, 0755, true)) {
+        return af_error(af_t('e_escribir', array('archivo' => $temporal)));
+    }
+    $parcial = $temporal.'/paquete.zip.parte';
+    $pedazo = $temporal.'/paquete.zip.pedazo';
+    clearstatcache(true, $parcial);
+    $llevamos = is_file($parcial) ? (float) filesize($parcial) : 0.0;
+    $inicio = microtime(true);
+    $limite = af_segundos_por_tanda();
+    $total = 0.0;
+
+    do {
+        $respuesta = af_pedir_rango($llevamos, $llevamos + 8388607, $pedazo);
+        if (isset($respuesta['error'])) {
+            @unlink($pedazo);
+
+            return af_error($respuesta['error']);
+        }
+        $total = $respuesta['total'];
+        if ($total > AF_TAMANO_MAXIMO) {
+            @unlink($pedazo);
+
+            return af_error(af_t('e_paquete_zip'));
+        }
+        if ($respuesta['codigo'] === 416) {
+            @unlink($pedazo);
+            break;
+        }
+        // Un servidor que no entiende de rangos manda todo el archivo: ese ya es el resultado.
+        if ($respuesta['codigo'] === 200) {
+            @unlink($parcial);
+            $llevamos = 0.0;
+        }
+        $entrada = @fopen($pedazo, 'rb');
+        $salida = @fopen($parcial, 'ab');
+        if ($entrada === false || $salida === false) {
+            return af_error(af_t('e_escribir', array('archivo' => $parcial)));
+        }
+        stream_copy_to_stream($entrada, $salida);
+        fclose($entrada);
+        fclose($salida);
+        @unlink($pedazo);
+        $llevamos += $respuesta['recibidos'];
+    } while ($llevamos < $total && $respuesta['recibidos'] > 0 && microtime(true) - $inicio < $limite);
+
+    if ($llevamos >= $total && $total > 0) {
+        if (! @rename($parcial, af_ruta_paquete())) {
+            return af_error(af_t('e_escribir', array('archivo' => af_ruta_paquete())));
+        }
+
+        return array('ok' => true, 'llevamos' => $llevamos, 'total' => $total, 'terminado' => true);
+    }
+
+    return array('ok' => true, 'llevamos' => $llevamos, 'total' => $total);
+}
+
+/**
+ * Una parte del zip que la persona sube desde su computadora. Lo que se arma no vale hasta comprobar su firma.
+ */
+function af_subir_parte($entrada)
+{
+    @set_time_limit(120);
+    $indice = isset($entrada['indice']) ? (int) $entrada['indice'] : -1;
+    $total = isset($entrada['total']) ? (int) $entrada['total'] : 0;
+    $archivo = isset($_FILES['parte']['tmp_name']) ? (string) $_FILES['parte']['tmp_name'] : '';
+    if ($indice < 0 || $total < 1 || $indice >= $total || $total > ceil(AF_TAMANO_MAXIMO / AF_TAMANO_PARTE)
+        || $archivo === '' || ! is_uploaded_file($archivo) || filesize($archivo) > AF_TAMANO_PARTE) {
+        return af_error(af_t('e_subida', array('parte' => $indice + 1)));
+    }
+    $temporal = af_temporal();
+    if (! is_dir($temporal) && ! @mkdir($temporal, 0755, true)) {
+        return af_error(af_t('e_escribir', array('archivo' => $temporal)));
+    }
+    $parcial = $temporal.'/paquete.zip.parte';
+    clearstatcache(true, $parcial);
+    $llevamos = is_file($parcial) ? (int) filesize($parcial) : 0;
+    $esperado = $indice * AF_TAMANO_PARTE;
+    if ($indice === 0 && $llevamos > 0) {
+        @unlink($parcial);
+        $llevamos = 0;
+    }
+    if ($llevamos === $esperado) {
+        if (@file_put_contents($parcial, (string) file_get_contents($archivo), FILE_APPEND | LOCK_EX) === false) {
+            return af_error(af_t('e_escribir', array('archivo' => $parcial)));
+        }
+    } elseif ($llevamos !== $esperado + filesize($archivo)) {
+        return af_error(af_t('e_subida', array('parte' => $indice + 1)));
+    }
+    if ($indice === $total - 1) {
+        if (! @rename($parcial, af_ruta_paquete())) {
+            return af_error(af_t('e_escribir', array('archivo' => af_ruta_paquete())));
+        }
+
+        return array('ok' => true, 'terminado' => true);
+    }
+
+    return array('ok' => true);
+}
+
+/**
+ * Si el servidor puede salir a internet: pide un byte, para no gastar nada en un hosting lento.
+ */
+function af_se_puede_descargar()
+{
+    if (! function_exists('curl_init') || strpos(AF_URL_PAQUETE, 'http') !== 0) {
+        return false;
+    }
+    $curl = curl_init(AF_URL_PAQUETE);
+    curl_setopt_array($curl, array(
+        CURLOPT_RANGE => '0-0',
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS => 5,
+        CURLOPT_CONNECTTIMEOUT => 6,
+        CURLOPT_TIMEOUT => 10,
+        CURLOPT_USERAGENT => 'AlojaFlow-instalador/'.AF_VERSION,
+        CURLOPT_WRITEFUNCTION => function ($manejador, $datos) {
+            return strlen($datos);
+        },
+    ));
+    curl_exec($curl);
+    $codigo = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    curl_close($curl);
+
+    return $codigo === 200 || $codigo === 206;
+}
+
 /**
  * Deja el zip en la carpeta temporal (sale de este mismo archivo o de uno junto a él) y comprueba
- * su firma antes de copiar nada.
+ * su firma antes de copiar nada. Si no hay zip, dice que falta: lo trae `descargar` o `subir_parte`.
  */
 function af_preparar()
 {
@@ -664,7 +947,7 @@ function af_preparar()
 
     if (! is_file($paquete)) {
         $origen = @fopen(__FILE__, 'rb');
-        $hay = $origen !== false && filesize(__FILE__) - __COMPILER_HALT_OFFSET__ > 1024;
+        $hay = $origen !== false && af_trae_paquete_dentro();
         if ($hay) {
             fseek($origen, __COMPILER_HALT_OFFSET__);
             $salida = @fopen($paquete, 'wb');
@@ -680,7 +963,7 @@ function af_preparar()
         if (! $hay) {
             $junto = AF_AQUI.'/alojaflow-'.AF_VERSION.'.zip';
             if (! is_file($junto)) {
-                return af_error(af_t('e_paquete_falta', array('version' => AF_VERSION)));
+                return array('ok' => true, 'falta' => true);
             }
             if (! @copy($junto, $paquete)) {
                 return af_error(af_t('e_escribir', array('archivo' => $paquete)));
@@ -884,6 +1167,7 @@ function af_configurar($entrada)
         return $prueba;
     }
     $datos = af_datos_base($entrada);
+    $datos['servidor'] = $prueba['servidor'];
     $plantilla = @file_get_contents($destino.'/.env.example');
     if ($plantilla === false) {
         return af_error(af_t('e_paquete_archivo', array('archivo' => '.env.example')));
@@ -1013,12 +1297,12 @@ function af_terminar()
 {
     $destino = af_destino();
     $instalador = af_instalador_laravel();
-    $instalador->terminar();
+    $enlace = $instalador->terminar(af_php_consola());
     af_borrar_carpeta(af_temporal());
 
     $borrado = @unlink(__FILE__);
-    // Si el dominio se apuntó a public/ a mitad de camino, queda otra copia en la carpeta de arriba.
-    foreach (array($destino.'/'.basename(__FILE__), $destino.'/public/'.basename(__FILE__)) as $copia) {
+    // Si el dominio se apuntó a public/ a mitad de camino, queda otra copia en la carpeta de arriba. Y el zip, si se subió a mano.
+    foreach (array($destino.'/'.basename(__FILE__), $destino.'/public/'.basename(__FILE__), AF_AQUI.'/alojaflow-'.AF_VERSION.'.zip') as $copia) {
         if (is_file($copia)) {
             @unlink($copia);
         }
@@ -1028,8 +1312,7 @@ function af_terminar()
         'ok' => true,
         'borrado' => $borrado,
         'archivo' => basename(__FILE__),
-        'url' => af_url_base().'/',
-        'cron' => 'cd '.$destino.' && '.af_php_consola().' artisan schedule:run',
+        'url' => $enlace !== '' ? $enlace : af_url_base().'/',
     );
 }
 
@@ -1054,7 +1337,8 @@ function af_responder($datos)
 function af_atender_accion()
 {
     ob_start();
-    $entrada = json_decode((string) file_get_contents('php://input'), true);
+    // Las partes del zip llegan como formulario, porque llevan un archivo; lo demás, en JSON.
+    $entrada = isset($_POST['accion']) ? $_POST : json_decode((string) file_get_contents('php://input'), true);
     if (! is_array($entrada)) {
         $entrada = array();
     }
@@ -1078,12 +1362,13 @@ function af_atender_accion()
             case 'probar_base':
                 $admin = af_validar_admin($entrada);
                 $base = af_probar_base($entrada);
-                if (! $base['ok']) {
-                    af_responder($base);
-                }
-                af_responder($admin);
+                af_responder($base['ok'] && ! $admin['ok'] ? $admin : $base);
             case 'preparar':
                 af_responder(af_preparar());
+            case 'descargar':
+                af_responder(af_descargar());
+            case 'subir_parte':
+                af_responder(af_subir_parte($entrada));
             case 'extraer':
                 af_responder(af_extraer(isset($entrada['desde']) ? (int) $entrada['desde'] : 0));
             case 'proteger':
@@ -1140,6 +1425,7 @@ h1{font-size:1.4rem;margin:0}
 .pasos li.activo{border-color:var(--verde);color:var(--tinta);font-weight:600}
 .pasos li.hecho{border-color:var(--verde)}
 .tarjeta{background:var(--tarjeta);border:1px solid var(--borde);border-radius:12px;padding:20px;margin-bottom:16px}
+#analisis-resumen{margin:0 0 16px}
 h2{font-size:1.05rem;margin:0 0 4px}
 .ayuda{color:var(--gris);font-size:.875rem;margin:0 0 12px}
 .fila{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--borde)}
@@ -1172,7 +1458,14 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .tareas li.activa{color:var(--tinta);font-weight:600}
 .tareas li.hecha{color:var(--tinta)}
 .tareas li.hecha::before{content:"✓ ";color:#15803d;font-weight:700}
-code.comando{display:block;padding:12px;border-radius:8px;background:var(--fondo);border:1px solid var(--borde);font-size:.8125rem;word-break:break-all;margin:8px 0}
+details{margin:12px 0 0;font-size:.875rem}
+summary{cursor:pointer;min-height:24px;font-weight:600;color:var(--verde)}
+details p{margin:8px 0 0}
+.enlace{display:inline;min-height:0;padding:0;border:0;background:none;color:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
+.manual{margin-top:16px;padding-top:12px;border-top:1px solid var(--borde);font-size:.9375rem}
+.manual ol{margin:8px 0;padding-left:20px}
+.manual li{margin:8px 0}
+input[type=file]{max-width:100%;font:inherit;margin:8px 0}
 [hidden]{display:none!important}
 CSS;
 }
@@ -1195,14 +1488,14 @@ function af_pagina_simple($titulo, $texto, $codigo = 200)
 function af_pagina()
 {
     $textosJs = array();
-    foreach (array('analizando', 'analisis_ok', 'analisis_avisos', 'analisis_error', 'probando_base', 'p_preparar', 'p_extraer', 'p_proteger', 'p_configurar', 'p_migrar', 'p_admin', 'p_demo', 'p_comprobar', 'p_terminar', 'error_red', 'reintentar', 'copiar', 'copiado', 'no_borrado', 'e_protegida', 'e_htaccess', 'e_no_abre') as $clave) {
+    foreach (array('analizando', 'analisis_ok', 'analisis_avisos', 'analisis_error', 'probando_base', 'p_preparar', 'p_descargando', 'p_subiendo', 'p_extraer', 'p_proteger', 'p_configurar', 'p_migrar', 'p_admin', 'p_demo', 'p_comprobar', 'p_terminar', 'error_red', 'reintentar', 'no_borrado', 'e_protegida', 'e_htaccess', 'e_no_abre') as $clave) {
         $textosJs[$clave] = af_t($clave);
     }
     header('Content-Type: text/html; charset=utf-8');
     header('Cache-Control: no-store');
     header('X-Robots-Tag: noindex');
     header('X-Frame-Options: DENY');
-    $servidorPorOmision = 'localhost'; ?>
+    ?>
 <!doctype html>
 <html lang="<?php echo af_idioma(); ?>">
 <head>
@@ -1235,25 +1528,37 @@ function af_pagina()
     </section>
 
     <form id="vista-datos" hidden novalidate>
+        <p class="mensaje bien" id="analisis-resumen" role="status" hidden><span id="analisis-resumen-texto"></span> <button type="button" class="enlace" id="ver-analisis"><?php echo af_h(af_t('analisis_detalle')); ?></button></p>
         <section class="tarjeta">
             <h2><?php echo af_h(af_t('base_titulo')); ?></h2>
             <p class="ayuda"><?php echo af_h(af_t('base_ayuda')); ?></p>
-            <div class="doble">
-                <div>
-                    <label for="servidor"><?php echo af_h(af_t('base_servidor')); ?> <small><?php echo af_h(af_t('base_servidor_ayuda')); ?></small></label>
-                    <input type="text" id="servidor" name="servidor" value="<?php echo af_h($servidorPorOmision); ?>" autocomplete="off" required>
-                </div>
-                <div>
-                    <label for="puerto"><?php echo af_h(af_t('base_puerto')); ?></label>
-                    <input type="number" id="puerto" name="puerto" value="3306" min="1" max="65535">
-                </div>
-            </div>
+            <details>
+                <summary><?php echo af_h(af_t('guia_titulo')); ?></summary>
+                <p><?php echo af_h(af_t('guia_general')); ?></p>
+                <p><?php echo af_h(af_t('guia_cpanel')); ?></p>
+                <p><?php echo af_h(af_t('guia_dreamhost')); ?></p>
+                <p><?php echo af_h(af_t('guia_hostinger')); ?></p>
+                <p><?php echo af_h(af_t('guia_plesk')); ?></p>
+            </details>
             <label for="base"><?php echo af_h(af_t('base_nombre')); ?></label>
             <input type="text" id="base" name="base" autocomplete="off" required>
             <label for="usuario"><?php echo af_h(af_t('base_usuario')); ?></label>
             <input type="text" id="usuario" name="usuario" autocomplete="off" required>
             <label for="contrasena"><?php echo af_h(af_t('base_contrasena')); ?></label>
             <input type="password" id="contrasena" name="contrasena" autocomplete="new-password">
+            <details id="avanzado">
+                <summary><?php echo af_h(af_t('base_avanzado')); ?></summary>
+                <div class="doble">
+                    <div>
+                        <label for="servidor"><?php echo af_h(af_t('base_servidor')); ?> <small><?php echo af_h(af_t('base_servidor_ayuda')); ?></small></label>
+                        <input type="text" id="servidor" name="servidor" autocomplete="off">
+                    </div>
+                    <div>
+                        <label for="puerto"><?php echo af_h(af_t('base_puerto')); ?></label>
+                        <input type="number" id="puerto" name="puerto" value="3306" min="1" max="65535">
+                    </div>
+                </div>
+            </details>
         </section>
         <section class="tarjeta">
             <h2><?php echo af_h(af_t('admin_titulo')); ?></h2>
@@ -1281,6 +1586,18 @@ function af_pagina()
         <ul class="tareas" id="tareas"></ul>
         <div id="progreso-error" hidden>
             <p class="mensaje error" role="alert" id="progreso-mensaje"></p>
+            <div class="manual" id="manual" hidden>
+                <strong><?php echo af_h(af_t('manual_titulo')); ?></strong>
+                <ol>
+                    <li><?php echo af_h(af_t('manual_paso1')); ?> <a href="<?php echo af_h(AF_URL_PAQUETE); ?>" rel="noopener noreferrer"><?php echo af_h('alojaflow-'.AF_VERSION.'.zip'); ?></a></li>
+                    <li><?php echo af_h(af_t('manual_paso2')); ?><br>
+                        <input type="file" id="manual-archivo" accept=".zip,application/zip" aria-label="<?php echo af_h('alojaflow-'.AF_VERSION.'.zip'); ?>">
+                        <button type="button" id="manual-subir"><?php echo af_h(af_t('manual_subir')); ?></button>
+                        <span id="manual-estado" role="status"></span>
+                    </li>
+                    <li><?php echo af_h(af_t('manual_paso3')); ?></li>
+                </ol>
+            </div>
             <div class="acciones"><button type="button" id="reintentar"><?php echo af_h(af_t('reintentar')); ?></button></div>
         </div>
     </section>
@@ -1290,14 +1607,7 @@ function af_pagina()
             <h2><?php echo af_h(af_t('listo_titulo')); ?></h2>
             <p><?php echo af_h(af_t('listo_texto')); ?></p>
             <p class="mensaje error" id="no-borrado" hidden></p>
-            <div class="acciones"><a class="boton" id="entrar" href="./"><?php echo af_h(af_t('entrar')); ?></a></div>
-        </div>
-        <div class="tarjeta">
-            <h2><?php echo af_h(af_t('cron_titulo')); ?></h2>
-            <p class="ayuda"><?php echo af_h(af_t('cron_texto')); ?></p>
-            <code class="comando" id="cron"></code>
-            <div class="acciones"><button type="button" class="secundario" id="copiar"><?php echo af_h(af_t('copiar')); ?></button></div>
-            <p class="ayuda" style="margin-top:12px"><?php echo af_h(af_t('cron_sin')); ?></p>
+            <div class="acciones"><a class="boton" id="entrar" href="./" rel="noreferrer"><?php echo af_h(af_t('entrar')); ?></a></div>
         </div>
     </section>
 </main>
@@ -1331,7 +1641,8 @@ function af_pagina()
         window.scrollTo(0, 0);
     }
 
-    function analizar() {
+    // Solo se detiene aquí si hay algo en rojo: lo demás se puede atender después.
+    function analizar(avanzar) {
         $('analisis-estado').textContent = T.analizando;
         $('continuar').disabled = true;
         llamar('analizar').then(function (r) {
@@ -1360,11 +1671,17 @@ function af_pagina()
             if (r.error) { $('analisis-estado').textContent = r.error; return; }
             $('analisis-estado').textContent = !r.puede ? T.analisis_error : (r.avisos ? T.analisis_avisos : T.analisis_ok);
             $('continuar').disabled = !r.puede;
+            if (r.puede) {
+                $('analisis-resumen-texto').textContent = r.avisos ? T.analisis_avisos : T.analisis_ok;
+                $('analisis-resumen').hidden = false;
+                if (avanzar) { pasoActivo(1); mostrar('vista-datos'); }
+            }
         }).catch(function (e) { $('analisis-estado').textContent = e.message; });
     }
-    $('reanalizar').addEventListener('click', analizar);
+    $('reanalizar').addEventListener('click', function () { analizar(false); });
     $('continuar').addEventListener('click', function () { pasoActivo(1); mostrar('vista-datos'); });
     $('atras').addEventListener('click', function () { pasoActivo(0); mostrar('vista-analisis'); });
+    $('ver-analisis').addEventListener('click', function () { pasoActivo(0); mostrar('vista-analisis'); });
 
     $('vista-datos').addEventListener('submit', function (ev) {
         ev.preventDefault();
@@ -1380,9 +1697,11 @@ function af_pagina()
             if (!r.ok) {
                 error.textContent = r.error;
                 error.hidden = false;
+                if (r.campo === 'servidor') { $('avanzado').open = true; }
                 if (r.campo && form.elements[r.campo]) { form.elements[r.campo].classList.add('mal'); form.elements[r.campo].focus(); }
                 return;
             }
+            datos.servidor = r.servidor;
             pasoActivo(2);
             mostrar('vista-progreso');
             iniciar();
@@ -1396,7 +1715,7 @@ function af_pagina()
     var tareas = [];
     function preparaTareas() {
         tareas = [
-            ['p_preparar', function () { return exigir(llamar('preparar')).then(function (r) { totalArchivos = r.total; }); }],
+            ['p_preparar', conseguirPaquete],
             ['p_extraer', function () { return extraer(0); }],
             ['p_proteger', proteger],
             ['p_configurar', function () { return exigir(llamar('configurar', datos)); }],
@@ -1415,9 +1734,57 @@ function af_pagina()
     function exigir(promesa) {
         return promesa.then(function (r) { if (!r.ok) { throw new Error(r.error); } return r; });
     }
+    function conseguirPaquete() {
+        return exigir(llamar('preparar')).then(function (r) {
+            if (!r.falta) { totalArchivos = r.total; $('tarea-0').textContent = T.p_preparar; return; }
+            return descargar().then(conseguirPaquete);
+        });
+    }
+    // Cada petición baja lo que cabe en el límite de tiempo del hosting. Si falla, se ofrece subirlo a mano.
+    function descargar() {
+        return llamar('descargar').then(function (r) {
+            if (!r.ok) { var e = new Error(r.error); e.manual = true; throw e; }
+            if (r.terminado) { return; }
+            $('tarea-0').textContent = T.p_descargando + ' (' + Math.round(100 * r.llevamos / r.total) + ' %)';
+            return descargar();
+        }, function (error) { error.manual = true; throw error; });
+    }
+    function subirManual() {
+        var archivo = $('manual-archivo').files[0];
+        if (!archivo) { return; }
+        var parte = <?php echo (int) AF_TAMANO_PARTE; ?>;
+        var total = Math.max(1, Math.ceil(archivo.size / parte));
+        $('manual-subir').disabled = true;
+        function siguiente(indice) {
+            if (indice >= total) { return Promise.resolve(); }
+            $('manual-estado').textContent = T.p_subiendo + ' (' + Math.round(100 * indice / total) + ' %)';
+            var formulario = new FormData();
+            formulario.append('accion', 'subir_parte');
+            formulario.append('indice', indice);
+            formulario.append('total', total);
+            formulario.append('parte', archivo.slice(indice * parte, (indice + 1) * parte), 'parte.bin');
+            return fetch(location.pathname, {method: 'POST', headers: {'X-AlojaFlow': '1'}, credentials: 'same-origin', body: formulario})
+                .then(function (r) { return r.text(); })
+                .then(function (t) {
+                    var r;
+                    try { r = JSON.parse(t); } catch (e) { throw new Error(reemplazar(T.error_red, {detalle: ''})); }
+                    if (!r.ok) { throw new Error(r.error); }
+                    return siguiente(indice + 1);
+                });
+        }
+        siguiente(0).then(function () {
+            $('manual-estado').textContent = '';
+            $('manual').hidden = true;
+            $('progreso-error').hidden = true;
+            correr();
+        }).catch(function (e) {
+            $('manual-estado').textContent = e.message;
+        }).then(function () { $('manual-subir').disabled = false; });
+    }
+    $('manual-subir').addEventListener('click', subirManual);
     function extraer(desde) {
         return exigir(llamar('extraer', {desde: desde})).then(function (r) {
-            if (r.terminado) { desdeArchivo = 0; return; }
+            if (r.terminado) { desdeArchivo = 0; $('tarea-1').textContent = T.p_extraer; return; }
             desdeArchivo = r.siguiente;
             $('tarea-1').textContent = T.p_extraer + ' (' + Math.round(100 * r.siguiente / r.total) + ' %)';
             return extraer(r.siguiente);
@@ -1454,7 +1821,6 @@ function af_pagina()
     }
     function terminar() {
         return exigir(llamar('terminar')).then(function (r) {
-            $('cron').textContent = r.cron;
             $('entrar').href = r.url;
             if (!r.borrado) { $('no-borrado').textContent = reemplazar(T.no_borrado, {archivo: r.archivo}); $('no-borrado').hidden = false; }
         });
@@ -1477,6 +1843,7 @@ function af_pagina()
             $('progreso-mensaje').textContent = e.message;
             $('progreso-error').hidden = false;
             $('reintentar').hidden = !!e.final;
+            $('manual').hidden = !e.manual;
         });
     }
     function iniciar() {
@@ -1493,10 +1860,7 @@ function af_pagina()
         }
         correr();
     });
-    $('copiar').addEventListener('click', function () {
-        if (navigator.clipboard) { navigator.clipboard.writeText($('cron').textContent).then(function () { $('copiar').textContent = T.copiado; }); }
-    });
-    analizar();
+    analizar(true);
 })();
 </script>
 </body>

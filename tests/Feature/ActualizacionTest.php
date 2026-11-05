@@ -13,6 +13,7 @@ use App\Actualizacion\Aplicador;
 use App\Actualizacion\CopiaBaseDatos;
 use App\Actualizacion\ErrorActualizacion;
 use App\Actualizacion\Revisor;
+use App\Actualizacion\SubidaPorPartes;
 use App\Enums\EstadoActualizacion;
 use App\Filament\Pages\Actualizaciones;
 use App\Models\Actualizacion;
@@ -243,7 +244,7 @@ it('en mantenimiento, el administrador ve en todas las pantallas el aviso para t
         'version_anterior' => '1.0.1', 'version_nueva' => '1.0.2', 'estado' => EstadoActualizacion::ArchivosAplicados,
         'paquete' => 'alojaflow-1.0.2.zip', 'paquete_sha256' => str_repeat('0', 64),
     ]);
-    $this->actingAs(User::factory()->create(['es_administrador' => true, 'activo' => true, 'idioma' => 'es']));
+    $this->actingAs(User::factory()->create(['es_administrador' => true, 'es_superadministrador' => true, 'activo' => true, 'idioma' => 'es']));
     expect((string) PanelAplicacionProvider::avisoActualizacionSinTerminar())->toBe('');
 
     app()->maintenanceMode()->activate([]);
@@ -256,7 +257,7 @@ it('en mantenimiento, el administrador ve en todas las pantallas el aviso para t
 it('el administrador actualiza desde el panel en dos peticiones', function () {
     ($this->fingirArtisan)();
     ($this->subir)('1.0.2', $this->version102);
-    $admin = User::factory()->create(['es_administrador' => true, 'activo' => true, 'idioma' => 'es']);
+    $admin = User::factory()->create(['es_administrador' => true, 'es_superadministrador' => true, 'activo' => true, 'idioma' => 'es']);
     $actualizacion = app(Actualizador::class)->preparar('alojaflow-1.0.2.zip', false, $admin);
     $aplicar = URL::temporarySignedRoute('actualizaciones.aplicar', now()->addMinutes(30), ['actualizacion' => $actualizacion->id]);
 
@@ -284,7 +285,7 @@ it('solo el administrador entra en Actualizaciones, revisa y elimina paquetes', 
     ($this->subir)('1.0.2', $this->version102);
     $this->actingAs(User::factory()->create(['activo' => true]))->get(Actualizaciones::getUrl())->assertForbidden();
 
-    $admin = User::factory()->create(['es_administrador' => true, 'activo' => true, 'idioma' => 'es']);
+    $admin = User::factory()->create(['es_administrador' => true, 'es_superadministrador' => true, 'activo' => true, 'idioma' => 'es']);
     $this->actingAs($admin)->get(Actualizaciones::getUrl())->assertOk()->assertSee('alojaflow-1.0.2.zip');
 
     Livewire::actingAs($admin)->test(Actualizaciones::class)
@@ -304,16 +305,68 @@ it('el zip subido desde el panel queda en la carpeta de entrada con un nombre se
     $zip->addFromString('alojaflow-1.0.9/LEEME.txt', 'contenido');
     $zip->close();
     $contenido = (string) file_get_contents($this->tmp.'/subido.zip');
-    $admin = User::factory()->create(['es_administrador' => true, 'activo' => true, 'idioma' => 'es']);
+    $admin = User::factory()->create(['es_administrador' => true, 'es_superadministrador' => true, 'activo' => true, 'idioma' => 'es']);
 
-    Livewire::actingAs($admin)->test(Actualizaciones::class)
-        ->set('subida.archivo', UploadedFile::fake()->createWithContent('alojaflow 1.0.9 (copia).zip', $contenido))
-        ->call('subir')
-        ->assertHasNoErrors()
-        ->assertSet('paquete', 'alojaflow-1.0.9-copia.zip');
+    $total = (int) ceil(strlen($contenido) / SubidaPorPartes::TAMANO_PARTE);
+    $subida = bin2hex(random_bytes(16));
+
+    $this->actingAs($admin);
+    $respuesta = $this->post(route('actualizaciones.subir-parte'), [
+        'subida' => $subida, 'nombre' => 'alojaflow 1.0.9 (copia).zip', 'indice' => 0, 'total' => $total,
+        'parte' => UploadedFile::fake()->createWithContent('parte.bin', $contenido),
+    ]);
+    $respuesta->assertOk()->assertJson(['ok' => true, 'paquete' => 'alojaflow-1.0.9-copia.zip']);
 
     expect(file_get_contents($this->datos.'/entrada/alojaflow-1.0.9-copia.zip'))->toBe($contenido)
         ->and(app(Actualizador::class)->paquetesDisponibles())->toBe(['alojaflow-1.0.9-copia.zip']);
+
+    // Terminar de subir revisa sin otro clic.
+    Livewire::actingAs($admin)->test(Actualizaciones::class)
+        ->call('subidaTerminada', 'alojaflow-1.0.9-copia.zip')
+        ->assertSet('paquete', 'alojaflow-1.0.9-copia.zip')
+        ->assertNotSet('revision', null);
+});
+
+it('arma el zip por partes, en orden, y volver a mandar una parte no la duplica', function () {
+    $tamano = SubidaPorPartes::TAMANO_PARTE;
+    $contenido = str_repeat('a', $tamano).str_repeat('b', $tamano).'final';
+    $admin = User::factory()->create(['es_administrador' => true, 'es_superadministrador' => true, 'activo' => true, 'idioma' => 'es']);
+    $this->actingAs($admin);
+    $subida = bin2hex(random_bytes(16));
+    $mandar = fn (int $indice, string $datos) => $this->post(route('actualizaciones.subir-parte'), [
+        'subida' => $subida, 'nombre' => 'alojaflow-1.0.9.zip', 'indice' => $indice, 'total' => 3,
+        'parte' => UploadedFile::fake()->createWithContent('parte.bin', $datos),
+    ]);
+
+    // La segunda sin la primera no entra.
+    $mandar(1, str_repeat('b', $tamano))->assertStatus(422)->assertJson(['ok' => false]);
+    $mandar(0, str_repeat('a', $tamano))->assertOk()->assertJson(['ok' => true, 'paquete' => null]);
+    // Se perdió la respuesta y el navegador la repite: no se duplica.
+    $mandar(0, str_repeat('a', $tamano))->assertOk()->assertJson(['ok' => true, 'paquete' => null]);
+    $mandar(1, str_repeat('b', $tamano))->assertOk();
+    $mandar(2, 'final')->assertOk()->assertJson(['ok' => true, 'paquete' => 'alojaflow-1.0.9.zip']);
+    // Se perdió la respuesta de la última: el zip ya está armado.
+    $mandar(2, 'final')->assertOk()->assertJson(['ok' => true, 'paquete' => 'alojaflow-1.0.9.zip']);
+
+    expect(file_get_contents($this->datos.'/entrada/alojaflow-1.0.9.zip'))->toBe($contenido);
+});
+
+it('rechaza partes más grandes de lo acordado y subidas con identificador raro', function () {
+    $admin = User::factory()->create(['es_administrador' => true, 'es_superadministrador' => true, 'activo' => true, 'idioma' => 'es']);
+    $this->actingAs($admin);
+    $grande = UploadedFile::fake()->createWithContent('parte.bin', str_repeat('x', SubidaPorPartes::TAMANO_PARTE + 1));
+    $this->post(route('actualizaciones.subir-parte'), ['subida' => bin2hex(random_bytes(16)), 'nombre' => 'a.zip', 'indice' => 0, 'total' => 1, 'parte' => $grande])
+        ->assertStatus(422);
+    $this->post(route('actualizaciones.subir-parte'), ['subida' => '../../x', 'nombre' => 'a.zip', 'indice' => 0, 'total' => 1, 'parte' => UploadedFile::fake()->createWithContent('parte.bin', 'x')])
+        ->assertStatus(422);
+});
+
+it('solo el super administrador sube partes y abre la pantalla', function () {
+    $admin = User::factory()->create(['es_administrador' => true, 'activo' => true, 'idioma' => 'es']);
+    $this->actingAs($admin);
+    $this->post(route('actualizaciones.subir-parte'), ['subida' => bin2hex(random_bytes(16)), 'nombre' => 'a.zip', 'indice' => 0, 'total' => 1, 'parte' => UploadedFile::fake()->createWithContent('parte.bin', 'x')])
+        ->assertForbidden();
+    $this->get(Actualizaciones::getUrl())->assertForbidden();
 });
 
 it('alojaflow:limpiar solo guarda las copias de las últimas actualizaciones', function () {

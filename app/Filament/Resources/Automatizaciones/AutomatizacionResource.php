@@ -19,6 +19,7 @@ use App\Filament\Resources\Automatizaciones\Pages\ListAutomatizaciones;
 use App\Filament\Resources\Base\RecursoDeCualquierPropiedad;
 use App\Models\Automatizacion;
 use App\Models\Plantilla;
+use App\Modulos\Modulo;
 use App\Seguridad\Acceso;
 use BackedEnum;
 use Filament\Actions\EditAction;
@@ -47,6 +48,11 @@ class AutomatizacionResource extends RecursoDeCualquierPropiedad
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBolt;
 
     protected static ?int $navigationSort = 3;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Mensajes;
+    }
 
     protected static function permiso(): string
     {

@@ -14,6 +14,9 @@ use App\Demo\ModoDemo;
 use App\Filament\Concerns\ConPropiedadSeleccionada;
 use App\Models\Aviso;
 use App\Models\Propiedad;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
+use App\Modulos\PrimerosPasos;
 use App\Seguridad\Acceso;
 use App\Servicios\Operacion;
 use BackedEnum;
@@ -40,6 +43,16 @@ class Resumen extends Dashboard
     protected static function permiso(): string
     {
         return Acceso::OPERACION;
+    }
+
+    /**
+     * Quien instaló entra por primera vez: primero las preguntas (D-069).
+     */
+    public function mount(): void
+    {
+        if (Modulos::faltanPreguntas() && Acceso::esSuper(Acceso::usuarioActual())) {
+            $this->redirect(PrimerasPreguntas::getUrl());
+        }
     }
 
     public function atenderAviso(int $id): void
@@ -83,6 +96,29 @@ class Resumen extends Dashboard
     {
         return Propiedad::query()->with('principal')->whereIn('id', $this->propiedadesVisibles())->orderBy('nombre')->get()
             ->map(fn (Propiedad $p): array => Operacion::resumen($p))->values()->all();
+    }
+
+    /**
+     * @return list<array{clave: string, hecho: bool, url: string|null, comando: string|null}>
+     */
+    public function primerosPasos(): array
+    {
+        return PrimerosPasos::mostrar(Acceso::usuarioActual());
+    }
+
+    public function ocultarPrimerosPasos(): void
+    {
+        if (Acceso::usuarioActual()?->es_administrador) {
+            PrimerosPasos::ocultar();
+        }
+    }
+
+    /**
+     * @return list<Modulo>
+     */
+    public function modulosNuevos(): array
+    {
+        return Acceso::esSuper(Acceso::usuarioActual()) ? Modulos::nuevos() : [];
     }
 
     public function puedeConfigurar(): bool

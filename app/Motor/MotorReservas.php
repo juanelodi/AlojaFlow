@@ -23,6 +23,8 @@ use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Tarifa;
 use App\Models\Unidad;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Reservas\Cotizador;
 use App\Reservas\Cupones;
 use App\Reservas\GestorReservas;
@@ -149,7 +151,7 @@ final class MotorReservas
         }
 
         $cupon = null;
-        if (filled($datos['cupon'])) {
+        if (filled($datos['cupon']) && Modulos::activo(Modulo::Cupones)) {
             $cupon = Cupones::buscar($propiedad->id, $datos['cupon']);
             // Un solo mensaje: el formulario es público y no debe servir para probar qué códigos existen.
             if ($cupon === null || Cupones::motivoRechazo($cupon, $llegada, (int) $llegada->diffInDays($salida)) !== null) {

@@ -28,11 +28,13 @@
 
         <form wire:submit="guardar" class="af-pila">
             {{ $this->form }}
-            <p class="af-aviso">{{ __('motor.panel.sin_verificar') }}</p>
-            <p class="af-nota">
-                {{ __('motor.panel.avisos_url', ['url' => $this->urlAviso('stripe')]) }}<br>
-                {{ __('motor.panel.avisos_url', ['url' => $this->urlAviso('mercadopago')]) }}
-            </p>
+            @if (\App\Modulos\Modulos::activo(\App\Modulos\Modulo::Pagos))
+                <p class="af-aviso">{{ __('motor.panel.sin_verificar') }}</p>
+                <p class="af-nota">
+                    {{ __('motor.panel.avisos_url', ['url' => $this->urlAviso('stripe')]) }}<br>
+                    {{ __('motor.panel.avisos_url', ['url' => $this->urlAviso('mercadopago')]) }}
+                </p>
+            @endif
             <div><x-filament::button type="submit">{{ __('filament-panels::resources/pages/edit-record.form.actions.save.label') }}</x-filament::button></div>
         </form>
     </div>

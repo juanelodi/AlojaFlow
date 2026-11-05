@@ -13,6 +13,7 @@ namespace App\Filament\Pages;
 use App\Filament\Concerns\ConPropiedadSeleccionada;
 use App\Models\CierreDia as ModeloCierre;
 use App\Models\Propiedad;
+use App\Modulos\Modulo;
 use App\Seguridad\Acceso;
 use App\Servicios\CierreDelDia;
 use App\Servicios\Operacion;
@@ -45,6 +46,11 @@ class CierreDia extends Page
 
     #[Url]
     public ?string $fecha = null;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Caja;
+    }
 
     protected static function permiso(): string
     {

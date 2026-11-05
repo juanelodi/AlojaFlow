@@ -113,7 +113,14 @@ echo '  contraseñas distintas: '.($r['ok'] ? 'ACEPTADA' : $r['error'])."\n";
 
 echo "Instalación\n";
 exigir('probar_base', $bd + $administrador);
-exigir('preparar');
+$preparado = exigir('preparar');
+if ($preparado['falta'] ?? false) {
+    do {
+        $bajando = exigir('descargar');
+        printf("  %.0f de %.0f MB\n", $bajando['llevamos'] / 1048576, $bajando['total'] / 1048576);
+    } while (! ($bajando['terminado'] ?? false));
+    exigir('preparar');
+}
 $desde = 0;
 $inicio = microtime(true);
 do {
@@ -140,7 +147,12 @@ if ($estado !== 200) {
 }
 $fin = exigir('terminar');
 echo '  instalador borrado: '.($fin['borrado'] ? 'sí' : 'NO')."\n";
-echo '  cron: '.$fin['cron']."\n";
+echo '  enlace de entrada: '.$fin['url']."\n";
+[$estado] = peticion($fin['url'], null, $galleta);
+echo "  entrar con el enlace: $estado\n";
+[$estado] = peticion($fin['url'], null, $galleta.'.otra');
+echo "  otra vez con el mismo enlace (a iniciar sesión): $estado\n";
+@unlink($galleta.'.otra');
 
 echo "Después de instalar\n";
 foreach (['/', '/login', '/up', '/css/filament/filament/app.css', '/'.$archivo, '/codigo-fuente'] as $ruta) {

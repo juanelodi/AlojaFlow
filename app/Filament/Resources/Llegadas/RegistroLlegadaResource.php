@@ -15,6 +15,7 @@ use App\Filament\Resources\Base\RecursoDeCualquierPropiedad;
 use App\Filament\Resources\Llegadas\Pages\ListLlegadas;
 use App\Filament\Resources\Llegadas\Pages\ViewLlegada;
 use App\Models\RegistroLlegada;
+use App\Modulos\Modulo;
 use App\Seguridad\Acceso;
 use App\Support\Formato;
 use BackedEnum;
@@ -38,6 +39,11 @@ class RegistroLlegadaResource extends RecursoDeCualquierPropiedad
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedIdentification;
 
     protected static ?int $navigationSort = 7;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Llegada;
+    }
 
     protected static function permiso(): string
     {

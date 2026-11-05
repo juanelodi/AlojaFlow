@@ -17,6 +17,8 @@ use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Caja;
 use App\Models\Pago;
 use App\Models\Reserva;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
 use App\Support\Dinero;
@@ -107,7 +109,7 @@ class PagosRelationManager extends RelationManager
                     ->required()->numeric()->step('any')->prefix(fn (): string => $this->reserva()->moneda),
                 DatePicker::make('fecha')->label(__('ui.pagos.fecha'))->required(),
                 Select::make('metodo')->label(__('ui.pagos.metodo'))->options(MetodoPago::opciones())->required()->native(false),
-                Select::make('caja_id')->label(__('ui.cajas.modelo_campo'))->native(false)
+                Select::make('caja_id')->label(__('ui.cajas.modelo_campo'))->native(false)->visible(fn (): bool => Modulos::activo(Modulo::Caja))
                     ->options(fn (): array => Caja::query()->where('propiedad_id', $this->reserva()->propiedad_id)->where('activa', true)->orderBy('nombre')->pluck('nombre', 'id')->all()),
                 TextInput::make('referencia')->label(__('ui.pagos.referencia'))->maxLength(100),
             ])

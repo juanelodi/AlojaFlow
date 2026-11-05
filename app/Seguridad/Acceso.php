@@ -14,6 +14,7 @@ use App\Enums\ModoPropiedad;
 use App\Models\Propiedad;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -142,6 +143,28 @@ final class Acceso
         $propiedades = self::propiedades($usuario, $permiso);
 
         return $propiedadId === null ? $propiedades !== [] : in_array($propiedadId, $propiedades, true);
+    }
+
+    /**
+     * Quien instaló, o a quien otro super administrador nombró: el único que cambia los módulos, instala
+     * actualizaciones y nombra administradores (D-070).
+     */
+    public static function esSuper(?User $usuario): bool
+    {
+        return $usuario !== null && $usuario->activo && $usuario->es_superadministrador;
+    }
+
+    /**
+     * Quien puede instalar actualizaciones. La fase 2 de la que trae la columna corre con el código nuevo y antes de su migración:
+     * sin este resguardo, un administrador se queda en mantenimiento y con un 403 (instalacion-actualizaciones.md §4.2).
+     */
+    public static function puedeActualizar(?User $usuario): bool
+    {
+        if (self::esSuper($usuario)) {
+            return true;
+        }
+
+        return $usuario !== null && $usuario->activo && $usuario->es_administrador && ! Schema::hasColumn('users', 'es_superadministrador');
     }
 
     public static function usuarioActual(): ?User

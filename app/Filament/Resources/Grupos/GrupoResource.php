@@ -18,6 +18,7 @@ use App\Filament\Resources\Grupos\Pages\ViewGrupo;
 use App\Models\Grupo;
 use App\Models\Huesped;
 use App\Models\Unidad;
+use App\Modulos\Modulo;
 use App\Reservas\GestorGrupos;
 use App\Seguridad\Acceso;
 use App\Support\Formato;
@@ -51,6 +52,11 @@ class GrupoResource extends RecursoDePropiedad
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
     protected static ?int $navigationSort = 3;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Grupos;
+    }
 
     protected static function permiso(): string
     {

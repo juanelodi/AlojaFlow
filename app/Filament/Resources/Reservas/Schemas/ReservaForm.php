@@ -21,6 +21,8 @@ use App\Models\Huesped;
 use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Unidad;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Reservas\Cotizador;
 use App\Reservas\Cupones;
 use App\Reservas\Presupuesto;
@@ -179,6 +181,7 @@ class ReservaForm
                     CampoDinero::make('deposito')->label(__('ui.reservas.deposito'))->default(0),
                     CampoDinero::make('comision')->label(__('ui.reservas.comision'))->default(0),
                     TextInput::make('cupon_codigo')->label(__('ui.cupones.modelo_campo'))->maxLength(40)->live(onBlur: true)
+                        ->visible(fn (): bool => Modulos::activo(Modulo::Cupones))
                         ->rules([
                             fn (Get $get, ?Reserva $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
                                 $motivo = self::motivoCupon($get, (string) $value, $record);

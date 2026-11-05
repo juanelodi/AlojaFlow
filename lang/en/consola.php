@@ -24,6 +24,7 @@ return [
         'de' => 'AlojaFlow package :version',
         'no_pasa' => 'The package does not pass the review: :errores',
         'instalador' => 'Installer',
+        'instalador_completo' => 'Installer with the zip inside',
         'archivos' => 'Files',
         'tamano' => 'Size',
         'tamano_valor' => ':zip (:descomprimido unpacked)',

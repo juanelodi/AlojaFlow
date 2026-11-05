@@ -1,12 +1,55 @@
 {{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
 <x-filament-panels::page>
     @php($tarjetas = $this->tarjetas())
+    @php($pasos = $this->primerosPasos())
 
-    @if ($this->faltaDosPasos())
+    @if ($pasos === [] && $this->faltaDosPasos())
         <p class="af-aviso af-aviso-global" role="status">
             {{ __('ui.resumen.dos_pasos') }}
             <a class="af-enlace" href="{{ filament()->getProfileUrl() }}">{{ __('ui.resumen.dos_pasos_enlace') }}</a>
         </p>
+    @endif
+
+    @if (($nuevos = $this->modulosNuevos()) !== [])
+        <p class="af-aviso af-aviso-global" role="status">
+            {{ __('modulos.aviso_nuevos', ['modulos' => collect($nuevos)->map->etiqueta()->join(', ')]) }}
+            <a class="af-enlace" href="{{ \App\Filament\Pages\ModulosInstalacion::getUrl() }}">{{ __('modulos.ver') }}</a>
+        </p>
+    @endif
+
+    @if ($pasos !== [])
+        <x-filament::section class="af-pasos-seccion" :heading="__('modulos.pasos.titulo')" :description="__('modulos.pasos.avance', ['hechos' => collect($pasos)->where('hecho', true)->count(), 'total' => count($pasos)])" collapsible>
+            <ul class="af-pasos">
+                @foreach ($pasos as $paso)
+                    <li @class(['af-paso', 'af-paso--hecho' => $paso['hecho']]) wire:key="paso-{{ $paso['clave'] }}">
+                        <span class="af-paso__marca" aria-hidden="true">@if ($paso['hecho'])<x-filament::icon icon="heroicon-m-check" class="af-paso__icono" />@endif</span>
+                        <div class="af-paso__texto">
+                            <strong>{{ __('modulos.pasos.'.$paso['clave'].'.titulo') }}</strong>
+                            @if ($paso['hecho'])
+                                <span class="af-sr">{{ __('ui.comun.hecho') }}</span>
+                            @else
+                                <p class="af-nota">{{ __('modulos.pasos.'.$paso['clave'].'.ayuda') }}</p>
+                                @if ($paso['comando'])
+                                    <div class="af-comando" x-data="{ copiado: false }">
+                                        <code x-ref="comando">{{ $paso['comando'] }}</code>
+                                        <x-filament::button size="sm" color="gray" x-on:click="navigator.clipboard?.writeText($refs.comando.textContent).then(() => { copiado = true })">
+                                            <span x-show="! copiado">{{ __('modulos.pasos.copiar') }}</span>
+                                            <span x-show="copiado" x-cloak>{{ __('modulos.pasos.copiado') }}</span>
+                                        </x-filament::button>
+                                    </div>
+                                @endif
+                            @endif
+                        </div>
+                        @if (! $paso['hecho'] && $paso['url'])
+                            <x-filament::button tag="a" size="sm" color="gray" :href="$paso['url']">{{ __('modulos.pasos.ir') }}</x-filament::button>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+            <div class="af-pasos__pie">
+                <button type="button" class="af-enlace" wire:click="ocultarPrimerosPasos">{{ __('modulos.pasos.ocultar') }}</button>
+            </div>
+        </x-filament::section>
     @endif
 
     @if ($tarjetas === [])

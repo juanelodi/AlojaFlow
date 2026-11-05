@@ -31,6 +31,7 @@ return [
         'sistema' => 'Sistema',
     ],
     'comun' => [
+        'hecho' => 'Feito',
         'propiedad' => 'Alojamento',
         'todas' => 'Todos os alojamentos',
         'unidad' => 'Quarto',
@@ -445,7 +446,9 @@ return [
         'idioma' => 'Idioma',
         'activo' => 'Ativo',
         'administrador' => 'Administrador da instalação',
-        'administrador_ayuda' => 'Vê e configura todos os alojamentos.',
+        'administrador_ayuda' => 'Vê e configura todos os alojamentos. Não muda os módulos nem instala atualizações.',
+        'super' => 'Super administrador',
+        'super_ayuda' => 'Acesso a tudo: além disso muda os módulos, instala atualizações e nomeia administradores.',
         'acceso' => 'Acesso por alojamento',
         'acceso_ayuda' => 'Uma função em cada alojamento a que tem acesso.',
         'rol' => 'Função',

@@ -11,6 +11,8 @@ declare(strict_types=1);
 namespace App\Programador;
 
 use App\Demo\ModoDemo;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Support\Ajustes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
@@ -30,6 +32,8 @@ final class TareasPorVisita
 
     private const SEGUNDOS_MAXIMOS = 25;
 
+    public const AJUSTE_PHP_CONSOLA = 'programador.php_consola';
+
     /**
      * Comando y cada cuántos minutos.
      *
@@ -47,14 +51,23 @@ final class TareasPorVisita
     ];
 
     /**
+     * Las tareas que se detienen con su módulo (D-069).
+     */
+    private const DE_MODULO = [
+        'alojaflow:sincronizar' => Modulo::Subordinacion,
+        'alojaflow:ical' => Modulo::Ical,
+        'alojaflow:limpieza' => Modulo::Limpieza,
+    ];
+
+    /**
      * @return array<string, int>
      */
     public static function tareas(): array
     {
+        $tareas = array_filter(self::TAREAS, fn (string $comando): bool => Modulos::disponible(self::DE_MODULO[$comando] ?? null), ARRAY_FILTER_USE_KEY);
         if (! ModoDemo::activo()) {
-            return self::TAREAS;
+            return $tareas;
         }
-        $tareas = self::TAREAS;
         unset($tareas['alojaflow:copia --programada']);
 
         // Sin cron el reinicio no tiene hora: cada hora mira si hoy ya se hizo.
@@ -86,7 +99,8 @@ final class TareasPorVisita
     public static function comandoCron(): string
     {
         // En el sitio, PHP_BINARY puede ser php-cgi o php-fpm: para el cron hace falta el de consola.
-        $php = (string) preg_replace('/-(cgi|fpm)[0-9.]*$|php-?fpm[0-9.]*$|lsphp[0-9.]*$/', 'php', PHP_BINARY);
+        $encontrado = Ajustes::obtener(self::AJUSTE_PHP_CONSOLA);
+        $php = is_string($encontrado) && $encontrado !== '' ? $encontrado : (string) preg_replace('/-(cgi|fpm)[0-9.]*$|php-?fpm[0-9.]*$|lsphp[0-9.]*$/', 'php', PHP_BINARY);
 
         return 'cd '.base_path().' && '.$php.' artisan schedule:run';
     }

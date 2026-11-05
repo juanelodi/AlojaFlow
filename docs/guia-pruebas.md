@@ -47,7 +47,8 @@ copia desde **Sistema → Copias de seguridad** y guárdala fuera del servidor.
 | **Llegadas en línea / Documentos legales** | Lo que mandan los huéspedes antes de llegar, los textos que aceptan y la prueba de la aceptación |
 | **Facturas y recibos / Datos fiscales / Políticas** | Facturar desde la reserva, exportar para el contador; penalización al cancelar y marca de no-show |
 | **Informes** | Doce informes con CSV |
-| **Usuarios** | Usuarios con un rol en cada propiedad (gerente, recepción, limpieza, mantenimiento, contador) o administrador |
+| **Usuarios** | Usuarios con un rol en cada propiedad (gerente, recepción, limpieza, mantenimiento, contador), administrador o super administrador |
+| **Módulos** | Sistema → Módulos: prender y apagar lo que usa la instalación. Solo el super administrador |
 | **Actualizaciones** | Subir el zip de una versión nueva, revisarlo e instalarlo; historial con la copia de la base de datos de cada actualización |
 | **Perfil** | Idioma, zona horaria, contraseña y verificación en dos pasos con app de códigos |
 | **Acerca de / Código fuente** | Licencia, créditos y descarga del código de la versión instalada |

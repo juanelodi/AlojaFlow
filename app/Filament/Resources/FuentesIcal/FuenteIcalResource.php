@@ -20,6 +20,7 @@ use App\Ical\GestorIcal;
 use App\Models\Canal;
 use App\Models\FuenteIcal;
 use App\Models\Unidad;
+use App\Modulos\Modulo;
 use App\Seguridad\Acceso;
 use App\Seguridad\ClienteExterno;
 use App\Support\Formato;
@@ -52,6 +53,11 @@ class FuenteIcalResource extends RecursoDeCualquierPropiedad
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
     protected static ?int $navigationSort = 6;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Ical;
+    }
 
     protected static function permiso(): string
     {

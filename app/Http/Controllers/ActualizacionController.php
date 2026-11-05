@@ -12,19 +12,25 @@ namespace App\Http\Controllers;
 
 use App\Actualizacion\Actualizador;
 use App\Actualizacion\ErrorActualizacion;
+use App\Actualizacion\SubidaPorPartes;
+use App\Demo\ModoDemo;
 use App\Enums\EstadoActualizacion;
 use App\Filament\Pages\Actualizaciones;
 use App\Models\Actualizacion;
 use App\Seguridad\Acceso;
+use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Http\MaintenanceModeBypassCookie;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Las dos fases de una actualización, cada una en su propia petición para que la segunda ya se
- * ejecute con el código nuevo. Rutas firmadas, solo para administradores y exentas del modo
+ * ejecute con el código nuevo. Rutas firmadas, solo para el super administrador y exentas del modo
  * mantenimiento (bootstrap/app.php). Repetir una petición (recargar) no repite la fase: se sigue
  * desde donde esté la actualización.
  */
@@ -34,9 +40,43 @@ class ActualizacionController extends Controller
     {
     }
 
+    /**
+     * Una parte del zip (D-072). Responde siempre JSON: lo lee el JavaScript de la pantalla.
+     */
+    public function subirParte(Request $request, SubidaPorPartes $subida): JsonResponse
+    {
+        $this->soloSuper();
+        abort_if(ModoDemo::activo(), 403);
+        $parte = $request->file('parte');
+        if (! $parte instanceof UploadedFile) {
+            return response()->json(['ok' => false, 'error' => __('actualizaciones.error.subida_parte', ['parte' => $request->integer('indice') + 1])], 422);
+        }
+        try {
+            $paquete = $subida->recibir($parte, $request->string('subida')->toString(), $request->string('nombre')->toString(), $request->integer('indice'), $request->integer('total'));
+        } catch (ErrorActualizacion $e) {
+            return response()->json(['ok' => false, 'error' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['ok' => true, 'paquete' => $paquete]);
+    }
+
+    /**
+     * Una página que aparece de inmediato y se queda en pantalla mientras el navegador espera las dos fases: si
+     * no, durante unos minutos parece que el botón no hizo nada.
+     */
+    public function instalando(Actualizacion $actualizacion): View
+    {
+        $this->soloSuper();
+
+        return view('actualizaciones.instalando', [
+            'version' => $actualizacion->version_nueva,
+            'enlace' => URL::temporarySignedRoute('actualizaciones.aplicar', now()->addMinutes(30), ['actualizacion' => $actualizacion->id]),
+        ]);
+    }
+
     public function aplicar(Actualizacion $actualizacion): RedirectResponse
     {
-        $this->soloAdministrador();
+        $this->soloSuper();
         $this->sinLimiteDeTiempo();
 
         // El navegador del administrador recibe la cookie que le deja seguir usando la aplicación
@@ -57,7 +97,7 @@ class ActualizacionController extends Controller
 
     public function finalizar(Actualizacion $actualizacion): RedirectResponse
     {
-        $this->soloAdministrador();
+        $this->soloSuper();
         $this->sinLimiteDeTiempo();
 
         if ($actualizacion->estado === EstadoActualizacion::ArchivosAplicados) {
@@ -73,7 +113,7 @@ class ActualizacionController extends Controller
 
     public function copiaBaseDatos(Actualizacion $actualizacion): BinaryFileResponse
     {
-        $this->soloAdministrador();
+        $this->soloSuper();
         $ruta = $this->actualizador->carpetaDe($actualizacion).'/'.Actualizador::COPIA_BASE_DATOS;
         abort_unless(is_file($ruta), 404);
 
@@ -105,8 +145,8 @@ class ActualizacionController extends Controller
         ignore_user_abort(true);
     }
 
-    private function soloAdministrador(): void
+    private function soloSuper(): void
     {
-        abort_unless((bool) Acceso::usuarioActual()?->es_administrador, 403);
+        abort_unless(Acceso::puedeActualizar(Acceso::usuarioActual()), 403);
     }
 }

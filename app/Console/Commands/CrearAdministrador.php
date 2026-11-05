@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Validator;
  */
 class CrearAdministrador extends Command
 {
-    protected $signature = 'alojaflow:crear-administrador {correo} {--nombre=Administrador} {--idioma=es}';
+    protected $signature = 'alojaflow:crear-administrador {correo} {--nombre=Administrador} {--idioma=es} {--super : También super administrador}';
 
     protected $description = 'Crea un usuario administrador de AlojaFlow';
 
@@ -41,13 +41,15 @@ class CrearAdministrador extends Command
             return self::FAILURE;
         }
 
+        // Sin ningún super administrador activo nadie podría actualizar: este lo es. Quien llega aquí ya manda en el servidor.
+        $sinSuper = ! User::query()->where('es_superadministrador', true)->where('activo', true)->where('email', '!=', $correo)->exists();
         User::query()->updateOrCreate(['email' => $correo], [
             'name' => (string) $this->option('nombre'),
             'password' => $contrasena,
             'idioma' => (string) $this->option('idioma'),
             'activo' => true,
             'es_administrador' => true,
-        ]);
+        ] + ($sinSuper || $this->option('super') ? ['es_superadministrador' => true] : []));
         $this->info(__('consola.administrador_listo', ['correo' => $correo]));
 
         return self::SUCCESS;

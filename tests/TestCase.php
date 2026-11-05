@@ -25,6 +25,9 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        // Lo que corre en un hosting pone su propio límite de tiempo, y dentro del mismo proceso seguiría contando en las demás pruebas.
+        set_time_limit(0);
+
         $this->almacenDePrueba = storage_path('framework/testing/'.uniqid('almacen'));
         // El modo de mantenimiento escribe aquí sin crear la carpeta.
         File::ensureDirectoryExists($this->almacenDePrueba.'/framework');

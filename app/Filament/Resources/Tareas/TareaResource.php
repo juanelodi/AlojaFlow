@@ -19,6 +19,7 @@ use App\Filament\Resources\Tareas\Pages\ListTareas;
 use App\Models\Tarea;
 use App\Models\Unidad;
 use App\Models\User;
+use App\Modulos\Modulo;
 use App\Seguridad\Acceso;
 use BackedEnum;
 use Filament\Actions\EditAction;
@@ -48,6 +49,11 @@ class TareaResource extends RecursoDeCualquierPropiedad
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentCheck;
 
     protected static ?int $navigationSort = 6;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Limpieza;
+    }
 
     protected static function permiso(): string
     {

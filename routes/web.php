@@ -11,10 +11,12 @@ declare(strict_types=1);
 use App\Http\Controllers\ActualizacionController;
 use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\CodigoFuenteController;
+use App\Http\Controllers\EntradaInstalacionController;
 use App\Http\Controllers\IcalController;
 use App\Http\Controllers\LlegadaController;
 use App\Http\Controllers\MotorReservasController;
 use App\Http\Middleware\MismoOrigen;
+use App\Http\Middleware\ModuloActivo;
 use App\Http\Middleware\UsuarioActivo;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Route;
@@ -26,11 +28,14 @@ Route::get('/codigo-fuente', CodigoFuenteController::class)
     ->middleware('throttle:10,1')
     ->name('codigo-fuente');
 
+// La primera entrada después de instalar, con el enlace que recibió el instalador (D-071).
+Route::get('/entrar/{token}', EntradaInstalacionController::class)->where('token', '[0-9a-z]{64}')->middleware('throttle:10,1')->name('entrada-instalacion');
+
 // Calendario de una unidad para los portales: lo identifica un token, y solo lleva fechas.
-Route::get('/ical/{token}.ics', IcalController::class)->where('token', '[0-9a-f]{40}')->middleware('throttle:60,1')->name('ical.exportar');
+Route::get('/ical/{token}.ics', IcalController::class)->where('token', '[0-9a-f]{40}')->middleware([ModuloActivo::class.':ical', 'throttle:60,1'])->name('ical.exportar');
 
 // Llegada en línea: lo identifica un token; el huésped no tiene cuenta.
-Route::prefix('llegada/{token}')->where(['token' => '[0-9a-f]{40}'])->name('llegada.')->middleware('throttle:publico')->group(function (): void {
+Route::prefix('llegada/{token}')->where(['token' => '[0-9a-f]{40}'])->name('llegada.')->middleware([ModuloActivo::class.':llegada', 'throttle:publico'])->group(function (): void {
     Route::get('/', [LlegadaController::class, 'formulario'])->name('formulario');
     Route::post('/', [LlegadaController::class, 'guardar'])->middleware(['throttle:publico-envio', 'throttle:llegada-envio'])->name('guardar');
     Route::get('/verificar', [LlegadaController::class, 'verificar'])->name('verificar');
@@ -42,23 +47,26 @@ Route::prefix('llegada/{token}')->where(['token' => '[0-9a-f]{40}'])->name('lleg
 // Archivos privados: solo con sesión y según el permiso de su clase.
 Route::get('/archivos/{archivo}', ArchivoController::class)->middleware(['auth', AuthenticateSession::class, UsuarioActivo::class, 'throttle:120,1'])->name('archivos.ver');
 
-// Motor de reservas: páginas públicas del alojamiento (D-042).
-Route::prefix('reservar/{codigo}')->name('motor.')->middleware('throttle:publico')->group(function (): void {
+// Motor de reservas: páginas públicas del alojamiento (D-042). El aviso de un cobro no depende de ningún módulo: ese dinero ya se movió.
+Route::prefix('reservar/{codigo}')->name('motor.')->middleware([ModuloActivo::class.':motor', 'throttle:publico'])->group(function (): void {
     Route::get('/', [MotorReservasController::class, 'buscar'])->name('buscar');
     Route::get('/datos', [MotorReservasController::class, 'datos'])->name('datos');
     Route::post('/', [MotorReservasController::class, 'reservar'])->middleware([MismoOrigen::class, 'throttle:motor-reserva'])->name('reservar');
     Route::get('/r/{publico}', [MotorReservasController::class, 'reserva'])->name('reserva');
     Route::get('/r/{publico}/confirmacion.pdf', [MotorReservasController::class, 'confirmacionPdf'])->name('pdf');
-    Route::post('/r/{publico}/pagar/{pasarela}', [MotorReservasController::class, 'pagar'])->middleware([MismoOrigen::class, 'throttle:publico-envio'])->name('pagar');
+    Route::post('/r/{publico}/pagar/{pasarela}', [MotorReservasController::class, 'pagar'])->middleware([ModuloActivo::class.':pagos', MismoOrigen::class, 'throttle:publico-envio'])->name('pagar');
     Route::get('/r/{publico}/retorno/{pasarela}', [MotorReservasController::class, 'retorno'])->name('retorno');
 });
 Route::post('/avisos-pago/{codigo}/{pasarela}', [MotorReservasController::class, 'aviso'])->middleware('throttle:120,1')->name('motor.aviso');
 
 // Fases de una actualización desde el panel (instalacion-actualizaciones.md). Firmadas y solo
-// para administradores (lo comprueba el controlador).
+// para el super administrador (lo comprueba el controlador).
 Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class, 'signed'])->group(function (): void {
+    Route::get('/actualizaciones/{actualizacion}/instalando', [ActualizacionController::class, 'instalando'])->name('actualizaciones.instalando');
     Route::get('/actualizaciones/{actualizacion}/aplicar', [ActualizacionController::class, 'aplicar'])->name('actualizaciones.aplicar');
     Route::get('/actualizaciones/{actualizacion}/finalizar', [ActualizacionController::class, 'finalizar'])->name('actualizaciones.finalizar');
 });
+Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class, 'throttle:600,1'])->post('/actualizaciones/subir-parte', [ActualizacionController::class, 'subirParte'])
+    ->name('actualizaciones.subir-parte');
 Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class])->get('/actualizaciones/{actualizacion}/copia-base-datos', [ActualizacionController::class, 'copiaBaseDatos'])
     ->name('actualizaciones.copia-base-datos');

@@ -72,15 +72,23 @@ class UsuarioResource extends Resource
         return self::esAdministrador();
     }
 
+    /**
+     * A un administrador solo lo toca un super administrador: cambiarle la contraseña sería entrar como él (D-070).
+     */
+    private static function puedeTocar(Model $record): bool
+    {
+        return ! $record->getAttribute('es_administrador') || Acceso::esSuper(Acceso::usuarioActual()) || $record->getKey() === auth()->id();
+    }
+
     public static function canEdit(Model $record): bool
     {
-        return self::esAdministrador();
+        return self::esAdministrador() && self::puedeTocar($record);
     }
 
     public static function canDelete(Model $record): bool
     {
         // Nadie se borra a sí mismo; mejor desactivar que borrar.
-        return self::esAdministrador() && $record->getKey() !== auth()->id();
+        return self::esAdministrador() && self::puedeTocar($record) && $record->getKey() !== auth()->id();
     }
 
     public static function form(Schema $schema): Schema

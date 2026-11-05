@@ -11,7 +11,7 @@ declare(strict_types=1);
 return [
 
     // Versión instalada; la usa el enlace «Código fuente» (regla 8).
-    'version' => '1.0.10',
+    'version' => '1.0.11',
 
     // Idiomas de la interfaz (regla 7). El español es la fuente.
     'idiomas' => ['es', 'en', 'fr', 'it', 'pt', 'de'],
@@ -50,6 +50,8 @@ return [
         // Clave pública Ed25519 de quien publica las versiones: solo se instalan paquetes firmados
         // con su clave secreta. Quien distribuya su propia versión de AlojaFlow pone aquí la suya.
         'clave_publica' => env('ALOJAFLOW_CLAVE_PUBLICA_ACTUALIZACIONES', 'lC/ZImhUArZodVfJSVyjddbGKVsJp1b47kDSMdCql10='),
+        // De dónde baja el zip el instalador chico. El paquete va firmado: el lugar no tiene por qué ser de confianza (D-071).
+        'url_paquete' => env('ALOJAFLOW_URL_PAQUETE', 'https://github.com/juanelodi/AlojaFlow/releases/download/v:version/alojaflow-:version.zip'),
         // En una copia de desarrollo (con .git) el código se actualiza con git, no desde el panel.
         'permitir_en_copia_git' => filter_var(env('ALOJAFLOW_ACTUALIZAR_COPIA_GIT', false), FILTER_VALIDATE_BOOLEAN),
         'tamano_maximo_paquete' => 300 * 1024 * 1024,

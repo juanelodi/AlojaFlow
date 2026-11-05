@@ -11,6 +11,8 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Base;
 
 use App\Models\Propiedad;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Seguridad\Acceso;
 use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
@@ -34,11 +36,19 @@ abstract class RecursoDePropiedad extends Resource
     }
 
     /**
+     * El módulo al que pertenece. Apagado, el recurso se queda sin propiedades: no sale en el menú y no abre (D-069).
+     */
+    protected static function modulo(): ?Modulo
+    {
+        return null;
+    }
+
+    /**
      * @return list<int>
      */
     public static function propiedadesGestionables(): array
     {
-        return Acceso::propiedadesIndependientes(Acceso::usuarioActual(), static::permiso());
+        return Modulos::disponible(static::modulo()) ? Acceso::propiedadesIndependientes(Acceso::usuarioActual(), static::permiso()) : [];
     }
 
     public static function getNavigationGroup(): ?string

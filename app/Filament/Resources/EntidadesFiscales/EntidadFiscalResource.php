@@ -18,6 +18,7 @@ use App\Filament\Resources\EntidadesFiscales\Pages\EditEntidadFiscal;
 use App\Filament\Resources\EntidadesFiscales\Pages\ListEntidadesFiscales;
 use App\Models\EntidadFiscal;
 use App\Models\Propiedad;
+use App\Modulos\Modulo;
 use App\Paises\Paises;
 use App\Seguridad\Acceso;
 use BackedEnum;
@@ -46,6 +47,11 @@ class EntidadFiscalResource extends RecursoDeCualquierPropiedad
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
 
     protected static ?int $navigationSort = 9;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Facturacion;
+    }
 
     protected static function permiso(): string
     {

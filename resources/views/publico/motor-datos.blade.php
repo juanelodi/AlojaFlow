@@ -69,7 +69,9 @@
             @endforeach
         @endif
 
-        <div class="campo" style="margin-top:12px"><label for="cupon">{{ __('motor.cupon') }}</label><input type="text" id="cupon" name="cupon" value="{{ $valores['cupon'] ?? '' }}" maxlength="40" autocomplete="off"></div>
+        @if (\App\Modulos\Modulos::activo(\App\Modulos\Modulo::Cupones))
+            <div class="campo" style="margin-top:12px"><label for="cupon">{{ __('motor.cupon') }}</label><input type="text" id="cupon" name="cupon" value="{{ $valores['cupon'] ?? '' }}" maxlength="40" autocomplete="off"></div>
+        @endif
         <div class="campo"><label for="comentario">{{ __('motor.comentario') }}</label><textarea id="comentario" name="comentario" rows="3" maxlength="2000">{{ $valores['comentario'] ?? '' }}</textarea></div>
 
         @if ($ajustes->condiciones())

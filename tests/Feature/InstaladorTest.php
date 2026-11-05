@@ -9,14 +9,17 @@
 declare(strict_types=1);
 
 use App\Actualizacion\Empaquetador;
+use App\Instalacion\CachesArranque;
 use App\Instalacion\Instalador;
 use App\Models\Propiedad;
 use App\Models\User;
 use App\Programador\TareasPorVisita;
 use App\Support\Ajustes;
 use Database\Seeders\RolesYPermisosSeeder;
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 
@@ -35,6 +38,32 @@ it('el instalador se puede leer en versiones de PHP más viejas que la que pide 
         ->and($php)->not->toMatch('/function\s+\w+\([^)]*\)\s*:\s*\w+/')
         ->and($php)->not->toContain('strict_types')
         ->and(rtrim($codigo))->toEndWith('__halt_compiler();');
+});
+
+it('armar las cachés no cambia la aplicación ni la sesión de la petición en curso', function () {
+    $sesion = app('session.store');
+
+    CachesArranque::sinCambiarLaAplicacion(function (): void {
+        $otra = require base_path('bootstrap/app.php');
+        $otra->make(Kernel::class)->bootstrap();
+        expect(app())->toBe($otra);
+    });
+
+    expect(app())->toBe($this->app)
+        ->and(app('session.store'))->toBe($sesion)
+        ->and(Session::getFacadeRoot())->toBe($this->app->make('session'));
+});
+
+it('el empaquetador deja un instalador chico que sabe de dónde bajar el zip', function () {
+    $carpeta = archivoTemporal('x');
+    $salida = dirname($carpeta).'/instalar-alojaflow-9.9.9.php';
+
+    app(Empaquetador::class)->construirInstalador(base_path('instalador/instalar.php'), null, '9.9.9', 'CLAVE', '8.3.0', ['zip'], $salida);
+
+    $contenido = (string) file_get_contents($salida);
+    expect($contenido)->toContain("define('AF_URL_PAQUETE', 'https://github.com/juanelodi/AlojaFlow/releases/download/v9.9.9/alojaflow-9.9.9.zip')")
+        ->and(rtrim($contenido))->toEndWith('__halt_compiler();')
+        ->and(strlen($contenido))->toBeLessThan(200 * 1024);
 });
 
 it('el empaquetador mete el zip dentro del instalador y cambia sus valores', function () {

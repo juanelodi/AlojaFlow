@@ -28,6 +28,8 @@ use App\Models\ReceptorFiscal;
 use App\Models\ReglaLimpieza;
 use App\Models\Reserva;
 use App\Models\SerieFacturacion;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Paises\Paises;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
@@ -93,7 +95,7 @@ final class AccionesReserva
             ->label(__('dinero.facturas.facturar'))
             ->icon(Heroicon::OutlinedDocumentCurrencyDollar)
             ->color('gray')
-            ->visible(fn (Reserva $record): bool => $record->tipo === TipoReserva::Reserva && $record->estado !== EstadoReserva::Cancelada && Acceso::puede(Acceso::usuarioActual(), Acceso::FACTURACION, $record->propiedad_id))
+            ->visible(fn (Reserva $record): bool => Modulos::activo(Modulo::Facturacion) && $record->tipo === TipoReserva::Reserva && $record->estado !== EstadoReserva::Cancelada && Acceso::puede(Acceso::usuarioActual(), Acceso::FACTURACION, $record->propiedad_id))
             ->fillForm(function (Reserva $record): array {
                 $guardado = ReceptorFiscal::query()->where('propiedad_id', $record->propiedad_id)->where('huesped_id', $record->titular_id)->latest('id')->first();
 
@@ -150,7 +152,7 @@ final class AccionesReserva
             ->label(__('llegada.panel.enlace'))
             ->icon(Heroicon::OutlinedIdentification)
             ->color('gray')
-            ->visible(fn (Reserva $record): bool => $record->tipo === TipoReserva::Reserva && $record->estado !== EstadoReserva::Cancelada && Acceso::puede(Acceso::usuarioActual(), Acceso::HUESPEDES, $record->propiedad_id))
+            ->visible(fn (Reserva $record): bool => Modulos::activo(Modulo::Llegada) && $record->tipo === TipoReserva::Reserva && $record->estado !== EstadoReserva::Cancelada && Acceso::puede(Acceso::usuarioActual(), Acceso::HUESPEDES, $record->propiedad_id))
             ->modalHeading(__('llegada.panel.enlace'))
             ->modalContent(function (Reserva $record) {
                 $idioma = Mensajero::idiomaDe($record);
@@ -169,7 +171,7 @@ final class AccionesReserva
             ->label(__('mensajes.mandar.accion'))
             ->icon(Heroicon::OutlinedChatBubbleLeftEllipsis)
             ->color('gray')
-            ->visible(fn (Reserva $record): bool => $record->tipo === TipoReserva::Reserva && Acceso::puede(Acceso::usuarioActual(), Acceso::MENSAJES, $record->propiedad_id))
+            ->visible(fn (Reserva $record): bool => Modulos::activo(Modulo::Mensajes) && $record->tipo === TipoReserva::Reserva && Acceso::puede(Acceso::usuarioActual(), Acceso::MENSAJES, $record->propiedad_id))
             ->fillForm(fn (Reserva $record): array => [
                 'canal' => CanalEnvio::Correo->value,
                 'destino_correo' => Mensajero::correoDe($record),
@@ -220,7 +222,7 @@ final class AccionesReserva
             ->label(__('limpieza.regla.accion'))
             ->icon(Heroicon::OutlinedSparkles)
             ->color('gray')
-            ->visible(fn (Reserva $record): bool => $record->estado !== EstadoReserva::Cancelada && Acceso::puede(Acceso::usuarioActual(), Acceso::LIMPIEZA, $record->propiedad_id))
+            ->visible(fn (Reserva $record): bool => Modulos::activo(Modulo::Limpieza) && $record->estado !== EstadoReserva::Cancelada && Acceso::puede(Acceso::usuarioActual(), Acceso::LIMPIEZA, $record->propiedad_id))
             ->fillForm(function (Reserva $record): array {
                 $regla = ReglaLimpieza::query()->where('reserva_id', $record->id)->first();
                 $dias = [];

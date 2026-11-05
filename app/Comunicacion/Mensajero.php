@@ -27,6 +27,8 @@ use App\Models\EventoReserva;
 use App\Models\Plantilla;
 use App\Models\Reserva;
 use App\Models\Webhook;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Seguridad\ClienteExterno;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -77,6 +79,9 @@ final class Mensajero
      */
     public function procesarTiempo(): int
     {
+        if (! Modulos::activo(Modulo::Mensajes)) {
+            return 0;
+        }
         $generados = 0;
         $tiempo = array_values(array_filter(DisparadorAutomatizacion::cases(), fn (DisparadorAutomatizacion $d): bool => $d->esDeTiempo()));
         $automatizaciones = Automatizacion::query()->with(['propiedad', 'plantilla'])->where('activa', true)->whereIn('disparador', array_map(fn (DisparadorAutomatizacion $d): string => $d->value, $tiempo))->get();
@@ -244,7 +249,7 @@ final class Mensajero
         $cuerpo = $plantilla->texto('cuerpo', $idioma);
         // El enlace se crea solo si la plantilla lo usa: no hace falta uno por cada mensaje.
         if (str_contains($cuerpo, '{enlace_llegada}')) {
-            $variables['enlace_llegada'] = app(GestorLlegadas::class)->urlDe($reserva, $idioma);
+            $variables['enlace_llegada'] = Modulos::activo(Modulo::Llegada) ? app(GestorLlegadas::class)->urlDe($reserva, $idioma) : '';
         }
 
         return [
@@ -293,7 +298,7 @@ final class Mensajero
     {
         // Lo que pasó antes de crear la regla no la dispara; a quien ya se fue no se le escribe.
         $pasada = $reserva->salida->format('Y-m-d') < $reserva->propiedad->hoy()->format('Y-m-d');
-        if (! $pasada) {
+        if (! $pasada && Modulos::activo(Modulo::Mensajes)) {
             $automatizaciones = Automatizacion::query()->with(['propiedad', 'plantilla'])->where('propiedad_id', $reserva->propiedad_id)
                 ->where('activa', true)->where('disparador', $disparador->value)->get();
             foreach ($automatizaciones as $automatizacion) {
@@ -306,6 +311,9 @@ final class Mensajero
             }
         }
 
+        if (! Modulos::activo(Modulo::Integraciones)) {
+            return;
+        }
         foreach (Webhook::query()->where('propiedad_id', $reserva->propiedad_id)->where('activo', true)->get() as $webhook) {
             if (in_array($disparador->value, $webhook->eventos, true)) {
                 $this->crearUnaVez('webhook:'.$webhook->id.':evento:'.$evento->id, [

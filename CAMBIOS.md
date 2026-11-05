@@ -2,6 +2,42 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.11 — 2026-11-05
+
+**AlojaFlow ahora es modular, se instala más fácil y se actualiza diciéndote qué está pasando.**
+
+**Lo que vas a notar al actualizar**
+- **Hay un super administrador.** El administrador activo más antiguo pasa a serlo. Es el único que cambia los módulos, instala
+  actualizaciones y nombra administradores. Si tienes otros administradores, conservan lo demás; para que actualicen, nómbralos en Usuarios.
+- **Módulos, en Sistema → Módulos.** Todo lo que ya usabas sigue prendido. Apaga lo que no te sirva: sale del menú, sus páginas no abren y
+  sus tareas se detienen. No se borra ningún dato.
+- **Subir una actualización ya no depende del límite de tu hosting.** Va en partes de 1 MB, con barra de avance. Si se corta, sigue desde donde
+  iba. Al terminar de subir te dice que esperes y la revisa sola, y al instalar sale una página de «Instalando…» en vez de quedarse quieta.
+- **Primeros pasos en el inicio.** Una lista de lo que falta para empezar, que sale de tus datos y se puede ocultar.
+
+**Instalar es más sencillo**
+- `instalar-alojaflow-1.0.11.php` pesa unos 90 KB y baja lo demás de GitHub. Si tu servidor no sale a internet, te ofrece subir el paquete por
+  partes o por FTP, y `instalar-alojaflow-1.0.11-completo.php` sigue llevándolo dentro.
+- La revisión del servidor solo se detiene si hay algo en rojo. El servidor de la base se busca solo, con una guía por hosting.
+- Quien instala es el super administrador, y el instalador lo explica.
+- Al terminar entras con un botón, sin volver a escribir tu contraseña. Primero salen cinco preguntas para prender solo lo que te sirve; se pueden
+  saltar y repetir. El cron dejó de pedirse al final: está en los primeros pasos.
+
+**Esta vez todavía subes con la pantalla de tu versión actual,** con su límite de tamaño: si no alcanza, copia el zip por FTP a
+`storage/app/private/actualizaciones/entrada/`. Lo nuevo se ve a partir de la siguiente actualización.
+
+**También se corrigió**
+- El aviso de «AlojaFlow se actualizó» no salía en un hosting real, y lo que siguiera en esa petición usaba otra sesión.
+
+**Por dentro**
+- Decisiones D-069 a D-072. Con este bloque arranca el plan de `docs/plan-paridad.md`.
+- Una actualización desde la 1.0.10 termina con el código nuevo antes de crear la columna del super administrador: mientras no exista, también la
+  termina un administrador.
+
+**Lo que se comprobó:** en este equipo, con el Apache de Wamp: instalar con el instalador chico contra un servidor local con rangos, las preguntas, subir
+29 MB por partes y actualizar una instalación 1.0.10 real a esta. **Sin verificar:** no se ha probado en DreamHost ni en otro hosting real. Lo que dice la guía
+de la base de datos sobre cada panel se escribió de memoria, sin entrar a cada uno.
+
 ## 1.0.10 — 2026-11-04
 
 Corrige los nueve avisos de seguridad que Symfony publicó el 4 de noviembre, y que también afectan a la 1.0.9 y a las anteriores.

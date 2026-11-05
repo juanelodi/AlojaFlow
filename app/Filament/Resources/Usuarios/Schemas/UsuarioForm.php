@@ -26,6 +26,7 @@ class UsuarioForm
     public static function configure(Schema $schema): Schema
     {
         $esUnoMismo = fn (?User $record): bool => $record !== null && $record->getKey() === auth()->id();
+        $esSuper = fn (): bool => Acceso::esSuper(Acceso::usuarioActual());
 
         return $schema->components([
             Section::make()->columnSpanFull()
@@ -39,8 +40,11 @@ class UsuarioForm
                         ->dehydrated(fn (?string $state): bool => filled($state)),
                     Select::make('idioma')->label(__('ui.usuarios.idioma'))->options(Formato::idiomas())->default('es')->required()->native(false),
                     Toggle::make('activo')->label(__('ui.usuarios.activo'))->default(true)->disabled($esUnoMismo),
+                    // Solo el super administrador nombra administradores: si no, cualquiera de ellos podría repartir el acceso total.
                     Toggle::make('es_administrador')->label(__('ui.usuarios.administrador'))->helperText(__('ui.usuarios.administrador_ayuda'))
-                        ->disabled($esUnoMismo),
+                        ->disabled($esUnoMismo)->visible($esSuper),
+                    Toggle::make('es_superadministrador')->label(__('ui.usuarios.super'))->helperText(__('ui.usuarios.super_ayuda'))
+                        ->disabled($esUnoMismo)->visible($esSuper),
                 ]),
             Section::make(__('ui.usuarios.acceso'))->columnSpanFull()
                 ->description(__('ui.usuarios.acceso_ayuda'))

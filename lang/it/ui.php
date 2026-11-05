@@ -31,6 +31,7 @@ return [
         'sistema' => 'Sistema',
     ],
     'comun' => [
+        'hecho' => 'Fatto',
         'propiedad' => 'Struttura',
         'todas' => 'Tutte le strutture',
         'unidad' => 'Camera',
@@ -445,7 +446,9 @@ return [
         'idioma' => 'Lingua',
         'activo' => 'Attivo',
         'administrador' => 'Amministratore dell’installazione',
-        'administrador_ayuda' => 'Vede e configura tutte le strutture.',
+        'administrador_ayuda' => 'Vede e configura tutte le strutture. Non cambia i moduli e non installa aggiornamenti.',
+        'super' => 'Super amministratore',
+        'super_ayuda' => 'Accesso a tutto: inoltre cambia i moduli, installa gli aggiornamenti e nomina gli amministratori.',
         'acceso' => 'Accesso per struttura',
         'acceso_ayuda' => 'Un ruolo in ogni struttura a cui accede.',
         'rol' => 'Ruolo',

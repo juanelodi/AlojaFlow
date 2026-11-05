@@ -19,6 +19,7 @@ use App\Filament\Resources\Movimientos\Pages\EditMovimiento;
 use App\Filament\Resources\Movimientos\Pages\ListMovimientos;
 use App\Models\Caja;
 use App\Models\Movimiento;
+use App\Modulos\Modulo;
 use App\Seguridad\Acceso;
 use App\Support\Formato;
 use BackedEnum;
@@ -48,6 +49,11 @@ class MovimientoResource extends RecursoDePropiedad
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
     protected static ?int $navigationSort = 2;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Caja;
+    }
 
     protected static function permiso(): string
     {

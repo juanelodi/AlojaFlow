@@ -291,3 +291,61 @@
 .fi-ta-placeholder, .fi-ta-text.fi-ta-placeholder { color: var(--af-suave); }
 .fi-ta-col { min-block-size: 1.5rem; }
 .dark .fi-input-wrp-label { color: var(--gray-300); }
+
+/* Módulos y preguntas de primera entrada */
+.af-opciones { display: flex; flex-direction: column; gap: .5rem; border: 0; margin: 0; padding: 0; min-inline-size: 0; }
+.af-opcion {
+    display: flex; gap: .75rem; align-items: flex-start; padding: .75rem; min-block-size: 2.75rem; cursor: pointer;
+    border: 1px solid var(--gray-200); border-radius: .5rem;
+}
+.dark .af-opcion { border-color: var(--gray-700); }
+.af-opcion:hover { background: var(--gray-50); }
+.dark .af-opcion:hover { background: color-mix(in oklab, white 4%, transparent); }
+.af-opcion:has(input:checked) { border-color: var(--primary-600); background: color-mix(in oklab, var(--primary-500) 8%, transparent); }
+.af-opcion input { margin-block-start: .1875rem; inline-size: 1.125rem; block-size: 1.125rem; flex: none; accent-color: var(--primary-600); }
+.af-opcion input:focus-visible { outline: 2px solid var(--primary-600); outline-offset: 2px; }
+.af-opcion__texto { display: flex; flex-direction: column; gap: .125rem; min-inline-size: 0; }
+.af-opcion__titulo { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; font-weight: 600; font-size: .9375rem; }
+.af-opcion__aviso { margin-block-start: .375rem; font-size: .8125rem; }
+.af-preguntas { display: flex; flex-direction: column; gap: 1rem; max-inline-size: 44rem; }
+.af-preguntas__paso { font-size: .875rem; font-weight: 600; color: var(--af-suave); }
+.af-preguntas__barra { block-size: .5rem; border-radius: 9999px; background: var(--gray-200); overflow: hidden; }
+.dark .af-preguntas__barra { background: var(--gray-700); }
+.af-preguntas__barra > div { block-size: 100%; background: var(--primary-600); transition: inline-size .2s; }
+.af-preguntas__titulo { font-size: 1.125rem; font-weight: 600; margin-block-end: .75rem; padding: 0; }
+.af-preguntas__subtitulo { font-weight: 600; margin-block-end: .25rem; }
+.af-preguntas__resumen { display: grid; gap: 1rem; margin-block-start: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
+
+/* Primeros pasos */
+.af-pasos-seccion { margin-block-end: 1.5rem; }
+.af-pasos { display: flex; flex-direction: column; }
+.af-paso { display: flex; gap: .75rem; align-items: flex-start; padding-block: .625rem; border-block-start: 1px solid var(--gray-100); }
+.dark .af-paso { border-color: var(--gray-800); }
+.af-paso:first-child { border-block-start: 0; }
+.af-paso__marca { flex: none; inline-size: 1.25rem; block-size: 1.25rem; margin-block-start: .125rem; border-radius: 9999px; border: 2px solid var(--gray-300); display: flex; align-items: center; justify-content: center; }
+.af-paso--hecho .af-paso__marca { background: var(--primary-600); border-color: var(--primary-600); color: white; }
+.af-paso__icono { inline-size: .875rem; block-size: .875rem; }
+.af-paso__texto { flex: 1; min-inline-size: 0; font-size: .9375rem; }
+.af-paso--hecho .af-paso__texto strong { font-weight: 500; color: var(--af-suave); }
+.af-comando { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-block-start: .5rem; }
+.af-comando code { font-size: .8125rem; padding: .375rem .5rem; border-radius: .375rem; background: var(--gray-100); word-break: break-all; min-inline-size: 0; }
+.dark .af-comando code { background: var(--gray-800); }
+.af-pasos__pie { margin-block-start: .5rem; font-size: .8125rem; }
+
+/* Actualizaciones: los pasos y las esperas */
+.af-pasos-barra { display: flex; gap: .5rem; list-style: none; margin: 0; padding: 0; font-size: .875rem; color: var(--af-suave); }
+.af-pasos-barra__paso { flex: 1; padding-block-start: .375rem; border-block-start: 3px solid var(--gray-200); }
+.dark .af-pasos-barra__paso { border-color: var(--gray-700); }
+.af-pasos-barra__paso--hecho { border-color: var(--primary-600); }
+.af-pasos-barra__paso--actual { border-color: var(--primary-600); font-weight: 600; color: var(--gray-950); }
+.dark .af-pasos-barra__paso--actual { color: white; }
+.dark .af-pasos-barra__paso--hecho { border-color: var(--primary-500); }
+.dark .af-pasos-barra__paso--actual { border-color: var(--primary-500); }
+.af-archivo { font-size: .875rem; max-inline-size: 100%; }
+.af-archivo:focus-visible { outline: 2px solid var(--primary-600); outline-offset: 2px; border-radius: .25rem; }
+.af-subida { display: flex; flex-direction: column; gap: .375rem; }
+.af-subida__barra { block-size: .625rem; border-radius: 9999px; background: var(--gray-200); overflow: hidden; }
+.dark .af-subida__barra { background: var(--gray-700); }
+.af-subida__barra > div { block-size: 100%; background: var(--primary-600); transition: inline-size .15s; }
+.af-esperando { display: flex; gap: .625rem; align-items: center; font-weight: 500; font-size: .9375rem; }
+.af-esperando__icono { inline-size: 1.25rem; block-size: 1.25rem; color: var(--primary-600); flex: none; }

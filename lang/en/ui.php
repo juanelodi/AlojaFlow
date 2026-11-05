@@ -33,6 +33,8 @@ return [
     ],
 
     'comun' => [
+
+        'hecho' => 'Done',
         'propiedad' => 'Property',
         'todas' => 'All properties',
         'unidad' => 'Unit',
@@ -454,7 +456,9 @@ return [
         'idioma' => 'Language',
         'activo' => 'Active',
         'administrador' => 'Installation administrator',
-        'administrador_ayuda' => 'Sees and configures every property.',
+        'administrador_ayuda' => 'Sees and configures every property. Does not change modules or install updates.',
+        'super' => 'Super administrator',
+        'super_ayuda' => 'Access to everything: also changes modules, installs updates and appoints administrators.',
         'acceso' => 'Access per property',
         'acceso_ayuda' => 'One role in each property the user can access.',
         'rol' => 'Role',

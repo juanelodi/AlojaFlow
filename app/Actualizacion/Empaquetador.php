@@ -38,7 +38,7 @@ class Empaquetador
 
     /**
      * @param  callable(string): void  $informar
-     * @return array{zip: string, sha256: string, archivos: int, bytes: int, instalador: string}
+     * @return array{zip: string, sha256: string, archivos: int, bytes: int, instalador: string, instalador_completo: string}
      */
     public function empaquetar(
         string $raiz,
@@ -95,15 +95,25 @@ class Empaquetador
             $extensiones = array_values((array) config('alojaflow.actualizaciones.extensiones'));
             $resultado = $this->comprimir($imagen, $version, $claveSecreta, $zip, $this->phpMinimo($raiz), $extensiones);
 
-            $informar('Instalador de un solo archivo…');
+            $informar('Instaladores de un solo archivo…');
+            // El chico baja el zip al instalar (D-071); el completo lo lleva dentro, para el hosting que no sale a internet.
             $resultado['instalador'] = $this->construirInstalador(
+                $raiz.'/instalador/instalar.php',
+                null,
+                $version,
+                $clavePublica,
+                $this->phpMinimo($raiz),
+                $extensiones,
+                $carpetaSalida.'/instalar-alojaflow-'.$version.'.php',
+            );
+            $resultado['instalador_completo'] = $this->construirInstalador(
                 $raiz.'/instalador/instalar.php',
                 $zip,
                 $version,
                 $clavePublica,
                 $this->phpMinimo($raiz),
                 $extensiones,
-                $carpetaSalida.'/instalar-alojaflow-'.$version.'.php',
+                $carpetaSalida.'/instalar-alojaflow-'.$version.'-completo.php',
             );
 
             return $resultado;
@@ -178,31 +188,34 @@ class Empaquetador
     }
 
     /**
-     * El instalador con el zip dentro, después de __halt_compiler: un solo archivo que subir al
-     * hosting (instalacion-actualizaciones.md §2).
+     * El instalador: un solo archivo que subir al hosting (instalacion-actualizaciones.md §2). Con $zip, lo lleva
+     * dentro, después de __halt_compiler; sin él, sabe de dónde bajarlo.
      *
      * @param  list<string>  $extensiones
      */
-    public function construirInstalador(string $plantilla, string $zip, string $version, string $clavePublica, string $phpMinimo, array $extensiones, string $salida): string
+    public function construirInstalador(string $plantilla, ?string $zip, string $version, string $clavePublica, string $phpMinimo, array $extensiones, string $salida): string
     {
         $codigo = rtrim(strtr((string) file_get_contents($plantilla), [
             '@@VERSION@@' => $version,
             '@@CLAVE_PUBLICA@@' => trim($clavePublica),
             '@@PHP_MINIMO@@' => $phpMinimo,
             '@@EXTENSIONES@@' => implode(',', $extensiones),
+            '@@URL_PAQUETE@@' => str_replace(':version', $version, (string) config('alojaflow.actualizaciones.url_paquete')),
         ]));
         if (! str_ends_with($codigo, '__halt_compiler();')) {
             throw new RuntimeException('La plantilla del instalador debe terminar en __halt_compiler();');
         }
 
         $destino = fopen($salida, 'wb');
-        $origen = fopen($zip, 'rb');
+        $origen = $zip === null ? null : fopen($zip, 'rb');
         if ($destino === false || $origen === false) {
             throw new RuntimeException("No se pudo escribir $salida");
         }
         fwrite($destino, $codigo);
-        stream_copy_to_stream($origen, $destino);
-        fclose($origen);
+        if ($origen !== null) {
+            stream_copy_to_stream($origen, $destino);
+            fclose($origen);
+        }
         fclose($destino);
 
         return $salida;

@@ -12,6 +12,8 @@ namespace App\Filament\Concerns;
 
 use App\Enums\ModoPropiedad;
 use App\Models\Propiedad;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Seguridad\Acceso;
 use Livewire\Attributes\Session;
 
@@ -37,9 +39,17 @@ trait ConPropiedadSeleccionada
         }
     }
 
+    /**
+     * El módulo al que pertenece la pantalla, si no está siempre disponible (D-069).
+     */
+    protected static function modulo(): ?Modulo
+    {
+        return null;
+    }
+
     public static function canAccess(): bool
     {
-        return Acceso::puede(Acceso::usuarioActual(), static::permiso());
+        return Modulos::disponible(static::modulo()) && Acceso::puede(Acceso::usuarioActual(), static::permiso());
     }
 
     /**

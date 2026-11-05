@@ -20,6 +20,7 @@ use App\Models\PlanoUnidad;
 use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Unidad;
+use App\Modulos\Modulo;
 use App\Seguridad\Acceso;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -50,6 +51,11 @@ class PlanoPropiedad extends Page
     public ?int $planoId = null;
 
     public bool $editando = false;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Plano;
+    }
 
     protected static function permiso(): string
     {

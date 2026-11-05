@@ -13,6 +13,8 @@ namespace App\Filament\Resources\Propiedades\Schemas;
 use App\Enums\MetodoPeticion;
 use App\Enums\ModoPropiedad;
 use App\Enums\PaquetePais;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Paises\CatalogoPaises;
 use App\Support\Formato;
 use Filament\Forms\Components\ColorPicker;
@@ -31,7 +33,9 @@ class PropiedadForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
+            // Sin el módulo de subordinación solo hay una forma de crearla; CreatePropiedad la pone.
             Section::make(__('ui.propiedades.modo'))->columnSpanFull()
+                ->visible(fn (string $operation): bool => $operation === 'edit' || Modulos::activo(Modulo::Subordinacion))
                 ->schema([
                     // Se elige al crearla: pasar de una forma a la otra será una migración aparte.
                     Radio::make('modo')->label(__('ui.propiedades.modo'))->hiddenLabel()->required()->live()

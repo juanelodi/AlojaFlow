@@ -211,6 +211,8 @@ describe('demostración pública', function () {
                 ->and(GeneradorDemo::existente())->not->toBeNull()
                 ->and(User::query()->where('email', ModoDemo::CORREO)->where('es_administrador', true)->exists())->toBeTrue();
 
+            // Sin esto, a medianoche ya es otro día y sí toca.
+            $this->freezeTime();
             Propiedad::query()->create(['nombre' => 'Basura', 'codigo' => 'basura', 'modo' => ModoPropiedad::Nativa, 'zona_horaria' => 'UTC', 'moneda' => 'MXN']);
             $this->artisan('alojaflow:demo-reiniciar --si-toca')->assertSuccessful();
             expect(Propiedad::query()->where('codigo', 'basura')->exists())->toBeTrue();

@@ -4,10 +4,10 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-04): versión de prueba 1.0.10**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-05): versión de prueba 1.0.11**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
-  D-029) y D-036 se revisan con el usuario.
+  D-029) y D-036 se revisan con el usuario. En curso: el plan de [docs/plan-paridad.md](docs/plan-paridad.md), hasta la 1.0.24.
 - **Idioma:** español de México en la conversación, la documentación, el código
   (identificadores y comentarios) y los mensajes de commit. Interfaz en español y en los
   idiomas de la regla 7.
@@ -204,16 +204,18 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   facturas y CFDI (D-049). `app/Dinero/`, políticas (D-050).
 - `app/Archivos/GestorArchivos.php` — archivos privados, cifrados si llevan datos personales.
   `app/Seguridad/ClienteExterno.php`, peticiones a direcciones que escribe un usuario, solo a redes públicas.
-- `instalador/instalar.php` — plantilla del instalador de un solo archivo (D-040); sin sintaxis
-  moderna a propósito. `app/Instalacion/Instalador.php`, lo que hace dentro de la aplicación.
+- `instalador/instalar.php` — plantilla del instalador de un solo archivo (D-040, D-071); sin sintaxis
+  moderna a propósito: **Pint no se corre sobre él**, y `pint.json` lo excluye. `app/Instalacion/Instalador.php`, lo que hace dentro de la aplicación.
 - `app/Copias/GestorCopias.php` — copias de seguridad (D-038). `app/Programador/`, tareas sin cron (D-039).
 - `app/Demo/` — `GeneradorDemo`, la propiedad de demostración con datos inventados (D-037), y `ModoDemo`,
   la demostración pública (D-044).
 - `app/Models/` — modelos en español sobre `ModeloBase` (`creado_en`/`actualizado_en`). Las
   filas con `sincronizada = true` solo las cambia la sincronización
   (`Concerns/ProtegidaPorSincronizacion`).
+- `app/Modulos/` — qué se puede prender y apagar en la instalación (`Modulo`, `Modulos`, D-069) y `PrimerosPasos`. Un recurso o una pantalla
+  dice a qué módulo pertenece con `modulo()`; las rutas públicas, con el middleware `ModuloActivo`.
 - `app/Seguridad/Acceso.php` — permisos por propiedad (roles de spatie con equipo =
-  propiedad); el administrador ve todo. Lo que manda un formulario como propiedad pasa por
+  propiedad); el administrador ve todo, y `Acceso::esSuper` es quien instaló (D-070). Lo que manda un formulario como propiedad pasa por
   `Acceso::propiedadElegida`, y al guardar, `RecursoDePropiedad::comprobarReferencias`.
 - `app/Http/Middleware/` — `CabecerasSeguridad` (D-057), `MismoOrigen` (motor sin CSRF) y `UsuarioActivo`
   (rutas con sesión fuera del panel).
@@ -245,7 +247,7 @@ PHP artisan migrate --seed                # tablas y roles
 PHP artisan serve                         # http://127.0.0.1:8000
 PHP artisan schedule:work                 # sincronización periódica en local
 PHP artisan alojaflow:sincronizar --principal=ID
-PHP artisan alojaflow:crear-administrador correo@ejemplo.com
+PHP artisan alojaflow:crear-administrador correo@ejemplo.com [--super]
 PHP artisan alojaflow:demo [--quitar]     # propiedad de demostración con datos ficticios
 PHP vendor/bin/pest                       # pruebas, contra la base MySQL alojaflow_pruebas
 PHP vendor/bin/pint --test                # formato PSR-12 + cabecera de licencia + strict_types

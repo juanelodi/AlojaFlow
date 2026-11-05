@@ -31,6 +31,7 @@ return [
         'sistema' => 'System',
     ],
     'comun' => [
+        'hecho' => 'Erledigt',
         'propiedad' => 'Unterkunft',
         'todas' => 'Alle Unterkünfte',
         'unidad' => 'Zimmer',
@@ -445,7 +446,9 @@ return [
         'idioma' => 'Sprache',
         'activo' => 'Aktiv',
         'administrador' => 'Administrator der Installation',
-        'administrador_ayuda' => 'Sieht und konfiguriert alle Unterkünfte.',
+        'administrador_ayuda' => 'Sieht und konfiguriert alle Unterkünfte. Ändert keine Module und installiert keine Aktualisierungen.',
+        'super' => 'Super-Administrator',
+        'super_ayuda' => 'Zugriff auf alles: ändert außerdem die Module, installiert Aktualisierungen und ernennt Administratoren.',
         'acceso' => 'Zugriff pro Unterkunft',
         'acceso_ayuda' => 'Eine Rolle in jeder Unterkunft, auf die der Benutzer zugreift.',
         'rol' => 'Rolle',

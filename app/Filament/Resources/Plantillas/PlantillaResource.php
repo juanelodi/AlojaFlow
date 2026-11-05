@@ -18,6 +18,7 @@ use App\Filament\Resources\Plantillas\Pages\ListPlantillas;
 use App\Models\Automatizacion;
 use App\Models\Plantilla;
 use App\Models\Propiedad;
+use App\Modulos\Modulo;
 use App\Seguridad\Acceso;
 use App\Support\Formato;
 use BackedEnum;
@@ -50,6 +51,11 @@ class PlantillaResource extends RecursoDeCualquierPropiedad
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
     protected static ?int $navigationSort = 2;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Mensajes;
+    }
 
     protected static function permiso(): string
     {

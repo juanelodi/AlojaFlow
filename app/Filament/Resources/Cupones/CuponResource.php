@@ -17,6 +17,7 @@ use App\Filament\Resources\Cupones\Pages\CreateCupon;
 use App\Filament\Resources\Cupones\Pages\EditCupon;
 use App\Filament\Resources\Cupones\Pages\ListCupones;
 use App\Models\Cupon;
+use App\Modulos\Modulo;
 use App\Reservas\Cupones;
 use App\Support\Formato;
 use BackedEnum;
@@ -47,6 +48,11 @@ class CuponResource extends RecursoDePropiedad
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTicket;
 
     protected static ?int $navigationSort = 7;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Cupones;
+    }
 
     public static function getNavigationGroup(): ?string
     {

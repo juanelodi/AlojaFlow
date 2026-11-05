@@ -50,9 +50,9 @@ class EditUsuario extends EditRecord
     {
         $this->accesos = array_values($data['accesos'] ?? []);
         unset($data['accesos']);
-        // Nadie se quita a sí mismo el acceso de administrador ni se desactiva.
+        // Nadie se quita a sí mismo el acceso de administrador ni se desactiva: siempre queda un super administrador.
         if ($this->record->getKey() === auth()->id()) {
-            unset($data['es_administrador'], $data['activo']);
+            unset($data['es_administrador'], $data['es_superadministrador'], $data['activo']);
         }
 
         return $data;

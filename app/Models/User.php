@@ -34,11 +34,12 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $zona_horaria
  * @property bool $activo
  * @property bool $es_administrador
+ * @property bool $es_superadministrador
  * @property string|null $app_authentication_secret
  * @property array<string>|null $app_authentication_recovery_codes
  * @property \Illuminate\Support\Carbon|null $ultimo_acceso_en
  */
-#[Fillable(['name', 'email', 'password', 'idioma', 'zona_horaria', 'activo', 'es_administrador'])]
+#[Fillable(['name', 'email', 'password', 'idioma', 'zona_horaria', 'activo', 'es_administrador', 'es_superadministrador'])]
 #[Hidden(['password', 'remember_token', 'app_authentication_secret', 'app_authentication_recovery_codes'])]
 class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery
 {
@@ -49,6 +50,13 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     protected static function booted(): void
     {
+        // Tiene acceso a todo: nunca es menos que administrador (D-070).
+        static::saving(function (User $usuario): void {
+            if ($usuario->es_superadministrador) {
+                $usuario->es_administrador = true;
+            }
+        });
+
         // Quien pierde el acceso o cambia de contraseña no sigue dentro en otro navegador.
         static::updated(function (User $usuario): void {
             if (! $usuario->wasChanged('password') && ! ($usuario->wasChanged('activo') && ! $usuario->activo)) {
@@ -72,6 +80,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'app_authentication_recovery_codes' => 'encrypted:array',
             'activo' => 'boolean',
             'es_administrador' => 'boolean',
+            'es_superadministrador' => 'boolean',
             'ultimo_acceso_en' => 'datetime',
         ];
     }

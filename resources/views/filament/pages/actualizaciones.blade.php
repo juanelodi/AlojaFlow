@@ -27,17 +27,54 @@
             @endif
         </x-filament::section>
 
+        <ol class="af-pasos-barra" aria-label="{{ __('actualizaciones.pasos') }}">
+            @foreach ([1 => 'barra_subir', 2 => 'barra_revisar', 3 => 'barra_instalar'] as $numero => $texto)
+                <li @class(['af-pasos-barra__paso', 'af-pasos-barra__paso--actual' => $this->pasoActual() === $numero, 'af-pasos-barra__paso--hecho' => $this->pasoActual() > $numero])>
+                    {{ __('actualizaciones.'.$texto) }}
+                </li>
+            @endforeach
+        </ol>
+
         <x-filament::section :heading="__('actualizaciones.paso_subir')">
-            <form wire:submit="subir" class="af-pila">
-                {{ $this->form }}
+            {{-- Por partes, con su propia petición cada una (D-072). Se ignora a Livewire: un archivo de 30 MB no cabe en su estado. --}}
+            <div class="af-pila" wire:ignore
+                x-data="subidaPorPartes({
+                    url: @js(route('actualizaciones.subir-parte')),
+                    token: @js(csrf_token()),
+                    tamano: {{ \App\Actualizacion\SubidaPorPartes::TAMANO_PARTE }},
+                    maximo: {{ (int) config('alojaflow.actualizaciones.tamano_maximo_paquete') }},
+                    textos: @js([
+                        'subiendo' => __('actualizaciones.subiendo'),
+                        'terminada' => __('actualizaciones.subida_terminada'),
+                        'noZip' => __('actualizaciones.error.no_es_zip'),
+                        'grande' => __('actualizaciones.error.demasiado_grande'),
+                        'red' => __('actualizaciones.error.subida_red'),
+                        'recarga' => __('actualizaciones.error.subida_recarga'),
+                    ]),
+                })">
+                <label class="af-campo">
+                    <span>{{ __('actualizaciones.subir') }}</span>
+                    <input type="file" accept=".zip,application/zip" x-ref="archivo" x-on:change="elegir($event)" x-bind:disabled="estado === 'subiendo' || estado === 'revisando'" class="af-archivo">
+                </label>
                 <div>
-                    <x-filament::button type="submit" icon="heroicon-m-arrow-up-tray">{{ __('actualizaciones.subir_boton') }}</x-filament::button>
+                    <x-filament::button icon="heroicon-m-arrow-up-tray" x-on:click="subir()" x-bind:disabled="! archivo || estado === 'subiendo' || estado === 'revisando'">
+                        <span x-text="estado === 'error' ? @js(__('actualizaciones.reintentar')) : @js(__('actualizaciones.subir_boton'))">{{ __('actualizaciones.subir_boton') }}</span>
+                    </x-filament::button>
                 </div>
-            </form>
+                <div x-show="estado === 'subiendo'" x-cloak role="status" class="af-subida">
+                    <div class="af-subida__barra" aria-hidden="true"><div x-bind:style="`inline-size: ${porcentaje}%`"></div></div>
+                    <p class="af-nota" x-text="mensaje"></p>
+                </div>
+                <p x-show="estado === 'revisando'" x-cloak role="status" class="af-esperando">
+                    <x-filament::loading-indicator class="af-esperando__icono" />
+                    <span x-text="mensaje"></span>
+                </p>
+                <p x-show="estado === 'error'" x-cloak role="alert" class="af-aviso af-aviso--error" x-text="mensaje"></p>
+            </div>
             <p class="af-nota" style="margin-top: .75rem">{{ __('actualizaciones.ftp', ['carpeta' => $this->carpetaEntrada()]) }}</p>
         </x-filament::section>
 
-        <x-filament::section :heading="__('actualizaciones.paso_revisar')">
+        <x-filament::section id="paso-revisar" :heading="__('actualizaciones.paso_revisar')">
             @php($disponibles = $this->disponibles())
             @if ($disponibles === [])
                 <p class="af-nota">{{ __('actualizaciones.sin_paquetes') }}</p>
@@ -57,10 +94,15 @@
                         <x-filament::input.checkbox wire:model.live="reinstalar" />
                         <span>{{ __('actualizaciones.reinstalar') }}</span>
                     </label>
-                    <x-filament::button color="gray" icon="heroicon-m-magnifying-glass" wire:click="revisar">{{ __('actualizaciones.revisar') }}</x-filament::button>
+                    <x-filament::button color="gray" icon="heroicon-m-magnifying-glass" wire:click="revisar" wire:target="revisar">{{ __('actualizaciones.revisar') }}</x-filament::button>
                     {{ $this->eliminarPaqueteAction }}
                 </div>
             @endif
+
+            <p wire:loading.flex wire:target="revisar" class="af-esperando" role="status" style="margin-top: 1rem">
+                <x-filament::loading-indicator class="af-esperando__icono" />
+                <span>{{ __('actualizaciones.revisando') }}</span>
+            </p>
 
             @if ($r = $this->revision)
                 <div class="af-pila" style="margin-top: 1rem">
@@ -84,6 +126,7 @@
                             <div class="af-prosa">{!! Str::markdown((string) $r['notas'], ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
                         @endif
                         <p class="af-nota">{{ __('actualizaciones.que_hara') }}</p>
+                        <p class="af-aviso" role="status">{{ __('actualizaciones.lista_para_instalar', ['version' => $r['version']]) }}</p>
                         <div>{{ $this->actualizarAction }}</div>
                     @endif
                 </div>
@@ -137,4 +180,103 @@
             @endif
         </x-filament::section>
     </div>
+
+    @script
+    <script>
+        Alpine.data('subidaPorPartes', ({ url, token, tamano, maximo, textos }) => ({
+            archivo: null,
+            estado: 'libre',
+            porcentaje: 0,
+            mensaje: '',
+            subida: null,
+            siguiente: 0,
+
+            elegir(evento) {
+                this.archivo = evento.target.files[0] ?? null;
+                this.subida = null;
+                this.siguiente = 0;
+                this.estado = 'libre';
+            },
+
+            async subir() {
+                if (! this.archivo) {
+                    return;
+                }
+                if (! this.archivo.name.toLowerCase().endsWith('.zip')) {
+                    return this.fallo(textos.noZip);
+                }
+                if (this.archivo.size > maximo) {
+                    return this.fallo(textos.grande);
+                }
+                // Reintentar sigue desde la parte que falló: en una red mala, empezar de cero no terminaría nunca.
+                this.subida ??= Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
+                const total = Math.max(1, Math.ceil(this.archivo.size / tamano));
+                this.estado = 'subiendo';
+                for (let indice = this.siguiente; indice < total; indice++) {
+                    this.porcentaje = Math.round((100 * indice) / total);
+                    this.mensaje = textos.subiendo.replace(':porcentaje', this.porcentaje);
+                    const respuesta = await this.mandar(indice, total);
+                    if (! respuesta?.ok) {
+                        return this.fallo(respuesta?.error ?? textos.red);
+                    }
+                    this.siguiente = indice + 1;
+                    if (respuesta.paquete) {
+                        return this.terminar(respuesta.paquete);
+                    }
+                }
+            },
+
+            async mandar(indice, total) {
+                const datos = new FormData();
+                datos.append('_token', token);
+                datos.append('subida', this.subida);
+                datos.append('nombre', this.archivo.name);
+                datos.append('indice', indice);
+                datos.append('total', total);
+                datos.append('parte', this.archivo.slice(indice * tamano, (indice + 1) * tamano), 'parte.bin');
+                // Un corte de red o un hosting ocupado no debe tirar una subida de 30 MB: dos intentos más antes de avisar.
+                for (let intento = 0; intento < 3; intento++) {
+                    try {
+                        const respuesta = await fetch(url, { method: 'POST', body: datos, headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+                        const contenido = await respuesta.json().catch(() => null);
+                        if (contenido !== null && (respuesta.ok || respuesta.status === 422)) {
+                            return contenido;
+                        }
+                        // Sesión caducada o sin permiso: reintentar no lo arregla.
+                        if ([401, 403, 419].includes(respuesta.status)) {
+                            return { ok: false, error: textos.recarga };
+                        }
+                    } catch (error) {
+                        // Se reintenta abajo.
+                    }
+                    await new Promise((listo) => setTimeout(listo, 1500 * (intento + 1)));
+                }
+
+                return null;
+            },
+
+            async terminar(paquete) {
+                this.estado = 'revisando';
+                this.mensaje = textos.terminada;
+                this.$refs.archivo.value = '';
+                this.archivo = null;
+                this.subida = null;
+                this.siguiente = 0;
+                try {
+                    await $wire.subidaTerminada(paquete);
+                    this.estado = 'libre';
+                    document.getElementById('paso-revisar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } catch (error) {
+                    // El zip ya está arriba: al recargar sale en la lista.
+                    this.fallo(textos.recarga);
+                }
+            },
+
+            fallo(texto) {
+                this.estado = 'error';
+                this.mensaje = texto;
+            },
+        }));
+    </script>
+    @endscript
 </x-filament-panels::page>

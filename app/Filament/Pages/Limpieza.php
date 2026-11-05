@@ -21,6 +21,7 @@ use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Tarea;
 use App\Models\Unidad;
+use App\Modulos\Modulo;
 use App\Seguridad\Acceso;
 use App\Servicios\Operacion;
 use BackedEnum;
@@ -57,6 +58,11 @@ class Limpieza extends Page
 
     #[Url]
     public bool $soloMias = false;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Limpieza;
+    }
 
     protected static function permiso(): string
     {

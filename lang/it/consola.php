@@ -24,6 +24,7 @@ return [
         'de' => 'Pacchetto di AlojaFlow :version',
         'no_pasa' => 'Il pacchetto non supera la verifica: :errores',
         'instalador' => 'Installatore',
+        'instalador_completo' => 'Installer con lo zip dentro',
         'archivos' => 'File',
         'tamano' => 'Dimensione',
         'tamano_valor' => ':zip (:descomprimido una volta decompresso)',

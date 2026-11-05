@@ -12,6 +12,8 @@ namespace App\Instalacion;
 
 use App\Demo\GeneradorDemo;
 use App\Models\User;
+use App\Programador\TareasPorVisita;
+use App\Support\Ajustes;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
@@ -53,6 +55,7 @@ class Instalador
             'idioma' => $idioma,
             'activo' => true,
             'es_administrador' => true,
+            'es_superadministrador' => true,
         ]);
     }
 
@@ -63,13 +66,24 @@ class Instalador
         }
     }
 
-    public function terminar(): void
+    /**
+     * @param  string|null  $phpConsola  el PHP de consola que encontró el instalador, para el comando del cron
+     * @return string el enlace con el que quien instaló entra sin volver a escribir su contraseña
+     */
+    public function terminar(?string $phpConsola = null): string
     {
+        if (filled($phpConsola)) {
+            Ajustes::guardar(TareasPorVisita::AJUSTE_PHP_CONSOLA, $phpConsola);
+        }
         File::ensureDirectoryExists(dirname(storage_path(self::MARCA)));
         File::put(storage_path(self::MARCA), (string) json_encode([
             'version' => config('alojaflow.version'),
             'instalado_en' => now('UTC')->toIso8601String(),
         ]));
         CachesArranque::rehacer();
+
+        $super = User::query()->where('es_superadministrador', true)->where('activo', true)->orderBy('id')->first();
+
+        return $super === null ? '' : EnlaceEntrada::crear($super);
     }
 }

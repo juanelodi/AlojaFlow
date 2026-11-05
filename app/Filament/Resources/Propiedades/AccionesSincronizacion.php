@@ -15,6 +15,8 @@ use App\Enums\EstadoPrincipal;
 use App\Enums\OrigenEjecucion;
 use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Sincronizacion\HotelDruid\ErrorSincronizacion;
 use App\Sincronizacion\HotelDruid\Sincronizador;
 use Filament\Actions\Action;
@@ -32,7 +34,7 @@ final class AccionesSincronizacion
             ->label(__('ui.propiedades.probar'))
             ->icon(Heroicon::OutlinedSignal)
             ->color('gray')
-            ->visible(fn (Propiedad $record): bool => $record->principal !== null)
+            ->visible(fn (Propiedad $record): bool => $record->principal !== null && Modulos::activo(Modulo::Subordinacion))
             ->action(function (Propiedad $record): void {
                 $principal = $record->principal;
                 if ($principal === null) {
@@ -52,7 +54,7 @@ final class AccionesSincronizacion
         return Action::make('sincronizarAhora')
             ->label(__('ui.propiedades.sincronizar'))
             ->icon(Heroicon::OutlinedArrowPath)
-            ->visible(fn (Propiedad $record): bool => $record->principal !== null)
+            ->visible(fn (Propiedad $record): bool => $record->principal !== null && Modulos::activo(Modulo::Subordinacion))
             ->action(function (Propiedad $record): void {
                 $principal = $record->principal;
                 if ($principal === null) {

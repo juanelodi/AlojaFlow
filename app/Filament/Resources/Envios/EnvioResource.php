@@ -16,6 +16,7 @@ use App\Enums\EstadoEnvio;
 use App\Filament\Resources\Base\RecursoDeCualquierPropiedad;
 use App\Filament\Resources\Envios\Pages\ListEnvios;
 use App\Models\Envio;
+use App\Modulos\Modulo;
 use App\Seguridad\Acceso;
 use App\Support\Formato;
 use BackedEnum;
@@ -40,6 +41,11 @@ class EnvioResource extends RecursoDeCualquierPropiedad
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftRight;
 
     protected static ?int $navigationSort = 1;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Mensajes;
+    }
 
     protected static function permiso(): string
     {

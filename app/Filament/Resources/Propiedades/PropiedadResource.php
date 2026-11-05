@@ -18,6 +18,8 @@ use App\Filament\Resources\Propiedades\RelationManagers\EjecucionesRelationManag
 use App\Filament\Resources\Propiedades\Schemas\PropiedadForm;
 use App\Filament\Resources\Propiedades\Tables\PropiedadesTable;
 use App\Models\Propiedad;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Seguridad\Acceso;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -70,7 +72,9 @@ class PropiedadResource extends Resource
 
     public static function canCreate(): bool
     {
-        return self::esAdministrador() && ! ModoDemo::activo();
+        // Con el módulo apagado, la primera sí: sin ella no hay sistema.
+        return self::esAdministrador() && ! ModoDemo::activo()
+            && (Modulos::activo(Modulo::VariasPropiedades) || ! Propiedad::query()->where('es_demo', false)->exists());
     }
 
     public static function canEdit(Model $record): bool

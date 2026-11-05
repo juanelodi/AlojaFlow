@@ -64,19 +64,26 @@ Tarda unos dos minutos.
 
 ### 2.1 Con el instalador (lo normal)
 
-`alojaflow:empaquetar` deja también `dist/instalar-alojaflow-x.y.z.php`: **un solo archivo** con el
-instalador y el zip firmado dentro, después de `__halt_compiler` (plantilla:
-`instalador/instalar.php`).
+`alojaflow:empaquetar` deja también dos instaladores de **un solo archivo** (plantilla: `instalador/instalar.php`, D-071):
+
+- `dist/instalar-alojaflow-x.y.z.php` (unos 90 KB): baja el zip firmado de GitHub (`alojaflow.actualizaciones.url_paquete`).
+- `dist/instalar-alojaflow-x.y.z-completo.php`: lleva el zip dentro, después de `__halt_compiler`, para el servidor que no sale a internet.
 
 1. Se sube ese archivo a la carpeta del dominio o subdominio, y se abre en el navegador.
 2. **Revisa el servidor** y dice en lenguaje claro qué falta: PHP, extensiones, permisos, espacio,
-   memoria, límites, HTTPS, y si la carpeta ya tiene otros archivos. Lo rojo impide seguir.
-3. **Pide solo lo básico:** servidor, nombre, usuario y contraseña de la base, y nombre, correo y
-   contraseña del administrador. Antes de seguir prueba la conexión, la versión de la base, que esté
-   vacía y que el usuario pueda crear tablas.
-4. **Hace lo demás:** comprueba la firma, copia los archivos por tandas (no le afecta un límite de
-   30 segundos), escribe el `.env` con su `APP_KEY`, crea las tablas y al administrador, comprueba
-   que el sistema abre, muestra la línea del cron y se borra solo.
+   memoria, límites, HTTPS, si la carpeta ya tiene otros archivos y si puede bajar el paquete. Lo rojo impide seguir.
+   Si no hay nada en rojo pasa directo al siguiente paso, con el detalle a un clic.
+3. **Pide solo lo básico:** nombre, usuario y contraseña de la base, con una guía por hosting, y nombre, correo y
+   contraseña del super administrador, con un texto que explica lo que es (D-070). El servidor se busca solo
+   (`localhost`, `127.0.0.1`, `mysql.tudominio.com`); servidor y puerto van en «Avanzado». Antes de seguir prueba la conexión,
+   la versión de la base, que esté vacía y que el usuario pueda crear tablas.
+4. **Consigue el paquete:** el suyo, uno junto a él, o lo baja por pedazos de 8 MB. Si no puede bajarlo, ofrece
+   subirlo desde la computadora en partes de 1 MB, o por FTP.
+5. **Hace lo demás:** comprueba la firma, copia los archivos por tandas (no le afecta un límite de
+   30 segundos), escribe el `.env` con su `APP_KEY`, crea las tablas y al super administrador, comprueba
+   que el sistema abre y se borra solo.
+6. **Entrada directa:** el botón final lleva un enlace de un solo uso que caduca en 30 minutos. Primero salen las preguntas
+   que deciden qué módulos se prenden (D-069), y luego los primeros pasos en el inicio, entre ellos el cron.
 
 **Dónde queda instalado.**
 
@@ -125,11 +132,12 @@ apaga solo. **Sistema → Estado del sistema** dice cuál de los dos está funci
 
 ### 3.1 Desde el panel
 
-**Sistema → Actualizaciones**, solo para administradores (`app/Filament/Pages/Actualizaciones.php`):
+**Sistema → Actualizaciones**, solo para el super administrador (`app/Filament/Pages/Actualizaciones.php`):
 
 1. **Subir** el zip.
-   - El límite lo pone PHP (`upload_max_filesize` y `post_max_size`) y la página lo muestra.
-   - Si no alcanza, se copia el zip por FTP a `storage/app/private/actualizaciones/entrada/`.
+   - Va por partes de 1 MB (`App\Actualizacion\SubidaPorPartes`, D-072), así que no le afecta `upload_max_filesize`.
+     Si se corta, se reintenta desde donde iba. Al terminar se revisa solo.
+   - También se puede copiar por FTP a `storage/app/private/actualizaciones/entrada/`.
    - Los zips de esa carpeta aparecen en la lista. Su nombre se sanea y se pueden eliminar.
 2. **Revisar** sin cambiar nada:
    - firma, versión, requisitos y cada archivo;

@@ -103,6 +103,7 @@ class Empaquetar extends Command
             ['Zip', $resultado['zip']],
             ['SHA-256', $resultado['sha256']],
             [__('consola.paquete.instalador'), $resultado['instalador']],
+            [__('consola.paquete.instalador_completo'), $resultado['instalador_completo']],
             [__('consola.paquete.archivos'), (string) $resultado['archivos']],
             [__('consola.paquete.tamano'), __('consola.paquete.tamano_valor', ['zip' => Number::fileSize((int) filesize($resultado['zip']), 1), 'descomprimido' => Number::fileSize($resultado['bytes'], 1)])],
         ]);

@@ -17,6 +17,7 @@ use App\Filament\Resources\Webhooks\Pages\CreateWebhook;
 use App\Filament\Resources\Webhooks\Pages\EditWebhook;
 use App\Filament\Resources\Webhooks\Pages\ListWebhooks;
 use App\Models\Webhook;
+use App\Modulos\Modulo;
 use App\Seguridad\Acceso;
 use App\Seguridad\ClienteExterno;
 use BackedEnum;
@@ -47,6 +48,11 @@ class WebhookResource extends RecursoDeCualquierPropiedad
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowTopRightOnSquare;
 
     protected static ?int $navigationSort = 4;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Integraciones;
+    }
 
     protected static function permiso(): string
     {

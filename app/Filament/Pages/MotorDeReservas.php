@@ -13,6 +13,8 @@ namespace App\Filament\Pages;
 use App\Demo\ModoDemo;
 use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Motor\AjustesMotor;
 use App\Motor\Pasarelas;
 use App\Seguridad\Acceso;
@@ -53,7 +55,7 @@ class MotorDeReservas extends Page
      */
     public static function propiedadesGestionables(): array
     {
-        return Acceso::propiedadesIndependientes(Acceso::usuarioActual(), Acceso::CATALOGO);
+        return Modulos::activo(Modulo::Motor) ? Acceso::propiedadesIndependientes(Acceso::usuarioActual(), Acceso::CATALOGO) : [];
     }
 
     public static function canAccess(): bool
@@ -133,14 +135,14 @@ class MotorDeReservas extends Page
                     Textarea::make('instrucciones')->label(__('motor.panel.instrucciones'))->helperText(__('motor.panel.instrucciones_ayuda'))->rows(3)->maxLength(3000)->columnSpanFull(),
                     Textarea::make('condiciones')->label(__('motor.panel.condiciones'))->rows(3)->maxLength(5000)->columnSpanFull(),
                 ]),
-                Section::make(__('motor.panel.stripe'))->description(__('motor.panel.stripe_ayuda'))->hidden(fn (): bool => ModoDemo::activo())->collapsible()->columns(['default' => 1, 'md' => 2])->schema([
+                Section::make(__('motor.panel.stripe'))->description(__('motor.panel.stripe_ayuda'))->hidden(fn (): bool => ModoDemo::activo() || ! Modulos::activo(Modulo::Pagos))->collapsible()->columns(['default' => 1, 'md' => 2])->schema([
                     TextInput::make('stripe_secreta')->label(__('motor.panel.stripe_secreta'))->password()->revealable()->autocomplete('new-password')->maxLength(300)
                         ->helperText(fn (): string => $ayudaLlave('stripe_secreta')),
                     TextInput::make('stripe_webhook')->label(__('motor.panel.stripe_webhook'))->password()->revealable()->autocomplete('new-password')->maxLength(300)
                         ->helperText(fn (): string => $ayudaLlave('stripe_webhook')),
                     Toggle::make('stripe_quitar')->label(__('motor.panel.quitar_llaves')),
                 ]),
-                Section::make(__('motor.panel.mercadopago'))->description(__('motor.panel.mercadopago_ayuda'))->hidden(fn (): bool => ModoDemo::activo())->collapsible()->columns(['default' => 1, 'md' => 2])->schema([
+                Section::make(__('motor.panel.mercadopago'))->description(__('motor.panel.mercadopago_ayuda'))->hidden(fn (): bool => ModoDemo::activo() || ! Modulos::activo(Modulo::Pagos))->collapsible()->columns(['default' => 1, 'md' => 2])->schema([
                     TextInput::make('mercadopago_token')->label(__('motor.panel.mercadopago_token'))->password()->revealable()->autocomplete('new-password')->maxLength(300)
                         ->helperText(fn (): string => $ayudaLlave('mercadopago_token')),
                     TextInput::make('mercadopago_webhook')->label(__('motor.panel.mercadopago_webhook'))->password()->revealable()->autocomplete('new-password')->maxLength(300)

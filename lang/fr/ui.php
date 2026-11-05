@@ -31,6 +31,7 @@ return [
         'sistema' => 'Système',
     ],
     'comun' => [
+        'hecho' => 'Fait',
         'propiedad' => 'Établissement',
         'todas' => 'Tous les établissements',
         'unidad' => 'Chambre',
@@ -445,7 +446,9 @@ return [
         'idioma' => 'Langue',
         'activo' => 'Actif',
         'administrador' => 'Administrateur de l’installation',
-        'administrador_ayuda' => 'Voit et configure tous les établissements.',
+        'administrador_ayuda' => 'Voit et configure tous les établissements. Ne change pas les modules et n’installe pas les mises à jour.',
+        'super' => 'Super administrateur',
+        'super_ayuda' => 'Accès à tout : change aussi les modules, installe les mises à jour et nomme les administrateurs.',
         'acceso' => 'Accès par établissement',
         'acceso_ayuda' => 'Un rôle dans chaque établissement auquel il a accès.',
         'rol' => 'Rôle',

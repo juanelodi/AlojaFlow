@@ -18,24 +18,19 @@ use App\Models\Actualizacion;
 use App\Seguridad\Acceso;
 use BackedEnum;
 use Filament\Actions\Action;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 /**
  * Actualizar AlojaFlow subiendo el zip de una versión (instalacion-actualizaciones.md).
- * Solo el administrador; se confirma con la contraseña.
- *
- * @property-read Schema $form
+ * Solo el super administrador; se confirma con la contraseña.
  */
 class Actualizaciones extends Page
 {
@@ -47,8 +42,6 @@ class Actualizaciones extends Page
 
     protected static ?int $navigationSort = 80;
 
-    /** @var array<string, mixed>|null */
-    public ?array $subida = [];
 
     public ?string $paquete = null;
 
@@ -59,7 +52,7 @@ class Actualizaciones extends Page
 
     public static function canAccess(): bool
     {
-        return (bool) Acceso::usuarioActual()?->es_administrador && ! ModoDemo::activo();
+        return Acceso::puedeActualizar(Acceso::usuarioActual()) && ! ModoDemo::activo();
     }
 
     public static function getNavigationGroup(): ?string
@@ -79,57 +72,29 @@ class Actualizaciones extends Page
 
     public function mount(): void
     {
-        $this->form->fill();
         $this->paquete = $this->actualizador()->paquetesDisponibles()[0] ?? null;
     }
 
-    public function form(Schema $schema): Schema
+    /**
+     * Terminó de subir: el JavaScript de la pantalla avisa, y se revisa sin pedir otro clic (lo primero que pidió
+     * quien la usa: que no se quede sin decir nada entre el paso 1 y el 2).
+     */
+    public function subidaTerminada(string $paquete): void
     {
-        return $schema
-            ->components([
-                FileUpload::make('archivo')
-                    ->label(__('actualizaciones.subir'))
-                    ->helperText(__('actualizaciones.subir_ayuda', $this->limites()))
-                    ->acceptedFileTypes(['application/zip', 'application/x-zip-compressed', 'application/octet-stream'])
-                    ->maxSize((int) ((int) config('alojaflow.actualizaciones.tamano_maximo_paquete') / 1024))
-                    ->storeFiles(false)
-                    ->required(),
-            ])
-            ->statePath('subida');
+        if (! in_array($paquete, $this->actualizador()->paquetesDisponibles(), true)) {
+            return;
+        }
+        $this->paquete = $paquete;
+        $this->reinstalar = false;
+        $this->revisar();
     }
 
     /**
-     * El zip subido pasa a la carpeta de entrada del actualizador, la misma que la del FTP.
+     * En qué paso va, para la barra de arriba.
      */
-    public function subir(): void
+    public function pasoActual(): int
     {
-        $archivo = $this->form->getState()['archivo'] ?? null;
-        if (! $archivo instanceof TemporaryUploadedFile) {
-            return;
-        }
-        $nombre = Actualizador::nombreSeguro($archivo->getClientOriginalName());
-        $carpeta = $this->actualizador()->carpetaEntrada();
-        File::ensureDirectoryExists($carpeta, 0700);
-        $origen = $archivo->readStream();
-        $destino = @fopen($carpeta.'/'.$nombre, 'wb');
-        $copiado = is_resource($origen) && is_resource($destino) && stream_copy_to_stream($origen, $destino) !== false;
-        if (is_resource($origen)) {
-            fclose($origen);
-        }
-        if (is_resource($destino)) {
-            fclose($destino);
-        }
-        $archivo->delete();
-        $this->form->fill();
-        if (! $copiado) {
-            Notification::make()->danger()->title(__('actualizaciones.error.no_escribe', ['ruta' => $nombre]))->send();
-
-            return;
-        }
-
-        $this->paquete = $nombre;
-        $this->revision = null;
-        Notification::make()->success()->title(__('actualizaciones.subido', ['paquete' => $nombre]))->send();
+        return ($this->revision['valida'] ?? false) ? 3 : ($this->revision !== null || $this->paquete !== null ? 2 : 1);
     }
 
     public function revisar(): void
@@ -181,7 +146,7 @@ class Actualizaciones extends Page
 
                     return;
                 }
-                $this->redirect(URL::temporarySignedRoute('actualizaciones.aplicar', now()->addMinutes(30), ['actualizacion' => $actualizacion->id]));
+                $this->redirect(URL::temporarySignedRoute('actualizaciones.instalando', now()->addMinutes(30), ['actualizacion' => $actualizacion->id]));
             });
     }
 
@@ -256,14 +221,6 @@ class Actualizaciones extends Page
     {
         return is_file($this->actualizador()->carpetaDe($actualizacion).'/'.Actualizador::COPIA_BASE_DATOS)
             && $actualizacion->estado !== EstadoActualizacion::Preparada;
-    }
-
-    /**
-     * @return array{subida: string, envio: string}
-     */
-    public function limites(): array
-    {
-        return ['subida' => (string) ini_get('upload_max_filesize'), 'envio' => (string) ini_get('post_max_size')];
     }
 
 

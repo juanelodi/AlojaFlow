@@ -133,12 +133,12 @@ class PanelAplicacionProvider extends PanelProvider
     }
 
     /**
-     * Durante el mantenimiento de una actualización solo entra el administrador que la empezó (con
+     * Durante el mantenimiento de una actualización solo entra el super administrador que la empezó (con
      * su cookie): si la segunda fase no terminó, ve en todas las pantallas el enlace para terminarla.
      */
     public static function avisoActualizacionSinTerminar(): View|string
     {
-        if (! app()->isDownForMaintenance() || ! Acceso::usuarioActual()?->es_administrador
+        if (! app()->isDownForMaintenance() || ! Acceso::puedeActualizar(Acceso::usuarioActual())
             || request()->routeIs(Actualizaciones::getRouteName())) {
             return '';
         }

@@ -11,6 +11,8 @@ declare(strict_types=1);
 namespace App\Comunicacion;
 
 use App\Models\Reserva;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Support\Formato;
 
 /**
@@ -44,7 +46,7 @@ final class VariablesMensaje
             'total' => Formato::dinero($reserva->total, $reserva->moneda),
             'pagado' => Formato::dinero($reserva->pagado, $reserva->moneda),
             'pendiente' => Formato::dinero($reserva->pendiente, $reserva->moneda),
-            'enlace_reserva' => $propiedad->esIndependiente() ? self::enlaceInstalado('motor.reserva', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico, 'idioma' => $idioma]) : '',
+            'enlace_reserva' => $propiedad->esIndependiente() && Modulos::activo(Modulo::Motor) ? self::enlaceInstalado('motor.reserva', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico, 'idioma' => $idioma]) : '',
         ];
         app()->setLocale($idiomaAnterior);
 

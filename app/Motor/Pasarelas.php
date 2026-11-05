@@ -11,6 +11,8 @@ declare(strict_types=1);
 namespace App\Motor;
 
 use App\Models\Propiedad;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Pagos\ProveedorMercadoPago;
 use App\Pagos\ProveedorPago;
 use App\Pagos\ProveedorStripe;
@@ -33,6 +35,14 @@ final class Pasarelas
      */
     public function disponibles(): array
     {
+        return Modulos::activo(Modulo::Pagos) ? $this->conLlaves() : [];
+    }
+
+    /**
+     * @return array<string, ProveedorPago>
+     */
+    private function conLlaves(): array
+    {
         $ajustes = new AjustesMotor($this->propiedad);
         $disponibles = [];
         if ($ajustes->tieneLlave('stripe_secreta')) {
@@ -45,8 +55,11 @@ final class Pasarelas
         return $disponibles;
     }
 
+    /**
+     * También con el módulo de pagos apagado: un cobro que el huésped ya hizo debe quedar anotado cuando llegue su aviso.
+     */
     public function proveedor(string $nombre): ?ProveedorPago
     {
-        return $this->disponibles()[$nombre] ?? null;
+        return $this->conLlaves()[$nombre] ?? null;
     }
 }

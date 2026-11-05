@@ -15,6 +15,7 @@ use App\Filament\Resources\Cajas\Pages\CreateCaja;
 use App\Filament\Resources\Cajas\Pages\EditCaja;
 use App\Filament\Resources\Cajas\Pages\ListCajas;
 use App\Models\Caja;
+use App\Modulos\Modulo;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
@@ -41,6 +42,11 @@ class CajaResource extends RecursoDePropiedad
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInboxStack;
 
     protected static ?int $navigationSort = 6;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Caja;
+    }
 
     public static function getNavigationGroup(): ?string
     {

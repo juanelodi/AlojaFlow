@@ -10,7 +10,10 @@ declare(strict_types=1);
 
 namespace App\Instalacion;
 
+use Illuminate\Container\Container;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -29,12 +32,32 @@ final class CachesArranque
         if (! app()->isProduction()) {
             return;
         }
-        foreach (self::COMANDOS as $comando) {
-            try {
-                Artisan::call($comando);
-            } catch (Throwable $e) {
-                Log::warning('Cachés de arranque: '.$comando.': '.$e->getMessage());
+        self::sinCambiarLaAplicacion(function (): void {
+            foreach (self::COMANDOS as $comando) {
+                try {
+                    Artisan::call($comando);
+                } catch (Throwable $e) {
+                    Log::warning('Cachés de arranque: '.$comando.': '.$e->getMessage());
+                }
             }
+        });
+    }
+
+    /**
+     * `config:cache` arma una aplicación nueva para leer la configuración, y esa se queda como la actual: lo que siguiera en la
+     * petición usaría otra sesión. Así se perdía el aviso de «AlojaFlow se actualizó», y solo en producción.
+     */
+    public static function sinCambiarLaAplicacion(callable $trabajo): void
+    {
+        $aplicacion = app();
+        try {
+            $trabajo();
+        } finally {
+            Container::setInstance($aplicacion);
+            Facade::clearResolvedInstances();
+            Facade::setFacadeApplication($aplicacion);
+            Model::setConnectionResolver($aplicacion->make('db'));
+            Model::setEventDispatcher($aplicacion->make('events'));
         }
     }
 }

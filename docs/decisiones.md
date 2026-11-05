@@ -496,6 +496,43 @@ algo la refresca. **Por qué no:** en un teléfono con mala red se pierde lo que
 que no es el motivo:** no se rompió nada de lo que se probó, y se activa con una línea si esto cambia. Cifras y pruebas en
 `docs/rendimiento-movil.md`.
 
+### D-069 · 2026-11-05 · Sistema modular
+Quince módulos en `App\Modulos\Modulo`; hoy, calendario, reservas, huéspedes, usuarios, copias, actualizaciones, privacidad y
+«Código fuente» no se apagan. Son **por instalación**, no por propiedad, y solo los cambia el super administrador (Sistema →
+Módulos). Apagar no borra nada: sale del menú, sus páginas no abren y sus tareas se detienen. En la primera entrada de quien
+instaló salen cinco preguntas que deciden qué se prende (`PrimerasPreguntas`); se pueden repetir y saltar, y si se saltan queda todo
+prendido. Mientras nadie decide, todo está prendido. En una instalación que se actualiza, lo que había sigue prendido; lo que llegue
+con versiones futuras llega apagado y con aviso (`modulos.conocidos`). **Dos excepciones a propósito:** el aviso de un cobro sigue
+entrando con el módulo de pagos apagado, porque ese dinero ya se movió, y `alojaflow:mensajes` sigue corriendo: sus eventos se dan
+por vistos sin generar nada, para que al volver a prender no salga un mensaje de hace meses. Al apagar mensajes o avisos a otros
+sistemas, lo que estaba por salir queda como omitido. **Por qué por instalación:** es lo que pidió el usuario, y una
+instalación es de un solo cliente. **Riesgo que queda:** apagar un módulo con una pantalla abierta no la cierra hasta que se recargue.
+
+### D-070 · 2026-11-05 · Super administrador
+`users.es_superadministrador`, por encima de `es_administrador`. Tiene acceso a todo y es quien instala. Solo él cambia módulos,
+instala actualizaciones y nombra o toca administradores: si un administrador pudiera cambiarle la contraseña a otro, entraría como él.
+Nadie se quita a sí mismo el acceso, así que siempre queda uno. Copias, estado del sistema y lo demás siguen siendo de cualquier
+administrador. Al actualizar, el administrador activo más antiguo queda como super administrador y los demás no: en casi todas las
+instalaciones es quien instaló. `alojaflow:crear-administrador` lo crea si no queda ninguno, porque quien llega a la consola ya manda en
+el servidor.
+
+### D-071 · 2026-11-05 · Instalador chico y entrada directa
+`instalar-alojaflow-x.y.z.php` ya no lleva el zip: pesa unos 90 KB y lo baja de GitHub por pedazos, con `Range`, para caber en el límite de
+tiempo del hosting. **Da igual de dónde venga,** porque el manifiesto va firmado y cada archivo se comprueba contra él. Si el servidor no
+sale a internet, ofrece subirlo por partes o por FTP, y `instalar-alojaflow-x.y.z-completo.php` sigue llevándolo dentro. La versión está fija en
+cada instalador. La revisión del servidor solo se detiene si hay algo en rojo. El servidor de la base se busca solo (`localhost`, `127.0.0.1` y
+`mysql.tudominio.com`), y el puerto va en «Avanzado». Al terminar, un enlace de un solo uso deja entrar sin escribir la contraseña. Caduca en 30
+minutos, se guarda su huella y solo lo recibe el navegador dueño del instalador. El cron deja de pedirse al final y pasa a los primeros pasos,
+con el PHP de consola que encontró el instalador. **Por qué:** el usuario pidió una instalación más sencilla y dijo sí a esta propuesta.
+**Riesgo que queda:** el enlace viaja en la dirección; por eso sirve una vez y el botón no manda `Referer`.
+
+### D-072 · 2026-11-05 · Subir el paquete por partes
+La pantalla de actualizaciones parte el zip en pedazos de 1 MB, que llegan por `POST /actualizaciones/subir-parte`. Muchos hostings
+limitan las subidas a 2 MB y 30 MB no caben. La lógica viene de `actualizar.php` de la 1.2.3, reescrita. Volver a mandar una parte no la
+duplica, y reintentar sigue desde donde iba. Al terminar se revisa solo, con un mensaje de espera, porque en la 1.0.10 no decía nada entre el
+paso 1 y el 2. Al instalar sale de inmediato una página de «Instalando…» que se queda mientras el navegador espera, porque antes parecía que
+el botón no hizo nada.
+
 ---
 
 ## Pendientes

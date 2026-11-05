@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Base;
 
+use App\Modulos\Modulos;
 use App\Seguridad\Acceso;
 
 /**
@@ -19,6 +20,6 @@ abstract class RecursoDeCualquierPropiedad extends RecursoDePropiedad
 {
     public static function propiedadesGestionables(): array
     {
-        return Acceso::propiedades(Acceso::usuarioActual(), static::permiso());
+        return Modulos::disponible(static::modulo()) ? Acceso::propiedades(Acceso::usuarioActual(), static::permiso()) : [];
     }
 }

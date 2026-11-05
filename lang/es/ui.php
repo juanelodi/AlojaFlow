@@ -33,6 +33,8 @@ return [
     ],
 
     'comun' => [
+
+        'hecho' => 'Hecho',
         'propiedad' => 'Propiedad',
         'todas' => 'Todas las propiedades',
         'unidad' => 'Unidad',
@@ -454,7 +456,9 @@ return [
         'idioma' => 'Idioma',
         'activo' => 'Activo',
         'administrador' => 'Administrador de la instalación',
-        'administrador_ayuda' => 'Ve y configura todas las propiedades.',
+        'administrador_ayuda' => 'Ve y configura todas las propiedades. No cambia los módulos ni instala actualizaciones.',
+        'super' => 'Super administrador',
+        'super_ayuda' => 'Acceso a todo: además cambia los módulos, instala actualizaciones y nombra administradores.',
         'acceso' => 'Acceso por propiedad',
         'acceso_ayuda' => 'Un rol en cada propiedad a la que accede.',
         'rol' => 'Rol',

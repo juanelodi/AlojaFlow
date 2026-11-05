@@ -12,6 +12,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Concerns\ConPropiedadSeleccionada;
 use App\Filament\Pages\Concerns\ConRangoDeFechas;
+use App\Modulos\Modulo;
 use App\Seguridad\Acceso;
 use App\Servicios\Informes as ServicioInformes;
 use App\Support\Csv;
@@ -46,6 +47,11 @@ class Informes extends Page
 
     #[Url]
     public string $hasta = '';
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Informes;
+    }
 
     protected static function permiso(): string
     {

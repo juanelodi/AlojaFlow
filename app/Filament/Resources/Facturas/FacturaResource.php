@@ -17,6 +17,7 @@ use App\Facturacion\GestorFacturas;
 use App\Filament\Resources\Base\RecursoDeCualquierPropiedad;
 use App\Filament\Resources\Facturas\Pages\ListFacturas;
 use App\Models\Factura;
+use App\Modulos\Modulo;
 use App\Paises\Paises;
 use App\Seguridad\Acceso;
 use App\Support\Formato;
@@ -43,6 +44,11 @@ class FacturaResource extends RecursoDeCualquierPropiedad
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentCurrencyDollar;
 
     protected static ?int $navigationSort = 3;
+
+    protected static function modulo(): ?Modulo
+    {
+        return Modulo::Facturacion;
+    }
 
     protected static function permiso(): string
     {
