@@ -473,6 +473,8 @@ return [
         'instrucciones_pago' => 'Datos de ejemplo: transfiere a la cuenta 000 000 000 y manda el comprobante a hotel@example.com.',
         'politica' => 'Flexible',
         'politica_no_reembolsable' => 'No reembolsable',
+        'campo_placa' => 'Placa del coche',
+        'campo_vegetariano' => 'Vegetariano',
         'limpieza_media' => 'Limpieza a media estancia',
         'tarifa_no_reembolsable' => 'Doble no reembolsable',
         'tarifa_no_reembolsable_texto' => 'La misma habitación, 10 % más barata, pagando todo al reservar.',

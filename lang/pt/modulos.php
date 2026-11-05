@@ -44,6 +44,7 @@ return [
         'mensajes' => ['nombre' => 'Mensagens aos hóspedes', 'descripcion' => 'Modelos, envios por e-mail e WhatsApp, e mensagens automáticas.'],
         'camping' => ['nombre' => 'Parques de campismo', 'descripcion' => 'O que tem cada lugar, o equipamento do hóspede, escolher na planta, leituras de eletricidade e água, residentes sazonais e extras limitados.'],
         'propietarios' => ['nombre' => 'Proprietários', 'descripcion' => 'Se gere unidades de terceiros: proprietários e comissão, despesas, extratos, o seu portal e as suas estadias.'],
+        'documentos' => ['nombre' => 'Documentos e campos próprios', 'descripcion' => 'Os seus documentos com os dados de cada reserva, como um contrato ou a lista de chegadas, e o que quiser guardar de hóspedes e reservas.'],
         'estancias_largas' => ['nombre' => 'Estadias longas e mensalidades', 'descripcion' => 'Preço por semana e por mês, calendário de pagamentos com lembretes e uma fatura por pagamento.'],
         'portal' => ['nombre' => 'A minha reserva e guia digital', 'descripcion' => 'Uma página para cada hóspede, com a reserva e o que precisa de saber, e um código QR em cada unidade.'],
         'bitacora' => ['nombre' => 'Diário de turnos', 'descripcion' => 'O que um turno deixa para o seguinte. O importante aparece em Hoje.'],

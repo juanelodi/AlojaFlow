@@ -12,13 +12,16 @@ namespace App\Demo;
 
 use App\Camping\AjustesCamping;
 use App\Comunicacion\PlantillasBase;
+use App\Documentos\DocumentosDePartida;
 use App\Enums\BaseCargo;
+use App\Enums\EntidadCampo;
 use App\Enums\EstadoReserva;
 use App\Enums\MetodoPago;
 use App\Enums\ModoFiscal;
 use App\Enums\ModoPropiedad;
 use App\Enums\ModoTarifa;
 use App\Enums\PaquetePais;
+use App\Enums\TipoCampoPropio;
 use App\Enums\TipoContacto;
 use App\Enums\TipoCupon;
 use App\Enums\TipoDocumentoLegal;
@@ -27,6 +30,7 @@ use App\Enums\TipoMovimiento;
 use App\Enums\TipoReserva;
 use App\Llegada\GestorDocumentosLegales;
 use App\Models\Caja;
+use App\Models\CampoPropio;
 use App\Models\Canal;
 use App\Models\ConceptoCargo;
 use App\Models\Cupon;
@@ -132,6 +136,7 @@ final class GeneradorDemo
             $unidades = $this->crearCatalogo($propiedad);
             $this->crearCatalogosExtra($propiedad);
             $this->crearTarifasDeLaDoble($propiedad);
+            $this->crearDocumentos($propiedad);
             $this->crearMensajes($propiedad);
             $huespedes = $this->crearHuespedes($propiedad);
             foreach ($unidades as $indice => $unidad) {
@@ -229,6 +234,16 @@ final class GeneradorDemo
         foreach ($tarifas as $tarifa) {
             $tarifa->otrasUnidades()->sync($doble->unidades()->pluck('id')->all());
         }
+    }
+
+    /**
+     * Los documentos de partida y dos campos propios (D-122, D-123).
+     */
+    private function crearDocumentos(Propiedad $propiedad): void
+    {
+        DocumentosDePartida::sembrar($propiedad);
+        CampoPropio::query()->create(['propiedad_id' => $propiedad->id, 'entidad' => EntidadCampo::Reserva, 'nombre' => __('ui.demo.campo_placa')]);
+        CampoPropio::query()->create(['propiedad_id' => $propiedad->id, 'entidad' => EntidadCampo::Huesped, 'nombre' => __('ui.demo.campo_vegetariano'), 'tipo' => TipoCampoPropio::SiNo]);
     }
 
     private function crearCatalogosExtra(Propiedad $propiedad): void

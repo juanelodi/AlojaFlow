@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Reservas\Schemas;
 
 use App\Camping\AtributosLugar;
+use App\Documentos\CamposPropios;
 use App\Enums\TipoEquipo;
 use App\Models\EventoReserva;
 use App\Models\Huesped;
@@ -76,6 +77,12 @@ class ReservaInfolist
                     TextEntry::make('descuento')->label(__('ui.reservas.descuento'))->formatStateUsing($dinero('descuento')),
                     TextEntry::make('comision')->label(__('ui.reservas.comision'))->formatStateUsing($dinero('comision')),
                     TextEntry::make('tarifa_nombre')->label(__('ui.reservas.tarifa'))->placeholder('—'),
+                ]),
+            Section::make(__('documentos_propios.campos.seccion'))->columnSpanFull()
+                ->visible(fn (Reserva $record): bool => CamposPropios::lineas($record) !== [])
+                ->schema([
+                    TextEntry::make('lista_campos_propios')->label(__('documentos_propios.campos.seccion'))->hiddenLabel()
+                        ->state(fn (Reserva $record): array => CamposPropios::lineas($record))->listWithLineBreaks(),
                 ]),
             Section::make(__('ui.comun.origen'))->columnSpanFull()
                 ->columns(['default' => 1, 'sm' => 2, 'lg' => 4])

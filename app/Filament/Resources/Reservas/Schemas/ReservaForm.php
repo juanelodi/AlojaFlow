@@ -12,11 +12,13 @@ namespace App\Filament\Resources\Reservas\Schemas;
 
 use App\Camping\AtributosLugar;
 use App\Camping\CupoExtras;
+use App\Enums\EntidadCampo;
 use App\Enums\EstadoReserva;
 use App\Enums\TipoContacto;
 use App\Enums\TipoEquipo;
 use App\Enums\TipoReserva;
 use App\Filament\Campos\CampoDinero;
+use App\Filament\Campos\CamposPropiosPanel;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Canal;
 use App\Models\ConceptoCargo;
@@ -177,6 +179,7 @@ class ReservaForm
                         ])
                         ->createOptionUsing(fn (array $data, Get $get): int => self::crearHuesped(self::propiedadPermitida($get('propiedad_id')), $data)),
                 ]),
+            CamposPropiosPanel::seccion(EntidadCampo::Reserva, $esReserva),
             Section::make(__('ui.cargos.modelos'))->columnSpanFull()
                 ->visible(fn (Get $get): bool => $esReserva($get) && self::hayConceptosOpcionales($get('propiedad_id')))
                 ->collapsible()

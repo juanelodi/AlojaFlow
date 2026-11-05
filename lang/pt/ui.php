@@ -464,6 +464,8 @@ return [
         'instrucciones_pago' => 'Dados de exemplo: transfira para a conta 000 000 000 e envie o comprovativo para hotel@example.com.',
         'politica' => 'Flexível',
         'politica_no_reembolsable' => 'Não reembolsável',
+        'campo_placa' => 'Matrícula do carro',
+        'campo_vegetariano' => 'Vegetariano',
         'limpieza_media' => 'Limpeza a meio da estadia',
         'tarifa_no_reembolsable' => 'Duplo não reembolsável',
         'tarifa_no_reembolsable_texto' => 'O mesmo quarto, 10 % mais barato, pagando tudo ao reservar.',

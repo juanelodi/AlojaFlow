@@ -44,6 +44,7 @@ return [
         'mensajes' => ['nombre' => 'Messaggi agli ospiti', 'descripcion' => 'Modelli, invii via e-mail e WhatsApp, e messaggi automatici.'],
         'camping' => ['nombre' => 'Campeggi e piazzole', 'descripcion' => 'Cosa offre ogni piazzola, l’attrezzatura dell’ospite, la scelta sulla mappa, le letture di luce e acqua, i residenti stagionali e gli extra limitati.'],
         'propietarios' => ['nombre' => 'Proprietari', 'descripcion' => 'Se gestisci unità di terzi: proprietari e commissione, spese, estratti conto, il loro portale e i loro soggiorni.'],
+        'documentos' => ['nombre' => 'Documenti e campi propri', 'descripcion' => 'I tuoi documenti con i dati di ogni prenotazione, come un contratto o l’elenco degli arrivi, e ciò che vuoi conservare di ospiti e prenotazioni.'],
         'estancias_largas' => ['nombre' => 'Soggiorni lunghi e mensilità', 'descripcion' => 'Prezzo a settimana e al mese, calendario dei pagamenti con promemoria e una fattura per pagamento.'],
         'portal' => ['nombre' => 'La mia prenotazione e guida digitale', 'descripcion' => 'Una pagina per ogni ospite, con la prenotazione e ciò che deve sapere, e un codice QR in ogni unità.'],
         'bitacora' => ['nombre' => 'Registro dei turni', 'descripcion' => 'Ciò che un turno lascia al successivo. L’importante compare in Oggi.'],

@@ -10,9 +10,12 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Reservas\Pages;
 
+use App\Enums\EntidadCampo;
+use App\Filament\Campos\CamposPropiosPanel;
 use App\Filament\Resources\Reservas\AccionesReserva;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Reserva;
+use App\Seguridad\Acceso;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
@@ -45,6 +48,8 @@ class ViewReserva extends ViewRecord
                 AccionesReserva::facturar(),
                 AccionesReserva::noShow(),
                 AccionesReserva::confirmacionPdf(),
+                AccionesReserva::documentoPropio(),
+                CamposPropiosPanel::accion(EntidadCampo::Reserva, Acceso::RESERVAS),
                 AccionesReserva::deshacerRegistro(),
                 AccionesReserva::cancelar(),
             ])->label(__('ui.reservas.mas_acciones'))->button()->color('gray'),

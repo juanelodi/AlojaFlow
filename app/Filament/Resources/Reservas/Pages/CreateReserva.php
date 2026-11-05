@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Reservas\Pages;
 
+use App\Documentos\CamposPropios;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Filament\Resources\Reservas\Schemas\ReservaForm;
 use App\Models\Propiedad;
@@ -44,7 +45,10 @@ class CreateReserva extends CreateRecord
         abort_unless(in_array($propiedadId, ReservaResource::propiedadesGestionables(), true), 403);
 
         try {
-            return app(GestorReservas::class)->crear(Propiedad::query()->findOrFail($propiedadId), $data);
+            $reserva = app(GestorReservas::class)->crear(Propiedad::query()->findOrFail($propiedadId), $data);
+            CamposPropios::guardar($reserva, (array) ($data['campos_propios'] ?? []));
+
+            return $reserva;
         } catch (ReservaRechazada $e) {
             throw ValidationException::withMessages(['data.'.$e->campo => $e->getMessage()]);
         }

@@ -2,6 +2,27 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.27 — 2026-11-05
+
+**Documentos propios y campos propios.** Es un módulo nuevo y llega apagado: se prende en Sistema → Módulos.
+
+**Campos propios (Configuración → Campos propios)**
+- Lo que quieras guardar de un huésped o de una reserva y el sistema no pide: la placa del coche, si es vegetariano. Texto, o sí o no.
+- Se capturan en su formulario y en su ficha, y salen en la ficha, en los documentos y en los mensajes, con su variable.
+- **También en una propiedad subordinada:** no se escribe nada en la principal.
+- Entran en lo que se exporta y se anonimiza de un huésped, y pasan con él al fusionar.
+
+**Documentos propios (Configuración → Documentos propios)**
+- Un contrato, una hoja de registro, la lista de llegadas: los escribes como cualquier texto, en cada idioma, con variables como {huesped} o {llegada}.
+- **Lo que se repite se repite solo:** una fila de tabla con datos de un huésped sale una vez por cada huésped. Lo mismo con cargos, pagos y, en uno de varias reservas, con cada reserva.
+- Se bajan en PDF: el de una reserva, desde esa reserva, en «Más acciones»; el de varias, desde la lista, eligiendo fechas y si son las que llegan, salen o se hospedan.
+- Tres de partida: contrato, hoja de registro y lista de llegadas. **El contrato es solo un punto de partida: no lo ha revisado ningún abogado.**
+- El número de identificación solo sale completo para quien tiene permiso de ver huéspedes.
+
+**Demostración:** trae los documentos de partida y dos campos propios.
+
+**Sin verificar:** no se ha probado con un alojamiento real, ni impreso en papel.
+
 ## 1.0.26 — 2026-11-05
 
 **Cargos con días y condiciones.** Un cargo ya no tiene que cobrarse siempre igual. En Dinero → Cargos adicionales, cada uno tiene una parte nueva, «Cuándo se cobra», y si la dejas vacía todo sigue como antes.

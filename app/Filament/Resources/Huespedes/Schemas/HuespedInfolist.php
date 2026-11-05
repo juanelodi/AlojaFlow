@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Huespedes\Schemas;
 
+use App\Documentos\CamposPropios;
 use App\Models\CampoHuesped;
 use App\Models\Huesped;
 use App\Models\Reserva;
@@ -59,6 +60,8 @@ class HuespedInfolist
                     TextEntry::make('lista_campos')->label(__('ui.huespedes.campos'))
                         ->state(fn (Huesped $record): array => $record->campos->map(fn (CampoHuesped $c): string => $c->campo.': '.$c->valor)->all())
                         ->listWithLineBreaks()->placeholder('—'),
+                    TextEntry::make('lista_campos_propios')->label(__('documentos_propios.campos.seccion'))->visible(fn (Huesped $record): bool => CamposPropios::lineas($record) !== [])
+                        ->state(fn (Huesped $record): array => CamposPropios::lineas($record))->listWithLineBreaks(),
                 ]),
             Section::make(__('ui.huespedes.reservas'))->columnSpanFull()
                 ->schema([

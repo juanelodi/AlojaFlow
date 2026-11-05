@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Reservas;
 
+use App\Documentos\CamposPropios;
 use App\Models\ContactoHuesped;
 use App\Models\Grupo;
 use App\Models\Huesped;
@@ -69,6 +70,8 @@ final class FusionHuespedes
                     $contacto->update(['huesped_id' => $conservar->id, 'orden' => ++$orden]);
                 }
             }
+
+            CamposPropios::fusionar($conservar, $otra);
 
             RegistroAuditoria::anotar('huesped.fusionar', $conservar, ['otra' => $otra->id], $conservar->propiedad_id);
             $otra->delete();

@@ -464,6 +464,8 @@ return [
         'instrucciones_pago' => 'Beispieldaten: Überweisen Sie auf das Konto 000 000 000 und senden Sie den Beleg an hotel@example.com.',
         'politica' => 'Flexibel',
         'politica_no_reembolsable' => 'Nicht erstattbar',
+        'campo_placa' => 'Autokennzeichen',
+        'campo_vegetariano' => 'Vegetarisch',
         'limpieza_media' => 'Zwischenreinigung',
         'tarifa_no_reembolsable' => 'Doppelzimmer nicht erstattbar',
         'tarifa_no_reembolsable_texto' => 'Dasselbe Zimmer, 10 % günstiger, bei voller Zahlung beim Buchen.',

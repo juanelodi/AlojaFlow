@@ -10,7 +10,9 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Huespedes\Schemas;
 
+use App\Enums\EntidadCampo;
 use App\Enums\TipoContacto;
+use App\Filament\Campos\CamposPropiosPanel;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\ColorTipoCliente;
 use App\Models\Propiedad;
@@ -132,6 +134,7 @@ class HuespedForm
                                 ->datalist(fn (Get $get): array => self::tiposDeCliente($get('../../propiedad_id'))->where('campo', $get('campo'))->pluck('valor')->unique()->values()->all()),
                         ]),
                 ]),
+            CamposPropiosPanel::seccion(EntidadCampo::Huesped),
             Section::make(__('ui.huespedes.notas'))->columnSpanFull()
                 ->collapsible()
                 ->schema([

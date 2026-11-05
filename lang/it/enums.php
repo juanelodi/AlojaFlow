@@ -84,6 +84,9 @@ return [
         'advertencia' => 'Avviso',
         'error' => 'Errore',
     ],
+    'EntidadCampo' => ['huesped' => 'Un ospite', 'reserva' => 'Una prenotazione'],
+    'TipoCampoPropio' => ['texto' => 'Testo', 'si_no' => 'Sì o no'],
+    'AlcanceDocumento' => ['reserva' => 'Di una prenotazione', 'periodo' => 'Di più prenotazioni'],
     'TipoContacto' => [
         'telefono' => 'Telefono',
         'correo' => 'E-mail',

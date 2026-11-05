@@ -473,6 +473,8 @@ return [
         'instrucciones_pago' => 'Sample details: transfer to account 000 000 000 and send the receipt to hotel@example.com.',
         'politica' => 'Flexible',
         'politica_no_reembolsable' => 'Non-refundable',
+        'campo_placa' => 'Car plate',
+        'campo_vegetariano' => 'Vegetarian',
         'limpieza_media' => 'Mid-stay cleaning',
         'tarifa_no_reembolsable' => 'Double non-refundable',
         'tarifa_no_reembolsable_texto' => 'The same room, 10% cheaper, paying in full when booking.',

@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Reservas\Pages;
 
+use App\Documentos\CamposPropios;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\CargoReserva;
 use App\Models\Reserva;
@@ -36,6 +37,7 @@ class EditReserva extends EditRecord
         $data['cupon_codigo'] = $reserva->cupon?->codigo;
         $data['sin_catalogo'] = (int) $reserva->cargos()->whereNull('concepto_cargo_id')->sum('importe');
         $data['esta_reserva'] = $reserva->id;
+        $data['campos_propios'] = CamposPropios::valoresParaFormulario($reserva);
         // Las obligatorias se añaden solas: en el formulario solo van las elegidas.
         $data['cargos'] = $reserva->cargos()->with('concepto')->get()
             ->filter(fn (CargoReserva $c): bool => $c->concepto !== null && ! $c->concepto->obligatorio)
@@ -53,7 +55,10 @@ class EditReserva extends EditRecord
         /** @var Reserva $record */
         $data['reserva_id'] = $record->id;
         try {
-            return app(GestorReservas::class)->modificar($record, $data, isset($data['version']) ? (int) $data['version'] : null);
+            $reserva = app(GestorReservas::class)->modificar($record, $data, isset($data['version']) ? (int) $data['version'] : null);
+            CamposPropios::guardar($reserva, (array) ($data['campos_propios'] ?? []));
+
+            return $reserva;
         } catch (ReservaRechazada $e) {
             throw ValidationException::withMessages(['data.'.$e->campo => $e->getMessage()]);
         }

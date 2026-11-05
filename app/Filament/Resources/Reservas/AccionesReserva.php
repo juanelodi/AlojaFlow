@@ -15,6 +15,8 @@ use App\Comunicacion\Mensajero;
 use App\Comunicacion\VariablesMensaje;
 use App\Dinero\GestorPoliticas;
 use App\Documentos\GeneradorPdf;
+use App\Documentos\MotorDocumentos;
+use App\Enums\AlcanceDocumento;
 use App\Enums\CanalEnvio;
 use App\Enums\EstadoEnvio;
 use App\Enums\EstadoReserva;
@@ -22,12 +24,15 @@ use App\Enums\FrecuenciaLimpieza;
 use App\Enums\TipoReserva;
 use App\Facturacion\ErrorFacturacion;
 use App\Facturacion\GestorFacturas;
+use App\Filament\Resources\DocumentosPropios\DocumentoPropioResource;
 use App\Limpieza\GestorLimpieza;
 use App\Llegada\GestorLlegadas;
 use App\Models\Caja;
+use App\Models\DocumentoPropio;
 use App\Models\Factura;
 use App\Models\Plantilla;
 use App\Models\ReceptorFiscal;
+use App\Models\RegistroAuditoria;
 use App\Models\ReglaLimpieza;
 use App\Models\Reserva;
 use App\Models\SerieFacturacion;
@@ -378,6 +383,36 @@ final class AccionesReserva
             ->action(fn (Reserva $record): StreamedResponse => response()->streamDownload(function () use ($record): void {
                 echo app(GeneradorPdf::class)->confirmacion($record);
             }, 'reserva-'.str_replace('/', '-', $record->numero).'.pdf', ['Content-Type' => 'application/pdf']));
+    }
+
+    /**
+     * Un documento que escribió el alojamiento (D-123). También en una subordinada: no cambia nada de la reserva.
+     */
+    public static function documentoPropio(): Action
+    {
+        return Action::make('documentoPropio')
+            ->label(__('documentos_propios.accion'))
+            ->icon(Heroicon::OutlinedDocumentDuplicate)
+            ->color('gray')
+            ->visible(fn (Reserva $record): bool => $record->tipo === TipoReserva::Reserva && Modulos::activo(Modulo::Documentos) && self::documentosDe($record) !== [])
+            ->schema(fn (Reserva $record): array => [
+                Select::make('documento')->label(__('documentos_propios.elegir'))->required()->native(false)->options(self::documentosDe($record)),
+            ])
+            ->action(function (Reserva $record, array $data, MotorDocumentos $motor, GeneradorPdf $pdf): StreamedResponse {
+                $documento = DocumentoPropio::query()->where('propiedad_id', $record->propiedad_id)->where('activo', true)->findOrFail((int) $data['documento']);
+                $cuerpo = $motor->deReserva($documento, $record, Acceso::puede(Acceso::usuarioActual(), Acceso::HUESPEDES, $record->propiedad_id));
+                RegistroAuditoria::anotar('documento_propio.generar', $record, ['documento' => $documento->nombre], $record->propiedad_id);
+
+                return DocumentoPropioResource::descargar($pdf->documentoPropio($cuerpo, $documento->nombre, $record->propiedad, $record, $record->idioma), $documento->nombre);
+            });
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function documentosDe(Reserva $reserva): array
+    {
+        return DocumentoPropio::query()->where('propiedad_id', $reserva->propiedad_id)->where('activo', true)->where('alcance', AlcanceDocumento::Reserva->value)->orderBy('orden')->orderBy('nombre')->pluck('nombre', 'id')->all();
     }
 
     public static function deshacerRegistro(): Action

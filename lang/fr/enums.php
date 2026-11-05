@@ -84,6 +84,9 @@ return [
         'advertencia' => 'Avertissement',
         'error' => 'Erreur',
     ],
+    'EntidadCampo' => ['huesped' => 'Un client', 'reserva' => 'Une réservation'],
+    'TipoCampoPropio' => ['texto' => 'Texte', 'si_no' => 'Oui ou non'],
+    'AlcanceDocumento' => ['reserva' => 'D’une réservation', 'periodo' => 'De plusieurs réservations'],
     'TipoContacto' => [
         'telefono' => 'Téléphone',
         'correo' => 'E-mail',

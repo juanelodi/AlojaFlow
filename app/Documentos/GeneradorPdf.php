@@ -21,6 +21,7 @@ use App\Models\EstadoCuenta;
 use App\Models\Factura;
 use App\Models\Grupo;
 use App\Models\Pago;
+use App\Models\Propiedad;
 use App\Models\RegistroLlegada;
 use App\Models\Reserva;
 use App\Paises\Paises;
@@ -37,6 +38,14 @@ final class GeneradorPdf
     public function confirmacion(Reserva $reserva): string
     {
         return $this->pdf('documentos.confirmacion', $this->datos($reserva), $reserva->idioma);
+    }
+
+    /**
+     * Un documento del alojamiento (D-123), ya lleno por MotorDocumentos.
+     */
+    public function documentoPropio(string $cuerpo, string $titulo, Propiedad $propiedad, ?Reserva $reserva, ?string $idioma): string
+    {
+        return $this->pdf('documentos.propio', ['cuerpo' => $cuerpo, 'titulo' => $titulo, 'propiedad' => $propiedad] + ($reserva === null ? [] : ['reserva' => $reserva]), $idioma);
     }
 
     public function estadoCuenta(EstadoCuenta $estado): string
@@ -79,7 +88,7 @@ final class GeneradorPdf
     {
         return Pdf::loadView('documentos.informe', ['titulo' => $titulo, 'propiedades' => $propiedades, 'periodo' => $periodo, 'columnas' => $columnas, 'filas' => $filas])
             ->setPaper('letter', count($columnas) > 5 ? 'landscape' : 'portrait')
-            ->setOption(['isRemoteEnabled' => false, 'isPhpEnabled' => false])
+            ->setOption(['isRemoteEnabled' => false, 'isPhpEnabled' => false, 'isJavascriptEnabled' => false])
             ->output();
     }
 
@@ -150,7 +159,7 @@ final class GeneradorPdf
             app()->setLocale($idioma);
         }
         try {
-            return Pdf::loadView($vista, $datos)->setPaper('letter')->setOption(['isRemoteEnabled' => false, 'isPhpEnabled' => false])->output();
+            return Pdf::loadView($vista, $datos)->setPaper('letter')->setOption(['isRemoteEnabled' => false, 'isPhpEnabled' => false, 'isJavascriptEnabled' => false])->output();
         } finally {
             app()->setLocale($anterior);
         }

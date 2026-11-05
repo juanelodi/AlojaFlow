@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Comunicacion;
 
+use App\Documentos\CamposPropios;
 use App\Models\Reserva;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
@@ -61,7 +62,7 @@ final class VariablesMensaje
         app()->setLocale($idiomaAnterior);
 
         // Las propias del alojamiento (la clave del wifi…), sin pisar las del sistema.
-        return $variables + self::propias($reserva->propiedad_id);
+        return $variables + self::propias($reserva->propiedad_id) + CamposPropios::variables($reserva);
     }
 
     /**

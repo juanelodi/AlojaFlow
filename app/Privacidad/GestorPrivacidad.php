@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Privacidad;
 
 use App\Archivos\GestorArchivos;
+use App\Documentos\CamposPropios;
 use App\Enums\ClaseArchivo;
 use App\Enums\TipoSolicitudPrivacidad;
 use App\Models\Aceptacion;
@@ -65,6 +66,7 @@ final class GestorPrivacidad
             'ficha' => $huesped->makeVisible('documento_numero')->attributesToArray(),
             'contactos' => $huesped->contactos->map(fn (ContactoHuesped $c): array => ['tipo' => $c->tipo->value, 'valor' => $c->valor])->all(),
             'campos' => $huesped->campos->pluck('valor', 'campo')->all(),
+            'campos_propios' => CamposPropios::lineas($huesped),
             'reservas' => $reservas->map(fn (Reserva $r): array => [
                 'numero' => $r->numero, 'estado' => $r->estado->value, 'llegada' => $r->llegada->format('Y-m-d'), 'salida' => $r->salida->format('Y-m-d'), 'unidad' => $r->unidad->nombre ?? null,
                 'total' => $r->total, 'pagado' => $r->pagado, 'moneda' => $r->moneda, 'comentario' => $r->comentario, 'equipo' => $r->equipo,
@@ -177,6 +179,8 @@ final class GestorPrivacidad
                 $this->archivos->eliminar($archivo);
             }
 
+            // Son nuestros, también los de quien viene de la principal.
+            CamposPropios::borrarDe($huesped);
             $anonimizada = ! $huesped->sincronizada;
             if ($anonimizada) {
                 DB::table('reservas')->where('titular_id', $huesped->id)->where('sincronizada', false)->update(['comentario' => null, 'equipo' => null]);

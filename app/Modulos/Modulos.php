@@ -14,7 +14,9 @@ use App\Demo\ModoDemo;
 use App\Enums\EstadoEnvio;
 use App\Enums\ModoPropiedad;
 use App\Models\Aviso;
+use App\Models\CampoPropio;
 use App\Models\CuotaReserva;
+use App\Models\DocumentoPropio;
 use App\Models\Envio;
 use App\Models\FuenteIcal;
 use App\Models\Grupo;
@@ -171,6 +173,7 @@ final class Modulos
             Modulo::EstanciasLargas => CuotaReserva::query()->count(),
             Modulo::Camping => Lectura::query()->count(),
             Modulo::Propietarios => Propietario::query()->count(),
+            Modulo::Documentos => DocumentoPropio::query()->count() + CampoPropio::query()->count(),
             Modulo::Integraciones => Webhook::query()->where('activo', true)->count(),
             default => 0,
         };

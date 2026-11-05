@@ -44,6 +44,7 @@ return [
         'mensajes' => ['nombre' => 'Messages to guests', 'descripcion' => 'Templates, sending by email and WhatsApp, and automatic messages.'],
         'camping' => ['nombre' => 'Campsites', 'descripcion' => 'What each site has, the guest’s equipment, choosing on the map, electricity and water readings, seasonal residents and limited extras.'],
         'propietarios' => ['nombre' => 'Owners', 'descripcion' => 'If you manage units for others: owners and commission, expenses, statements, their portal and their stays.'],
+        'documentos' => ['nombre' => 'Own documents and fields', 'descripcion' => 'Your own documents with each booking’s data, like a contract or the arrivals list, and whatever you want to keep about guests and bookings.'],
         'estancias_largas' => ['nombre' => 'Long stays and monthly payments', 'descripcion' => 'Weekly and monthly prices, a payment schedule with reminders and one invoice per payment.'],
         'portal' => ['nombre' => 'My booking and digital guide', 'descripcion' => 'A page for each guest with their booking and what they need to know, and a QR code in each unit.'],
         'bitacora' => ['nombre' => 'Shift log', 'descripcion' => 'What one shift leaves for the next. Important notes appear on Today.'],

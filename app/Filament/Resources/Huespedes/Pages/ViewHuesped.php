@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Huespedes\Pages;
 
+use App\Enums\EntidadCampo;
+use App\Filament\Campos\CamposPropiosPanel;
 use App\Filament\Resources\Huespedes\HuespedResource;
 use App\Models\Huesped;
 use App\Privacidad\GestorPrivacidad;
@@ -34,6 +36,7 @@ class ViewHuesped extends ViewRecord
     {
         return [
             EditAction::make()->visible(fn (Huesped $record): bool => HuespedResource::canEdit($record)),
+            CamposPropiosPanel::accion(EntidadCampo::Huesped, Acceso::HUESPEDES),
             Action::make('exportarDatos')
                 ->label(__('llegada.privacidad.exportar'))
                 ->icon(Heroicon::OutlinedArrowDownTray)

@@ -464,6 +464,8 @@ return [
         'instrucciones_pago' => 'Dati di esempio: fai un bonifico sul conto 000 000 000 e invia la ricevuta a hotel@example.com.',
         'politica' => 'Flessibile',
         'politica_no_reembolsable' => 'Non rimborsabile',
+        'campo_placa' => 'Targa dell’auto',
+        'campo_vegetariano' => 'Vegetariano',
         'limpieza_media' => 'Pulizia a metà soggiorno',
         'tarifa_no_reembolsable' => 'Doppia non rimborsabile',
         'tarifa_no_reembolsable_texto' => 'La stessa camera, il 10 % in meno, pagando tutto alla prenotazione.',
