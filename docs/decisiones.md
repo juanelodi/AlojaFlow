@@ -742,6 +742,11 @@ El usuario decidió no meterse en facturación en ningún país: «solo un recib
 
 **El permiso `facturacion.gestionar` pasa a `cuentas.gestionar`,** con el mismo id: quien lo tenía conserva los estados de cuenta y el calendario de cobros.
 
+### D-132 · 2026-11-05 · alojaflow.com: Tag Manager con permiso, y nada que se mueva con el scroll
+El usuario dio su contenedor de Google Tag Manager. Se carga desde el archivo de scripts del sitio y solo si quien visita acepta el aviso: el sitio ya prometía que sin consentimiento no se carga nada de Google, y su política de seguridad no admite scripts en línea. Con él se abre esa política a Tag Manager y Analytics y se dejan de exigir los Trusted Types, porque `gtm.js` escribe directo en el DOM.
+
+El usuario sentía que la portada se trababa al bajar. Con la tarjeta de video de este equipo no se perdían cuadros, así que se quitó lo que podía sentirse así: lo que se movía a otra velocidad que el scroll, los textos fijos, el desenfoque de la cabecera y la ola que se volvía a pintar. Si una animación depende del scroll, cada golpe de rueda se ve como un tirón, aunque vaya a 60 cuadros.
+
 ---
 
 ## Pendientes
