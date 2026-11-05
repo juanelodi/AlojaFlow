@@ -82,6 +82,8 @@ class AppServiceProvider extends ServiceProvider
         // Por enlace, además de por dirección: quien tenga uno filtrado no llena el disco ni manda correos sin fin.
         RateLimiter::for('llegada-envio', fn (Request $request): Limit => Limit::perHour(20)->by('llegada:'.(string) $request->route('token')));
         RateLimiter::for('llegada-codigo', fn (Request $request): Limit => Limit::perHour(6)->by('llegada:'.(string) $request->route('token')));
+        // Por grupo o por reserva, además de por dirección: un enlace filtrado no llena el disco (D-097).
+        RateLimiter::for('comprobante-envio', fn (Request $request): Limit => Limit::perHour(20)->by('comprobante:'.(string) ($request->route('token') ?? $request->route('publico'))));
         // Crear una reserva aparta noches: cuesta más que cualquier otro envío público.
         RateLimiter::for('motor-reserva', fn (Request $request): array => [
             Limit::perMinute(5)->by('minuto:'.ClaveCliente::de($request)),

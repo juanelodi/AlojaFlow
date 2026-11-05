@@ -106,6 +106,20 @@ You can access your data, correct it or ask us to delete it by writing to {corre
 This text is a starting point: it must be adapted to the law of your country.
 TEXTO,
         ],
+        'contrato_grupo' => [
+            'titulo' => 'Group contract',
+            'cuerpo' => <<<'TEXTO'
+This contract governs the stay of the group “{grupo}” ({codigo}) at {propiedad}, coordinated by {coordinador}.
+
+1. STAY. From {llegada} to {salida}, with {habitaciones} rooms.
+2. PRICE. The total is {total}. Agreed payments:
+{pagos}
+3. GUEST LIST. The coordinator will say who goes in each room by {fecha_limite} at the latest.
+4. CANCELLATION. The cancellation policy made known to them applies.
+5. CONDITIONS. The coordinator informs the group of the property's rules. Each guest is liable for any damage they cause.
+6. COMPLAINTS. Write to us at {correo}.
+TEXTO,
+        ],
         'contrato' => [
             'titulo' => 'Accommodation terms',
             'cuerpo' => <<<'TEXTO'

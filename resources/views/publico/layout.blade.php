@@ -18,7 +18,7 @@ header.marca h1{font-size:1.35rem;margin:0}
 h2{font-size:1.1rem;margin:0 0 8px}
 .tarjeta{background:var(--tarjeta);border:1px solid var(--borde);border-radius:12px;padding:18px;margin-bottom:14px}
 label{display:block;font-size:.875rem;font-weight:600;margin:0 0 4px}
-input[type=text],input[type=email],input[type=tel],input[type=date],input[type=number],textarea{width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:8px;font:inherit;background:var(--campo);color:var(--tinta)}
+input[type=text],input[type=email],input[type=tel],input[type=date],input[type=number],input[type=password],input[type=file],textarea{width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:8px;font:inherit;background:var(--campo);color:var(--tinta)}
 input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid var(--marca);outline-offset:2px}
 .rejilla{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end}
 .campo{margin-bottom:12px}

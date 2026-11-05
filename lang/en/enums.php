@@ -67,6 +67,7 @@ return [
         'factura_xml' => 'Invoice (XML)',
         'factura_pdf' => 'Invoice (PDF)',
         'exportacion' => 'Export',
+        'comprobante' => 'Payment receipt',
     ],
 
     'CanalEnvio' => [
@@ -110,6 +111,7 @@ return [
         'llegada' => 'Online check-in',
         'contrato' => 'Contract',
         'factura' => 'Invoice',
+        'grupo' => 'Group',
     ],
 
     'EstadoFuenteIcal' => [
@@ -128,6 +130,7 @@ return [
         'contrato' => 'Accommodation terms',
         'reglamento' => 'House rules',
         'politica_cancelacion' => 'Cancellation policy',
+        'contrato_grupo' => 'Group contract',
     ],
 
     'EstadoRegistroLlegada' => [
@@ -160,5 +163,20 @@ return [
     'ModoFiscal' => [
         'pruebas' => 'Testing',
         'produccion' => 'Production',
+    ],
+    'EstadoGrupo' => [
+        'tentativo' => 'Tentative',
+        'confirmado' => 'Confirmed',
+        'cancelado' => 'Cancelled',
+    ],
+    'ModoPrecioGrupo' => [
+        'tarifa' => 'The rate of each unit',
+        'total' => 'A total price, shared by nights',
+        'por_capacidad' => 'A price per night by how many fit',
+    ],
+    'EstadoComprobante' => [
+        'por_confirmar' => 'To be confirmed',
+        'confirmado' => 'Confirmed',
+        'rechazado' => 'Rejected',
     ],
 ];

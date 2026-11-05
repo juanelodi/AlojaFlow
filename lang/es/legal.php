@@ -106,6 +106,20 @@ Puedes acceder a tus datos, corregirlos o pedir que los borremos escribiendo a {
 Este texto es una base: debe adaptarse a la ley de tu país.
 TEXTO,
         ],
+        'contrato_grupo' => [
+            'titulo' => 'Contrato de grupo',
+            'cuerpo' => <<<'TEXTO'
+Este contrato regula el alojamiento del grupo «{grupo}» ({codigo}) en {propiedad}, que coordina {coordinador}.
+
+1. ESTANCIA. Del {llegada} al {salida}, con {habitaciones} habitaciones.
+2. PRECIO. El total es {total}. Pagos acordados:
+{pagos}
+3. LISTA DE HUÉSPEDES. El coordinador dirá quién va en cada habitación a más tardar el {fecha_limite}.
+4. CANCELACIÓN. Aplica la política de cancelación que se le dio a conocer.
+5. CONDICIONES. El coordinador da a conocer a su grupo el reglamento del alojamiento. Cada huésped responde por los daños que cause.
+6. RECLAMACIONES. Escríbenos a {correo}.
+TEXTO,
+        ],
         'contrato' => [
             'titulo' => 'Condiciones de hospedaje',
             'cuerpo' => <<<'TEXTO'

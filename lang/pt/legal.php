@@ -32,6 +32,20 @@ return [
             'titulo' => 'Aviso de privacidade',
             'cuerpo' => "{propiedad} ({domicilio}) é responsável pelos seus dados pessoais.\n\nUsamo-los para gerir a sua reserva e estadia, registá-lo como hóspede, cobrar e cumprir a lei. Partilhamo-los apenas com os fornecedores que nos ajudam a prestar o serviço e com as autoridades quando a lei o exige. Não os vendemos.\n\nA foto do seu documento é guardada até 30 dias após a sua saída; os dados de registo, um ano.\n\nPode aceder aos seus dados, corrigi-los ou pedir que os apaguemos escrevendo para {correo}.\n\nEste texto é uma base: deve ser adaptado à lei do seu país.",
         ],
+        'contrato_grupo' => [
+            'titulo' => 'Contrato de grupo',
+            'cuerpo' => <<<'TEXTO'
+Este contrato regula a estadia do grupo «{grupo}» ({codigo}) em {propiedad}, coordenado por {coordinador}.
+
+1. ESTADIA. De {llegada} a {salida}, com {habitaciones} quartos.
+2. PREÇO. O total é {total}. Pagamentos acordados:
+{pagos}
+3. LISTA DE HÓSPEDES. O coordenador dirá quem vai em cada quarto até {fecha_limite}.
+4. CANCELAMENTO. Aplica-se a política de cancelamento comunicada.
+5. CONDIÇÕES. O coordenador dá a conhecer ao grupo o regulamento do alojamento. Cada hóspede responde pelos danos que causar.
+6. RECLAMAÇÕES. Escreve-nos para {correo}.
+TEXTO,
+        ],
         'contrato' => [
             'titulo' => 'Condições de alojamento',
             'cuerpo' => "Estas condições regem a sua estadia em {propiedad}.\n\n1. O preço é o indicado na sua reserva.\n2. A chegada e a saída fazem-se nos horários comunicados.\n3. Só podem ficar as pessoas registadas.\n4. Aplica-se a política de cancelamento comunicada na reserva.\n5. O hóspede responde pelos danos que causar.\n\nPara qualquer reclamação, escreva para {correo}.",

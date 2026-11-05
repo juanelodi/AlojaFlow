@@ -134,6 +134,7 @@ return [
         'factura_xml' => 'Rechnung (XML)',
         'factura_pdf' => 'Rechnung (PDF)',
         'exportacion' => 'Export',
+        'comprobante' => 'Zahlungsbeleg',
     ],
     'CanalEnvio' => [
         'correo' => 'E-Mail',
@@ -172,6 +173,7 @@ return [
         'llegada' => 'Online-Check-in',
         'contrato' => 'Vertrag',
         'factura' => 'Rechnung',
+        'grupo' => 'Gruppe',
     ],
     'EstadoFuenteIcal' => [
         'sin_leer' => 'Ungelesen',
@@ -187,6 +189,7 @@ return [
         'contrato' => 'Beherbergungsbedingungen',
         'reglamento' => 'Hausordnung',
         'politica_cancelacion' => 'Stornobedingungen',
+        'contrato_grupo' => 'Gruppenvertrag',
     ],
     'EstadoRegistroLlegada' => [
         'pendiente' => 'Nicht abgeschlossen',
@@ -213,5 +216,20 @@ return [
     'ModoFiscal' => [
         'pruebas' => 'Test',
         'produccion' => 'Produktion',
+    ],
+    'EstadoGrupo' => [
+        'tentativo' => 'Vorläufig',
+        'confirmado' => 'Bestätigt',
+        'cancelado' => 'Storniert',
+    ],
+    'ModoPrecioGrupo' => [
+        'tarifa' => 'Der Tarif jeder Einheit',
+        'total' => 'Ein Gesamtpreis, nach Nächten verteilt',
+        'por_capacidad' => 'Ein Preis pro Nacht nach Belegung',
+    ],
+    'EstadoComprobante' => [
+        'por_confirmar' => 'Zu bestätigen',
+        'confirmado' => 'Bestätigt',
+        'rechazado' => 'Abgelehnt',
     ],
 ];

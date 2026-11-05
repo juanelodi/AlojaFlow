@@ -10,10 +10,12 @@ declare(strict_types=1);
 
 namespace App\Documentos;
 
+use App\Enums\EstadoReserva;
 use App\Enums\TipoDocumentoFiscal;
 use App\Models\Aceptacion;
 use App\Models\DocumentoLegal;
 use App\Models\Factura;
+use App\Models\Grupo;
 use App\Models\Pago;
 use App\Models\RegistroLlegada;
 use App\Models\Reserva;
@@ -42,6 +44,21 @@ final class GeneradorPdf
     public function copiaAceptacion(Aceptacion $aceptacion, DocumentoLegal $documento, RegistroLlegada $registro): string
     {
         return $this->pdf('documentos.copia-aceptacion', ['aceptacion' => $aceptacion, 'documento' => $documento, 'registro' => $registro], $documento->idioma);
+    }
+
+    public function copiaAceptacionGrupo(Aceptacion $aceptacion, DocumentoLegal $documento, string $texto, Grupo $grupo): string
+    {
+        return $this->pdf('documentos.copia-aceptacion-grupo', ['aceptacion' => $aceptacion, 'documento' => $documento, 'texto' => $texto, 'grupo' => $grupo], $documento->idioma);
+    }
+
+    /**
+     * La lista para tener a mano el día que llegan.
+     */
+    public function listaGrupo(Grupo $grupo): string
+    {
+        $reservas = $grupo->reservas()->with(['unidad', 'habitacionGrupo'])->where('estado', '!=', EstadoReserva::Cancelada->value)->orderBy('llegada')->orderBy('id')->get();
+
+        return $this->pdf('documentos.lista-grupo', ['grupo' => $grupo, 'reservas' => $reservas], null);
     }
 
     /**

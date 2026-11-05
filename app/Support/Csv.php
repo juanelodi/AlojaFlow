@@ -16,6 +16,32 @@ namespace App\Support;
  */
 final class Csv
 {
+    public static function enUtf8(string $texto): string
+    {
+        $texto = (string) preg_replace('/^\xEF\xBB\xBF/', '', $texto);
+
+        return mb_check_encoding($texto, 'UTF-8') ? $texto : (string) mb_convert_encoding($texto, 'UTF-8', 'Windows-1252');
+    }
+
+    public static function separador(string $primeraLinea): string
+    {
+        foreach (["\t", ';'] as $separador) {
+            if (str_contains($primeraLinea, $separador)) {
+                return $separador;
+            }
+        }
+
+        return ',';
+    }
+
+    /**
+     * Lo contrario de fila(): la comilla que se le puso al exportar no es parte del dato.
+     */
+    public static function sinProteccion(string $celda): string
+    {
+        return strlen($celda) > 1 && $celda[0] === "'" && in_array($celda[1], ['=', '+', '-', '@'], true) ? substr($celda, 1) : $celda;
+    }
+
     /**
      * @param  array<int, mixed>  $fila
      * @return list<string>

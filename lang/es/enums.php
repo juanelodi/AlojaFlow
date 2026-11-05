@@ -67,6 +67,7 @@ return [
         'factura_xml' => 'Factura (XML)',
         'factura_pdf' => 'Factura (PDF)',
         'exportacion' => 'Exportación',
+        'comprobante' => 'Comprobante de pago',
     ],
 
     'CanalEnvio' => [
@@ -110,6 +111,7 @@ return [
         'llegada' => 'Llegada en línea',
         'contrato' => 'Contrato',
         'factura' => 'Factura',
+        'grupo' => 'Grupo',
     ],
 
     'EstadoFuenteIcal' => [
@@ -128,6 +130,7 @@ return [
         'contrato' => 'Condiciones de hospedaje',
         'reglamento' => 'Reglamento interno',
         'politica_cancelacion' => 'Política de cancelación',
+        'contrato_grupo' => 'Contrato de grupo',
     ],
 
     'EstadoRegistroLlegada' => [
@@ -160,5 +163,20 @@ return [
     'ModoFiscal' => [
         'pruebas' => 'Pruebas',
         'produccion' => 'Producción',
+    ],
+    'EstadoGrupo' => [
+        'tentativo' => 'Tentativo',
+        'confirmado' => 'Confirmado',
+        'cancelado' => 'Cancelado',
+    ],
+    'ModoPrecioGrupo' => [
+        'tarifa' => 'La tarifa de cada unidad',
+        'total' => 'Un precio total, repartido por noches',
+        'por_capacidad' => 'Un precio por noche según cuántos caben',
+    ],
+    'EstadoComprobante' => [
+        'por_confirmar' => 'Por confirmar',
+        'confirmado' => 'Confirmado',
+        'rechazado' => 'Rechazado',
     ],
 ];

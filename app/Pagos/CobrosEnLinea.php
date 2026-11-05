@@ -134,7 +134,7 @@ final class CobrosEnLinea
      * dinero entró igual: se avisa al alojamiento para que lo resuelva con el huésped. La que canceló
      * una persona no vuelve sola: esa decisión, y la de devolver el dinero, siguen siendo suyas.
      */
-    private function asegurarReserva(Reserva $reserva): void
+    public function asegurarReserva(Reserva $reserva): void
     {
         if ($reserva->estado === EstadoReserva::Cancelada && $reserva->expira_en === null) {
             Aviso::abrir($reserva->propiedad_id, 'pago_en_cancelada', NivelAviso::Error, ['reserva' => $reserva->numero]);

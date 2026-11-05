@@ -21,4 +21,6 @@ return [
     'motor_saturado' => 'Sono arrivate troppe prenotazioni online in un’ora e il modulo è stato fermato per un’ora. Controlla in Prenotazioni se sono reali; quelle non confermate si annullano da sole.',
     'copia_no_borrada' => 'Non è stato possibile eliminare la copia nell’installazione principale; resta nella sua cartella dati/. Controlla i permessi di quella cartella.',
     'registro_por_vencer' => 'Un numero di registrazione o licenza di questa struttura scade tra meno di 30 giorni, o è già scaduto. Rinnovalo e aggiorna la data in Registrazioni turistiche.',
+    'comprobantes_por_revisar' => 'Ci sono ricevute di pagamento da controllare. Vedile in Finanze → Ricevute di pagamento.',
+    'grupo_habitaciones_liberadas' => 'Del gruppo :grupo sono state liberate :habitaciones camere senza responsabile, perché il termine è passato.',
 ];

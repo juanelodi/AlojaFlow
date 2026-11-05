@@ -42,7 +42,7 @@ final class Calendario
             ->orderBy('propiedades.nombre')->orderBy('unidades.orden')->orderBy('unidades.nombre')
             ->select('unidades.*')->get();
 
-        $reservas = Reserva::query()->vigentes()->with('titular.campos')
+        $reservas = Reserva::query()->vigentes()->with(['titular.campos', 'grupo', 'habitacionGrupo'])
             ->whereIn('propiedad_id', $propiedades)
             ->where('llegada', '<', $fin->format('Y-m-d'))
             ->where('salida', '>', $inicio->format('Y-m-d'))
@@ -71,6 +71,7 @@ final class Calendario
                     'sigue_despues' => $reserva->salida->gt($fin),
                     'clase' => self::clase($reserva),
                     'color' => self::colorDe($reserva, $colores),
+                    'grupo' => $reserva->grupo,
                 ];
             }
             $deportales = [];

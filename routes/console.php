@@ -23,6 +23,7 @@ Schedule::command('alojaflow:limpieza')->everyFifteenMinutes()->withoutOverlappi
 Schedule::command('alojaflow:mensajes')->everyFiveMinutes()->withoutOverlapping(15);
 Schedule::command('alojaflow:ical')->everyFifteenMinutes()->withoutOverlapping(30)->when(fn (): bool => Modulos::activo(Modulo::Ical));
 Schedule::command('alojaflow:limpiar')->dailyAt('03:30');
+Schedule::command('alojaflow:grupos')->dailyAt('03:40')->when(fn (): bool => Modulos::activo(Modulo::Grupos));
 Schedule::command('alojaflow:copia --programada')->dailyAt('03:10')->withoutOverlapping(60)->skip(fn (): bool => ModoDemo::activo());
 Schedule::command('alojaflow:demo-reiniciar')->dailyAt('04:00')->when(fn (): bool => ModoDemo::activo());
 

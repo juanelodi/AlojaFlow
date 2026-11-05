@@ -18,4 +18,5 @@ enum TipoDocumentoLegal: string
     case Contrato = 'contrato';
     case Reglamento = 'reglamento';
     case PoliticaCancelacion = 'politica_cancelacion';
+    case ContratoGrupo = 'contrato_grupo';
 }

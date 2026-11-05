@@ -18,6 +18,7 @@ use App\Enums\ClaseArchivo;
 use App\Enums\EstadoRegistroLlegada;
 use App\Enums\EstadoReserva;
 use App\Enums\TipoContacto;
+use App\Enums\TipoDocumentoLegal;
 use App\Enums\TipoEnlace;
 use App\Enums\VerificacionAceptacion;
 use App\Models\Aceptacion;
@@ -101,7 +102,7 @@ final class GestorLlegadas
      */
     public function documentosPara(Propiedad $propiedad, string $idioma): Collection
     {
-        $vigentes = DocumentoLegal::query()->where('propiedad_id', $propiedad->id)->whereNotNull('publicado_en')->whereNull('retirado_en')
+        $vigentes = DocumentoLegal::query()->where('propiedad_id', $propiedad->id)->where('tipo', '!=', TipoDocumentoLegal::ContratoGrupo->value)->whereNotNull('publicado_en')->whereNull('retirado_en')
             ->orderBy('tipo')->get();
 
         $elegidos = new Collection();

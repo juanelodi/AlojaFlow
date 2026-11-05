@@ -28,6 +28,7 @@ use App\Support\Dinero;
 use App\Support\Huellas;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 use Throwable;
@@ -148,6 +149,106 @@ final class GestorReservas
             $actual->refresh();
             $this->guardarImpuestos($actual);
             $this->anotar($actual, TipoEventoReserva::Modificada, 'reserva.mover', ['antes' => $antes, 'despues' => $this->resumen($actual)]);
+
+            return $actual;
+        });
+    }
+
+    /**
+     * Otra unidad y otras fechas, con otras noches: lo de un grupo, donde cada habitación puede tener las suyas. Solo si están libres. El total no cambia:
+     * lo pone el grupo.
+     */
+    public function cambiarEstancia(Reserva $reserva, int $unidadId, CarbonImmutable $llegada, CarbonImmutable $salida): Reserva
+    {
+        return DB::transaction(function () use ($reserva, $unidadId, $llegada, $salida): Reserva {
+            $actual = $this->bloquear($reserva);
+            if ($actual->estado === EstadoReserva::Cancelada) {
+                throw new ReservaRechazada(__('ui.reservas.error_cancelada'));
+            }
+            $unidad = Unidad::query()->where('propiedad_id', $actual->propiedad_id)->where('activa', true)->find($unidadId);
+            if ($unidad === null) {
+                throw new ReservaRechazada(__('ui.reservas.error_unidad'), 'unidad_id');
+            }
+            if ($unidad->capacidad > 0 && $actual->personas > $unidad->capacidad) {
+                throw new ReservaRechazada(__('ui.reservas.error_capacidad', ['capacidad' => $unidad->capacidad]), 'unidad_id');
+            }
+            [$llegada, $salida] = $this->fechas(['llegada' => $llegada->format('Y-m-d'), 'salida' => $salida->format('Y-m-d')]);
+            $antes = $this->resumen($actual);
+            $actual->unidad_id = $unidad->id;
+            $actual->llegada = $llegada;
+            $actual->salida = $salida;
+            $actual->version++;
+            $actual->save();
+            $this->ocuparNoches($actual);
+            $actual->refresh();
+            $this->guardarImpuestos($actual);
+            $this->anotar($actual, TipoEventoReserva::Modificada, 'reserva.modificar', ['antes' => $antes, 'despues' => $this->resumen($actual)]);
+
+            return $actual;
+        });
+    }
+
+    /**
+     * Solo el precio: lo que le toca a esta habitación del total de su grupo.
+     */
+    public function cambiarTotal(Reserva $reserva, int $total): Reserva
+    {
+        return DB::transaction(function () use ($reserva, $total): Reserva {
+            $actual = $this->bloquear($reserva);
+            if ($actual->total === $total) {
+                return $actual;
+            }
+            if ($total < 0) {
+                throw new ReservaRechazada(__('ui.reservas.error_importe'), 'total');
+            }
+            $antes = $this->resumen($actual);
+            $actual->total = $total;
+            $actual->version++;
+            $actual->save();
+            $this->ocuparNoches($actual);
+            $actual->refresh();
+            $this->guardarImpuestos($actual);
+            $this->anotar($actual, TipoEventoReserva::Modificada, 'reserva.modificar', ['antes' => $antes, 'despues' => $this->resumen($actual)]);
+
+            return $actual;
+        });
+    }
+
+    public function cambiarPersonas(Reserva $reserva, int $personas): Reserva
+    {
+        return DB::transaction(function () use ($reserva, $personas): Reserva {
+            $actual = $this->bloquear($reserva);
+            if ($actual->personas === $personas) {
+                return $actual;
+            }
+            if ($personas < 1) {
+                throw new ReservaRechazada(__('ui.reservas.error_personas'), 'personas');
+            }
+            $capacidad = $actual->unidad->capacidad;
+            if ($capacidad > 0 && $personas > $capacidad) {
+                throw new ReservaRechazada(__('ui.reservas.error_capacidad', ['capacidad' => $capacidad]), 'personas');
+            }
+            $antes = $this->resumen($actual);
+            $actual->personas = $personas;
+            $actual->version++;
+            $actual->save();
+            $this->anotar($actual, TipoEventoReserva::Modificada, 'reserva.modificar', ['antes' => $antes, 'despues' => $this->resumen($actual)]);
+
+            return $actual;
+        });
+    }
+
+    /**
+     * Hasta cuándo se apartan las noches de una reserva sin confirmar. Sin fecha, no caduca.
+     */
+    public function fijarVencimiento(Reserva $reserva, ?Carbon $hasta): Reserva
+    {
+        return DB::transaction(function () use ($reserva, $hasta): Reserva {
+            $actual = $this->bloquear($reserva);
+            if ($actual->estado === EstadoReserva::SinConfirmar) {
+                $actual->expira_en = $hasta;
+                $actual->save();
+            }
 
             return $actual;
         });

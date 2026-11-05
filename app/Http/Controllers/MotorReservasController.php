@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Comprobantes\ComprobanteRechazado;
+use App\Comprobantes\GestorComprobantes;
 use App\Documentos\GeneradorPdf;
 use App\Enums\EstadoReserva;
 use App\Models\PagoEnLinea;
@@ -22,6 +24,7 @@ use App\Motor\Pasarelas;
 use App\Pagos\CobrosEnLinea;
 use App\Pagos\ErrorPago;
 use App\Reservas\ReservaRechazada;
+use App\Support\Dinero;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -146,7 +149,44 @@ class MotorReservasController extends Controller
             'ajustes' => $ajustes,
             'porCobrar' => $this->cobros->porCobrar($reserva),
             'pasarelas' => $reserva->estado === EstadoReserva::Cancelada ? [] : array_keys((new Pasarelas($propiedad))->disponibles()),
+            'comprobantes' => $reserva->comprobantes()->latest('id')->limit(20)->get(),
         ]);
+    }
+
+    /**
+     * La transferencia que ya hizo (D-097). Con errores vuelve a su reserva y le dice qué pasó: no hay sesión con que devolverle el formulario.
+     */
+    public function comprobante(Request $request, string $codigo, string $publico, GestorComprobantes $comprobantes): RedirectResponse
+    {
+        $propiedad = $this->propiedad($request, $codigo, soloActivo: false);
+        $reserva = $this->buscarReserva($propiedad, $publico);
+        $volver = fn (string $aviso): RedirectResponse => redirect()->to(route('motor.reserva', ['codigo' => $codigo, 'publico' => $publico, 'idioma' => app()->getLocale(), 'aviso' => $aviso]).'#comprobante');
+        if (! (new AjustesMotor($propiedad))->aceptaComprobantes()) {
+            abort(404);
+        }
+        $validador = Validator::make($request->all(), [
+            'importe' => ['required', 'numeric', 'min:0.01', 'max:99999999'],
+            'fecha' => ['required', 'date', 'before_or_equal:'.$propiedad->hoy()->addDay()->format('Y-m-d')],
+            'referencia' => ['nullable', 'string', 'max:100'],
+            'comprobante' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ]);
+        if ($validador->fails()) {
+            return $volver('comprobante_datos');
+        }
+        $datos = $validador->validated();
+        try {
+            $comprobantes->recibirDeReserva(
+                $reserva,
+                (string) file_get_contents((string) $request->file('comprobante')?->getRealPath()),
+                Dinero::aUnidadMenor((string) $datos['importe'], $reserva->moneda),
+                CarbonImmutable::parse((string) $datos['fecha'])->startOfDay(),
+                $datos['referencia'] ?? null,
+            );
+        } catch (ComprobanteRechazado) {
+            return $volver('comprobante_imagen');
+        }
+
+        return $volver('comprobante_recibido');
     }
 
     public function pagar(Request $request, string $codigo, string $publico, string $pasarela): RedirectResponse

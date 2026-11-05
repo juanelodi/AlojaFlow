@@ -15,6 +15,7 @@ use App\Models\RegistroAuditoria;
 use App\Models\Tarifa;
 use App\Models\TemporadaTarifa;
 use App\Seguridad\AuditoriaModelos;
+use App\Support\Csv;
 use App\Support\Dinero;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -32,13 +33,13 @@ final class ImportadorPrecios
      */
     public function revisar(Propiedad $propiedad, string $texto): array
     {
-        $texto = self::enUtf8($texto);
+        $texto = Csv::enUtf8($texto);
         if (strlen($texto) > self::BYTES_MAXIMOS) {
             return [['linea' => 0, 'tarifa' => '', 'tarifa_id' => null, 'desde' => '', 'hasta' => '', 'precio' => null, 'persona' => null, 'error' => __('operacion.precios.error_tamano')]];
         }
         $tarifas = Tarifa::query()->where('propiedad_id', $propiedad->id)->get(['id', 'nombre']);
         $lineas = preg_split('/\r\n|\r|\n/', trim($texto)) ?: [];
-        $separador = self::separador($lineas[0]);
+        $separador = Csv::separador($lineas[0]);
         $filas = [];
         foreach ($lineas as $i => $linea) {
             if (trim($linea) === '') {
@@ -153,24 +154,6 @@ final class ImportadorPrecios
     /**
      * Excel en Windows guarda en otra codificación.
      */
-    private static function enUtf8(string $texto): string
-    {
-        $texto = (string) preg_replace('/^\xEF\xBB\xBF/', '', $texto);
-
-        return mb_check_encoding($texto, 'UTF-8') ? $texto : (string) mb_convert_encoding($texto, 'UTF-8', 'Windows-1252');
-    }
-
-    private static function separador(string $primeraLinea): string
-    {
-        foreach (["\t", ';'] as $separador) {
-            if (str_contains($primeraLinea, $separador)) {
-                return $separador;
-            }
-        }
-
-        return ',';
-    }
-
     /**
      * @param  list<string|null>  $campos
      */

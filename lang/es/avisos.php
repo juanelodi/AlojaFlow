@@ -21,4 +21,6 @@ return [
     'motor_saturado' => 'Llegaron demasiadas reservas en línea en una hora y se detuvo el formulario por una hora. Revisa si son reales en Reservas; las que no se confirmen se cancelan solas.',
     'copia_no_borrada' => 'No se pudo borrar la copia en la principal; queda en su carpeta dati/. Revisa los permisos de esa carpeta.',
     'registro_por_vencer' => 'Un número de registro o licencia de esta propiedad vence en menos de 30 días, o ya venció. Renuévalo y actualiza la fecha en Registros turísticos.',
+    'comprobantes_por_revisar' => 'Hay comprobantes de pago por revisar. Míralos en Dinero → Comprobantes de pago.',
+    'grupo_habitaciones_liberadas' => 'Del grupo :grupo se liberaron :habitaciones habitaciones sin responsable, porque pasó su fecha límite.',
 ];

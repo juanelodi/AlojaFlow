@@ -15,8 +15,11 @@ use App\Enums\ClaseArchivo;
 use App\Enums\TipoSolicitudPrivacidad;
 use App\Models\Aceptacion;
 use App\Models\Archivo;
+use App\Models\ComprobantePago;
 use App\Models\ContactoHuesped;
 use App\Models\Envio;
+use App\Models\Grupo;
+use App\Models\GrupoHabitacion;
 use App\Models\Huesped;
 use App\Models\Opinion;
 use App\Models\PersonaLlegada;
@@ -39,6 +42,10 @@ final class GestorPrivacidad
     private const DIAS_ENVIO = 365;
 
     private const DIAS_EVENTO = 365;
+
+    private const MESES_DATOS_GRUPO = 24;
+
+    private const CAMPOS_HABITACION_VACIOS = ['responsable' => null, 'telefono' => null, 'correo' => null, 'acompanantes' => null];
 
     public function __construct(private readonly GestorArchivos $archivos)
     {
@@ -73,6 +80,9 @@ final class GestorPrivacidad
                 'documento' => $a->documento->titulo, 'version' => $a->documento->version, 'huella' => $a->huella_documento, 'fecha' => $a->aceptada_en->toIso8601String(), 'verificacion' => $a->verificacion->value,
             ])->all(),
             'mensajes' => Envio::query()->where('huesped_id', $huesped->id)->get(['creado_en', 'canal', 'destino', 'asunto', 'estado'])->toArray(),
+            'comprobantes' => ComprobantePago::query()->whereIn('reserva_id', $idsReservas)->get(['fecha', 'importe', 'moneda', 'referencia', 'estado', 'motivo_rechazo'])->toArray(),
+            'grupos' => Grupo::query()->with(['comprobantes:id,grupo_id,fecha,importe,moneda,referencia,estado,motivo_rechazo', 'mensajes:id,grupo_id,del_coordinador,texto,creado_en'])->where('coordinador_id', $huesped->id)->get()
+                ->map(fn (Grupo $g): array => ['codigo' => $g->codigo, 'nombre' => $g->nombre, 'estado' => $g->estado->value, 'comprobantes' => $g->comprobantes->toArray(), 'mensajes' => $g->mensajes->toArray()])->all(),
         ];
 
         $archivo = $this->archivos->guardar(
@@ -151,7 +161,13 @@ final class GestorPrivacidad
             // El motivo es texto libre, y puede decir quién es.
             DB::table('omisiones')->where('huesped_id', $huesped->id)->update(['motivo' => null]);
             DB::table('pagos')->whereIn('reserva_id', $reservas)->update(['referencia' => null]);
-            DB::table('grupos')->where('coordinador_id', $huesped->id)->update(['notas' => null]);
+            foreach (ComprobantePago::query()->with('archivo')->whereIn('reserva_id', $reservas)->get() as $comprobante) {
+                $comprobante->update(['referencia' => null]);
+                if ($comprobante->archivo !== null) {
+                    $this->archivos->eliminar($comprobante->archivo);
+                }
+            }
+            $this->anonimizarGrupos($huesped);
             // Las facturas guardan su propia copia del receptor, que la ley obliga a conservar; esto es solo
             // lo que se ofrece para no volver a escribirlo.
             DB::table('receptores_fiscales')->where('huesped_id', $huesped->id)->delete();
@@ -175,6 +191,25 @@ final class GestorPrivacidad
 
             return $anonimizada;
         });
+    }
+
+    /**
+     * Lo que escribió o subió como coordinador. La lista de sus habitaciones tiene datos de otras personas que él mismo dio, y se va con él: el
+     * grupo queda solo con sus reservas y sus importes.
+     */
+    private function anonimizarGrupos(Huesped $huesped): void
+    {
+        foreach (Grupo::query()->where('coordinador_id', $huesped->id)->get() as $grupo) {
+            $grupo->forceFill(['notas' => null, 'acceso_activo' => false, 'clave_hash' => null, 'clave_cifrada' => null])->save();
+            $grupo->mensajes()->delete();
+            GrupoHabitacion::query()->where('grupo_id', $grupo->id)->update(self::CAMPOS_HABITACION_VACIOS);
+            foreach ($grupo->comprobantes()->with('archivo')->get() as $comprobante) {
+                $comprobante->update(['referencia' => null]);
+                if ($comprobante->archivo !== null) {
+                    $this->archivos->eliminar($comprobante->archivo);
+                }
+            }
+        }
     }
 
     /**
@@ -222,9 +257,9 @@ final class GestorPrivacidad
     public function aplicarPlazos(): array
     {
         $hoy = now('UTC')->format('Y-m-d');
-        $resultado = ['archivos' => 0, 'registros' => 0, 'aceptaciones' => 0, 'envios' => 0, 'eventos' => 0, 'codigos' => 0];
+        $resultado = ['archivos' => 0, 'registros' => 0, 'aceptaciones' => 0, 'grupos' => 0, 'envios' => 0, 'eventos' => 0, 'codigos' => 0];
 
-        Archivo::query()->whereNotNull('conservar_hasta')->where('conservar_hasta', '<', $hoy)->whereIn('clase', [ClaseArchivo::DocumentoIdentidad->value, ClaseArchivo::Exportacion->value, ClaseArchivo::Firma->value])
+        Archivo::query()->whereNotNull('conservar_hasta')->where('conservar_hasta', '<', $hoy)->whereIn('clase', [ClaseArchivo::DocumentoIdentidad->value, ClaseArchivo::Exportacion->value, ClaseArchivo::Firma->value, ClaseArchivo::Comprobante->value])
             ->each(function (Archivo $archivo) use (&$resultado): void {
                 $this->archivos->eliminar($archivo);
                 $resultado['archivos']++;
@@ -247,11 +282,33 @@ final class GestorPrivacidad
             $resultado['aceptaciones']++;
         }
 
+        $resultado['grupos'] = $this->vaciarGruposViejos();
+
         $resultado['envios'] = Envio::query()->whereNull('cuerpo')->where('creado_en', '<', now()->subDays(self::DIAS_ENVIO))->delete();
         $resultado['eventos'] = (int) DB::table('eventos_reserva')->where('ocurrido_en', '<', now()->subDays(self::DIAS_EVENTO))->whereNotNull('procesado_en')->delete();
         $resultado['codigos'] = (int) DB::table('codigos_otp')->where('expira_en', '<', now()->subDay())->delete();
 
         return $resultado;
+    }
+
+    /**
+     * Pasado el plazo tras la salida, los nombres de la lista y los mensajes ya no le sirven a nadie. Las reservas y los importes se quedan.
+     */
+    private function vaciarGruposViejos(): int
+    {
+        $limite = now()->subMonths(self::MESES_DATOS_GRUPO)->format('Y-m-d');
+        $vaciados = 0;
+        Grupo::query()->whereHas('reservas')->whereDoesntHave('reservas', fn ($q) => $q->where('salida', '>=', $limite))
+            ->where(fn ($q) => $q->where('acceso_activo', true)->orWhereHas('mensajes')->orWhereIn('id', GrupoHabitacion::query()->whereNotNull('responsable')->select('grupo_id')))
+            ->get()
+            ->each(function (Grupo $grupo) use (&$vaciados): void {
+                $grupo->forceFill(['acceso_activo' => false, 'clave_cifrada' => null])->save();
+                $grupo->mensajes()->delete();
+                GrupoHabitacion::query()->where('grupo_id', $grupo->id)->update(self::CAMPOS_HABITACION_VACIOS);
+                $vaciados++;
+            });
+
+        return $vaciados;
     }
 
     /**

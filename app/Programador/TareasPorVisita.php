@@ -47,6 +47,7 @@ final class TareasPorVisita
         'alojaflow:reservas-vencidas' => 5,
         'alojaflow:limpieza' => 15,
         'alojaflow:limpiar' => 1440,
+        'alojaflow:grupos' => 1440,
         'alojaflow:copia --programada' => 1440,
     ];
 
@@ -57,6 +58,7 @@ final class TareasPorVisita
         'alojaflow:sincronizar' => Modulo::Subordinacion,
         'alojaflow:ical' => Modulo::Ical,
         'alojaflow:limpieza' => Modulo::Limpieza,
+        'alojaflow:grupos' => Modulo::Grupos,
     ];
 
     /**

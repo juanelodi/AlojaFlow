@@ -13,6 +13,7 @@ use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\CodigoFuenteController;
 use App\Http\Controllers\EnlacePagoController;
 use App\Http\Controllers\EntradaInstalacionController;
+use App\Http\Controllers\GrupoPublicoController;
 use App\Http\Controllers\IcalController;
 use App\Http\Controllers\LlegadaController;
 use App\Http\Controllers\MotorReservasController;
@@ -47,6 +48,20 @@ Route::prefix('opinion/{token}')->where(['token' => '[0-9a-f]{40}'])->name('opin
     Route::post('/', [OpinionController::class, 'guardar'])->middleware('throttle:publico-envio')->name('guardar');
 });
 
+// La página del coordinador de un grupo: enlace secreto y clave (D-096).
+Route::prefix('grupo/{token}')->where(['token' => '[0-9a-f]{40}'])->name('grupo.')->middleware([ModuloActivo::class.':grupos', 'throttle:publico'])->group(function (): void {
+    Route::get('/', [GrupoPublicoController::class, 'ver'])->name('ver');
+    Route::post('/entrar', [GrupoPublicoController::class, 'entrar'])->middleware('throttle:publico-envio')->name('entrar');
+    Route::post('/salir', [GrupoPublicoController::class, 'salir'])->name('salir');
+    Route::post('/clave', [GrupoPublicoController::class, 'cambiarClave'])->middleware('throttle:publico-envio')->name('clave');
+    Route::post('/aceptar', [GrupoPublicoController::class, 'aceptar'])->middleware('throttle:publico-envio')->name('aceptar');
+    Route::post('/habitacion/{reserva}', [GrupoPublicoController::class, 'guardarHabitacion'])->whereNumber('reserva')->name('habitacion');
+    Route::post('/pago', [GrupoPublicoController::class, 'registrarPago'])->middleware(['throttle:publico-envio', 'throttle:comprobante-envio'])->name('pago');
+    Route::post('/mensaje', [GrupoPublicoController::class, 'escribir'])->middleware('throttle:publico-envio')->name('mensaje');
+    Route::get('/comprobante/{comprobante}', [GrupoPublicoController::class, 'verComprobante'])->whereNumber('comprobante')->name('comprobante');
+    Route::get('/aceptacion/{aceptacion}', [GrupoPublicoController::class, 'verCopia'])->whereNumber('aceptacion')->name('copia');
+});
+
 // Llegada en línea: lo identifica un token; el huésped no tiene cuenta.
 Route::prefix('llegada/{token}')->where(['token' => '[0-9a-f]{40}'])->name('llegada.')->middleware([ModuloActivo::class.':llegada', 'throttle:publico'])->group(function (): void {
     Route::get('/', [LlegadaController::class, 'formulario'])->name('formulario');
@@ -69,6 +84,7 @@ Route::prefix('reservar/{codigo}')->name('motor.')->middleware([ModuloActivo::cl
     Route::get('/r/{publico}/confirmacion.pdf', [MotorReservasController::class, 'confirmacionPdf'])->name('pdf');
     Route::post('/r/{publico}/pagar/{pasarela}', [MotorReservasController::class, 'pagar'])->middleware([ModuloActivo::class.':pagos', MismoOrigen::class, 'throttle:publico-envio'])->name('pagar');
     Route::get('/r/{publico}/retorno/{pasarela}', [MotorReservasController::class, 'retorno'])->name('retorno');
+    Route::post('/r/{publico}/comprobante', [MotorReservasController::class, 'comprobante'])->middleware([MismoOrigen::class, 'throttle:publico-envio', 'throttle:comprobante-envio'])->name('comprobante');
 });
 Route::post('/avisos-pago/{codigo}/{pasarela}', [MotorReservasController::class, 'aviso'])->middleware('throttle:120,1')->name('motor.aviso');
 

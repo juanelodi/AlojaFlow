@@ -134,6 +134,7 @@ return [
         'factura_xml' => 'Fatura (XML)',
         'factura_pdf' => 'Fatura (PDF)',
         'exportacion' => 'Exportação',
+        'comprobante' => 'Comprovativo de pagamento',
     ],
     'CanalEnvio' => [
         'correo' => 'E-mail',
@@ -172,6 +173,7 @@ return [
         'llegada' => 'Check-in online',
         'contrato' => 'Contrato',
         'factura' => 'Fatura',
+        'grupo' => 'Grupo',
     ],
     'EstadoFuenteIcal' => [
         'sin_leer' => 'Por ler',
@@ -187,6 +189,7 @@ return [
         'contrato' => 'Condições de alojamento',
         'reglamento' => 'Regulamento interno',
         'politica_cancelacion' => 'Política de cancelamento',
+        'contrato_grupo' => 'Contrato de grupo',
     ],
     'EstadoRegistroLlegada' => [
         'pendiente' => 'Por terminar',
@@ -213,5 +216,20 @@ return [
     'ModoFiscal' => [
         'pruebas' => 'Testes',
         'produccion' => 'Produção',
+    ],
+    'EstadoGrupo' => [
+        'tentativo' => 'Provisório',
+        'confirmado' => 'Confirmado',
+        'cancelado' => 'Cancelado',
+    ],
+    'ModoPrecioGrupo' => [
+        'tarifa' => 'A tarifa de cada unidade',
+        'total' => 'Um preço total, repartido por noites',
+        'por_capacidad' => 'Um preço por noite segundo a capacidade',
+    ],
+    'EstadoComprobante' => [
+        'por_confirmar' => 'Por confirmar',
+        'confirmado' => 'Confirmado',
+        'rechazado' => 'Rejeitado',
     ],
 ];

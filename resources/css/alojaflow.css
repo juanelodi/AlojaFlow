@@ -263,6 +263,9 @@
 .af-plano-marca { display: inline-block; width: .875rem; height: .875rem; border-radius: .25rem; border: 1px solid; vertical-align: middle; }
 
 /* Tipo de cliente en el calendario: una marca dentro de la barra */
+/* De un grupo: contorno punteado, con su color si lo tiene. */
+.af-barra--grupo { outline: 2px dashed var(--af-grupo, var(--gray-950)); outline-offset: -2px; }
+.dark .af-barra--grupo { outline-color: var(--af-grupo, var(--gray-100)); }
 .af-barra--marcada::before { content: ""; flex: none; width: .625rem; height: .625rem; margin-inline-end: .375rem; border-radius: 50%; background: var(--af-marca); box-shadow: 0 0 0 1.5px rgb(255 255 255 / .85); }
 
 /* La lista de una reserva, en tarjetas cuando no cabe como tabla */

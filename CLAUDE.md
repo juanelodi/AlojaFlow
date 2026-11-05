@@ -4,7 +4,7 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-05): versión de prueba 1.0.17**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-05): versión de prueba 1.0.18**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
   D-029) y D-036 se revisan con el usuario. En curso: el plan de [docs/plan-paridad.md](docs/plan-paridad.md), hasta la 1.0.24.
@@ -199,6 +199,7 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   - `CopiaBaseDatos`, `Firma`, `Manifiesto` y `Rutas` (qué no toca nunca una actualización).
 - `app/Reservas/` — propiedades independientes: `GestorReservas` es el único que escribe reservas,
   noches y pagos propios, y `Cotizador` calcula el precio con la tarifa y sus temporadas.
+- `app/Reservas/GestorGrupos.php` y `app/Grupos/` — grupos: `CalculadorPrecio` (D-095), `CalendarioPagos`, `AccesoCoordinador` y `ContratoGrupo` (D-096), `ListaHuespedes`. `app/Comprobantes/`, comprobantes de pago (D-097). Página pública en `GrupoPublicoController`.
 - `app/Reservas/DetectorDuplicados.php` (D-088). `app/Propiedades/RegistrosTuristicos.php` (D-091). `app/Paises/CatalogoRegiones.php` (D-092).
 - `app/Reservas/Restricciones.php` (D-084) e `ImportadorPrecios.php` (D-083). `app/Pagos/GestorEnlacesPago.php` (D-085). `app/Comunicacion/Opiniones.php` (D-087).
 - `app/Motor/` y `app/Pagos/` — motor de reservas y pasarelas (D-042). `app/Propiedades/Independizador.php`,
@@ -292,6 +293,8 @@ npx license-checker --summary             # licencias npm
   calendario va con PHP directo.
 - Un `CheckboxList` envuelve su estado en una lista antes de `formatStateUsing`: un número guardado llega como `[5]`, y no se distingue del quinto valor. Con `->relationship()` se convierte en `mutateRelationshipDataBeforeFillUsing`; sin ella, en `fillForm`.
 - En producción, `config()`, las rutas y los eventos salen de `bootstrap/cache`: los archivos nuevos no cuentan hasta borrarla. Por eso `EsquemaAlDia` lee la versión del archivo.
+- Una fecha sin zona (`reservas.llegada`, cuotas) no se compara con `Propiedad::hoy()`, que sí la tiene: lo que vence hoy saldría vencido. Se comparan como texto `Y-m-d`.
+- `Modelo::create()` no trae los valores por omisión de la base: si después se leen, `->refresh()`.
 - `public/.htaccess`: nada de directivas que solo admita la configuración del servidor (`DeflateCompressionLevel`) y todo
   dentro de su `IfModule`. Cualquier error ahí es un 500 en todo el sitio; `RendimientoPanelTest` lo revisa.
 

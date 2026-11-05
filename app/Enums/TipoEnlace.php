@@ -20,4 +20,5 @@ enum TipoEnlace: string
     case Factura = 'factura';
     case Pago = 'pago';
     case Opinion = 'opinion';
+    case Grupo = 'grupo';
 }

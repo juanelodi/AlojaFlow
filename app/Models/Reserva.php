@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -149,6 +150,18 @@ class Reserva extends ModeloBase
     public function huespedes(): BelongsToMany
     {
         return $this->belongsToMany(Huesped::class, 'reservas_huespedes')->withPivot(['orden', 'parentesco_texto']);
+    }
+
+    /** @return HasOne<GrupoHabitacion, $this> */
+    public function habitacionGrupo(): HasOne
+    {
+        return $this->hasOne(GrupoHabitacion::class);
+    }
+
+    /** @return HasMany<ComprobantePago, $this> */
+    public function comprobantes(): HasMany
+    {
+        return $this->hasMany(ComprobantePago::class);
     }
 
     /** @return BelongsTo<Grupo, $this> */

@@ -32,6 +32,20 @@ return [
             'titulo' => 'Datenschutzhinweis',
             'cuerpo' => "{propiedad} ({domicilio}) ist für Ihre personenbezogenen Daten verantwortlich.\n\nWir verwenden sie, um Ihre Buchung und Ihren Aufenthalt zu verwalten, Sie als Gast zu registrieren, abzurechnen und das Gesetz einzuhalten. Wir geben sie nur an Dienstleister weiter, die uns bei der Leistung helfen, und an Behörden, wenn das Gesetz es verlangt. Wir verkaufen sie nicht.\n\nDas Foto Ihres Ausweises wird bis zu 30 Tage nach Ihrer Abreise aufbewahrt, die Meldedaten ein Jahr.\n\nSie können auf Ihre Daten zugreifen, sie berichtigen oder ihre Löschung verlangen, indem Sie an {correo} schreiben.\n\nDieser Text ist eine Vorlage: Er muss an das Recht Ihres Landes angepasst werden.",
         ],
+        'contrato_grupo' => [
+            'titulo' => 'Gruppenvertrag',
+            'cuerpo' => <<<'TEXTO'
+Dieser Vertrag regelt den Aufenthalt der Gruppe „{grupo}“ ({codigo}) bei {propiedad}, koordiniert von {coordinador}.
+
+1. AUFENTHALT. Von {llegada} bis {salida}, mit {habitaciones} Zimmern.
+2. PREIS. Der Gesamtbetrag ist {total}. Vereinbarte Zahlungen:
+{pagos}
+3. GÄSTELISTE. Der Koordinator gibt bis spätestens {fecha_limite} an, wer in welches Zimmer kommt.
+4. STORNIERUNG. Es gelten die mitgeteilten Stornobedingungen.
+5. BEDINGUNGEN. Der Koordinator informiert die Gruppe über die Hausordnung. Jeder Gast haftet für von ihm verursachte Schäden.
+6. BESCHWERDEN. Schreiben Sie uns an {correo}.
+TEXTO,
+        ],
         'contrato' => [
             'titulo' => 'Beherbergungsbedingungen',
             'cuerpo' => "Diese Bedingungen gelten für Ihren Aufenthalt bei {propiedad}.\n\n1. Es gilt der in Ihrer Buchung angegebene Preis.\n2. An- und Abreise erfolgen zu den mitgeteilten Zeiten.\n3. Nur registrierte Personen dürfen übernachten.\n4. Es gelten die bei der Buchung mitgeteilten Stornobedingungen.\n5. Der Gast haftet für von ihm verursachte Schäden.\n\nBei Beschwerden schreiben Sie an {correo}.",

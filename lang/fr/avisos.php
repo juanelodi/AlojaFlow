@@ -21,4 +21,6 @@ return [
     'motor_saturado' => 'Trop de réservations en ligne sont arrivées en une heure et le formulaire a été arrêté pendant une heure. Vérifiez dans Réservations si elles sont réelles ; celles qui ne sont pas confirmées s’annulent toutes seules.',
     'copia_no_borrada' => 'La copie n’a pas pu être supprimée sur l’installation principale ; elle reste dans son dossier dati/. Vérifiez les droits de ce dossier.',
     'registro_por_vencer' => 'Un numéro d’enregistrement ou de licence de cet établissement expire dans moins de 30 jours, ou a déjà expiré. Renouvelez-le et mettez à jour la date dans Enregistrements touristiques.',
+    'comprobantes_por_revisar' => 'Des justificatifs de paiement sont à vérifier. Voir Finances → Justificatifs de paiement.',
+    'grupo_habitaciones_liberadas' => ':habitaciones chambres sans responsable du groupe :grupo ont été libérées, car la date limite est passée.',
 ];

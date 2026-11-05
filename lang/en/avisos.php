@@ -21,4 +21,6 @@ return [
     'motor_saturado' => 'Too many online bookings arrived in one hour and the form was stopped for an hour. Check in Bookings whether they are real; those not confirmed are cancelled automatically.',
     'copia_no_borrada' => 'The backup could not be deleted from the main installation; it remains in its dati/ folder. Check that folder’s permissions.',
     'registro_por_vencer' => 'A registration or licence number of this property expires in less than 30 days, or has already expired. Renew it and update the date under Tourism registrations.',
+    'comprobantes_por_revisar' => 'There are payment receipts to review. See them under Money → Payment receipts.',
+    'grupo_habitaciones_liberadas' => ':habitaciones rooms without a responsible person were released from group :grupo, because its deadline passed.',
 ];

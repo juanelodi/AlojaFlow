@@ -317,7 +317,7 @@ describe('documentos legales', function () {
         ($this->actuarComoAdmin)();
 
         Livewire::test(ListDocumentosLegales::class)->callAction('crearBase', ['propiedad' => $this->propiedad->id])->assertHasNoActionErrors();
-        expect(DocumentoLegal::query()->where('idioma', 'es')->count())->toBe(4)
+        expect(DocumentoLegal::query()->where('idioma', 'es')->count())->toBe(5)
             ->and(DocumentoLegal::query()->where('tipo', TipoDocumentoLegal::AvisoPrivacidad->value)->where('idioma', 'es')->first()->cuerpo)->toContain('Posada')->toContain('ARCO')->toContain('hola@posada.example')
             ->and(DocumentoLegal::query()->whereNotNull('publicado_en')->count())->toBe(0);
         expect($this->aviso->crearBase($this->propiedad))->toBe(0);
@@ -328,7 +328,7 @@ describe('documentos legales', function () {
         foreach ([PaquetePais::Espana, PaquetePais::EstadosUnidos, PaquetePais::Generico] as $paquete) {
             $this->propiedad->paquete_pais = $paquete;
             $pais = Paises::de($this->propiedad);
-            expect($pais->tiposDocumento())->not->toBeEmpty()->and($pais->textosBase('es'))->toHaveCount(4)->and($pais->legalRevisado())->toBeFalse();
+            expect($pais->tiposDocumento())->not->toBeEmpty()->and($pais->textosBase('es'))->toHaveCount(5)->and($pais->legalRevisado())->toBeFalse();
         }
         $this->propiedad->paquete_pais = PaquetePais::Espana;
         expect(Paises::de($this->propiedad)->documentoDeTodos())->toBeTrue();

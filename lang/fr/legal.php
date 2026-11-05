@@ -32,6 +32,20 @@ return [
             'titulo' => 'Politique de confidentialité',
             'cuerpo' => "{propiedad} ({domicilio}) est responsable de vos données personnelles.\n\nNous les utilisons pour gérer votre réservation et votre séjour, vous enregistrer, encaisser et respecter la loi. Nous ne les partageons qu’avec les prestataires qui nous aident à fournir le service et avec les autorités lorsque la loi l’exige. Nous ne les vendons pas.\n\nLa photo de votre pièce d’identité est conservée jusqu’à 30 jours après votre départ ; les données d’enregistrement, un an.\n\nVous pouvez accéder à vos données, les corriger ou demander leur suppression en écrivant à {correo}.\n\nCe texte est une base : il doit être adapté à la loi de votre pays.",
         ],
+        'contrato_grupo' => [
+            'titulo' => 'Contrat de groupe',
+            'cuerpo' => <<<'TEXTO'
+Ce contrat régit le séjour du groupe « {grupo} » ({codigo}) à {propiedad}, coordonné par {coordinador}.
+
+1. SÉJOUR. Du {llegada} au {salida}, avec {habitaciones} chambres.
+2. PRIX. Le total est de {total}. Paiements convenus :
+{pagos}
+3. LISTE DES CLIENTS. Le coordinateur indiquera qui va dans chaque chambre au plus tard le {fecha_limite}.
+4. ANNULATION. La politique d’annulation communiquée s’applique.
+5. CONDITIONS. Le coordinateur fait connaître à son groupe le règlement de l’établissement. Chaque client répond des dommages qu’il cause.
+6. RÉCLAMATIONS. Écrivez-nous à {correo}.
+TEXTO,
+        ],
         'contrato' => [
             'titulo' => 'Conditions d’hébergement',
             'cuerpo' => "Ces conditions régissent votre séjour à {propiedad}.\n\n1. Le prix est celui indiqué dans votre réservation.\n2. L’arrivée et le départ se font aux heures indiquées.\n3. Seules les personnes enregistrées peuvent séjourner.\n4. La politique d’annulation communiquée à la réservation s’applique.\n5. Le client est responsable des dommages qu’il cause.\n\nPour toute réclamation, écrivez à {correo}.",

@@ -133,6 +133,7 @@ class MotorDeReservas extends Page
                     TextInput::make('horas_revision')->label(__('motor.panel.horas_revision'))->helperText(__('motor.panel.horas_revision_ayuda'))->numeric()->minValue(0)->maxValue(720)->required(),
                     TextInput::make('dias_antelacion')->label(__('motor.panel.antelacion'))->numeric()->minValue(0)->maxValue(365)->required(),
                     Textarea::make('instrucciones')->label(__('motor.panel.instrucciones'))->helperText(__('motor.panel.instrucciones_ayuda'))->rows(3)->maxLength(3000)->columnSpanFull(),
+                    Toggle::make('acepta_comprobantes')->label(__('grupos.comprobante.acepta'))->helperText(__('grupos.comprobante.acepta_ayuda'))->columnSpanFull(),
                     Textarea::make('condiciones')->label(__('motor.panel.condiciones'))->rows(3)->maxLength(5000)->columnSpanFull(),
                 ]),
                 Section::make(__('motor.panel.stripe'))->description(__('motor.panel.stripe_ayuda'))->hidden(fn (): bool => ModoDemo::activo() || ! Modulos::activo(Modulo::Pagos))->collapsible()->columns(['default' => 1, 'md' => 2])->schema([
@@ -166,6 +167,7 @@ class MotorDeReservas extends Page
             'horas_revision' => (int) $datos['horas_revision'],
             'dias_antelacion' => (int) $datos['dias_antelacion'],
             'instrucciones' => $datos['instrucciones'] ?? null,
+            'acepta_comprobantes' => (bool) ($datos['acepta_comprobantes'] ?? false),
             'condiciones' => $datos['condiciones'] ?? null,
         ]);
         foreach (ModoDemo::activo() ? [] : ['stripe' => ['stripe_secreta', 'stripe_webhook'], 'mercadopago' => ['mercadopago_token', 'mercadopago_webhook']] as $pasarela => $llaves) {
@@ -198,6 +200,7 @@ class MotorDeReservas extends Page
             'horas_revision' => $motor['horas_revision'] ?? 48,
             'dias_antelacion' => $motor['dias_antelacion'] ?? 0,
             'instrucciones' => $motor['instrucciones'] ?? null,
+            'acepta_comprobantes' => (bool) ($motor['acepta_comprobantes'] ?? true),
             'condiciones' => $motor['condiciones'] ?? null,
         ]);
     }

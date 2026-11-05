@@ -21,4 +21,6 @@ return [
     'motor_saturado' => 'In einer Stunde sind zu viele Online-Buchungen eingegangen, und das Formular wurde für eine Stunde angehalten. Prüfen Sie unter Buchungen, ob sie echt sind; nicht bestätigte werden automatisch storniert.',
     'copia_no_borrada' => 'Die Kopie konnte auf der Hauptinstallation nicht gelöscht werden; sie bleibt in deren Ordner dati/. Prüfen Sie die Berechtigungen dieses Ordners.',
     'registro_por_vencer' => 'Eine Registrierungs- oder Lizenznummer dieser Unterkunft läuft in weniger als 30 Tagen ab oder ist bereits abgelaufen. Erneuern Sie sie und aktualisieren Sie das Datum unter Tourismusregistrierungen.',
+    'comprobantes_por_revisar' => 'Es gibt Zahlungsbelege zu prüfen. Siehe Finanzen → Zahlungsbelege.',
+    'grupo_habitaciones_liberadas' => 'Aus der Gruppe :grupo wurden :habitaciones Zimmer ohne verantwortliche Person freigegeben, weil die Frist abgelaufen ist.',
 ];

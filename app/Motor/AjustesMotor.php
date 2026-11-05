@@ -69,6 +69,14 @@ final class AjustesMotor
         return $texto === '' ? null : $texto;
     }
 
+    /**
+     * Si la página de la reserva deja subir el comprobante de una transferencia. Tiene sentido si se dice a dónde transferir.
+     */
+    public function aceptaComprobantes(): bool
+    {
+        return $this->instrucciones() !== null && (bool) $this->valor('acepta_comprobantes', true);
+    }
+
     public function condiciones(): ?string
     {
         $texto = trim((string) $this->valor('condiciones', ''));

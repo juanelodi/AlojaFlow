@@ -21,4 +21,6 @@ return [
     'motor_saturado' => 'Chegaram demasiadas reservas online numa hora e o formulário foi parado durante uma hora. Verifique em Reservas se são reais; as que não forem confirmadas são canceladas automaticamente.',
     'copia_no_borrada' => 'Não foi possível apagar a cópia na instalação principal; fica na sua pasta dati/. Verifique as permissões dessa pasta.',
     'registro_por_vencer' => 'Um número de registo ou licença desta propriedade expira em menos de 30 dias, ou já expirou. Renove-o e atualize a data em Registos turísticos.',
+    'comprobantes_por_revisar' => 'Há comprovativos de pagamento por rever. Vê-os em Finanças → Comprovativos de pagamento.',
+    'grupo_habitaciones_liberadas' => 'Do grupo :grupo foram libertados :habitaciones quartos sem responsável, porque passou a data limite.',
 ];

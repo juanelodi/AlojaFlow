@@ -2,6 +2,32 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.18 — 2026-11-05
+
+**Grupos completos, con su propia página para el coordinador, y comprobantes de transferencia también en la reserva.**
+
+**Lo que hay en grupos**
+- **Precio del grupo:** la tarifa de cada unidad, un total que se reparte por noches, o un precio por noche según cuántos caben. Una gratis cada N (las más baratas), descuento y extras. La suma de las reservas es siempre el total del grupo.
+- **Tentativo, confirmado o cancelado.** Cancelar el grupo cancela sus reservas. También se cancela, se cambia de unidad o de fechas cada habitación por separado, solo si lo nuevo está libre.
+- **Al crear el grupo** se ve qué unidades están ocupadas en esas fechas y por quién, con «Seleccionar todas las libres».
+- **Calendario de pagos:** anticipo y el resto en pagos iguales, o a mano. Se ve qué está pagado, parcial, pendiente o atrasado, y avisa si no suma el total.
+- **Lista de huéspedes:** quién va en cada habitación. Se descarga a Excel y se vuelve a cargar pegándola, hay lista de llegada para imprimir, y con fecha límite puede liberar sola lo que siga sin responsable.
+- **Copiar el grupo a otras fechas**, con sus precios, sin pagos ni lista.
+- **Seguimiento de grupos:** pagos por confirmar, pagos vencidos o por vencer con recordatorio por WhatsApp, listas incompletas, quién llega esta semana y mensajes sin leer.
+- **En el calendario**, las reservas de un grupo llevan contorno punteado de su color, y dicen quién va en esa habitación.
+- **Página del coordinador:** con un enlace secreto y una clave que se muestra una vez y puede mandarse por WhatsApp. Él cambia la clave al entrar, y desde ahí nadie más la ve. Ve sus cuentas con barra de avance, su calendario y los datos para pagar; llena quién va en cada habitación, sin pasar de su capacidad; avisa por WhatsApp a cada responsable; sube sus pagos con comprobante, y se escribe con el alojamiento.
+- **Contrato del grupo:** una plantilla que se llena con los datos del grupo, más el aviso de privacidad. Sin aceptarlos no se usa la página, y se guardan el nombre, la fecha, la dirección IP y una copia en PDF. Si cambia el texto (por ejemplo, el precio), hay que aceptarlo otra vez. Se crea como borrador en Documentos legales: **revísalo antes de publicarlo.**
+- **Seguridad de esa página:** cinco errores bloquean la entrada 15 minutos y veinte por conexión la bloquean una hora, siempre con el mismo mensaje. Caduca unos días después de la salida y se puede desactivar.
+
+**Comprobantes de pago**
+- **También en la página de la reserva del motor:** si dijiste cómo pagar, el huésped sube la imagen de su transferencia. Mientras la revisas, la reserva no caduca. Se puede apagar en Motor de reservas.
+- **En Dinero → Comprobantes de pago** están todos los que faltan por revisar. Confirmar lo vuelve un pago normal, en la caja que elijas; rechazar pide un motivo, que el huésped lee en su página y le llega por correo, y le da otra vez su plazo para mandar otro.
+- **Solo imágenes** JPG, PNG o WebP de hasta 5 MB. Se mira qué son de verdad, no cómo se llaman, y se vuelven a dibujar: así no llega nada escondido ni la ubicación de la foto. Se guardan cifradas, y se borran 24 meses después de la salida, igual que los nombres de la lista y los mensajes.
+
+**No está igual que en la 1.2.3:** los pagos del grupo se reparten en sus reservas en lugar de llevarse aparte, para que la caja y los informes sigan cuadrando. Un comprobante en PDF no se acepta, porque no se puede volver a dibujar: que manden una foto.
+
+**Sin verificar:** nada de esto se probó en un hosting real ni con un coordinador de verdad. Los correos se revisaron en la cola de envíos, sin mandarlos; el WhatsApp es un enlace que abre la conversación. El contrato de partida no es asesoría legal.
+
 ## 1.0.17 — 2026-11-05
 
 **Herramientas para ordenar los datos: fichas duplicadas, anonimizar por antigüedad, exportar facturas, regiones y número de registro. Y la base que se actualiza sola si subes una versión a mano.**

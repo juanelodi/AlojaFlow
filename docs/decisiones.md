@@ -615,6 +615,18 @@ Tabla propia y no un campo, porque hay registros por propiedad y por unidad, y e
 ### D-093 · 2026-11-05 · Días y franja de sincronización
 En la hora de la propiedad, no en la del servidor. **Una franja que cruza la medianoche es del día en que empieza:** la de 22:00 a 06:00 del lunes sigue el martes hasta las 6, porque así se lee en el formulario. Marcar todos los días o ninguno es lo mismo, sin límite: nadie quiere una principal que no se copie nunca. Copiar a mano no pasa por aquí.
 
+### D-094 · 2026-11-05 · Cada habitación de un grupo sigue siendo una reserva normal
+Los informes, la caja, la disponibilidad y las automatizaciones no tienen que saber de grupos. Lo que es del grupo va aparte, en `grupo_habitaciones`: el precio por noche propio y quién va. **El titular sigue siendo el coordinador**, y el responsable es un dato de la lista: crear una ficha por cada nombre que escribe un tercero llenaría de duplicados. El calendario enseña al responsable si lo hay. **Los pagos se reparten en las reservas**, no se llevan aparte como en la 1.2.3, para que la caja y los informes cuadren con todo lo demás. Un grupo cancelado no se revive: sus noches ya pudieron venderse, y por eso se copia.
+
+### D-095 · 2026-11-05 · Precio del grupo
+La lógica es la de `hd_grp_calcula`, reescrita en `App\Grupos\CalculadorPrecio`, con una diferencia: **la suma de las reservas es siempre el total**, porque los centavos que no se pueden repartir van a la última. Los extras se reparten entre las que pagan: una habitación regalada se queda en cero. Con la tarifa normal y sin nada que la cambie no se toca ninguna reserva, porque recepción pudo haber puesto un precio a mano; al cambiar los precios del grupo o pedirlo con el botón sí se recalcula, y el botón lo advierte. Las cuotas no guardan si están pagadas: lo pagado se aplica a las primeras en vencer, y así confirmar o quitar un pago nunca deja el calendario desfasado.
+
+### D-096 · 2026-11-05 · El coordinador entra con enlace y clave, sin cuenta
+**Hacen falta las dos cosas.** No es un usuario del panel: su sesión vale solo para ese grupo, y cambiar la clave saca a quien tuviera la anterior. La clave que se le da se guarda cifrada para poder enseñársela de nuevo al alojamiento hasta que la cambie; la que él elige no se guarda en claro y nadie puede verla. Generar una nueva cambia también el enlace. Cinco errores bloquean 15 minutos y veinte por conexión la bloquean una hora, siempre con el mismo mensaje y comprobando la clave igual, para que lo bloqueado no se note. Caduca unos días tras la salida. El contrato es una plantilla (`contrato_grupo`, que no se le pide al huésped que llega) y **la huella es del texto ya con los datos del grupo:** si cambia el precio, no es lo que se aceptó. Cambiar el idioma de la página no pide aceptar otra vez lo mismo: se sigue el idioma en que se aceptó.
+
+### D-097 · 2026-11-05 · Comprobantes de pago
+Un comprobante no es un pago hasta que alguien lo confirma, y no cuenta en ningún saldo. Es la misma tabla para grupos y para reservas del motor. **Mientras se revisa, la reserva no caduca:** ya mandaron el dinero. Si se rechaza, le vuelve a correr el plazo, para que un comprobante falso no aparte noches para siempre. **La imagen se vuelve a dibujar** con GD y se guarda cifrada: se mira el tipo real, se cuentan los píxeles antes de abrirla y se aplica la orientación del teléfono, que se perdería. PDF no: no hay cómo limpiarlo. Límite de 20 por hora y 300 por objeto. Las imágenes se borran a los 24 meses de la salida, y con ellas los nombres de la lista y los mensajes del grupo; las reservas y los importes se quedan.
+
 ---
 
 ## Pendientes

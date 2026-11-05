@@ -19,6 +19,7 @@ use App\Models\CargoReserva;
 use App\Models\ConceptoCargo;
 use App\Models\ConexionCompartida;
 use App\Models\ContactoHuesped;
+use App\Models\CuotaGrupo;
 use App\Models\Cupon;
 use App\Models\Empresa;
 use App\Models\EntidadFiscal;
@@ -62,7 +63,7 @@ final class AuditoriaModelos
     private const MODELOS = [
         AccesoUsuario::class, Automatizacion::class, Caja::class, Canal::class, CargoReserva::class, ConceptoCargo::class, ConexionCompartida::class, ContactoHuesped::class,
         Cupon::class, Empresa::class, EntidadFiscal::class, Factura::class, FuenteIcal::class, Grupo::class, Huesped::class, Impuesto::class, ListaComprobacion::class, MantenimientoRecurrente::class,
-        Movimiento::class, NotaBitacora::class, Omision::class, Pago::class, Plantilla::class, Politica::class, Principal::class, Propiedad::class, RegistroTuristico::class, ReglaLimpieza::class, Reserva::class, Restriccion::class, Tarea::class, Tarifa::class,
+        Movimiento::class, NotaBitacora::class, Omision::class, Pago::class, Plantilla::class, Politica::class, Principal::class, Propiedad::class, RegistroTuristico::class, CuotaGrupo::class, ReglaLimpieza::class, Reserva::class, Restriccion::class, Tarea::class, Tarifa::class,
         TemporadaTarifa::class, Unidad::class, User::class, Webhook::class,
     ];
 
