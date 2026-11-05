@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $propiedad_id
  * @property string $nombre
  * @property string|null $comision_porcentaje
+ * @property bool $cobra_impuestos
  * @property bool $activo
  */
 class Canal extends ModeloBase

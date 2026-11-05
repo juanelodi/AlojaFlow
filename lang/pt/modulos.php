@@ -42,6 +42,8 @@ return [
         'plano' => ['nombre' => 'Planta da propriedade', 'descripcion' => 'Ver as unidades dispostas em um desenho do seu alojamento.'],
         'llegada' => ['nombre' => 'Chegada on-line', 'descripcion' => 'O hóspede preenche os dados e aceita os documentos antes de chegar.'],
         'mensajes' => ['nombre' => 'Mensagens aos hóspedes', 'descripcion' => 'Modelos, envios por e-mail e WhatsApp, e mensagens automáticas.'],
+        'bitacora' => ['nombre' => 'Diário de turnos', 'descripcion' => 'O que um turno deixa para o seguinte. O importante aparece em Hoje.'],
+        'empresas' => ['nombre' => 'Empresas e agências', 'descripcion' => 'Quem reserva ou paga por seus hóspedes, com suas condições e extrato de conta.'],
         'caja' => ['nombre' => 'Caixa e fechamento do dia', 'descripcion' => 'Caixas, movimentos de dinheiro e o fechamento diário.'],
         'facturacion' => ['nombre' => 'Faturas e recibos', 'descripcion' => 'Dados fiscais, faturas, recibos e exportações para o contador.'],
         'informes' => ['nombre' => 'Relatórios e indicadores', 'descripcion' => 'Ocupação, receitas e outros relatórios.'],

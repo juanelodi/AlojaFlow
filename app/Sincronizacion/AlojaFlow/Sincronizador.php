@@ -88,6 +88,8 @@ class Sincronizador implements Subordinador
             if ($this->puedeSaltarse($principal, $estado['revision'], $origen)) {
                 $this->terminarBien($principal, $ejecucion, $estado, false, [], 0);
             } else {
+                // Una principal anterior a la 1.0.15 no dice qué ofrece, y solo tiene las cuatro primeras.
+                $archivos = array_intersect_key($archivos, array_flip($estado['colecciones']));
                 foreach ($archivos as $coleccion => $archivo) {
                     $bytes += $this->bajar($cliente, $coleccion, $archivo);
                 }
@@ -152,7 +154,7 @@ class Sincronizador implements Subordinador
     }
 
     /**
-     * @param  array{api: int, version: string, revision: string, propiedad: array<string, mixed>}  $estado
+     * @param  array{api: int, version: string, revision: string, colecciones: list<string>, propiedad: array<string, mixed>}  $estado
      * @param  array<string, int>  $cuentas
      * @param  array<string, int>  $incidencias
      */

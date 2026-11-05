@@ -4,7 +4,7 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-05): versión de prueba 1.0.14**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-05): versión de prueba 1.0.15**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
   D-029) y D-036 se revisan con el usuario. En curso: el plan de [docs/plan-paridad.md](docs/plan-paridad.md), hasta la 1.0.24.
@@ -200,6 +200,7 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   noches y pagos propios, y `Cotizador` calcula el precio con la tarifa y sus temporadas.
 - `app/Motor/` y `app/Pagos/` — motor de reservas y pasarelas (D-042). `app/Propiedades/Independizador.php`,
   pasar una subordinada a independiente (D-043).
+- `app/Caja/GestorTurnos.php`, turnos y arqueo (D-080). `app/Sincronizacion/ProyeccionCaja.php`, la caja de la principal (D-078).
 - `app/Limpieza/AvisoEquipo.php`, el parte para el equipo, y `Omisiones.php`, a quién no mostrar en cada lugar (D-074).
 - `app/Limpieza/`, `app/Comunicacion/` (`Mensajero`, D-045), `app/Ical/` (D-046), `app/Llegada/` y
   `app/Privacidad/` (D-047): datos propios, que valen igual en independientes y subordinadas.
@@ -224,7 +225,7 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 - `app/Http/Middleware/` — `CabecerasSeguridad` (D-057), `MismoOrigen` (motor sin CSRF) y `UsuarioActivo`
   (rutas con sesión fuera del panel).
 - `app/Servicios/` — consultas de las pantallas operativas (Operacion, Calendario,
-  Disponibilidad, Indicadores).
+  Disponibilidad, Indicadores), `Informes` e `InformesGestion` (D-079), y `Grafica`, lo que dibuja `filament.partes.grafica-barras`.
 - `app/Filament/Pages/` (pantallas propias, vistas en `resources/views/filament/pages/`) y
   `app/Filament/Resources/` (administración y listados).
 - `lang/es` (fuente) y los demás idiomas; `resources/views/publico/`, páginas sin sesión del huésped;

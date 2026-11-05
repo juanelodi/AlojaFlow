@@ -11,15 +11,21 @@ declare(strict_types=1);
 use App\Enums\EstadoEjecucion;
 use App\Enums\EstadoPrincipal;
 use App\Enums\EstadoReserva;
+use App\Enums\MetodoPago;
 use App\Enums\OrigenEjecucion;
+use App\Enums\TipoMovimiento;
 use App\Enums\TipoReserva;
 use App\Models\Aviso;
+use App\Models\Caja;
 use App\Models\EventoReserva;
 use App\Models\Huesped;
+use App\Models\Movimiento;
+use App\Models\Pago;
 use App\Models\Principal;
 use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Unidad;
+use App\Propiedades\Independizador;
 use App\Sincronizacion\HotelDruid\ClientePrincipal;
 use App\Sincronizacion\HotelDruid\Sincronizador;
 use App\Sincronizacion\HotelDruid\ValidadorDestino;
@@ -261,4 +267,78 @@ it('impide cambiar desde la aplicación una fila sincronizada', function () {
     $reserva = Reserva::query()->firstOrFail();
 
     expect(fn () => $reserva->update(['comentario' => 'cambio']))->toThrow(LogicException::class);
+});
+
+describe('la caja de la principal', function () {
+    beforeEach(function () {
+        $this->copia = copiaBase()
+            ->fila('casse', ['idcasse' => 1, 'nome_cassa' => 'Recepción'])
+            ->fila('casse', ['idcasse' => 2, 'nome_cassa' => 'Banco'])
+            // Dos cobros de la reserva 1 y uno de una que no existe; la primera fila de cada año no es de una reserva.
+            ->fila('soldi2026', ['idsoldi' => 1, 'motivazione' => 'soldi_prenotazioni_cancellate', 'saldo_prenota' => ''])
+            ->fila('soldi2026', ['idsoldi' => 2, 'motivazione' => '1;10;13;1', 'metodo_pagamento' => 'Efectivo', 'saldo_prenota' => '700.00', 'data_transazione' => '2026-10-01 09:30:00'])
+            ->fila('soldi2026', ['idsoldi' => 3, 'motivazione' => '1;10;13;1', 'metodo_pagamento' => 'PayPal', 'saldo_prenota' => '300.00', 'data_transazione' => '2026-10-02 10:00:00'])
+            ->fila('soldi2026', ['idsoldi' => 4, 'motivazione' => '9;10;13;99', 'metodo_pagamento' => 'Efectivo', 'saldo_prenota' => '50.00', 'data_transazione' => '2026-10-03 10:00:00'])
+            // El cobro de 700 entró a la caja: su concepto lleva el apellido, que no debe guardarse.
+            ->fila('costi2026', ['idcosti' => 1, 'nome_costo' => 'Prenotazione 1 dal 10 al 13 per Pérez', 'val_costo' => '700.00', 'tipo_costo' => 'e', 'nome_cassa' => 'Recepción', 'provenienza_costo' => 'p', 'metodo_pagamento' => 'Efectivo', 'data_transazione' => '2026-10-01 09:30:00'])
+            // Otro cobro anotado en la caja que ya no está en soldi: no debe detener la copia.
+            ->fila('costi2026', ['idcosti' => 4, 'nome_costo' => 'Prenotazione 2 dal 12 al 14 per Smith', 'val_costo' => '99.00', 'tipo_costo' => 'e', 'nome_cassa' => 'Recepción', 'provenienza_costo' => 'p', 'metodo_pagamento' => 'Efectivo', 'data_transazione' => '2026-10-01 09:30:00'])
+            ->fila('costi2026', ['idcosti' => 2, 'nome_costo' => 'Compra de garrafones', 'val_costo' => '120.50', 'tipo_costo' => 's', 'nome_cassa' => 'Recepción', 'provenienza_costo' => 'u', 'metodo_pagamento' => 'contanti', 'data_transazione' => '2026-10-05 12:00:00'])
+            ->fila('costi2026', ['idcosti' => 3, 'nome_costo' => 'Renta de salón', 'val_costo' => '1000', 'tipo_costo' => 'e', 'nome_cassa' => 'Banco', 'provenienza_costo' => 'u', 'metodo_pagamento' => 'bonifico', 'data_transazione' => '2026-10-06 12:00:00']);
+        fingirPrincipal($this->copia);
+        expect(sincronizar($this->principal)->estado)->toBe(EstadoEjecucion::Correcta);
+    });
+
+    it('trae cajas, cobros y movimientos sin contar dos veces lo que viene de una reserva', function () {
+        $propiedad = $this->principal->propiedad_id;
+        expect(Caja::query()->where('propiedad_id', $propiedad)->orderBy('nombre')->pluck('nombre')->all())->toBe(['Banco', 'Recepción']);
+
+        $pagos = Pago::query()->where('propiedad_id', $propiedad)->orderBy('fecha')->get();
+        expect($pagos)->toHaveCount(2)
+            ->and($pagos[0]->importe)->toBe(70000)->and($pagos[0]->metodo)->toBe(MetodoPago::Efectivo)->and($pagos[0]->fecha->format('Y-m-d'))->toBe('2026-10-01')
+            ->and($pagos[0]->caja_id)->toBe(Caja::query()->where('nombre', 'Recepción')->value('id'))
+            ->and($pagos[1]->metodo)->toBe(MetodoPago::Otro)->and($pagos[1]->referencia)->toBe('PayPal')->and($pagos[1]->caja_id)->toBeNull()
+            ->and($pagos[0]->reserva->clave_origen)->toBe('2026:1');
+
+        $movimientos = Movimiento::query()->where('propiedad_id', $propiedad)->orderBy('fecha')->get();
+        expect($movimientos)->toHaveCount(2)
+            ->and($movimientos[0]->tipo)->toBe(TipoMovimiento::Gasto)->and($movimientos[0]->importe)->toBe(12050)->and($movimientos[0]->metodo)->toBe(MetodoPago::Efectivo)
+            ->and($movimientos[1]->tipo)->toBe(TipoMovimiento::Ingreso)->and($movimientos[1]->metodo)->toBe(MetodoPago::Transferencia);
+        expect((string) json_encode($movimientos->pluck('concepto')))->not->toContain('Pérez');
+    });
+
+    it('una caja puede tomar el nombre de otra que se quitó', function () {
+        fingirPrincipal(copiaBase()->fila('casse', ['idcasse' => 1, 'nome_cassa' => 'Banco']));
+        expect(sincronizar($this->principal->refresh())->estado)->toBe(EstadoEjecucion::Correcta);
+        expect(Caja::query()->where('propiedad_id', $this->principal->propiedad_id)->sole()->clave_origen)->toBe('casse:1');
+    });
+
+    it('otra sincronización no duplica ni reescribe, y lo que quita la principal se va', function () {
+        $propiedad = $this->principal->propiedad_id;
+        $id = Pago::query()->where('propiedad_id', $propiedad)->orderBy('id')->value('id');
+        $actualizado = '2020-01-01 00:00:00';
+        DB::table('pagos')->where('id', $id)->update(['actualizado_en' => $actualizado]);
+
+        expect(sincronizar($this->principal->refresh())->estado)->toBe(EstadoEjecucion::Correcta);
+        expect(Pago::query()->where('propiedad_id', $propiedad)->count())->toBe(2)
+            ->and(DB::table('pagos')->where('id', $id)->value('actualizado_en'))->toBe($actualizado);
+
+        fingirPrincipal(copiaBase()->fila('soldi2026', ['idsoldi' => 2, 'motivazione' => '1;10;13;1', 'metodo_pagamento' => 'Efectivo', 'saldo_prenota' => '800.00', 'data_transazione' => '2026-10-01 09:30:00']));
+        expect(sincronizar($this->principal->refresh())->estado)->toBe(EstadoEjecucion::Correcta);
+        expect(Pago::query()->where('propiedad_id', $propiedad)->sole()->importe)->toBe(80000)
+            ->and(Movimiento::query()->where('propiedad_id', $propiedad)->count())->toBe(0)
+            ->and(Caja::query()->where('propiedad_id', $propiedad)->count())->toBe(0);
+    });
+
+    it('al pasar a independiente, todo eso queda como propio y lo pagado cuadra', function () {
+        $propiedad = Propiedad::query()->findOrFail($this->principal->propiedad_id);
+        $reserva = Reserva::query()->where('clave_origen', '2026:1')->firstOrFail();
+        expect($reserva->pagado)->toBe(100000);
+
+        app(Independizador::class)->independizar($propiedad);
+
+        expect(Pago::query()->where('propiedad_id', $propiedad->id)->where('sincronizada', true)->count())->toBe(0)
+            ->and(Movimiento::query()->where('propiedad_id', $propiedad->id)->where('sincronizada', true)->count())->toBe(0)
+            ->and((int) Pago::query()->where('reserva_id', $reserva->id)->sum('importe'))->toBe(100000);
+    });
 });

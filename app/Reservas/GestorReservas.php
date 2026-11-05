@@ -16,6 +16,7 @@ use App\Enums\OrigenFila;
 use App\Enums\TipoEventoReserva;
 use App\Enums\TipoReserva;
 use App\Limpieza\GestorLimpieza;
+use App\Models\Empresa;
 use App\Models\EventoReserva;
 use App\Models\Huesped;
 use App\Models\Pago;
@@ -78,6 +79,7 @@ final class GestorReservas
             $this->asignarTitular($reserva);
             $this->guardarCargos($reserva, $datos);
             $reserva->refresh();
+            $this->guardarImpuestos($reserva);
 
             $this->anotar($reserva, TipoEventoReserva::Creada, 'reserva.crear', ['despues' => $this->resumen($reserva)]);
 
@@ -109,6 +111,7 @@ final class GestorReservas
             $this->asignarTitular($actual);
             $this->guardarCargos($actual, $datos);
             $actual->refresh();
+            $this->guardarImpuestos($actual);
 
             $this->anotar($actual, TipoEventoReserva::Modificada, 'reserva.modificar', ['antes' => $antes, 'despues' => $this->resumen($actual)]);
 
@@ -143,6 +146,7 @@ final class GestorReservas
             $actual->save();
             $this->ocuparNoches($actual);
             $actual->refresh();
+            $this->guardarImpuestos($actual);
             $this->anotar($actual, TipoEventoReserva::Modificada, 'reserva.mover', ['antes' => $antes, 'despues' => $this->resumen($actual)]);
 
             return $actual;
@@ -374,6 +378,7 @@ final class GestorReservas
             }
         }
         $estado = EstadoReserva::tryFrom((string) ($datos['estado'] ?? '')) ?? EstadoReserva::Confirmada;
+
         if ($estado === EstadoReserva::Cancelada) {
             $estado = EstadoReserva::SinConfirmar;
         }
@@ -384,6 +389,13 @@ final class GestorReservas
             'personas' => $personas,
             'tarifa_nombre' => Cotizador::cotizar($unidad, $llegada, $salida, $personas)?->tarifa,
         ];
+        // Solo si vienen: quien cambia una reserva desde otra pantalla no los conoce, y no debe borrarlos.
+        if (array_key_exists('ninos', $datos)) {
+            $fila['ninos'] = min($personas, max(0, (int) $datos['ninos']));
+        }
+        if (array_key_exists('empresa_id', $datos)) {
+            $fila['empresa_id'] = blank($datos['empresa_id']) ? null : Empresa::query()->where('propiedad_id', $propiedad->id)->whereKey((int) $datos['empresa_id'])->value('id');
+        }
         if (array_key_exists('grupo_id', $datos)) {
             $fila['grupo_id'] = $datos['grupo_id'] === null ? null : (int) $datos['grupo_id'];
         }
@@ -415,6 +427,17 @@ final class GestorReservas
         }
 
         return $cupon->id;
+    }
+
+    /**
+     * Una foto de lo que se cobró de impuestos, para que el informe no cambie si mañana cambia la tasa (D-082).
+     */
+    private function guardarImpuestos(Reserva $reserva): void
+    {
+        $reserva->impuestos()->delete();
+        if ($reserva->tipo === TipoReserva::Reserva) {
+            $reserva->impuestos()->createMany(Cotizador::impuestosDeReserva($reserva));
+        }
     }
 
     /**

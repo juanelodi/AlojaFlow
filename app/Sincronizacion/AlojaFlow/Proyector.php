@@ -11,15 +11,18 @@ declare(strict_types=1);
 namespace App\Sincronizacion\AlojaFlow;
 
 use App\Enums\EstadoReserva;
+use App\Enums\MetodoPago;
 use App\Enums\OrigenFila;
 use App\Enums\TipoContacto;
 use App\Enums\TipoEventoReserva;
+use App\Enums\TipoMovimiento;
 use App\Enums\TipoReserva;
 use App\Models\EjecucionSincronizacion;
 use App\Models\Principal;
 use App\Sincronizacion\ContextoSincronizacion;
 use App\Sincronizacion\HotelDruid\ResultadoProyeccion;
 use App\Sincronizacion\NochesProyectadas;
+use App\Sincronizacion\ProyeccionCaja;
 use App\Support\Contactos;
 use App\Support\Huellas;
 use Carbon\CarbonImmutable;
@@ -75,6 +78,9 @@ class Proyector
                 $unidades = $this->proyectarUnidades($archivos['unidades']);
                 $huespedes = $this->proyectarHuespedes($archivos['huespedes']);
                 $this->proyectarReservas($archivos['reservas'], $archivos['bloqueos'], $unidades, $huespedes);
+                if (isset($archivos['cajas'], $archivos['pagos'], $archivos['movimientos'])) {
+                    $this->proyectarCaja($archivos['cajas'], $archivos['pagos'], $archivos['movimientos']);
+                }
                 foreach (array_chunk($this->eventos, self::LOTE) as $lote) {
                     DB::table('eventos_reserva')->insert($lote);
                 }
@@ -280,6 +286,71 @@ class Proyector
                 $this->eliminarReserva($existente, false);
             }
         }
+    }
+
+    /**
+     * Las cajas, los cobros y los movimientos, uno por uno (D-078).
+     */
+    private function proyectarCaja(string $archivoCajas, string $archivoPagos, string $archivoMovimientos): void
+    {
+        $proyeccion = new ProyeccionCaja($this->principal, $this->ahora);
+        $moneda = $this->principal->propiedad->moneda;
+
+        $cajas = [];
+        foreach ($this->filas($archivoCajas) as $f) {
+            $nombre = $this->texto($f['nombre'] ?? null, 100);
+            $remota = $this->entero($f['id'] ?? null);
+            if ($nombre !== null && $remota > 0) {
+                $cajas['c:'.$remota] = ['nombre' => $nombre, 'activa' => (bool) ($f['activa'] ?? true)];
+            }
+        }
+        $idsCaja = $proyeccion->cajas($cajas);
+        $cajaDe = fn (array $f): ?int => $idsCaja['c:'.$this->entero($f['caja_id'] ?? null)] ?? null;
+
+        $reservas = DB::table('reservas')->where('principal_id', $this->principal->id)->whereNotNull('clave_origen')->pluck('id', 'clave_origen');
+        $pagos = [];
+        foreach ($this->filas($archivoPagos) as $f) {
+            $reservaId = $reservas[(string) $this->entero($f['reserva_id'] ?? null)] ?? null;
+            $fecha = $this->fecha($f['fecha'] ?? null);
+            $remota = $this->entero($f['id'] ?? null);
+            if ($reservaId === null || $fecha === null || $remota <= 0) {
+                continue;
+            }
+            $pagos['p:'.$remota] = [
+                'reserva_id' => (int) $reservaId,
+                'caja_id' => $cajaDe($f),
+                'fecha' => $fecha,
+                'metodo' => (MetodoPago::tryFrom((string) ($f['metodo'] ?? '')) ?? MetodoPago::Otro)->value,
+                'importe' => $this->entero($f['importe'] ?? null),
+                'moneda' => $moneda,
+                'referencia' => $this->texto($f['referencia'] ?? null, 100),
+            ];
+        }
+
+        $movimientos = [];
+        foreach ($this->filas($archivoMovimientos) as $f) {
+            $tipo = TipoMovimiento::tryFrom((string) ($f['tipo'] ?? ''));
+            $fecha = $this->fecha($f['fecha'] ?? null);
+            $remota = $this->entero($f['id'] ?? null);
+            if ($tipo === null || $fecha === null || $remota <= 0) {
+                continue;
+            }
+            $movimientos['m:'.$remota] = [
+                'caja_id' => $cajaDe($f),
+                'fecha' => $fecha,
+                'tipo' => $tipo->value,
+                'categoria' => $this->texto($f['categoria'] ?? null, 100),
+                'concepto' => $this->texto($f['concepto'] ?? null, 255) ?? '—',
+                'metodo' => (MetodoPago::tryFrom((string) ($f['metodo'] ?? '')) ?? MetodoPago::Otro)->value,
+                'importe' => abs($this->entero($f['importe'] ?? null)),
+                'moneda' => $moneda,
+                'referencia' => $this->texto($f['referencia'] ?? null, 100),
+            ];
+        }
+        $proyeccion->pagos($pagos);
+        $proyeccion->movimientos($movimientos);
+        $this->resultado->cuentas['pagos'] = count($pagos);
+        $this->resultado->cuentas['movimientos'] = count($movimientos);
     }
 
     /**

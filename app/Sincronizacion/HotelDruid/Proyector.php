@@ -11,13 +11,16 @@ declare(strict_types=1);
 namespace App\Sincronizacion\HotelDruid;
 
 use App\Enums\EstadoReserva;
+use App\Enums\MetodoPago;
 use App\Enums\OrigenFila;
 use App\Enums\TipoEventoReserva;
+use App\Enums\TipoMovimiento;
 use App\Enums\TipoReserva;
 use App\Models\EjecucionSincronizacion;
 use App\Models\Principal;
 use App\Sincronizacion\ContextoSincronizacion;
 use App\Sincronizacion\NochesProyectadas;
+use App\Sincronizacion\ProyeccionCaja;
 use App\Support\Contactos;
 use App\Support\Huellas;
 use Carbon\CarbonImmutable;
@@ -66,6 +69,7 @@ class Proyector
                 $unidades = $this->proyectarUnidades();
                 $huespedes = $this->proyectarHuespedes();
                 $this->proyectarReservas($unidades, $huespedes);
+                $this->proyectarCaja();
                 $this->guardarEventos();
             });
         });
@@ -621,6 +625,93 @@ class Proyector
             'creado_en' => $this->ahora,
             'actualizado_en' => $this->ahora,
         ];
+    }
+
+    /**
+     * La caja de la principal, uno por uno (D-078). Cada cobro está en `soldi`, con el número de reserva en su motivo. La tabla `costi` es el
+     * libro de la caja: lo que viene de una reserva ('p') ya está en `soldi` y solo dice en qué caja entró, para no contarlo dos veces; lo
+     * demás son gastos e ingresos sueltos. Su concepto de una reserva lleva el apellido del huésped: se lee el número y no se guarda.
+     */
+    private function proyectarCaja(): void
+    {
+        $proyeccion = new ProyeccionCaja($this->principal, $this->ahora);
+        $moneda = $this->principal->propiedad->moneda;
+        $c = $this->conversor;
+
+        $cajas = [];
+        $claves = [];
+        foreach ($this->filas('casse') as [, $f]) {
+            $nombre = $c->texto($f['nome_cassa'] ?? null, 100);
+            if ($nombre !== null && ! isset($claves[mb_strtolower($nombre)])) {
+                $clave = 'casse:'.(int) ($f['idcasse'] ?? 0);
+                $claves[mb_strtolower($nombre)] = $clave;
+                $cajas[$clave] = ['nombre' => $nombre, 'activa' => true];
+            }
+        }
+        $idsCaja = $proyeccion->cajas($cajas);
+        $cajaDe = fn (array $f): ?int => $idsCaja[$claves[mb_strtolower((string) $c->texto($f['nome_cassa'] ?? null, 100))] ?? ''] ?? null;
+        $fechaDe = fn (array $f): ?string => $c->fecha($f['data_transazione'] ?? null) ?? $c->fecha($f['data_inserimento'] ?? $f['datainserimento'] ?? null);
+
+        $reservas = DB::table('reservas')->where('principal_id', $this->principal->id)->whereNotNull('clave_origen')->pluck('id', 'clave_origen');
+        $pagos = [];
+        $sinCaja = [];
+        foreach ($this->filas('soldi') as [$anio, $f]) {
+            $partes = explode(';', (string) ($f['motivazione'] ?? ''));
+            $reservaId = $reservas[$anio.':'.(int) explode(',', $partes[3] ?? '')[0]] ?? null;
+            $importe = $c->importe($f['saldo_prenota'] ?? null);
+            $fecha = $fechaDe($f);
+            if ($reservaId === null || $importe === 0 || $fecha === null) {
+                continue;
+            }
+            $clave = 'soldi:'.$anio.':'.(int) ($f['idsoldi'] ?? 0);
+            $metodo = ProyeccionCaja::metodo($f['metodo_pagamento'] ?? null);
+            $pagos[$clave] = [
+                'reserva_id' => (int) $reservaId,
+                'caja_id' => null,
+                'fecha' => $fecha,
+                'metodo' => $metodo->value,
+                'importe' => $importe,
+                'moneda' => $moneda,
+                'referencia' => $metodo === MetodoPago::Otro ? $c->texto($f['metodo_pagamento'] ?? null, 100) : null,
+            ];
+            $sinCaja[$reservaId.'|'.$importe.'|'.$fecha][] = $clave;
+        }
+
+        $movimientos = [];
+        foreach ($this->filas('costi') as [$anio, $f]) {
+            $importe = $c->importe($f['val_costo'] ?? null);
+            $fecha = $fechaDe($f);
+            if ($importe === 0 || $fecha === null) {
+                continue;
+            }
+            if (($f['provenienza_costo'] ?? '') === 'p') {
+                if (preg_match('/^\S+\s+(\d+)\s/u', (string) ($f['nome_costo'] ?? ''), $m) === 1) {
+                    $casar = ($reservas[$anio.':'.$m[1]] ?? 0).'|'.$importe.'|'.$fecha;
+                    // Si no casa, el cobro se queda sin caja: puede haberse corregido en la principal después.
+                    $clave = ($sinCaja[$casar] ?? []) === [] ? null : array_shift($sinCaja[$casar]);
+                    if ($clave !== null) {
+                        $pagos[$clave]['caja_id'] = $cajaDe($f);
+                    }
+                }
+
+                continue;
+            }
+            $movimientos['costi:'.$anio.':'.(int) ($f['idcosti'] ?? 0)] = [
+                'caja_id' => $cajaDe($f),
+                'fecha' => $fecha,
+                'tipo' => ($f['tipo_costo'] ?? '') === 's' ? TipoMovimiento::Gasto->value : TipoMovimiento::Ingreso->value,
+                'categoria' => null,
+                'concepto' => $c->texto($f['nome_costo'] ?? null, 255) ?? '—',
+                'metodo' => ProyeccionCaja::metodo($f['metodo_pagamento'] ?? null)->value,
+                'importe' => abs($importe),
+                'moneda' => $moneda,
+                'referencia' => null,
+            ];
+        }
+        $proyeccion->pagos($pagos);
+        $proyeccion->movimientos($movimientos);
+        $this->resultado->cuentas['pagos'] = count($pagos);
+        $this->resultado->cuentas['movimientos'] = count($movimientos);
     }
 
     /**

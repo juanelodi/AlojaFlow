@@ -52,6 +52,13 @@ interface Pais
     public function generadorFiscal(): ?GeneradorFiscal;
 
     /**
+     * Impuestos al hospedaje que se pueden proponer, por estado o provincia. Vacío si no se tiene un catálogo.
+     *
+     * @return list<SugerenciaImpuesto>
+     */
+    public function sugerenciasImpuesto(): array;
+
+    /**
      * Los documentos que se proponen de partida, en un idioma.
      *
      * @return array<string, array{titulo: string, cuerpo: string}> tipo => texto

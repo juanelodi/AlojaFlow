@@ -44,6 +44,18 @@ final class GeneradorPdf
         return $this->pdf('documentos.copia-aceptacion', ['aceptacion' => $aceptacion, 'documento' => $documento, 'registro' => $registro], $documento->idioma);
     }
 
+    /**
+     * @param  list<string>  $columnas
+     * @param  list<list<string>>  $filas
+     */
+    public function informe(string $titulo, string $propiedades, string $periodo, array $columnas, array $filas): string
+    {
+        return Pdf::loadView('documentos.informe', ['titulo' => $titulo, 'propiedades' => $propiedades, 'periodo' => $periodo, 'columnas' => $columnas, 'filas' => $filas])
+            ->setPaper('letter', count($columnas) > 5 ? 'landscape' : 'portrait')
+            ->setOption(['isRemoteEnabled' => false, 'isPhpEnabled' => false])
+            ->output();
+    }
+
     public function factura(Factura $factura): string
     {
         $factura->loadMissing(['lineas.impuestos', 'propiedad']);
@@ -83,15 +95,18 @@ final class GeneradorPdf
     private function datos(Reserva $reserva): array
     {
         $reserva->loadMissing(['propiedad', 'unidad', 'titular.contactos', 'cargos', 'pagos']);
-        $presupuesto = Cotizador::presupuesto($reserva->unidad, $reserva->llegada, $reserva->salida, max(1, $reserva->personas));
-        // Impuestos con los datos de hoy: en la reserva solo se guarda el total.
+        // Lo que se guardó al crearla; las de antes de la 1.0.15 no lo tienen, y se calcula con los datos de hoy.
+        $impuestos = $reserva->impuestos()->where('cobrado_por_canal', false)->get(['nombre', 'importe', 'incluido'])->toArray();
+        if ($impuestos === []) {
+            $impuestos = Cotizador::presupuesto($reserva->unidad, $reserva->llegada, $reserva->salida, max(1, $reserva->personas))->impuestos;
+        }
         $alojamiento = $reserva->total - (int) $reserva->cargos->sum('importe');
 
         return [
             'reserva' => $reserva,
             'propiedad' => $reserva->propiedad,
             'alojamiento' => $alojamiento,
-            'impuestos' => $presupuesto->impuestos,
+            'impuestos' => $impuestos,
         ];
     }
 

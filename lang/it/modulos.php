@@ -42,6 +42,8 @@ return [
         'plano' => ['nombre' => 'Pianta della struttura', 'descripcion' => 'Vedere le unità disposte su un disegno del tuo alloggio.'],
         'llegada' => ['nombre' => 'Arrivo online', 'descripcion' => 'L\'ospite compila i suoi dati e accetta i documenti prima di arrivare.'],
         'mensajes' => ['nombre' => 'Messaggi agli ospiti', 'descripcion' => 'Modelli, invii via e-mail e WhatsApp, e messaggi automatici.'],
+        'bitacora' => ['nombre' => 'Registro dei turni', 'descripcion' => 'Ciò che un turno lascia al successivo. L’importante compare in Oggi.'],
+        'empresas' => ['nombre' => 'Aziende e agenzie', 'descripcion' => 'Chi prenota o paga per i propri ospiti, con condizioni ed estratto conto.'],
         'caja' => ['nombre' => 'Cassa e chiusura del giorno', 'descripcion' => 'Casse, movimenti di denaro e la chiusura giornaliera.'],
         'facturacion' => ['nombre' => 'Fatture e ricevute', 'descripcion' => 'Dati fiscali, fatture, ricevute ed esportazioni per il commercialista.'],
         'informes' => ['nombre' => 'Rapporti e indicatori', 'descripcion' => 'Occupazione, entrate e altri rapporti.'],

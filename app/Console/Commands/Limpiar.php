@@ -17,6 +17,7 @@ use App\Models\Actualizacion;
 use App\Models\DispositivoRecordado;
 use App\Models\EjecucionSincronizacion;
 use App\Models\Envio;
+use App\Models\NotaBitacora;
 use App\Models\Principal;
 use App\Models\RegistroAuditoria;
 use App\Privacidad\GestorPrivacidad;
@@ -50,6 +51,8 @@ class Limpiar extends Command
         Envio::query()->whereNotNull('cuerpo')->where('creado_en', '<', now()->subDays(90))->whereNotIn('estado', [EstadoEnvio::Pendiente->value])->update(['cuerpo' => null]);
         RegistroAuditoria::query()->where('creado_en', '<', now()->subDays(RegistroAuditoria::diasConservar()))->delete();
         DispositivoRecordado::query()->where('expira_en', '<', now('UTC'))->delete();
+        // Texto libre: puede llevar nombres, y a los dos años ya no le sirve a nadie.
+        NotaBitacora::query()->where('creado_en', '<', now()->subYears(2))->delete();
 
         $disco = Storage::disk('local');
         foreach ($disco->files(GestorArchivos::CARPETA_SUBIDAS) as $temporal) {

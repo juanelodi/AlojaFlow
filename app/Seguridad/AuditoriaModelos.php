@@ -20,6 +20,7 @@ use App\Models\ConceptoCargo;
 use App\Models\ConexionCompartida;
 use App\Models\ContactoHuesped;
 use App\Models\Cupon;
+use App\Models\Empresa;
 use App\Models\EntidadFiscal;
 use App\Models\Factura;
 use App\Models\FuenteIcal;
@@ -29,6 +30,7 @@ use App\Models\Impuesto;
 use App\Models\ListaComprobacion;
 use App\Models\MantenimientoRecurrente;
 use App\Models\Movimiento;
+use App\Models\NotaBitacora;
 use App\Models\Omision;
 use App\Models\Pago;
 use App\Models\Plantilla;
@@ -57,19 +59,19 @@ final class AuditoriaModelos
 {
     private const MODELOS = [
         AccesoUsuario::class, Automatizacion::class, Caja::class, Canal::class, CargoReserva::class, ConceptoCargo::class, ConexionCompartida::class, ContactoHuesped::class,
-        Cupon::class, EntidadFiscal::class, Factura::class, FuenteIcal::class, Grupo::class, Huesped::class, Impuesto::class, ListaComprobacion::class, MantenimientoRecurrente::class,
-        Movimiento::class, Omision::class, Pago::class, Plantilla::class, Politica::class, Principal::class, Propiedad::class, ReglaLimpieza::class, Reserva::class, Tarea::class, Tarifa::class,
+        Cupon::class, Empresa::class, EntidadFiscal::class, Factura::class, FuenteIcal::class, Grupo::class, Huesped::class, Impuesto::class, ListaComprobacion::class, MantenimientoRecurrente::class,
+        Movimiento::class, NotaBitacora::class, Omision::class, Pago::class, Plantilla::class, Politica::class, Principal::class, Propiedad::class, ReglaLimpieza::class, Reserva::class, Tarea::class, Tarifa::class,
         TemporadaTarifa::class, Unidad::class, User::class, Webhook::class,
     ];
 
     /** Nunca se anota su valor: secretos, o lo que puede decir quién es alguien. */
     private const SIN_VALOR = [
         'password', 'app_authentication_secret', 'app_authentication_recovery_codes', 'contrasena', 'usuario', 'token_hash', 'url', 'secreto', 'ajustes',
-        'documento_numero', 'documento_numero_hmac', 'comentario', 'notas', 'valor', 'valor_normalizado', 'email', 'name', 'motivo', 'referencia', 'cuerpo', 'descripcion', 'receptor', 'emisor',
+        'documento_numero', 'documento_numero_hmac', 'comentario', 'notas', 'valor', 'valor_normalizado', 'email', 'name', 'motivo', 'referencia', 'cuerpo', 'descripcion', 'receptor', 'emisor', 'texto', 'concepto',
     ];
 
     /** Fichas de personas: de ellas ningún valor se copia. */
-    private const SOLO_CAMPOS = [ContactoHuesped::class, EntidadFiscal::class, Factura::class, Grupo::class, Huesped::class];
+    private const SOLO_CAMPOS = [ContactoHuesped::class, Empresa::class, EntidadFiscal::class, Factura::class, Grupo::class, Huesped::class];
 
     /** Cambian solos: no son algo que alguien haya decidido. */
     private const IGNORADOS = ['actualizado_en', 'updated_at', 'remember_token', 'ultimo_acceso_en', 'ultimo_uso_en', 'consecutivo_reserva', 'huella_datos', 'pagado', 'version'];

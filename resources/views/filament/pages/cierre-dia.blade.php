@@ -26,6 +26,31 @@
                     <div class="af-kpi"><dt>{{ __('cierre.gastos') }}</dt><dd>{{ Formato::dinero($r['gastos'], $moneda) }}</dd></div>
                     <div class="af-kpi"><dt>{{ __('cierre.ingresos') }}</dt><dd>{{ Formato::dinero($r['ingresos'], $moneda) }}</dd></div>
                 </dl>
+                @if (($r['turnos'] ?? []) !== [])
+                    <div class="af-tabla-contenedor" style="margin-top: 1rem" tabindex="0" role="region" aria-label="{{ __('caja.turnos.modelos') }}">
+                        <table class="af-tabla">
+                            <caption class="af-sr">{{ __('caja.turnos.modelos') }}</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">{{ __('ui.cajas.modelo_campo') }}</th>
+                                    <th scope="col">{{ __('caja.turnos.esperado') }}</th>
+                                    <th scope="col">{{ __('caja.turnos.contado') }}</th>
+                                    <th scope="col">{{ __('caja.turnos.diferencia') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($r['turnos'] as $turno)
+                                    <tr>
+                                        <td>{{ $turno['caja'] }}</td>
+                                        <td>{{ Formato::dinero($turno['esperado'], $moneda) }}</td>
+                                        <td>{{ Formato::dinero($turno['contado'], $moneda) }}</td>
+                                        <td>{{ Formato::dinero($turno['diferencia'], $moneda) }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
                 <div style="margin-top: 1rem">
                     @if ($dia['cierre'])
                         <p class="af-nota">{{ __('cierre.cerrado_por', ['quien' => $dia['cierre']->usuario->name ?? '—', 'cuando' => Formato::momento($dia['cierre']->cerrado_en, $dia['propiedad']->zona_horaria)]) }}</p>

@@ -36,7 +36,7 @@ class ClienteRemoto
     }
 
     /**
-     * @return array{api: int, version: string, revision: string, propiedad: array<string, mixed>}
+     * @return array{api: int, version: string, revision: string, colecciones: list<string>, propiedad: array<string, mixed>}
      */
     public function estado(): array
     {
@@ -48,8 +48,10 @@ class ClienteRemoto
             throw new ErrorSincronizacion(CodigoError::VersionNoAdmitida, 'probar', (string) ($datos['version'] ?? ''));
         }
         $datos['version'] = (string) ($datos['version'] ?? '');
+        // Las cuatro primeras las tienen todas; las demás, solo si se ofrecen.
+        $datos['colecciones'] = array_values(array_unique(['unidades', 'huespedes', 'reservas', 'bloqueos', ...array_filter((array) ($datos['colecciones'] ?? []), 'is_string')]));
 
-        /** @var array{api: int, version: string, revision: string, propiedad: array<string, mixed>} $datos */
+        /** @var array{api: int, version: string, revision: string, colecciones: list<string>, propiedad: array<string, mixed>} $datos */
         return $datos;
     }
 

@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Reservas\RelationManagers;
 
+use App\Caja\GestorTurnos;
 use App\Documentos\GeneradorPdf;
 use App\Enums\MetodoPago;
 use App\Enums\TipoReserva;
@@ -103,6 +104,7 @@ class PagosRelationManager extends RelationManager
                 'importe' => $this->reserva()->pendiente > 0 ? Dinero::aDecimal($this->reserva()->pendiente, $this->reserva()->moneda) : null,
                 'fecha' => $this->reserva()->propiedad->hoy()->format('Y-m-d'),
                 'metodo' => MetodoPago::Efectivo->value,
+                'caja_id' => GestorTurnos::cajaPropuesta($this->reserva()->propiedad_id),
             ])
             ->schema([
                 TextInput::make('importe')->label(__('ui.pagos.importe'))->helperText(__('ui.pagos.importe_ayuda'))

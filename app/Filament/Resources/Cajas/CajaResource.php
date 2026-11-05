@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Cajas;
 
+use App\Filament\Resources\Base\MuestraLaCajaDeLaPrincipal;
 use App\Filament\Resources\Base\RecursoDePropiedad;
 use App\Filament\Resources\Cajas\Pages\CreateCaja;
 use App\Filament\Resources\Cajas\Pages\EditCaja;
@@ -35,6 +36,8 @@ use Illuminate\Validation\Rules\Unique;
  */
 class CajaResource extends RecursoDePropiedad
 {
+    use MuestraLaCajaDeLaPrincipal;
+
     protected static ?string $model = Caja::class;
 
     protected static ?string $slug = 'cajas';
@@ -82,7 +85,7 @@ class CajaResource extends RecursoDePropiedad
             ->defaultSort('nombre')
             ->columns([
                 TextColumn::make('nombre')->label(__('ui.cajas.nombre'))->searchable(),
-                self::columnaPropiedad(),
+                self::columnaPropiedad()->visible(fn (): bool => count(self::propiedadesVisibles()) > 1),
                 IconColumn::make('activa')->label(__('ui.tarifas.activa'))->boolean(),
             ])
             ->emptyStateHeading(__('ui.cajas.vacio'))

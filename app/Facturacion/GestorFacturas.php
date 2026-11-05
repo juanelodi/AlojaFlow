@@ -168,7 +168,7 @@ final class GestorFacturas
     private function lineasDe(Reserva $reserva, ?GeneradorFiscal $generador): array
     {
         $claves = $generador?->clavesHospedaje() ?? ['producto' => null, 'unidad' => null];
-        $tasas = Impuesto::query()->where('propiedad_id', $reserva->propiedad_id)->where('activo', true)->where('base', BaseCargo::PorcentajeAlojamiento->value)->orderBy('orden')->get();
+        $tasas = Impuesto::query()->aplicables($reserva->propiedad_id, $reserva->llegada->format('Y-m-d'))->where('base', BaseCargo::PorcentajeAlojamiento->value)->orderBy('orden')->get();
         $sumaTasas = (float) $tasas->sum(fn (Impuesto $i): float => (float) $i->tasa) / 100;
 
         $cargos = (int) $reserva->cargos->sum('importe');

@@ -17,7 +17,9 @@ use App\Filament\Campos\CampoDinero;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Canal;
 use App\Models\ConceptoCargo;
+use App\Models\Empresa;
 use App\Models\Huesped;
+use App\Models\Impuesto;
 use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Unidad;
@@ -104,6 +106,10 @@ class ReservaForm
                         ->default(fn (): int => max(1, request()->integer('personas', 2)))
                         ->afterStateUpdated($alCambiar)
                         ->required($esReserva)->visible($esReserva),
+                    // Solo si algún impuesto lo necesita: en la mayoría de los alojamientos sería una pregunta de más.
+                    TextInput::make('ninos')->label(__('caja.impuestos.menores'))->helperText(__('caja.impuestos.menores_ayuda'))->numeric()->minValue(0)->maxValue(100)->live(onBlur: true)
+                        ->afterStateUpdated($alCambiar)
+                        ->visible(fn (Get $get): bool => $esReserva($get) && self::hayEdadMinima($get('propiedad_id'))),
                     Select::make('unidad_id')->label(__('ui.comun.unidad'))->required()->native(false)->searchable()->live()
                         ->helperText(__('ui.reservas.unidad_ayuda'))
                         ->options(fn (Get $get): array => self::opcionesUnidad($get('propiedad_id')))
@@ -130,6 +136,10 @@ class ReservaForm
                         ->label(fn (Get $get): string => $esReserva($get) ? __('ui.comun.origen') : __('ui.reservas.motivo'))
                         ->datalist(fn (Get $get): array => $esReserva($get) ? self::canales($get('propiedad_id')) : [])
                         ->afterStateUpdated($alCambiar),
+                    Select::make('empresa_id')->label(__('caja.empresas.campo'))->helperText(__('caja.empresas.campo_ayuda'))->native(false)->searchable()->live()
+                        ->options(fn (Get $get, ?Reserva $record): array => self::empresas($get('propiedad_id'), $record?->empresa_id))
+                        ->afterStateUpdated($alCambiar)
+                        ->visible(fn (Get $get, ?Reserva $record): bool => $esReserva($get) && Modulos::activo(Modulo::Empresas) && self::empresas($get('propiedad_id'), $record?->empresa_id) !== []),
                 ]),
             Section::make(__('ui.comun.huesped'))->columnSpanFull()
                 ->visible($esReserva)
@@ -225,6 +235,26 @@ class ReservaForm
         if ($canal !== null && $canal->comision_porcentaje !== null) {
             $set($ruta.'comision', Dinero::aDecimal((int) round($presupuesto->total() * (float) $canal->comision_porcentaje / 100), $moneda));
         }
+        $empresa = blank($get($ruta.'empresa_id')) ? null : Empresa::query()->where('propiedad_id', self::propiedadPermitida($get($ruta.'propiedad_id')))->find((int) $get($ruta.'empresa_id'));
+        if ($empresa?->comision_porcentaje !== null) {
+            $set($ruta.'comision', Dinero::aDecimal((int) round($presupuesto->total() * (float) $empresa->comision_porcentaje / 100), $moneda));
+        }
+    }
+
+    /**
+     * Las activas y la que ya tiene la reserva, aunque ya no lo esté: cambiar otra cosa no debe quitársela.
+     *
+     * @return array<int, string>
+     */
+    private static function empresas(mixed $propiedadId, ?int $actual = null): array
+    {
+        return blank($propiedadId) ? [] : Empresa::query()->where('propiedad_id', self::propiedadPermitida($propiedadId))
+            ->where(fn (Builder $q): Builder => $q->where('activa', true)->orWhere('id', $actual))->orderBy('nombre')->pluck('nombre', 'id')->all();
+    }
+
+    private static function hayEdadMinima(mixed $propiedadId): bool
+    {
+        return ! blank($propiedadId) && Impuesto::query()->where('propiedad_id', self::propiedadPermitida($propiedadId))->where('activo', true)->whereNotNull('edad_minima')->exists();
     }
 
     /**
@@ -416,7 +446,9 @@ class ReservaForm
         $moneda = CampoDinero::moneda($get($ruta.'propiedad_id'));
         $descuento = $sinDescuento ? 0 : Dinero::aUnidadMenor(is_numeric($get($ruta.'descuento')) ? (string) $get($ruta.'descuento') : null, $moneda);
 
-        return Cotizador::presupuesto($unidad, $llegada, $salida, max(1, (int) $get($ruta.'personas')), $elegidos, null, $descuento);
+        $canalCobra = (bool) Canal::query()->where('propiedad_id', $unidad->propiedad_id)->where('nombre', (string) $get($ruta.'origen_texto'))->value('cobra_impuestos');
+
+        return Cotizador::presupuesto($unidad, $llegada, $salida, max(1, (int) $get($ruta.'personas')), $elegidos, null, $descuento, max(0, (int) $get($ruta.'ninos')), $canalCobra);
     }
 
     private static function avisoEstancia(Get $get): ?string

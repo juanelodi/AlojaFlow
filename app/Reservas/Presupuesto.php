@@ -17,7 +17,7 @@ final readonly class Presupuesto
 {
     /**
      * @param  list<array{concepto_cargo_id: int|null, nombre: string, cantidad: float, importe: int}>  $cargos
-     * @param  list<array{nombre: string, importe: int, incluido: bool}>  $impuestos
+     * @param  list<array{nombre: string, importe: int, incluido: bool, canal: bool}>  $impuestos
      */
     public function __construct(
         public ?Cotizacion $cotizacion,
@@ -34,13 +34,13 @@ final readonly class Presupuesto
     }
 
     /**
-     * Lo que se suma al precio; los impuestos incluidos solo se informan.
+     * Lo que se suma al precio; los incluidos solo se informan, y lo que cobra el portal no se cobra otra vez.
      */
     public function impuestosAdicionales(): int
     {
         $total = 0;
         foreach ($this->impuestos as $impuesto) {
-            if (! $impuesto['incluido']) {
+            if (! $impuesto['incluido'] && ! $impuesto['canal']) {
                 $total += $impuesto['importe'];
             }
         }

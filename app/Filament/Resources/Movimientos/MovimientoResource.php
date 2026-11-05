@@ -13,6 +13,7 @@ namespace App\Filament\Resources\Movimientos;
 use App\Enums\MetodoPago;
 use App\Enums\TipoMovimiento;
 use App\Filament\Campos\CampoDinero;
+use App\Filament\Resources\Base\MuestraLaCajaDeLaPrincipal;
 use App\Filament\Resources\Base\RecursoDePropiedad;
 use App\Filament\Resources\Movimientos\Pages\CreateMovimiento;
 use App\Filament\Resources\Movimientos\Pages\EditMovimiento;
@@ -42,6 +43,8 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class MovimientoResource extends RecursoDePropiedad
 {
+    use MuestraLaCajaDeLaPrincipal;
+
     protected static ?string $model = Movimiento::class;
 
     protected static ?string $slug = 'gastos-e-ingresos';
@@ -106,7 +109,7 @@ class MovimientoResource extends RecursoDePropiedad
             ->defaultSort('fecha', 'desc')
             ->columns([
                 TextColumn::make('fecha')->label(__('ui.pagos.fecha'))->sortable()->formatStateUsing(fn (Movimiento $record): string => Formato::fecha($record->fecha)),
-                self::columnaPropiedad(),
+                self::columnaPropiedad()->visible(fn (): bool => count(self::propiedadesVisibles()) > 1),
                 TextColumn::make('tipo')->label(__('ui.movimientos.tipo'))->badge()
                     ->formatStateUsing(fn (Movimiento $record): string => $record->tipo->etiqueta())
                     ->color(fn (Movimiento $record): string => $record->tipo === TipoMovimiento::Gasto ? 'warning' : 'success'),

@@ -25,6 +25,11 @@ final class Mexico extends PaisBase
         return 'mexico';
     }
 
+    public function sugerenciasImpuesto(): array
+    {
+        return CatalogoIsh::todas();
+    }
+
     public function generadorFiscal(): GeneradorFiscal
     {
         return new Cfdi40();

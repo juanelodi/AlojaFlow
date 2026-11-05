@@ -19,6 +19,7 @@ use App\Filament\Resources\Impuestos\Pages\ListImpuestos;
 use App\Models\Impuesto;
 use BackedEnum;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -79,6 +80,11 @@ class ImpuestoResource extends RecursoDePropiedad
                     ->required($esPorcentaje)->visible($esPorcentaje),
                 CampoDinero::make('importe')->label(__('ui.impuestos.importe'))->required(fn (Get $get): bool => ! $esPorcentaje($get))->visible(fn (Get $get): bool => ! $esPorcentaje($get)),
                 Toggle::make('incluido_en_precio')->label(__('ui.impuestos.incluido'))->helperText(__('ui.impuestos.incluido_ayuda'))->default(true),
+                DatePicker::make('vigente_desde')->label(__('caja.impuestos.vigente_desde'))->helperText(__('caja.impuestos.vigencia_ayuda')),
+                DatePicker::make('vigente_hasta')->label(__('caja.impuestos.vigente_hasta'))->afterOrEqual('vigente_desde'),
+                TextInput::make('tope_noches')->label(__('caja.impuestos.tope_noches'))->helperText(__('caja.impuestos.tope_noches_ayuda'))->numeric()->minValue(1)->maxValue(3650),
+                TextInput::make('edad_minima')->label(__('caja.impuestos.edad_minima'))->helperText(__('caja.impuestos.edad_minima_ayuda'))->numeric()->minValue(1)->maxValue(99)
+                    ->visible(fn (Get $get): bool => ! $esPorcentaje($get)),
                 TextInput::make('codigo')->label(__('ui.impuestos.codigo'))->helperText(__('ui.impuestos.codigo_ayuda'))->maxLength(30),
                 TextInput::make('orden')->label(__('ui.unidades.orden'))->numeric()->default(0),
                 Toggle::make('activo')->label(__('ui.tarifas.activa'))->default(true),

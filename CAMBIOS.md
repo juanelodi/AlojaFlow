@@ -2,6 +2,26 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.15 — 2026-11-05
+
+**La caja completa, también de la principal, y los informes con gráficas y reportes nuevos.**
+
+**Llegan apagados:** Bitácora y Empresas son módulos nuevos. Préndelos en Sistema → Módulos.
+
+**Lo que hay**
+- **La caja de la principal, uno por uno:** en una subordinada ya se ven los cobros de cada reserva, los gastos e ingresos y las cajas, de HotelDruid o de otro AlojaFlow, en el Cierre del día, los informes y Gastos e ingresos. Se ven, no se cambian. Al pasar a independiente se quedan como propios.
+- **Informes nuevos:** resumen mes por mes con ocupación, ADR y RevPAR; lo que se vendió (pick-up); pronóstico de ocupación; cuentas por cobrar, con antigüedad; ingresos contra gastos; impuestos cobrados; limpieza por persona; y grupos.
+- **Gráficas de barras** en los informes donde ayudan, y **PDF e impresión**, además del CSV. Si hay dos monedas no se dibuja: no se pueden comparar. Queda la tabla.
+- **Turnos de caja:** abres con un fondo, al cerrar cuentas el efectivo y se calcula el faltante o sobrante. El acta se guarda y no se edita, y el Cierre del día muestra los arqueos. Al cobrar se propone la caja de tu turno.
+- **Bitácora:** lo que un turno le deja dicho al siguiente. Lo importante sale en Hoy hasta que alguien lo resuelva. Se borra a los dos años.
+- **Empresas y agencias:** ficha con identificación fiscal, comisión y días de crédito. Se eligen en la reserva y tienen su estado de cuenta.
+- **Reglas de impuesto:** vigencia, solo las primeras noches y edad mínima. Un canal puede marcar que **el portal ya cobra los impuestos**, para no sumarlos otra vez.
+- **Proponer el ISH por estado,** para México, con su fuente. Solo la Ciudad de México y Quintana Roo se cotejaron con su ley: las demás son tasas orientativas de una fuente secundaria, y la pantalla lo dice. **Compruébala antes de cobrarla.** Asesor fiscal: pendiente.
+
+**Comprobado** con la copia de demostración de Zihuatanejo, de datos ficticios: 1,628 cobros, y su suma es igual a lo pagado de sus 1,122 reservas.
+
+**Sin verificar:** en un hosting real; ni con una principal que use varias cajas o gastos sueltos, porque esa copia no los tiene y eso solo se probó con copias armadas para la prueba. El informe de impuestos cuenta las reservas que se creen o cambien desde esta versión: de las anteriores no se guardó el desglose.
+
 ## 1.0.14 — 2026-11-05
 
 **Permisos a la medida de cada persona, roles que puedes cambiar y control de dónde está abierta cada cuenta.**

@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\DB;
  */
 final class Independizador
 {
-    private const TABLAS_CON_ORIGEN = ['unidades', 'huespedes', 'reservas'];
+    private const TABLAS_CON_ORIGEN = ['unidades', 'huespedes', 'reservas', 'cajas', 'pagos', 'movimientos'];
 
     public function __construct(private readonly GestorCopias $copias)
     {

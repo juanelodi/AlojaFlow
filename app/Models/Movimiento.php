@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\MetodoPago;
 use App\Enums\TipoMovimiento;
+use App\Models\Concerns\ProtegidaPorSincronizacion;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -20,6 +21,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property int $id
  * @property int $propiedad_id
+ * @property bool $sincronizada
+ * @property int|null $principal_id
+ * @property string|null $clave_origen
  * @property int|null $caja_id
  * @property CarbonImmutable $fecha
  * @property TipoMovimiento $tipo
@@ -34,6 +38,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Movimiento extends ModeloBase
 {
+    use ProtegidaPorSincronizacion;
+
     protected $table = 'movimientos';
 
     protected $guarded = ['id'];
@@ -45,6 +51,7 @@ class Movimiento extends ModeloBase
             'tipo' => TipoMovimiento::class,
             'metodo' => MetodoPago::class,
             'importe' => 'integer',
+            'sincronizada' => 'boolean',
         ];
     }
 

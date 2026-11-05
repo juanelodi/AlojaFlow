@@ -9,6 +9,7 @@
 declare(strict_types=1);
 
 return [
+    'TipoEmpresa' => ['empresa' => 'Empresa', 'agencia' => 'Agencia'],
     'ModoPropiedad' => ['nativa' => 'Independiente', 'subordinada' => 'Subordinada'],
     'MetodoPago' => ['efectivo' => 'Efectivo', 'tarjeta' => 'Tarjeta', 'transferencia' => 'Transferencia', 'otro' => 'Otro'],
     'ModoTarifa' => ['por_noche' => 'Por noche (con persona extra)', 'por_persona' => 'Por persona'],

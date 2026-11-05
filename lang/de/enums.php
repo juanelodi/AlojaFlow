@@ -9,6 +9,7 @@
 declare(strict_types=1);
 
 return [
+    'TipoEmpresa' => ['empresa' => 'Unternehmen', 'agencia' => 'Agentur'],
     'ModoPropiedad' => [
         'nativa' => 'Eigenständig',
         'subordinada' => 'Untergeordnet',

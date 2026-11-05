@@ -10,12 +10,15 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Documentos\GeneradorPdf;
 use App\Filament\Concerns\ConPropiedadSeleccionada;
 use App\Filament\Pages\Concerns\ConRangoDeFechas;
+use App\Models\Propiedad;
 use App\Modulos\Modulo;
 use App\Seguridad\Acceso;
 use App\Servicios\Informes as ServicioInformes;
 use App\Support\Csv;
+use App\Support\Formato;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -74,7 +77,7 @@ class Informes extends Page
     }
 
     /**
-     * @return array{columnas: list<string>, filas: list<list<string>>}
+     * @return array{columnas: list<string>, filas: list<list<string>>, grafica?: array<string, mixed>|null}
      */
     public function datos(): array
     {
@@ -84,6 +87,21 @@ class Informes extends Page
         }
 
         return ServicioInformes::generar($this->informe, $this->propiedadesElegidas(), $rango[0], $rango[1]);
+    }
+
+    public function descargarPdf(): ?StreamedResponse
+    {
+        $datos = $this->datos();
+        $rango = $this->rango();
+        if ($datos['columnas'] === [] || $rango === null) {
+            return null;
+        }
+        $propiedades = Propiedad::query()->whereIn('id', $this->propiedadesElegidas())->orderBy('nombre')->pluck('nombre')->implode(', ');
+        $pdf = app(GeneradorPdf::class)->informe(__('informes.nombres.'.$this->informe), $propiedades, Formato::fecha($rango[0]).' – '.Formato::fecha($rango[1]), $datos['columnas'], $datos['filas']);
+
+        return response()->streamDownload(function () use ($pdf): void {
+            echo $pdf;
+        }, $this->informe.'-'.$this->desde.'-'.$this->hasta.'.pdf', ['Content-Type' => 'application/pdf']);
     }
 
     public function descargarCsv(): ?StreamedResponse

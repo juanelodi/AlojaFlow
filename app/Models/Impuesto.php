@@ -11,6 +11,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\BaseCargo;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -24,6 +26,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $tasa
  * @property int|null $importe
  * @property bool $incluido_en_precio
+ * @property CarbonImmutable|null $vigente_desde
+ * @property CarbonImmutable|null $vigente_hasta
+ * @property int|null $tope_noches
+ * @property int|null $edad_minima
  * @property int $orden
  * @property bool $activo
  */
@@ -40,8 +46,25 @@ class Impuesto extends ModeloBase
             'tasa' => 'decimal:4',
             'importe' => 'integer',
             'incluido_en_precio' => 'boolean',
+            'vigente_desde' => 'immutable_date',
+            'vigente_hasta' => 'immutable_date',
+            'tope_noches' => 'integer',
+            'edad_minima' => 'integer',
             'activo' => 'boolean',
         ];
+    }
+
+    /**
+     * Los que aplican a una fecha de llegada.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeAplicables(Builder $query, int $propiedadId, string $fecha): Builder
+    {
+        return $query->where('propiedad_id', $propiedadId)->where('activo', true)
+            ->where(fn (Builder $q): Builder => $q->whereNull('vigente_desde')->orWhere('vigente_desde', '<=', $fecha))
+            ->where(fn (Builder $q): Builder => $q->whereNull('vigente_hasta')->orWhere('vigente_hasta', '>=', $fecha));
     }
 
     /** @return BelongsTo<Propiedad, $this> */

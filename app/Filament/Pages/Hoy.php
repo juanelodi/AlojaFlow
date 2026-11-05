@@ -11,7 +11,9 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Filament\Concerns\ConPropiedadSeleccionada;
+use App\Filament\Resources\Bitacora\NotaBitacoraResource;
 use App\Filament\Resources\Reservas\ReservaResource;
+use App\Models\NotaBitacora;
 use App\Models\Reserva;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
@@ -25,6 +27,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Url;
 use Throwable;
 
@@ -108,6 +111,21 @@ class Hoy extends Page
     public function registrarSalida(int $reservaId): void
     {
         $this->cambiar($reservaId, fn (GestorReservas $g, Reserva $r) => $g->registrarSalida($r), __('ui.reservas.salida_ok'));
+    }
+
+    /**
+     * Lo importante de la bitácora, hasta que alguien lo resuelva.
+     *
+     * @return Collection<int, NotaBitacora>
+     */
+    public function notasImportantes(): Collection
+    {
+        if (! NotaBitacoraResource::canViewAny()) {
+            return new Collection();
+        }
+
+        return NotaBitacora::query()->with('autor')->whereIn('propiedad_id', array_intersect($this->propiedadesElegidas(), NotaBitacoraResource::propiedadesGestionables()))
+            ->where('importante', true)->whereNull('resuelta_en')->orderByDesc('creado_en')->limit(5)->get();
     }
 
     /**

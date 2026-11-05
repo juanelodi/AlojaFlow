@@ -42,6 +42,8 @@ return [
         'plano' => ['nombre' => 'Lageplan der Unterkunft', 'descripcion' => 'Die Einheiten auf einer Zeichnung Ihrer Unterkunft sehen.'],
         'llegada' => ['nombre' => 'Online-Anreise', 'descripcion' => 'Der Gast trägt seine Daten ein und akzeptiert die Dokumente vor der Ankunft.'],
         'mensajes' => ['nombre' => 'Nachrichten an Gäste', 'descripcion' => 'Vorlagen, Versand per E-Mail und WhatsApp sowie automatische Nachrichten.'],
+        'bitacora' => ['nombre' => 'Schichtbuch', 'descripcion' => 'Was eine Schicht der nächsten hinterlässt. Wichtiges erscheint unter Heute.'],
+        'empresas' => ['nombre' => 'Unternehmen und Agenturen', 'descripcion' => 'Wer für seine Gäste bucht oder zahlt, mit Konditionen und Kontoauszug.'],
         'caja' => ['nombre' => 'Kasse und Tagesabschluss', 'descripcion' => 'Kassen, Geldbewegungen und der tägliche Abschluss.'],
         'facturacion' => ['nombre' => 'Rechnungen und Quittungen', 'descripcion' => 'Steuerdaten, Rechnungen, Quittungen und Exporte für die Buchhaltung.'],
         'informes' => ['nombre' => 'Berichte und Kennzahlen', 'descripcion' => 'Auslastung, Einnahmen und weitere Berichte.'],

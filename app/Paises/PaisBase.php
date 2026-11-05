@@ -21,6 +21,11 @@ abstract class PaisBase implements Pais
 {
     abstract protected function clave(): string;
 
+    public function sugerenciasImpuesto(): array
+    {
+        return [];
+    }
+
     public function camposLlegada(): array
     {
         return [];

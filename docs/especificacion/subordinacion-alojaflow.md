@@ -37,6 +37,8 @@ Todo es `GET`, con `Authorization: Bearer <token>`, bajo `api/subordinacion/v1/`
 
 ### `GET datos/{coleccion}?despues=<id>`
 
+Desde la 1.0.15, además, `cajas`, `pagos` y `movimientos` (D-078): sin nombres de huéspedes, ligados por el identificador de la reserva.
+
 `{"filas": [...], "siguiente": <id o null>}`, de 500 en 500 y por identificador.
 
 | Colección | Campos |
@@ -46,14 +48,14 @@ Todo es `GET`, con `Authorization: Bearer <token>`, bajo `api/subordinacion/v1/`
 | `reservas` | Fechas, unidad, titular, estado, importes en centavos, `acompanantes`, `creado_en`, `actualizado_en` |
 | `bloqueos` | Fechas ocupadas en los portales: `id`, `unidad_id`, `llegada`, `salida`, `uid`, `fuente` |
 
-**Nunca viajan:** fotos y archivos, el código público de cada reserva (abre su página y su botón de pago), pagos y caja uno por uno (llegan en la 1.0.15), aceptaciones, usuarios, ajustes, llaves.
+**Nunca viajan:** fotos y archivos, el código público de cada reserva (abre su página y su botón de pago), aceptaciones, usuarios, ajustes, llaves.
 
 ## En la subordinada
 
 `App\Sincronizacion\AlojaFlow\Sincronizador`:
 
 1. Pregunta `estado`, y se detiene ahí si nada cambió.
-2. Baja las cuatro colecciones a archivos temporales, que se borran al terminar pase lo que pase. Llevan datos personales, como la copia de HotelDruid.
+2. Baja las colecciones que ofrece la principal (`estado.colecciones`; una anterior a la 1.0.15 no lo dice, y solo tiene las cuatro primeras: unidades, huéspedes, reservas y bloqueos) a archivos temporales, que se borran al terminar pase lo que pase. Llevan datos personales, como la copia de HotelDruid.
 3. `Proyector` lo aplica todo en una transacción: si algo se corta, lo anterior sigue intacto. Recorta y comprueba cada campo, porque viene de otro servidor.
 
 - Las filas quedan con `sincronizada = true` y `origen = otra_instalacion`. `clave_origen` es el id en la principal, y `b:<id>` en los bloqueos, que se ven como una reserva de tipo bloqueo.

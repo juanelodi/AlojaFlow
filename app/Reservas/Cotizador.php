@@ -12,13 +12,16 @@ namespace App\Reservas;
 
 use App\Enums\BaseCargo;
 use App\Enums\ModoTarifa;
+use App\Models\Canal;
 use App\Models\ConceptoCargo;
 use App\Models\Cupon;
 use App\Models\Impuesto;
+use App\Models\Reserva;
 use App\Models\Tarifa;
 use App\Models\TemporadaTarifa;
 use App\Models\Unidad;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Calcula precios (D-036, D-041). Cada tarifa elige si cobra por noche con persona extra o por
@@ -61,7 +64,7 @@ final class Cotizador
      *
      * @param  array<int, float>  $cargosElegidos  id del concepto => cantidad
      */
-    public static function presupuesto(Unidad $unidad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas, array $cargosElegidos = [], ?Cupon $cupon = null, int $descuentoManual = 0): Presupuesto
+    public static function presupuesto(Unidad $unidad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas, array $cargosElegidos = [], ?Cupon $cupon = null, int $descuentoManual = 0, int $exentosPorEdad = 0, bool $canalCobraImpuestos = false): Presupuesto
     {
         $cotizacion = self::cotizar($unidad, $llegada, $salida, $personas);
         $alojamiento = $cotizacion->total ?? 0;
@@ -91,11 +94,12 @@ final class Cotizador
 
         $base = $alojamiento - $descuento;
         $impuestos = [];
-        foreach (Impuesto::query()->where('propiedad_id', $unidad->propiedad_id)->where('activo', true)->orderBy('orden')->orderBy('nombre')->get() as $impuesto) {
+        foreach (self::impuestosAplicables($unidad->propiedad_id, $llegada) as $impuesto) {
             $impuestos[] = [
                 'nombre' => $impuesto->nombre,
-                'importe' => self::importeImpuesto($impuesto, $base, $noches, $personas),
+                'importe' => self::importeImpuesto($impuesto, $base, $noches, $personas, $exentosPorEdad),
                 'incluido' => $impuesto->incluido_en_precio,
+                'canal' => $canalCobraImpuestos && ! $impuesto->incluido_en_precio,
             ];
         }
 
@@ -134,14 +138,75 @@ final class Cotizador
      * Si el impuesto va incluido en un precio porcentual, se saca del precio («hacia atrás»): del
      * total con 19 % incluido, el impuesto es total − total / 1.19.
      */
-    private static function importeImpuesto(Impuesto $impuesto, int $base, int $noches, int $personas): int
+    private static function importeImpuesto(Impuesto $impuesto, int $base, int $noches, int $personas, int $exentosPorEdad = 0): int
     {
         if ($impuesto->base === BaseCargo::PorcentajeAlojamiento) {
-            $tasa = (float) $impuesto->tasa / 100;
+            $tasa = self::tasaEfectiva($impuesto, $noches);
 
             return (int) round($impuesto->incluido_en_precio ? $base - $base / (1 + $tasa) : $base * $tasa);
         }
+        $gravadas = $impuesto->tope_noches === null ? $noches : min($noches, $impuesto->tope_noches);
+        // Sin fechas de nacimiento en la reserva, la edad mínima se toma de cuántos menores se capturaron.
+        $personasGravadas = $impuesto->edad_minima === null ? $personas : max(0, $personas - $exentosPorEdad);
 
-        return (int) round(self::importeSegunBase($impuesto->base, (int) $impuesto->importe, null, $base, $noches, $personas));
+        return (int) round(self::importeSegunBase($impuesto->base, (int) $impuesto->importe, null, $base, $gravadas, $personasGravadas));
+    }
+
+    /**
+     * Con tope de noches, un porcentaje solo cae sobre esa parte de la estancia. Se reparte parejo: el precio de cada noche ya no se sabe si
+     * alguien cambió el total a mano.
+     */
+    private static function tasaEfectiva(Impuesto $impuesto, int $noches): float
+    {
+        $tasa = (float) $impuesto->tasa / 100;
+
+        return $impuesto->tope_noches !== null && $noches > $impuesto->tope_noches ? $tasa * $impuesto->tope_noches / $noches : $tasa;
+    }
+
+    /**
+     * @return Collection<int, Impuesto>
+     */
+    private static function impuestosAplicables(int $propiedadId, CarbonImmutable $llegada): Collection
+    {
+        return Impuesto::query()->aplicables($propiedadId, $llegada->format('Y-m-d'))->orderBy('orden')->orderBy('nombre')->get();
+    }
+
+    /**
+     * Lo que se cobró de impuestos en una reserva ya guardada, a partir de su total: si alguien lo cambió a mano, el impuesto lo sigue. Se
+     * despeja lo que quedó de alojamiento y se calcula sobre eso, con las reglas de su fecha de llegada (D-082).
+     *
+     * @return list<array{impuesto_id: int, nombre: string, importe: int, incluido: bool, cobrado_por_canal: bool}>
+     */
+    public static function impuestosDeReserva(Reserva $reserva): array
+    {
+        $noches = max(0, (int) $reserva->llegada->diffInDays($reserva->salida));
+        $personas = max(1, $reserva->personas);
+        $exentos = max(0, (int) $reserva->ninos);
+        $canalCobra = $reserva->origen_texto !== null
+            && Canal::query()->where('propiedad_id', $reserva->propiedad_id)->where('nombre', $reserva->origen_texto)->value('cobra_impuestos');
+        $impuestos = self::impuestosAplicables($reserva->propiedad_id, $reserva->llegada);
+
+        $sinCargos = $reserva->total - (int) $reserva->cargos()->sum('importe');
+        $fijos = 0;
+        $tasas = 0.0;
+        foreach ($impuestos as $impuesto) {
+            if ($impuesto->incluido_en_precio || $canalCobra) {
+                continue;
+            }
+            if ($impuesto->base === BaseCargo::PorcentajeAlojamiento) {
+                $tasas += self::tasaEfectiva($impuesto, $noches);
+            } else {
+                $fijos += self::importeImpuesto($impuesto, 0, $noches, $personas, $exentos);
+            }
+        }
+        $base = (int) round(max(0, $sinCargos - $fijos) / (1 + $tasas));
+
+        return $impuestos->map(fn (Impuesto $impuesto): array => [
+            'impuesto_id' => $impuesto->id,
+            'nombre' => $impuesto->nombre,
+            'importe' => self::importeImpuesto($impuesto, $base, $noches, $personas, $exentos),
+            'incluido' => $impuesto->incluido_en_precio,
+            'cobrado_por_canal' => $canalCobra && ! $impuesto->incluido_en_precio,
+        ])->values()->all();
     }
 }

@@ -16,6 +16,7 @@ use App\Enums\TipoReserva;
 use App\Models\CierreDia;
 use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
+use App\Models\TurnoCaja;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -44,7 +45,24 @@ final class CierreDelDia
             'cobros' => DB::table('pagos')->where('propiedad_id', $propiedad->id)->where('fecha', $dia)->groupBy('metodo')->pluck(DB::raw('SUM(importe) as total'), 'metodo')->map(fn (mixed $v): int => (int) $v)->all(),
             'gastos' => $movimientos(TipoMovimiento::Gasto),
             'ingresos' => $movimientos(TipoMovimiento::Ingreso),
+            'turnos' => $this->turnos($propiedad, $fecha),
         ];
+    }
+
+    /**
+     * Los arqueos del día, en el día de la propiedad.
+     *
+     * @return list<array{caja: string, esperado: int, contado: int, diferencia: int}>
+     */
+    private function turnos(Propiedad $propiedad, CarbonImmutable $fecha): array
+    {
+        $inicio = CarbonImmutable::parse($fecha->format('Y-m-d').' 00:00:00', $propiedad->zona_horaria);
+
+        return TurnoCaja::query()->with('caja')->where('propiedad_id', $propiedad->id)
+            ->whereBetween('cerrado_en', [$inicio->utc()->format('Y-m-d H:i:s'), $inicio->addDay()->subSecond()->utc()->format('Y-m-d H:i:s')])
+            ->orderBy('cerrado_en')->get()
+            ->map(fn (TurnoCaja $t): array => ['caja' => $t->caja->nombre, 'esperado' => (int) $t->esperado, 'contado' => (int) $t->contado, 'diferencia' => (int) $t->diferencia])
+            ->values()->all();
     }
 
     /**

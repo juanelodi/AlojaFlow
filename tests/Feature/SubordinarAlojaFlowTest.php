@@ -11,20 +11,25 @@ declare(strict_types=1);
 use App\Enums\EstadoEjecucion;
 use App\Enums\EstadoPrincipal;
 use App\Enums\EstadoReserva;
+use App\Enums\MetodoPago;
 use App\Enums\ModoPropiedad;
 use App\Enums\OrigenEjecucion;
 use App\Enums\OrigenFila;
+use App\Enums\TipoMovimiento;
 use App\Enums\TipoPrincipal;
 use App\Enums\TipoReserva;
 use App\Filament\Resources\Propiedades\Pages\CreatePropiedad;
 use App\Filament\Resources\Propiedades\Pages\EditPropiedad;
 use App\Filament\Resources\Propiedades\RelationManagers\ConexionesRelationManager;
 use App\Models\BloqueoExterno;
+use App\Models\Caja;
 use App\Models\ConexionCompartida;
 use App\Models\ContactoHuesped;
 use App\Models\EventoReserva;
 use App\Models\FuenteIcal;
 use App\Models\Huesped;
+use App\Models\Movimiento;
+use App\Models\Pago;
 use App\Models\Principal;
 use App\Models\Propiedad;
 use App\Models\Reserva;
@@ -34,6 +39,7 @@ use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Reservas\GestorReservas;
 use App\Sincronizacion\AlojaFlow\CodigoConexion;
+use App\Sincronizacion\AlojaFlow\Exportador;
 use App\Sincronizacion\AlojaFlow\GestorConexiones;
 use App\Sincronizacion\AlojaFlow\Sincronizador;
 use App\Sincronizacion\HotelDruid\CodigoError;
@@ -175,6 +181,49 @@ describe('lo que expone la principal', function () {
 });
 
 describe('copiar a la subordinada', function () {
+    it('copia también la caja, uno por uno, y lo que quita la principal se va', function () {
+        $caja = Caja::query()->create(['propiedad_id' => $this->origen->id, 'nombre' => 'Recepción', 'activa' => true]);
+        $pago = app(GestorReservas::class)->registrarPago($this->reserva, 50000, MetodoPago::Transferencia, $this->reserva->llegada, 'REF-1', $caja->id);
+        $movimiento = Movimiento::query()->create(['propiedad_id' => $this->origen->id, 'caja_id' => $caja->id, 'fecha' => '2026-11-01', 'tipo' => TipoMovimiento::Gasto, 'concepto' => 'Luz', 'metodo' => MetodoPago::Efectivo, 'importe' => 1500, 'moneda' => 'USD']);
+
+        expect(($this->copiar)()->estado)->toBe(EstadoEjecucion::Correcta);
+        $cajaCopia = Caja::query()->where('propiedad_id', $this->destino->id)->sole();
+        $pagoCopia = Pago::query()->where('propiedad_id', $this->destino->id)->sole();
+        expect($cajaCopia->nombre)->toBe('Recepción')->and($cajaCopia->sincronizada)->toBeTrue()
+            ->and($pagoCopia->importe)->toBe(50000)->and($pagoCopia->metodo)->toBe(MetodoPago::Transferencia)->and($pagoCopia->referencia)->toBe('REF-1')
+            ->and($pagoCopia->caja_id)->toBe($cajaCopia->id)->and($pagoCopia->reserva_id)->toBe(copiaDe($this->reserva)?->id);
+        $movimientoCopia = Movimiento::query()->where('propiedad_id', $this->destino->id)->sole();
+        expect($movimientoCopia->concepto)->toBe('Luz')->and($movimientoCopia->importe)->toBe(1500);
+        // Nunca escribe en la principal.
+        expect($pago->refresh()->sincronizada)->toBeFalse();
+
+        $revision = app(Exportador::class)->estado($this->conexion->refresh())['revision'];
+        $movimiento->delete();
+        expect(app(Exportador::class)->estado($this->conexion)['revision'])->not->toBe($revision);
+        expect(($this->copiar)()->estado)->toBe(EstadoEjecucion::Correcta);
+        expect(Movimiento::query()->where('propiedad_id', $this->destino->id)->count())->toBe(0);
+    });
+
+    it('una principal anterior, que no ofrece la caja, se sigue copiando', function () {
+        Caja::query()->create(['propiedad_id' => $this->origen->id, 'nombre' => 'No se pide', 'activa' => true]);
+        $real = fn (PeticionCliente $peticion) => $this->withHeaders(['Authorization' => $peticion->header('Authorization')[0] ?? '', 'Accept' => 'application/json'])
+            ->get((string) parse_url($peticion->url(), PHP_URL_PATH).'?'.(string) parse_url($peticion->url(), PHP_URL_QUERY));
+        $this->respuesta = function (PeticionCliente $peticion) use ($real) {
+            $respuesta = $real($peticion);
+            $datos = json_decode((string) $respuesta->getContent(), true);
+            if (is_array($datos) && isset($datos['colecciones'])) {
+                $datos['colecciones'] = ['cajas_no_se_ofrecen'];
+            }
+            expect((string) $peticion->url())->not->toContain('/cajas');
+
+            return Http::response(json_encode($datos), $respuesta->getStatusCode(), ['Content-Type' => 'application/json']);
+        };
+
+        expect(($this->copiar)()->estado)->toBe(EstadoEjecucion::Correcta);
+        expect(copiaDe($this->reserva))->not->toBeNull()
+            ->and(Caja::query()->where('propiedad_id', $this->destino->id)->count())->toBe(0);
+    });
+
     it('copia unidades, huéspedes, reservas y noches, y toma la moneda de la principal', function () {
         $ejecucion = ($this->copiar)();
 
@@ -223,16 +272,16 @@ describe('copiar a la subordinada', function () {
 
     it('si nada cambió, una sincronización programada no baja nada, pero cada tanto sí', function () {
         ($this->copiar)();
-        Http::assertSentCount(5);
+        Http::assertSentCount(8);
 
         $ejecucion = ($this->copiar)(OrigenEjecucion::Programada);
         expect($ejecucion->estado)->toBe(EstadoEjecucion::Correcta)
             ->and($ejecucion->bytes_descargados)->toBe(0);
-        Http::assertSentCount(6);
+        Http::assertSentCount(9);
 
         $this->travel(7)->hours();
         ($this->copiar)(OrigenEjecucion::Programada);
-        Http::assertSentCount(11);
+        Http::assertSentCount(17);
     });
 
     it('los bloqueos de los portales se ven como bloqueos, y se van cuando se quitan', function () {

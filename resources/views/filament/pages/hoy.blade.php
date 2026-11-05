@@ -24,6 +24,21 @@
 
         <p class="af-nota">{{ \App\Support\Formato::fechaLarga($this->fechaElegida()) }}@if ($this->haySubordinadas()) · {{ __('ui.comun.solo_consulta') }}@endif</p>
 
+        @php($notas = $this->notasImportantes())
+        @if ($notas->isNotEmpty())
+            <x-filament::section :heading="__('caja.bitacora.importantes')">
+                <ul class="af-lista-notas">
+                    @foreach ($notas as $nota)
+                        <li wire:key="nota-{{ $nota->id }}">
+                            <p style="white-space: pre-line">{{ $nota->texto }}</p>
+                            <p class="af-nota">{{ $nota->autor?->name ?? '—' }} · {{ \App\Support\Formato::momento($nota->creado_en) }}</p>
+                        </li>
+                    @endforeach
+                </ul>
+                <p style="margin-top: .5rem"><a class="af-enlace" href="{{ \App\Filament\Resources\Bitacora\NotaBitacoraResource::getUrl() }}">{{ __('caja.bitacora.ver_todas') }}</a></p>
+            </x-filament::section>
+        @endif
+
         @foreach (['llegan', 'salen', 'continuan'] as $lista)
             <x-filament::section :heading="__('ui.hoy.'.$lista).' ('.$listas[$lista]->count().')'">
                 <x-tabla-reservas

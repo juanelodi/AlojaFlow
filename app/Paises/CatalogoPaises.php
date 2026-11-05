@@ -14,6 +14,7 @@ use App\Enums\PaquetePais;
 use Collator;
 use DateTimeZone;
 use Locale;
+use Normalizer;
 use NumberFormatter;
 
 /**
@@ -67,6 +68,45 @@ final class CatalogoPaises
     ];
 
     private const PAQUETES = ['MX' => PaquetePais::Mexico, 'ES' => PaquetePais::Espana, 'US' => PaquetePais::EstadosUnidos];
+
+    /** Lo que se escribe a mano y no es el nombre de ningún idioma. */
+    private const OTROS_NOMBRES = ['usa' => 'US', 'eua' => 'US', 'eeuu' => 'US', 'ee uu' => 'US', 'uk' => 'GB', 'estados unidos de america' => 'US', 'estados unidos mexicanos' => 'MX', 'republica mexicana' => 'MX'];
+
+    /** @var array<string, string>|null */
+    private static ?array $porNombre = null;
+
+    /**
+     * El código de un país escrito a mano: «MX», «Mx», «México» y «Messico» son el mismo.
+     */
+    public static function codigoDe(string $texto): ?string
+    {
+        $limpio = self::normalizar($texto);
+        if (strlen($limpio) === 2 && in_array(strtoupper($limpio), self::CODIGOS, true)) {
+            return strtoupper($limpio);
+        }
+        if (self::$porNombre === null) {
+            self::$porNombre = self::OTROS_NOMBRES;
+            foreach ((array) config('alojaflow.idiomas') as $idioma) {
+                foreach (self::CODIGOS as $codigo) {
+                    self::$porNombre[self::normalizar((string) Locale::getDisplayRegion('und-'.$codigo, (string) $idioma))] ??= $codigo;
+                }
+            }
+        }
+
+        return self::$porNombre[$limpio] ?? null;
+    }
+
+    public static function nombre(string $codigo): string
+    {
+        return (string) Locale::getDisplayRegion('und-'.$codigo, app()->getLocale());
+    }
+
+    private static function normalizar(string $texto): string
+    {
+        $sinAcentos = (string) preg_replace('/\p{Mn}/u', '', (string) Normalizer::normalize(trim($texto), Normalizer::FORM_D));
+
+        return mb_strtolower(trim((string) preg_replace('/[.\s]+/u', ' ', $sinAcentos)));
+    }
 
     public static function prefijoTelefonico(string $pais): ?string
     {

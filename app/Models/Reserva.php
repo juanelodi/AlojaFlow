@@ -51,6 +51,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $salida_registrada_en
  * @property string|null $comentario
  * @property int|null $creada_por
+ * @property int|null $empresa_id
+ * @property int|null $ninos
  * @property int $version
  * @property int|null $grupo_id
  * @property int|null $cupon_id
@@ -66,6 +68,7 @@ use Illuminate\Support\Carbon;
  * @property-read Unidad $unidad
  * @property-read Huesped|null $titular
  * @property-read Principal|null $principal
+ * @property-read Empresa|null $empresa
  */
 class Reserva extends ModeloBase
 {
@@ -164,6 +167,18 @@ class Reserva extends ModeloBase
     public function cargos(): HasMany
     {
         return $this->hasMany(CargoReserva::class);
+    }
+
+    /** @return HasMany<ImpuestoReserva, $this> */
+    public function impuestos(): HasMany
+    {
+        return $this->hasMany(ImpuestoReserva::class);
+    }
+
+    /** @return BelongsTo<Empresa, $this> */
+    public function empresa(): BelongsTo
+    {
+        return $this->belongsTo(Empresa::class);
     }
 
     /** @return HasMany<NotaReserva, $this> */

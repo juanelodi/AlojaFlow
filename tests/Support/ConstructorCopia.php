@@ -27,17 +27,18 @@ final class ConstructorCopia
         'versioni' => ['idversioni', 'num_versione'],
         'utenti' => ['idutenti', 'nome_utente', 'password', 'salt', 'tipo_pass', 'datainserimento', 'hostinserimento'],
         'parentele' => ['idparentele', 'nome_parentela', 'codice_parentela'],
+        'casse' => ['idcasse', 'nome_cassa', 'stato'],
         'prenota' => ['idprenota', 'idclienti', 'idappartamenti', 'iddatainizio', 'iddatafine', 'assegnazioneapp', 'app_assegnabili', 'num_persone', 'cat_persone', 'idprenota_compagna', 'tariffa', 'tariffesettimanali', 'incompatibilita', 'sconto', 'tariffa_tot', 'caparra', 'commissioni', 'tasseperc', 'pagato', 'valuta', 'metodo_pagamento', 'codice', 'origine', 'commento', 'conferma', 'checkin', 'checkout', 'id_anni_prec', 'datainserimento', 'hostinserimento', 'data_modifica', 'utente_inserimento'],
         'costiprenota' => ['idcostiprenota', 'idprenota', 'tipo', 'nome', 'valore', 'associasett', 'settimane'],
         'rclientiprenota' => ['idprenota', 'idclienti', 'num_ordine', 'parentela'],
         'periodi' => ['idperiodi', 'datainizio', 'datafine', 'tariffa1'],
         'ntariffe' => ['idntariffe', 'nomecostoagg'],
         'regole' => ['idregole', 'app_agenzia'],
-        'soldi' => ['idsoldi', 'motivazione', 'saldo_prenota'],
-        'costi' => ['idcosti', 'nome_costo', 'val_costo'],
+        'soldi' => ['idsoldi', 'motivazione', 'metodo_pagamento', 'saldo_prenota', 'data_transazione', 'data_inserimento'],
+        'costi' => ['idcosti', 'nome_costo', 'val_costo', 'tipo_costo', 'nome_cassa', 'provenienza_costo', 'metodo_pagamento', 'data_transazione', 'datainserimento'],
     ];
 
-    private const GLOBALES = ['anni', 'appartamenti', 'clienti', 'relclienti', 'personalizza', 'versioni', 'utenti', 'parentele'];
+    private const GLOBALES = ['anni', 'appartamenti', 'clienti', 'relclienti', 'personalizza', 'versioni', 'utenti', 'parentele', 'casse'];
 
     private const ANUALES = ['prenota', 'prenotacanc', 'costiprenota', 'rclientiprenota', 'periodi', 'ntariffe', 'regole', 'soldi', 'costi'];
 

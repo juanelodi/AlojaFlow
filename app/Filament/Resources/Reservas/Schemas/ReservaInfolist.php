@@ -79,6 +79,7 @@ class ReservaInfolist
                 ->schema([
                     TextEntry::make('numero')->label(__('ui.reservas.numero')),
                     TextEntry::make('origen_texto')->label(__('ui.comun.origen'))->placeholder('—'),
+                    TextEntry::make('empresa.nombre')->label(__('caja.empresas.campo'))->visible(fn (Reserva $record): bool => $record->empresa_id !== null),
                     TextEntry::make('grupo_codigo')->label(__('ui.reservas.grupo'))->placeholder('—'),
                     TextEntry::make('codigo_publico')->label(__('ui.reservas.codigo_publico'))->copyable(),
                     TextEntry::make('creada_en_origen')->label(__('ui.reservas.creada_origen'))->formatStateUsing(fn (Reserva $record): string => Formato::momento($record->creada_en_origen, self::zona($record)))->placeholder('—')

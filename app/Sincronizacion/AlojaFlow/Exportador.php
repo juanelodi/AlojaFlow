@@ -27,7 +27,7 @@ final class Exportador
 
     public const POR_PAGINA = 500;
 
-    public const COLECCIONES = ['unidades', 'huespedes', 'reservas', 'bloqueos'];
+    public const COLECCIONES = ['unidades', 'huespedes', 'reservas', 'bloqueos', 'cajas', 'pagos', 'movimientos'];
 
     private const CAMPOS_HUESPED = [
         'nombre', 'apellido1', 'apellido2', 'apodo', 'tratamiento', 'sexo', 'idioma', 'fecha_nacimiento', 'lugar_nacimiento', 'pais_nacimiento_texto', 'nacionalidad',
@@ -52,6 +52,7 @@ final class Exportador
         return [
             'api' => self::VERSION_API,
             'version' => (string) config('alojaflow.version'),
+            'colecciones' => self::COLECCIONES,
             'revision' => $this->revision($conexion),
             'propiedad' => [
                 'nombre' => $propiedad->nombre,
@@ -74,6 +75,9 @@ final class Exportador
             'unidades' => $this->unidades($conexion->propiedad_id, $despues),
             'huespedes' => $this->huespedes($conexion, $despues),
             'reservas' => $this->reservas($conexion->propiedad_id, $despues),
+            'cajas' => $this->delaCaja('cajas', ['nombre', 'activa'], $conexion->propiedad_id, $despues),
+            'pagos' => $this->delaCaja('pagos', ['reserva_id', 'caja_id', 'fecha', 'metodo', 'importe', 'moneda', 'referencia'], $conexion->propiedad_id, $despues),
+            'movimientos' => $this->delaCaja('movimientos', ['caja_id', 'fecha', 'tipo', 'categoria', 'concepto', 'metodo', 'importe', 'moneda', 'referencia'], $conexion->propiedad_id, $despues),
             default => $this->bloqueos($conexion->propiedad_id, $despues),
         };
 
@@ -87,7 +91,7 @@ final class Exportador
     {
         $id = $conexion->propiedad_id;
         $partes = [$conexion->incluir_documentos];
-        foreach (['unidades', 'huespedes', 'reservas'] as $tabla) {
+        foreach (['unidades', 'huespedes', 'reservas', 'cajas', 'pagos', 'movimientos'] as $tabla) {
             $partes[] = DB::table($tabla)->where('propiedad_id', $id)->selectRaw('COUNT(*) AS cuantas, MAX(id) AS ultimo, MAX(actualizado_en) AS cambio')->first();
         }
         // Reemplazar un contacto no toca la ficha del huésped.
@@ -165,6 +169,16 @@ final class Exportador
             ->where('b.id', '>', $despues)->orderBy('b.id')->limit(self::POR_PAGINA)
             ->get(['b.id', 'b.unidad_id', 'b.llegada', 'b.salida', 'b.uid', 'f.nombre as fuente'])
             ->map(fn (stdClass $b): array => (array) $b + ['tipo' => TipoReserva::Bloqueo->value])->all();
+    }
+
+    /**
+     * @param  list<string>  $campos
+     * @return list<array<string, mixed>>
+     */
+    private function delaCaja(string $tabla, array $campos, int $propiedadId, int $despues): array
+    {
+        return DB::table($tabla)->where('propiedad_id', $propiedadId)->where('id', '>', $despues)->orderBy('id')->limit(self::POR_PAGINA)
+            ->get(['id', ...$campos])->map(fn (stdClass $f): array => (array) $f)->all();
     }
 
     private function descifrar(mixed $cifrado): ?string

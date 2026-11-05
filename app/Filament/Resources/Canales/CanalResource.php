@@ -69,6 +69,7 @@ class CanalResource extends RecursoDePropiedad
                 TextInput::make('comision_porcentaje')->label(__('ui.canales.comision'))->helperText(__('ui.canales.comision_ayuda'))->numeric()->minValue(0)->maxValue(100)->step('any')->suffix('%'),
                 Select::make('politica_id')->label(__('dinero.politicas.modelo'))->native(false)
                     ->options(fn (Get $get): array => Politica::query()->where('propiedad_id', self::propiedadDe($get))->orderBy('nombre')->pluck('nombre', 'id')->all()),
+                Toggle::make('cobra_impuestos')->label(__('caja.impuestos.canal_cobra'))->helperText(__('caja.impuestos.canal_cobra_ayuda')),
                 Toggle::make('activo')->label(__('ui.tarifas.activa'))->default(true),
             ]),
         ]);

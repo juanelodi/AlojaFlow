@@ -558,11 +558,15 @@ plugin `tipo_cliente` **[por verificar los valores de `tipo`]**.
     periodos marcados. Se cuentan solo los días entre la llegada y la salida, sin incluirlas
     **[visto: `plugins/multipropiedad/funciones.php:151-154`, `:171-174`]**. El nombre del cargo se puede
     configurar por propiedad.
-- **`soldiAAAA`** → movimientos de dinero: `motivazione`, `metodo_pagamento`, `saldo_prenota`,
-  `saldo_cassa`, `valuta`, `data_transazione`. **[por verificar]** cómo se liga cada movimiento a
-  una reserva (probablemente por `motivazione`).
-- **`costiAAAA`** → gastos e ingresos de caja no ligados a reservas (`nome_costo`, `val_costo`,
-  `tipo_costo`, `nome_cassa`). Sirven para la caja del día del cierre (M3).
+- **`soldiAAAA`** → cobros de una reserva, en `pagos` (D-078): `motivazione`, `metodo_pagamento`, `saldo_prenota`,
+  `data_transazione`. **[visto: `visualizza_tabelle.php:897-899`]** `motivazione` es
+  `idcliente;idinizio;idfine;idprenota`; la primera fila de cada año (`soldi_prenotazioni_cancellate`) no es de una
+  reserva y se ignora. El método es texto libre: se reconoce lo evidente y el resto queda como «otro», con el texto en
+  la referencia.
+- **`costiAAAA`** → el libro de la caja (`nome_costo`, `val_costo`, `tipo_costo` `e`/`s`, `nome_cassa`,
+  `provenienza_costo`, `metodo_pagamento`, `data_transazione`). **[visto: `visualizza_tabelle.php:949`, `costi.php:211`]**
+  Lo de `provenienza_costo = p` viene de una reserva y ya está en `soldi`: solo dice en qué caja entró el cobro, y su
+  concepto lleva el apellido del huésped, que no se guarda. Lo demás va a `movimientos`.
 
 ## C7. Tarifas y reglas (solo lectura)
 
