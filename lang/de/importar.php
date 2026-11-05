@@ -1,0 +1,76 @@
+<?php
+
+/*
+ * AlojaFlow — sistema de gestión de alojamientos
+ * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+declare(strict_types=1);
+
+return [
+  'titulo' => 'Daten importieren',
+  'ayuda_reservas' => 'Um Buchungen aus einem anderen System zu übernehmen. Laden Sie die Vorlage herunter, füllen Sie sie in Excel aus, löschen Sie die Beispielzeile und speichern Sie sie als CSV. Zuerst wird geprüft, ohne etwas zu ändern. Vor dem Import wird eine Sicherung erstellt. Der Import verschickt keine Nachrichten „Buchung erstellt“, aber eine künftige Buchung erhält die Nachrichten vor der Ankunft.',
+  'ayuda_huespedes' => 'Um Ihre Gästeliste aus einem anderen System zu übernehmen. Laden Sie die Vorlage herunter, füllen Sie sie in Excel aus, löschen Sie die Beispielzeile und speichern Sie sie als CSV. Zuerst wird geprüft, ohne etwas zu ändern. Vor dem Import wird eine Sicherung erstellt. Wer mit gleicher E-Mail und gleichem Namen schon existiert, wird nicht wiederholt.',
+  'que' => 'Was importiert wird',
+  'tipo_reservas' => 'Buchungen',
+  'tipo_huespedes' => 'Gäste',
+  'plantilla' => 'Vorlage herunterladen',
+  'archivo' => 'CSV-Datei (bis 500 KB)',
+  'pegar' => 'Oder hier aus Excel einfügen',
+  'revisar' => 'Prüfen',
+  'vista_previa' => 'Was importiert wird',
+  'resumen' => ':n von :total Zeilen kann importiert werden.|:n von :total Zeilen können importiert werden.',
+  'linea' => 'Zeile',
+  'que_trae' => 'Inhalt',
+  'correcta' => 'Korrekt',
+  'confirmar' => 'Es wird eine Sicherung erstellt und die korrekten Zeilen werden importiert. Fortfahren?',
+  'importar' => 'Importieren',
+  'importadas' => ':n Zeile importiert.|:n Zeilen importiert.',
+  'fallidas' => ':n Zeile wurde nicht importiert: Sie bleibt in der Liste.|:n Zeilen wurden nicht importiert: Sie bleiben in der Liste.',
+  'pago_importado' => 'Importierter Saldo',
+  'ya_existe' => 'Existiert bereits: übersprungen',
+  'cancelada_omitida' => 'Storniert: übersprungen',
+  'error_tamano' => 'Zu viel auf einmal: bis 500 KB und :filas Zeilen. Teilen Sie die Datei.',
+  'error_nombre' => 'Der Name fehlt.',
+  'error_correo' => 'Die E-Mail ist ungültig.',
+  'error_fecha' => 'Das Datum ist nicht lesbar: Verwenden Sie Jahr-Monat-Tag oder :formato.',
+  'error_orden' => 'Die Abreise muss nach der Ankunft liegen, und innerhalb eines Jahres.',
+  'error_unidad' => 'Diese Einheit gibt es in dieser Unterkunft nicht.',
+  'error_importe' => 'Der Betrag ist nicht lesbar.',
+  'error_estado' => 'Der Status ist nicht lesbar: Verwenden Sie bestätigt, unbestätigt oder storniert.',
+  'error_ocupada' => 'Diese Einheit ist an diesen Daten bereits belegt.',
+  'error_copia' => 'Die Sicherung ist fehlgeschlagen: Es wurde nichts importiert.',
+  'formato_dia_primero' => 'Tag/Monat/Jahr',
+  'formato_mes_primero' => 'Monat/Tag/Jahr',
+  'error_comillas' => 'Ab dieser Zeile sind Anführungszeichen nicht geschlossen.',
+  'error_guardar' => 'Diese Zeile konnte nicht gespeichert werden: Prüfen Sie, ob die Daten zu lang sind.',
+  'revisa_lectura' => 'Prüfen Sie, ob Daten und Beträge stimmen: So werden sie gespeichert.',
+  'ejemplo' => [
+    'nombre' => 'Ana',
+    'apellido' => 'Beispiel',
+    'pais' => 'Mexiko',
+    'origen' => 'Direkt',
+  ],
+  'columnas' => [
+    'nombre' => 'Vorname',
+    'apellido1' => 'Nachname',
+    'apellido2' => 'Zweiter Nachname',
+    'correo' => 'E-Mail',
+    'telefono' => 'Telefon',
+    'nacionalidad' => 'Staatsangehörigkeit',
+    'documento_tipo' => 'Dokumenttyp',
+    'documento_numero' => 'Dokumentnummer',
+    'nacimiento' => 'Geburtsdatum',
+    'notas' => 'Notizen',
+    'unidad' => 'Einheit',
+    'llegada' => 'Ankunft',
+    'salida' => 'Abreise',
+    'personas' => 'Personen',
+    'total' => 'Gesamt',
+    'pagado' => 'Bezahlt',
+    'estado' => 'Status',
+    'origen' => 'Herkunft',
+    'comentario' => 'Kommentar',
+  ],
+];

@@ -1,0 +1,76 @@
+<?php
+
+/*
+ * AlojaFlow — sistema de gestión de alojamientos
+ * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+declare(strict_types=1);
+
+return [
+  'titulo' => 'Importar dados',
+  'ayuda_reservas' => 'Para trazer as reservas de outro sistema. Descarregue o modelo, preencha-o no Excel, apague a linha de exemplo e guarde-o como CSV. Primeiro é revisto sem mudar nada. Antes de importar faz-se uma cópia de segurança. O que se importa não envia mensagens de «reserva criada», mas uma reserva futura receberá as mensagens antes da chegada.',
+  'ayuda_huespedes' => 'Para trazer a sua lista de hóspedes de outro sistema. Descarregue o modelo, preencha-o no Excel, apague a linha de exemplo e guarde-o como CSV. Primeiro é revisto sem mudar nada. Antes de importar faz-se uma cópia de segurança. Quem já existir com o mesmo e-mail e nome não se repete.',
+  'que' => 'O que importar',
+  'tipo_reservas' => 'Reservas',
+  'tipo_huespedes' => 'Hóspedes',
+  'plantilla' => 'Descarregar modelo',
+  'archivo' => 'Ficheiro CSV (até 500 KB)',
+  'pegar' => 'Ou cole aqui a partir do Excel',
+  'revisar' => 'Rever',
+  'vista_previa' => 'O que vai ser importado',
+  'resumen' => ':n de :total linhas pode ser importada.|:n de :total linhas podem ser importadas.',
+  'linea' => 'Linha',
+  'que_trae' => 'O que traz',
+  'correcta' => 'Correta',
+  'confirmar' => 'Será feita uma cópia de segurança e importadas as linhas corretas. Continuar?',
+  'importar' => 'Importar',
+  'importadas' => ':n linha importada.|:n linhas importadas.',
+  'fallidas' => ':n linha não foi importada: fica na lista.|:n linhas não foram importadas: ficam na lista.',
+  'pago_importado' => 'Saldo importado',
+  'ya_existe' => 'Já existe: omitida',
+  'cancelada_omitida' => 'Cancelada: omitida',
+  'error_tamano' => 'É demasiado de uma vez: até 500 KB e :filas linhas. Divida o ficheiro.',
+  'error_nombre' => 'Falta o nome.',
+  'error_correo' => 'O e-mail não é válido.',
+  'error_fecha' => 'A data não se entende: use ano-mês-dia ou :formato.',
+  'error_orden' => 'A saída deve ser depois da chegada, e a menos de um ano.',
+  'error_unidad' => 'Essa unidade não existe nesta propriedade.',
+  'error_importe' => 'O montante não se entende.',
+  'error_estado' => 'O estado não se entende: use confirmada, por confirmar ou cancelada.',
+  'error_ocupada' => 'Essa unidade já está ocupada nessas datas.',
+  'error_copia' => 'Não foi possível fazer a cópia de segurança: nada foi importado.',
+  'formato_dia_primero' => 'dia/mês/ano',
+  'formato_mes_primero' => 'mês/dia/ano',
+  'error_comillas' => 'Há aspas por fechar a partir desta linha.',
+  'error_guardar' => 'Não foi possível guardar esta linha: verifique se os dados não são demasiado longos.',
+  'revisa_lectura' => 'Confirme que as datas e os valores estão certos: é assim que serão guardados.',
+  'ejemplo' => [
+    'nombre' => 'Ana',
+    'apellido' => 'Exemplo',
+    'pais' => 'México',
+    'origen' => 'Direto',
+  ],
+  'columnas' => [
+    'nombre' => 'Nome',
+    'apellido1' => 'Apelido',
+    'apellido2' => 'Segundo apelido',
+    'correo' => 'E-mail',
+    'telefono' => 'Telefone',
+    'nacionalidad' => 'Nacionalidade',
+    'documento_tipo' => 'Tipo de documento',
+    'documento_numero' => 'Número de documento',
+    'nacimiento' => 'Data de nascimento',
+    'notas' => 'Notas',
+    'unidad' => 'Unidade',
+    'llegada' => 'Chegada',
+    'salida' => 'Saída',
+    'personas' => 'Pessoas',
+    'total' => 'Total',
+    'pagado' => 'Pago',
+    'estado' => 'Estado',
+    'origen' => 'Origem',
+    'comentario' => 'Comentário',
+  ],
+];

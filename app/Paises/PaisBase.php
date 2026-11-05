@@ -67,6 +67,11 @@ abstract class PaisBase implements Pais
         return null;
     }
 
+    public function fechaConMesPrimero(): bool
+    {
+        return false;
+    }
+
     public function unidadLargo(): string
     {
         return 'm';

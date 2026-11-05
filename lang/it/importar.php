@@ -1,0 +1,76 @@
+<?php
+
+/*
+ * AlojaFlow — sistema de gestión de alojamientos
+ * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+declare(strict_types=1);
+
+return [
+  'titulo' => 'Importa dati',
+  'ayuda_reservas' => 'Per portare le prenotazioni da un altro sistema. Scarica il modello, compilalo in Excel, cancella la riga di esempio e salvalo come CSV. Prima viene controllato senza cambiare nulla. Prima di importare si fa una copia di sicurezza. L’importazione non invia messaggi di «prenotazione creata», ma una prenotazione futura riceverà i messaggi prima dell’arrivo.',
+  'ayuda_huespedes' => 'Per portare l’elenco degli ospiti da un altro sistema. Scarica il modello, compilalo in Excel, cancella la riga di esempio e salvalo come CSV. Prima viene controllato senza cambiare nulla. Prima di importare si fa una copia di sicurezza. Chi esiste già con la stessa e-mail e lo stesso nome non si ripete.',
+  'que' => 'Cosa importare',
+  'tipo_reservas' => 'Prenotazioni',
+  'tipo_huespedes' => 'Ospiti',
+  'plantilla' => 'Scarica il modello',
+  'archivo' => 'File CSV (fino a 500 KB)',
+  'pegar' => 'Oppure incolla qui da Excel',
+  'revisar' => 'Controlla',
+  'vista_previa' => 'Cosa verrà importato',
+  'resumen' => ':n di :total righe si può importare.|:n di :total righe si possono importare.',
+  'linea' => 'Riga',
+  'que_trae' => 'Contenuto',
+  'correcta' => 'Corretta',
+  'confirmar' => 'Si farà una copia di sicurezza e si importeranno le righe corrette. Continuare?',
+  'importar' => 'Importa',
+  'importadas' => ':n riga importata.|:n righe importate.',
+  'fallidas' => ':n riga non è stata importata: resta nell’elenco.|:n righe non sono state importate: restano nell’elenco.',
+  'pago_importado' => 'Saldo importato',
+  'ya_existe' => 'Esiste già: saltata',
+  'cancelada_omitida' => 'Cancellata: saltata',
+  'error_tamano' => 'È troppo per una volta: fino a 500 KB e :filas righe. Dividi il file.',
+  'error_nombre' => 'Manca il nome.',
+  'error_correo' => 'L’e-mail non è valida.',
+  'error_fecha' => 'La data non si capisce: usa anno-mese-giorno o :formato.',
+  'error_orden' => 'La partenza deve essere dopo l’arrivo, ed entro un anno.',
+  'error_unidad' => 'Questa unità non esiste in questa struttura.',
+  'error_importe' => 'L’importo non si capisce.',
+  'error_estado' => 'Lo stato non si capisce: usa confermata, non confermata o cancellata.',
+  'error_ocupada' => 'Questa unità è già occupata in queste date.',
+  'error_copia' => 'La copia di sicurezza non è riuscita: non è stato importato nulla.',
+  'formato_dia_primero' => 'giorno/mese/anno',
+  'formato_mes_primero' => 'mese/giorno/anno',
+  'error_comillas' => 'Ci sono virgolette non chiuse a partire da questa riga.',
+  'error_guardar' => 'Non è stato possibile salvare questa riga: controlla che i dati non siano troppo lunghi.',
+  'revisa_lectura' => 'Controlla che date e importi siano giusti: verranno salvati così.',
+  'ejemplo' => [
+    'nombre' => 'Ana',
+    'apellido' => 'Esempio',
+    'pais' => 'Messico',
+    'origen' => 'Diretto',
+  ],
+  'columnas' => [
+    'nombre' => 'Nome',
+    'apellido1' => 'Cognome',
+    'apellido2' => 'Secondo cognome',
+    'correo' => 'E-mail',
+    'telefono' => 'Telefono',
+    'nacionalidad' => 'Nazionalità',
+    'documento_tipo' => 'Tipo di documento',
+    'documento_numero' => 'Numero di documento',
+    'nacimiento' => 'Data di nascita',
+    'notas' => 'Note',
+    'unidad' => 'Unità',
+    'llegada' => 'Arrivo',
+    'salida' => 'Partenza',
+    'personas' => 'Persone',
+    'total' => 'Totale',
+    'pagado' => 'Pagato',
+    'estado' => 'Stato',
+    'origen' => 'Origine',
+    'comentario' => 'Commento',
+  ],
+];

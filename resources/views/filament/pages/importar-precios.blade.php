@@ -30,8 +30,13 @@
                     if (! archivo) { return; }
                     if (archivo.size > {{ ImportadorPrecios::BYTES_MAXIMOS }}) { this.error = true; return; }
                     archivo.arrayBuffer().then((bytes) => {
+                        const inicio = new Uint8Array(bytes.slice(0, 2));
                         let texto;
-                        try { texto = new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch (e) { texto = new TextDecoder('windows-1252').decode(bytes); }
+                        if (inicio[0] === 0xFF && inicio[1] === 0xFE) {
+                            texto = new TextDecoder('utf-16le').decode(bytes);
+                        } else {
+                            try { texto = new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch (e) { texto = new TextDecoder('windows-1252').decode(bytes); }
+                        }
                         $wire.set('texto', texto);
                     });
                 },

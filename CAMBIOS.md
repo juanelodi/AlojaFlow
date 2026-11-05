@@ -2,6 +2,23 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.29 — 2026-11-05
+
+**Importar de un archivo (Configuración → Importar datos).** Para quien viene de otro sistema y no quiere capturar todo a mano. Con esto termina lo que elegiste del sistema anterior.
+
+- **Huéspedes y reservas**, de un CSV o pegando desde Excel. Hay una plantilla para cada uno.
+- **Primero se revisa sin cambiar nada:** se ve qué le pasa a cada línea, como una unidad que no existe o unas fechas ya ocupadas, también dentro del mismo archivo. Las fechas y los importes se muestran como se entendieron: si `3/4/2027` se leyó al revés, ahí se nota.
+- **Antes de importar se hace una copia de seguridad.** Lo importado no tiene botón de deshacer.
+- Las líneas que fallan se quedan solas en el cuadro, para corregirlas ahí mismo; las demás entran.
+- Un huésped con el mismo correo y nombre no se repite: la reserva se le pega al que ya existe.
+- **No se mandan mensajes de «reserva creada»:** nadie espera un correo de una reserva de hace meses. Una reserva futura sí recibe los mensajes de antes de su llegada; y con SES.Hospedajes conectado, lo que sigue vigente se comunica como cualquier otra.
+- Lo pagado entra como un pago «saldo importado». Las canceladas se omiten.
+- Solo en propiedades independientes, y hasta 500 KB y 1000 filas por archivo.
+
+**También en «Importar precios».** La plantilla ahora se abre en columnas también en el Excel de España y de los países donde la lista se separa con punto y coma. En Estados Unidos, las fechas se leen como mes/día/año, que es como las guarda Excel ahí. El archivo llega hasta 150 KB: uno más grande hacía fallar la pantalla sin decir por qué.
+
+**Sin verificar:** no se ha probado con un archivo real de otro sistema: cada uno exporta sus columnas de otra forma, y hay que acomodarlas a la plantilla. Tampoco con Excel de verdad: se probó el archivo, no cómo lo abre cada versión.
+
 ## 1.0.28 — 2026-11-05
 
 **Calendario**

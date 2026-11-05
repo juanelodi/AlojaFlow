@@ -1,0 +1,76 @@
+<?php
+
+/*
+ * AlojaFlow — sistema de gestión de alojamientos
+ * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+declare(strict_types=1);
+
+return [
+  'titulo' => 'Import data',
+  'ayuda_reservas' => 'To bring in bookings from another system. Download the template, fill it in Excel, delete the sample line and save it as CSV. It is reviewed first without changing anything. A backup is made before importing. Imports do not send “booking created” messages, but a future booking will get the messages before its arrival.',
+  'ayuda_huespedes' => 'To bring in your guest list from another system. Download the template, fill it in Excel, delete the sample line and save it as CSV. It is reviewed first without changing anything. A backup is made before importing. Anyone who already exists with the same email and name is not repeated.',
+  'que' => 'What to import',
+  'tipo_reservas' => 'Bookings',
+  'tipo_huespedes' => 'Guests',
+  'plantilla' => 'Download template',
+  'archivo' => 'CSV file (up to 500 KB)',
+  'pegar' => 'Or paste here from Excel',
+  'revisar' => 'Review',
+  'vista_previa' => 'What will be imported',
+  'resumen' => ':n of :total rows can be imported.|:n of :total rows can be imported.',
+  'linea' => 'Line',
+  'que_trae' => 'What it has',
+  'correcta' => 'Correct',
+  'confirmar' => 'A backup will be made and the correct rows imported. Continue?',
+  'importar' => 'Import',
+  'importadas' => ':n row imported.|:n rows imported.',
+  'fallidas' => ':n row was not imported: it stays in the list.|:n rows were not imported: they stay in the list.',
+  'pago_importado' => 'Imported balance',
+  'ya_existe' => 'Already exists: skipped',
+  'cancelada_omitida' => 'Cancelled: skipped',
+  'error_tamano' => 'Too much for one go: up to 500 KB and :filas rows. Split the file.',
+  'error_nombre' => 'The name is missing.',
+  'error_correo' => 'The email is not valid.',
+  'error_fecha' => 'The date cannot be read: use year-month-day or :formato.',
+  'error_orden' => 'The departure must be after the arrival, and within a year.',
+  'error_unidad' => 'That unit does not exist in this property.',
+  'error_importe' => 'The amount cannot be read.',
+  'error_estado' => 'The status cannot be read: use confirmed, unconfirmed or cancelled.',
+  'error_ocupada' => 'That unit is already taken on those dates.',
+  'error_copia' => 'The backup could not be made: nothing was imported.',
+  'formato_dia_primero' => 'day/month/year',
+  'formato_mes_primero' => 'month/day/year',
+  'error_comillas' => 'There is an unclosed quotation mark from this line on.',
+  'error_guardar' => 'This line could not be saved: check that its data is not too long.',
+  'revisa_lectura' => 'Check that dates and amounts look right: this is how they will be saved.',
+  'ejemplo' => [
+    'nombre' => 'Ana',
+    'apellido' => 'Example',
+    'pais' => 'Mexico',
+    'origen' => 'Direct',
+  ],
+  'columnas' => [
+    'nombre' => 'Name',
+    'apellido1' => 'Surname',
+    'apellido2' => 'Second surname',
+    'correo' => 'Email',
+    'telefono' => 'Phone',
+    'nacionalidad' => 'Nationality',
+    'documento_tipo' => 'Document type',
+    'documento_numero' => 'Document number',
+    'nacimiento' => 'Date of birth',
+    'notas' => 'Notes',
+    'unidad' => 'Unit',
+    'llegada' => 'Arrival',
+    'salida' => 'Departure',
+    'personas' => 'People',
+    'total' => 'Total',
+    'pagado' => 'Paid',
+    'estado' => 'Status',
+    'origen' => 'Source',
+    'comentario' => 'Comment',
+  ],
+];

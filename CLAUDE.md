@@ -4,10 +4,10 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-05): versión de prueba 1.0.28**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-05): versión de prueba 1.0.29**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
-  D-029) y D-036 se revisan con el usuario. El plan de [docs/plan-paridad.md](docs/plan-paridad.md) quedó completo en la 1.0.24. En curso: lo que se eligió del núcleo heredado ([docs/nucleo-heredado.md](docs/nucleo-heredado.md), D-117).
+  D-029) y D-036 se revisan con el usuario. El plan de [docs/plan-paridad.md](docs/plan-paridad.md) quedó completo en la 1.0.24, y lo que se eligió del núcleo heredado ([docs/nucleo-heredado.md](docs/nucleo-heredado.md), D-117), en la 1.0.29.
 - **Idioma:** español de México en la conversación, la documentación, el código
   (identificadores y comentarios) y los mensajes de commit. Interfaz en español y en los
   idiomas de la regla 7.
@@ -29,7 +29,7 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 2. **Fase 2 — núcleo propio.** Reservas, tarifas y clientes propios para funcionar sin
    HotelDruid, más todo lo que escribe reservas (grupos, cupones, fusionar clientes, motor de
    reservas…). El modelo de datos lo contempla desde la fase 1. **Desde la 1.0.5 está completa
-   salvo la importación histórica (D-041 a D-043):** propiedades independientes (`modo = nativa`)
+   (D-041 a D-043), y desde la 1.0.29 también se importa de un archivo (D-127):** propiedades independientes (`modo = nativa`)
    con su motor de reservas, y una subordinada puede pasar a independiente. Las subordinadas
    siguen como en la fase 1.
 
@@ -201,7 +201,7 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   noches y pagos propios, `Cotizador` calcula el precio con la tarifa y sus temporadas, y `Mensualidades` lleva el calendario
   de cobros de una estancia larga (D-107, D-108). Una unidad se vende con su tarifa principal y otras (`Unidad::tarifasIds`, D-118); una tarifa puede salir de otra (`Tarifa::precios`, D-119). `ReglasCargo`, cuándo se cobra un cargo (D-121).
 - `app/Reservas/GestorGrupos.php` y `app/Grupos/` — grupos: `CalculadorPrecio` (D-095), `CalendarioPagos`, `AccesoCoordinador` y `ContratoGrupo` (D-096), `ListaHuespedes`. `app/Comprobantes/`, comprobantes de pago (D-097). Página pública en `GrupoPublicoController`.
-- `app/Reservas/DetectorDuplicados.php` (D-088). `app/Propiedades/RegistrosTuristicos.php` (D-091). `app/Paises/CatalogoRegiones.php` (D-092).
+- `app/Reservas/ImportadorDatos.php`, traer huéspedes y reservas de un archivo (D-127). `app/Reservas/DetectorDuplicados.php` (D-088). `app/Propiedades/RegistrosTuristicos.php` (D-091). `app/Paises/CatalogoRegiones.php` (D-092).
 - `app/Reservas/Restricciones.php` (D-084) e `ImportadorPrecios.php` (D-083). `app/Pagos/GestorEnlacesPago.php` (D-085). `app/Comunicacion/Opiniones.php` (D-087).
 - `app/Motor/` y `app/Pagos/` — motor de reservas y pasarelas (D-042). `app/Propiedades/Independizador.php`,
   pasar una subordinada a independiente (D-043).
@@ -311,6 +311,8 @@ npx license-checker --summary             # licencias npm
 - `Http::fake` compara contra la dirección con su query: un GET con `?expand[]=…` necesita `*` al final del patrón.
 - `$this->travel()` no mueve `time()`: en el código que se prueba así, `now()`.
 - Eloquent guarda un `datetime` en la zona que traiga la instancia, sin convertirla: a las columnas en UTC, `->utc()`.
+- Livewire no acepta más de 1 MB por petición y cuenta su snapshot: un texto largo en una propiedad pública viaja dos veces, y al pasarse truena sin explicar nada. Se queda en Alpine y va como argumento (`ImportarDatos`).
+- Un CSV con comas se abre en una sola columna donde Excel separa la lista con «;»: lo que se llena en Excel va con `Csv::paraExcel`. Y al guardar, las fechas quedan como en su país: se leen con `Pais::fechaConMesPrimero`.
 
 ## Referencias locales (solo lectura)
 

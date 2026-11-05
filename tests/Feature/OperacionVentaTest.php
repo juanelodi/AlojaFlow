@@ -269,7 +269,7 @@ describe('importar precios', function (): void {
             ->and($filas[1])->toMatchArray(['desde' => '2030-01-15', 'precio' => 120000, 'persona' => 10000, 'error' => null])
             ->and($filas[2]['error'])->toBe(__('operacion.precios.error_tarifa'))
             ->and($filas[3]['error'])->toBe(__('operacion.precios.error_orden'))
-            ->and($filas[4]['error'])->toBe(__('operacion.precios.error_fecha'))
+            ->and($filas[4]['error'])->toBe(__('operacion.precios.error_fecha', ['formato' => __('importar.formato_dia_primero')]))
             ->and($filas[5]['error'])->toBe(__('operacion.precios.error_precio'));
     });
 

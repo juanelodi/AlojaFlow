@@ -41,6 +41,8 @@ return [
         'manual' => 'Manuale',
         'programada' => 'Automatico',
         'antes_de_restaurar' => 'Prima del ripristino',
+        'antes-de-independizar' => 'Prima dell’indipendenza',
+        'antes-de-importar' => 'Prima dell’importazione',
     ],
     'descargar' => 'Scarica',
     'restaurar' => 'Ripristina',

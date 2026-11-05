@@ -37,6 +37,11 @@ final class EstadosUnidos extends PaisBase
         ];
     }
 
+    public function fechaConMesPrimero(): bool
+    {
+        return true;
+    }
+
     public function unidadLargo(): string
     {
         return 'ft';

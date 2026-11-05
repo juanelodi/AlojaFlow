@@ -14,6 +14,7 @@ use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
 use App\Models\Tarifa;
 use App\Models\TemporadaTarifa;
+use App\Paises\Paises;
 use App\Seguridad\AuditoriaModelos;
 use App\Support\Csv;
 use App\Support\Dinero;
@@ -26,7 +27,8 @@ use Illuminate\Support\Facades\DB;
  */
 final class ImportadorPrecios
 {
-    public const BYTES_MAXIMOS = 1048576;
+    /** Cabe en lo que Livewire acepta por petición, 1 MB: esta pantalla lleva el texto y sus filas en cada una. */
+    public const BYTES_MAXIMOS = 153600;
 
     /**
      * @return list<array{linea: int, tarifa: string, tarifa_id: int|null, desde: string, hasta: string, precio: int|null, persona: int|null, error: string|null}>
@@ -37,6 +39,7 @@ final class ImportadorPrecios
         if (strlen($texto) > self::BYTES_MAXIMOS) {
             return [['linea' => 0, 'tarifa' => '', 'tarifa_id' => null, 'desde' => '', 'hasta' => '', 'precio' => null, 'persona' => null, 'error' => __('operacion.precios.error_tamano')]];
         }
+        $mesPrimero = Paises::de($propiedad)->fechaConMesPrimero();
         $tarifas = Tarifa::query()->where('propiedad_id', $propiedad->id)->get(['id', 'nombre', 'tarifa_base_id']);
         $lineas = preg_split('/\r\n|\r|\n/', trim($texto)) ?: [];
         $separador = Csv::separador($lineas[0]);
@@ -45,20 +48,20 @@ final class ImportadorPrecios
             if (trim($linea) === '') {
                 continue;
             }
-            $campos = array_map('trim', str_getcsv($linea, $separador, '"', ''));
-            if ($i === 0 && self::esEncabezado($campos)) {
+            $campos = array_map(fn (?string $campo): string => Csv::sinProteccion(trim((string) $campo)), str_getcsv($linea, $separador, '"', ''));
+            if ($i === 0 && Csv::encabezadoDeFechas($campos)) {
                 continue;
             }
             $tarifa = $campos[0];
             $encontrada = $tarifas->first(fn (Tarifa $t): bool => mb_strtolower($t->nombre) === mb_strtolower($tarifa) || (string) $t->id === $tarifa);
-            $desde = self::fecha($campos[1] ?? '');
-            $hasta = self::fecha($campos[2] ?? '');
-            $precio = self::importe($campos[3] ?? '', $propiedad->moneda);
-            $persona = ($campos[4] ?? '') === '' ? null : self::importe($campos[4], $propiedad->moneda);
+            $desde = Csv::fecha($campos[1] ?? '', $mesPrimero);
+            $hasta = Csv::fecha($campos[2] ?? '', $mesPrimero);
+            $precio = Csv::importe($campos[3] ?? '', $propiedad->moneda);
+            $persona = ($campos[4] ?? '') === '' ? null : Csv::importe($campos[4], $propiedad->moneda);
             $error = match (true) {
                 $encontrada === null => __('operacion.precios.error_tarifa'),
                 $encontrada->tarifa_base_id !== null => __('operacion.precios.error_tarifa_basada'),
-                $desde === null || $hasta === null => __('operacion.precios.error_fecha'),
+                $desde === null || $hasta === null => __('operacion.precios.error_fecha', ['formato' => Csv::formatoFecha($mesPrimero)]),
                 $hasta < $desde => __('operacion.precios.error_orden'),
                 $precio === null => __('operacion.precios.error_precio'),
                 ($campos[4] ?? '') !== '' && $persona === null => __('operacion.precios.error_precio'),
@@ -152,49 +155,4 @@ final class ImportadorPrecios
         ]);
     }
 
-    /**
-     * Excel en Windows guarda en otra codificación.
-     */
-    /**
-     * @param  list<string|null>  $campos
-     */
-    private static function esEncabezado(array $campos): bool
-    {
-        return self::fecha((string) ($campos[1] ?? '')) === null && self::fecha((string) ($campos[2] ?? '')) === null;
-    }
-
-    /**
-     * Año-mes-día o día/mes/año. Mes/día/año no: 03/04 sería ambiguo.
-     */
-    private static function fecha(string $texto): ?string
-    {
-        if (preg_match('/^(\d{4})-(\d{1,2})-(\d{1,2})$/', $texto, $m) === 1) {
-            [$anio, $mes, $dia] = [(int) $m[1], (int) $m[2], (int) $m[3]];
-        } elseif (preg_match('#^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$#', $texto, $m) === 1) {
-            [$dia, $mes, $anio] = [(int) $m[1], (int) $m[2], (int) $m[3]];
-        } else {
-            return null;
-        }
-
-        return checkdate($mes, $dia, $anio) ? sprintf('%04d-%02d-%02d', $anio, $mes, $dia) : null;
-    }
-
-    /**
-     * Acepta coma o punto decimal: el último separador es el de los decimales.
-     */
-    private static function importe(string $texto, string $moneda): ?int
-    {
-        $limpio = (string) preg_replace('/[^\d.,]/', '', $texto);
-        if (str_contains($texto, '-') || preg_match('/\d/', $limpio) !== 1) {
-            return null;
-        }
-        $ultimo = max((int) strrpos($limpio, ','), (int) strrpos($limpio, '.'));
-        // Sin decimales después del último separador de tres cifras, es de miles: 1,200 son mil doscientos.
-        $tieneDecimales = (strrpos($limpio, ',') !== false || strrpos($limpio, '.') !== false) && strlen($limpio) - $ultimo - 1 !== 3;
-        $entero = $tieneDecimales ? substr($limpio, 0, $ultimo) : $limpio;
-        $decimales = $tieneDecimales ? substr($limpio, $ultimo + 1) : '';
-        $numero = str_replace([',', '.'], '', $entero).($decimales === '' ? '' : '.'.$decimales);
-
-        return is_numeric($numero) ? Dinero::aUnidadMenor($numero, $moneda) : null;
-    }
 }

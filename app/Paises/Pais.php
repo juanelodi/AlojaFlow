@@ -68,6 +68,11 @@ interface Pais
     public function exportaLibroFiscal(): bool;
 
     /**
+     * Cómo guarda Excel una fecha en ese país: 03/04/2027 es el 3 de abril o el 4 de marzo.
+     */
+    public function fechaConMesPrimero(): bool;
+
+    /**
      * En qué se dicen los largos de un lugar y de un equipo. Se usa como llega: no se convierte.
      */
     public function unidadLargo(): string;
