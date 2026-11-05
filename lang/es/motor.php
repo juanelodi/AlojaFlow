@@ -19,7 +19,7 @@ return [
     'sin_resultados' => 'No hay lugar para esas fechas. Prueba con otras.',
     'tus_datos' => 'Tus datos',
     'n_personas' => ':personas personas',
-    'anticipo' => 'Para garantizar la reserva se pide un anticipo del :porcentaje %.',
+    'anticipo' => 'Para garantizar la reserva se pide un anticipo del :porcentaje.',
     'no_llenar' => 'No llenes este campo',
     'nombre' => 'Nombre',
     'apellido' => 'Apellido',

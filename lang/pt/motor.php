@@ -19,7 +19,7 @@ return [
     'sin_resultados' => 'Sem disponibilidade para essas datas. Experimente outras.',
     'tus_datos' => 'Os seus dados',
     'n_personas' => ':personas pessoas',
-    'anticipo' => 'Para garantir a reserva é pedido um sinal de :porcentaje %.',
+    'anticipo' => 'Para garantir a reserva é pedido um sinal de :porcentaje.',
     'no_llenar' => 'Não preencha este campo',
     'nombre' => 'Nome',
     'apellido' => 'Apelido',

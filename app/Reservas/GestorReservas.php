@@ -105,6 +105,11 @@ final class GestorReservas
             if ($actual->estado === EstadoReserva::Cancelada) {
                 $fila['estado'] = EstadoReserva::Cancelada;
             }
+            // La tarifa con que se vendió se queda hasta que alguien elija otra: retirarla o cambiar de unidad no cambia lo que se pactó.
+            if ($actual->tarifa_id !== null && (! array_key_exists('tarifa_id', $datos) || (int) $datos['tarifa_id'] === $actual->tarifa_id)) {
+                $fila['tarifa_id'] = $actual->tarifa_id;
+                $fila['tarifa_nombre'] = $actual->tarifa_nombre;
+            }
 
             $actual->fill($fila);
             $actual->version++;
@@ -487,7 +492,7 @@ final class GestorReservas
             }
 
             return $base + [
-                'titular_id' => null, 'estado' => EstadoReserva::Confirmada, 'personas' => 0, 'tarifa_nombre' => null,
+                'titular_id' => null, 'estado' => EstadoReserva::Confirmada, 'personas' => 0, 'tarifa_nombre' => null, 'tarifa_id' => null,
                 'total' => 0, 'deposito' => 0, 'descuento' => 0, 'comision' => 0,
             ];
         }
@@ -516,11 +521,13 @@ final class GestorReservas
             $estado = EstadoReserva::SinConfirmar;
         }
 
+        $cotizacion = Cotizador::cotizar($unidad, $llegada, $salida, $personas, blank($datos['tarifa_id'] ?? null) ? null : (int) $datos['tarifa_id']);
         $fila = $base + $importes + [
             'titular_id' => $titular->id,
             'estado' => $estado,
             'personas' => $personas,
-            'tarifa_nombre' => Cotizador::cotizar($unidad, $llegada, $salida, $personas)?->tarifa,
+            'tarifa_nombre' => $cotizacion?->tarifa,
+            'tarifa_id' => $cotizacion?->tarifaId,
         ];
         // Solo si vienen: quien cambia una reserva desde otra pantalla no los conoce, y no debe borrarlos.
         if (array_key_exists('ninos', $datos)) {
@@ -595,7 +602,7 @@ final class GestorReservas
                 $elegidos[$concepto] = max(0.01, (float) ($linea['cantidad'] ?? 1));
             }
         }
-        $presupuesto = Cotizador::presupuesto($reserva->unidad, $reserva->llegada, $reserva->salida, $reserva->personas, $elegidos);
+        $presupuesto = Cotizador::presupuesto($reserva->unidad, $reserva->llegada, $reserva->salida, $reserva->personas, $elegidos, tarifaId: $reserva->tarifa_id);
         // Lo que no viene del catálogo, como lo que marcó un medidor, no está en el formulario: se queda.
         $reserva->cargos()->whereNotNull('concepto_cargo_id')->delete();
         foreach ($presupuesto->cargos as $cargo) {

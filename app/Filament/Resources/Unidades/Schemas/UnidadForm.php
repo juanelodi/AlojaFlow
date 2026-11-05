@@ -15,6 +15,7 @@ use App\Enums\TipoLugar;
 use App\Filament\Resources\Unidades\UnidadResource;
 use App\Models\Propiedad;
 use App\Models\Tarifa;
+use App\Models\Unidad;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Seguridad\Acceso;
@@ -37,6 +38,16 @@ class UnidadForm
         return $propiedad === null ? 'm' : AtributosLugar::unidadLargo($propiedad);
     }
 
+    /**
+     * Las que se eligieron en la ficha, solo de su propiedad. La principal no hace falta repetirla.
+     *
+     * @param  array<int, mixed>  $tarifas
+     */
+    public static function guardarOtrasTarifas(Unidad $unidad, array $tarifas): void
+    {
+        $unidad->otrasTarifas()->sync(Tarifa::query()->where('propiedad_id', $unidad->propiedad_id)->whereIn('id', array_map('intval', $tarifas))->whereKeyNot((int) $unidad->tarifa_id)->pluck('id')->all());
+    }
+
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
@@ -50,13 +61,20 @@ class UnidadForm
 
                             return count($permitidas) === 1 ? $permitidas[0] : null;
                         })
-                        ->afterStateUpdated(fn (Set $set) => $set('tarifa_id', null))
+                        ->afterStateUpdated(function (Set $set): void {
+                            $set('tarifa_id', null);
+                            $set('otras_tarifas', []);
+                        })
                         ->disabledOn('edit'),
                     TextInput::make('nombre')->label(__('ui.unidades.nombre'))->helperText(__('ui.unidades.nombre_ayuda'))->required()->maxLength(100)
                         ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', Acceso::propiedadElegida($get('propiedad_id'), UnidadResource::propiedadesGestionables()))),
                     TextInput::make('capacidad')->label(__('ui.unidades.capacidad'))->required()->numeric()->minValue(1)->maxValue(1000)->default(2),
                     Select::make('tarifa_id')->label(__('ui.unidades.tarifa'))->helperText(__('ui.unidades.tarifa_ayuda'))->native(false)
                         ->options(fn (Get $get): array => blank($get('propiedad_id')) ? [] : Tarifa::query()->where('propiedad_id', Acceso::propiedadElegida($get('propiedad_id'), UnidadResource::propiedadesGestionables()))->orderBy('nombre')->pluck('nombre', 'id')->all()),
+                    Select::make('otras_tarifas')->label(__('ui.unidades.otras_tarifas'))->helperText(__('ui.unidades.otras_tarifas_ayuda'))->multiple()->native(false)
+                        ->options(fn (Get $get): array => blank($get('propiedad_id')) ? [] : Tarifa::query()->where('propiedad_id', Acceso::propiedadElegida($get('propiedad_id'), UnidadResource::propiedadesGestionables()))->orderBy('nombre')->pluck('nombre', 'id')->all())
+                        ->formatStateUsing(fn (?Unidad $record): array => $record === null ? [] : $record->otrasTarifas()->pluck('tarifas.id')->map(fn (mixed $id): int => (int) $id)->all())
+                        ->columnSpanFull(),
                     TextInput::make('piso')->label(__('ui.unidades.piso'))->maxLength(50),
                     TextInput::make('edificio')->label(__('ui.unidades.edificio'))->maxLength(50),
                     TextInput::make('orden')->label(__('ui.unidades.orden'))->helperText(__('ui.unidades.orden_ayuda'))->numeric()->minValue(-100000)->maxValue(100000)->default(0),

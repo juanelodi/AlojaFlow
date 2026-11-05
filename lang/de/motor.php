@@ -19,7 +19,7 @@ return [
     'sin_resultados' => 'Für diese Daten ist nichts frei. Versuchen Sie andere.',
     'tus_datos' => 'Ihre Daten',
     'n_personas' => ':personas Personen',
-    'anticipo' => 'Zur Sicherung der Buchung wird eine Anzahlung von :porcentaje % verlangt.',
+    'anticipo' => 'Zur Sicherung der Buchung wird eine Anzahlung von :porcentaje verlangt.',
     'no_llenar' => 'Dieses Feld nicht ausfüllen',
     'nombre' => 'Vorname',
     'apellido' => 'Nachname',

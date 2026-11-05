@@ -34,7 +34,7 @@ use Illuminate\Support\Facades\DB;
  */
 final class Informes
 {
-    public const INFORMES = ['resumen_anio', 'unidades', 'canales', 'anio_anterior', 'futuro', 'pickup', 'pronostico', 'cobros', 'por_cobrar', 'anticipos', 'ingresos_gastos', 'gastos', 'impuestos', 'estancia', 'dia_semana', 'cancelaciones', 'grupos', 'huespedes', 'limpieza', 'limpieza_persona'];
+    public const INFORMES = ['resumen_anio', 'unidades', 'canales', 'tarifas', 'anio_anterior', 'futuro', 'pickup', 'pronostico', 'cobros', 'por_cobrar', 'anticipos', 'ingresos_gastos', 'gastos', 'impuestos', 'estancia', 'dia_semana', 'cancelaciones', 'grupos', 'huespedes', 'limpieza', 'limpieza_persona'];
 
     /**
      * @param  list<int>  $propiedades
@@ -45,6 +45,7 @@ final class Informes
         return match ($informe) {
             'unidades' => self::unidades($propiedades, $desde, $hasta),
             'canales' => self::canales($propiedades, $desde, $hasta),
+            'tarifas' => self::tarifas($propiedades, $desde, $hasta),
             'anio_anterior' => self::anioAnterior($propiedades, $desde, $hasta),
             'futuro' => self::futuro($propiedades),
             'cobros' => self::cobros($propiedades, $desde, $hasta),
@@ -134,6 +135,39 @@ final class Informes
                 $datos,
                 fn (object $f): string => (string) $f->canal,
                 fn (object $f): array => [[(int) $f->total - (int) $f->comision, Dinero::formatear((int) $f->total - (int) $f->comision, (string) $f->moneda)]],
+                fn (object $f): string => (string) $f->moneda,
+            ),
+        ];
+    }
+
+    /**
+     * Cuánto vendió cada tarifa, con el nombre que dice la reserva: aunque se retire, lo vendido se queda (D-118).
+     *
+     * @param  list<int>  $propiedades
+     * @return Reporte
+     */
+    private static function tarifas(array $propiedades, CarbonImmutable $desde, CarbonImmutable $hasta): array
+    {
+        $datos = self::reservas($propiedades)->where('estado', '!=', EstadoReserva::Cancelada->value)
+            ->whereBetween('llegada', [$desde->format('Y-m-d'), $hasta->format('Y-m-d')])
+            ->groupBy('tarifa_nombre', 'moneda')->orderByRaw('SUM(total) DESC')
+            ->get([DB::raw("COALESCE(NULLIF(tarifa_nombre, ''), '—') as tarifa"), 'moneda', DB::raw('COUNT(*) as reservas'), DB::raw('SUM(noches) as noches'), DB::raw('SUM(total) as total')]);
+        $filas = $datos
+            ->map(fn (object $f): array => [
+                (string) $f->tarifa,
+                (string) $f->reservas,
+                (string) $f->noches,
+                Dinero::formatear((int) $f->total, (string) $f->moneda),
+            ])->all();
+
+        return [
+            'columnas' => self::titulos('tarifa', 'reservas', 'noches', 'ingresos'),
+            'filas' => $filas,
+            'grafica' => Grafica::de(
+                [__('informes.columnas.ingresos')],
+                $datos,
+                fn (object $f): string => (string) $f->tarifa,
+                fn (object $f): array => [[(int) $f->total, Dinero::formatear((int) $f->total, (string) $f->moneda)]],
                 fn (object $f): string => (string) $f->moneda,
             ),
         ];

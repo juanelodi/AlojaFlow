@@ -19,7 +19,7 @@ return [
     'sin_resultados' => 'Nothing available for those dates. Try other ones.',
     'tus_datos' => 'Your details',
     'n_personas' => ':personas people',
-    'anticipo' => 'A :porcentaje% deposit is required to guarantee the booking.',
+    'anticipo' => 'A :porcentaje deposit is required to guarantee the booking.',
     'no_llenar' => 'Do not fill in this field',
     'nombre' => 'First name',
     'apellido' => 'Last name',

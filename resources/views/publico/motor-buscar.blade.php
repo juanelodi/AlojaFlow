@@ -78,12 +78,19 @@
         @include('publico.plano-lugares')
         @forelse ($ofertas as $oferta)
             <section class="tarjeta">
-                @include('publico.fotos', ['fotos' => $fotosTarifa->get($oferta->tarifa->id, collect()), 'nombre' => $oferta->tarifa->nombre])
+                {{-- La que sale de otra es la misma habitación: sin fotos propias, las de aquella. --}}
+                @include('publico.fotos', ['fotos' => $fotosTarifa->get($oferta->tarifa->id) ?? $fotosTarifa->get($oferta->tarifa->tarifa_base_id, collect()), 'nombre' => $oferta->tarifa->nombre])
                 <div class="oferta">
                     <div>
                         <h2>{{ $oferta->tarifa->nombre }}</h2>
                         @if ($oferta->tarifa->descripcion_publica)
                             <p class="gris" style="margin:0 0 4px">{{ $oferta->tarifa->descripcion_publica }}</p>
+                        @endif
+                        @if ($oferta->politica)
+                            <details class="filtros" style="margin:0 0 4px">
+                                <summary class="gris">{{ $oferta->politicaNombre }}</summary>
+                                <p class="gris" style="margin:0">{{ $oferta->politica }}</p>
+                            </details>
                         @endif
                         <span class="gris">{{ __('motor.capacidad', ['personas' => $oferta->capacidad]) }}</span>
                         @if ($oferta->libres <= 2)
@@ -92,7 +99,7 @@
                         @if ($oferta->etiquetas !== [])
                             <p class="gris" style="margin:4px 0 0">{{ implode(' · ', $oferta->etiquetas) }}</p>
                         @endif
-                        @if ($conEstanciasLargas && ($oferta->tarifa->precio_semana !== null || $oferta->tarifa->precio_mes !== null))
+                        @if ($conEstanciasLargas && $oferta->tarifa->tarifa_base_id === null && ($oferta->tarifa->precio_semana !== null || $oferta->tarifa->precio_mes !== null))
                             <p class="gris" style="margin:4px 0 0">
                                 @if ($oferta->tarifa->precio_semana !== null){{ __('estancias.motor.semana', ['precio' => Formato::dinero($oferta->tarifa->precio_semana, $propiedad->moneda)]) }}@endif
                                 @if ($oferta->tarifa->precio_semana !== null && $oferta->tarifa->precio_mes !== null) · @endif

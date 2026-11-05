@@ -24,6 +24,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -72,8 +73,10 @@ class PoliticaResource extends RecursoDeCualquierPropiedad
             Section::make()->columnSpanFull()->columns(['default' => 1, 'md' => 2])->schema([
                 self::campoPropiedad(),
                 TextInput::make('nombre')->label(__('dinero.politicas.nombre'))->required()->maxLength(100),
-                TextInput::make('dias_cancelacion_gratuita')->label(__('dinero.politicas.dias_gratis'))->integer()->minValue(0)->maxValue(365)->default(0)->required(),
-                $porcentaje('penalizacion_porcentaje', 'dinero.politicas.penalizacion'),
+                Toggle::make('no_reembolsable')->label(__('dinero.politicas.no_reembolsable'))->helperText(__('dinero.politicas.no_reembolsable_ayuda'))->live()->columnSpanFull(),
+                TextInput::make('dias_cancelacion_gratuita')->label(__('dinero.politicas.dias_gratis'))->integer()->minValue(0)->maxValue(365)->default(0)->required()
+                    ->visible(fn (Get $get): bool => ! $get('no_reembolsable')),
+                $porcentaje('penalizacion_porcentaje', 'dinero.politicas.penalizacion')->visible(fn (Get $get): bool => ! $get('no_reembolsable')),
                 $porcentaje('no_show_porcentaje', 'dinero.politicas.no_show'),
                 $porcentaje('deposito_porcentaje', 'dinero.politicas.deposito'),
                 TextInput::make('deposito_plazo_dias')->label(__('dinero.politicas.deposito_plazo'))->integer()->minValue(0)->maxValue(365)->default(0)->required(),

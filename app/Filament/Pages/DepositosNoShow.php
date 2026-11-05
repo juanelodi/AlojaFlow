@@ -164,7 +164,7 @@ class DepositosNoShow extends Page
 
     private function politicaDe(Reserva $reserva): ?Politica
     {
-        $clave = $reserva->propiedad_id.'|'.$reserva->origen_texto;
+        $clave = $reserva->propiedad_id.'|'.$reserva->origen_texto.'|'.$reserva->tarifa_id;
         if (! array_key_exists($clave, $this->politicas)) {
             $this->politicas[$clave] = app(GestorPoliticas::class)->aplicable($reserva);
         }

@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 return [
     'politicas' => [
+        'no_reembolsable' => 'Nicht erstattbar',
+        'no_reembolsable_ayuda' => 'Bei Stornierung, jederzeit, wird der Gesamtbetrag berechnet.',
         'modelo' => 'Richtlinie',
         'modelos' => 'Richtlinien',
         'nombre' => 'Name',

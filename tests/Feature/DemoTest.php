@@ -39,7 +39,7 @@ it('crea una propiedad independiente con datos ficticios alrededor de hoy', func
         ->and($propiedad->es_demo)->toBeTrue()
         ->and($propiedad->principal)->toBeNull()
         ->and($propiedad->unidades()->count())->toBe(12)
-        ->and($propiedad->tarifas()->count())->toBe(5)
+        ->and($propiedad->tarifas()->count())->toBe(7)
         ->and($propiedad->huespedes()->count())->toBe(60)
         ->and(App\Models\CuotaReserva::query()->count())->toBeGreaterThanOrEqual(3)
         ->and(App\Servicios\SeguimientoMensualidades::resumen([$propiedad->id])['vencidas'])->not->toBe([]);

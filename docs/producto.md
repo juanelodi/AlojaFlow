@@ -143,7 +143,7 @@ Las funciones repetidas quedan en un solo módulo.
 | Registrar cobros y pagos | Escriben en la caja de la principal | Fase 2 |
 | Motor de reservas directas, pagos en línea | Necesitan el núcleo propio | Fase 2 / posterior |
 | Channel manager por API, feed de Google Hotel | Distribución de pago o con requisitos propios | Posterior |
-| Inventario, almacenes y punto de venta de HotelDruid | No están en el catálogo | **Por decidir** |
+| Inventario, almacenes y punto de venta de HotelDruid | No están en el catálogo | **Fuera** (D-117) |
 
 ### 8.4 Paquetes de país de la fase 1 (D-006)
 

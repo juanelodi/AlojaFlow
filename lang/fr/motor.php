@@ -19,7 +19,7 @@ return [
     'sin_resultados' => 'Rien de disponible à ces dates. Essayez-en d’autres.',
     'tus_datos' => 'Vos coordonnées',
     'n_personas' => ':personas personnes',
-    'anticipo' => 'Un acompte de :porcentaje % est demandé pour garantir la réservation.',
+    'anticipo' => 'Un acompte de :porcentaje est demandé pour garantir la réservation.',
     'no_llenar' => 'Ne remplissez pas ce champ',
     'nombre' => 'Prénom',
     'apellido' => 'Nom',

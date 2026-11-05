@@ -2,6 +2,31 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.25 — 2026-11-05
+
+**Varias tarifas por unidad:** una misma habitación se puede vender de varias maneras, como «con desayuno» o «no reembolsable». Es lo primero de lo que elegiste del sistema anterior.
+
+**Varias tarifas (Configuración → Tarifas y Unidades)**
+- Cada unidad tiene su tarifa principal y puede tener otras. Se asignan desde la unidad, o desde la tarifa marcando varias unidades a la vez.
+- Una tarifa puede pedir un mínimo y un máximo de personas.
+- **En el motor** sale una opción por tarifa, la más barata primero, y solo las que admiten a esas personas.
+- **Al crear una reserva**, si la unidad tiene más de una, eliges con cuál. Si las personas no son las de la tarifa, te avisa y puedes guardarla igual.
+- La reserva recuerda con cuál se vendió: si después retiras la tarifa o cambias la reserva de unidad, se queda con la suya hasta que elijas otra.
+
+**Tarifas que salen de otra**
+- «Basada en otra tarifa»: cobra con los precios y las temporadas de aquella, más un porcentaje, un importe por noche o los dos. Si cambias aquella, esta cambia sola.
+- No se puede borrar una tarifa de la que salen otras, ni importarle precios a la que sale de otra.
+
+**Condiciones por tarifa**
+- Cada tarifa puede llevar su política de cancelación. La de un canal sigue mandando sobre ella, y ella sobre la general.
+- **Esa política también decide el anticipo del motor:** su depósito.
+- Política **no reembolsable:** si cancelan, en cualquier momento, se cobra el total.
+- En el motor, las condiciones de cada tarifa se leen antes de reservar.
+
+**Informes:** uno nuevo, «Por tarifa». **Demostración:** las dobles también se venden «no reembolsable» y «con desayuno».
+
+**Sin verificar:** el anticipo del 100 % con una pasarela solo se ha probado con respuestas simuladas. No se ha probado en un teléfono de verdad.
+
 ## 1.0.24 — 2026-11-05
 
 **Propietarios: si administras unidades de otras personas.** Es un módulo nuevo y llega apagado: se prende en Sistema → Módulos. Con esta versión termina el plan de funciones.

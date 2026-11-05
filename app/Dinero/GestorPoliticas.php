@@ -37,11 +37,14 @@ final class GestorPoliticas
             return Politica::query()->find($delCanal);
         }
 
-        return Politica::query()->where('propiedad_id', $reserva->propiedad_id)->where('predeterminada', true)->first();
+        return $reserva->tarifa?->politicaPropia() ?? Politica::query()->where('propiedad_id', $reserva->propiedad_id)->where('predeterminada', true)->first();
     }
 
     public function penalizacionCancelacion(Reserva $reserva, Politica $politica): int
     {
+        if ($politica->no_reembolsable) {
+            return $reserva->total;
+        }
         // Se comparan días, no instantes: la llegada no tiene zona, y al oeste de Greenwich faltaría un día; al este, sobraría uno.
         $dias = (int) CarbonImmutable::parse($reserva->propiedad->hoy()->format('Y-m-d'))->diffInDays(CarbonImmutable::parse($reserva->llegada->format('Y-m-d')), false);
         if ($dias >= $politica->dias_cancelacion_gratuita) {
@@ -94,12 +97,16 @@ final class GestorPoliticas
             return (string) $politica->texto;
         }
         $porcentaje = fn (string $valor): string => rtrim(rtrim(number_format((float) $valor, 2, '.', ''), '0'), '.');
-        $partes = [__('operacion.politicas.texto_cancelacion', ['dias' => $politica->dias_cancelacion_gratuita, 'porcentaje' => $porcentaje($politica->penalizacion_porcentaje)])];
+        $partes = [$politica->no_reembolsable
+            ? __('operacion.politicas.texto_no_reembolsable')
+            : __('operacion.politicas.texto_cancelacion', ['dias' => $politica->dias_cancelacion_gratuita, 'porcentaje' => $porcentaje($politica->penalizacion_porcentaje)])];
         if ((float) $politica->no_show_porcentaje > 0) {
             $partes[] = __('operacion.politicas.texto_no_show', ['porcentaje' => $porcentaje($politica->no_show_porcentaje)]);
         }
         if ((float) $politica->deposito_porcentaje > 0) {
-            $partes[] = __('operacion.politicas.texto_deposito', ['porcentaje' => $porcentaje($politica->deposito_porcentaje), 'dias' => $politica->deposito_plazo_dias]);
+            $partes[] = $politica->deposito_plazo_dias === 0
+                ? __('operacion.politicas.texto_deposito_ya', ['porcentaje' => $porcentaje($politica->deposito_porcentaje)])
+                : __('operacion.politicas.texto_deposito', ['porcentaje' => $porcentaje($politica->deposito_porcentaje), 'dias' => $politica->deposito_plazo_dias]);
         }
 
         return implode(' ', $partes);

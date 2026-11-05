@@ -37,7 +37,7 @@ final class ImportadorPrecios
         if (strlen($texto) > self::BYTES_MAXIMOS) {
             return [['linea' => 0, 'tarifa' => '', 'tarifa_id' => null, 'desde' => '', 'hasta' => '', 'precio' => null, 'persona' => null, 'error' => __('operacion.precios.error_tamano')]];
         }
-        $tarifas = Tarifa::query()->where('propiedad_id', $propiedad->id)->get(['id', 'nombre']);
+        $tarifas = Tarifa::query()->where('propiedad_id', $propiedad->id)->get(['id', 'nombre', 'tarifa_base_id']);
         $lineas = preg_split('/\r\n|\r|\n/', trim($texto)) ?: [];
         $separador = Csv::separador($lineas[0]);
         $filas = [];
@@ -57,6 +57,7 @@ final class ImportadorPrecios
             $persona = ($campos[4] ?? '') === '' ? null : self::importe($campos[4], $propiedad->moneda);
             $error = match (true) {
                 $encontrada === null => __('operacion.precios.error_tarifa'),
+                $encontrada->tarifa_base_id !== null => __('operacion.precios.error_tarifa_basada'),
                 $desde === null || $hasta === null => __('operacion.precios.error_fecha'),
                 $hasta < $desde => __('operacion.precios.error_orden'),
                 $precio === null => __('operacion.precios.error_precio'),
@@ -106,7 +107,7 @@ final class ImportadorPrecios
     {
         $filas = [[__('operacion.precios.col_tarifa'), __('operacion.precios.col_desde'), __('operacion.precios.col_hasta'), __('operacion.precios.col_precio'), __('operacion.precios.col_persona')]];
         $hoy = $propiedad->hoy();
-        foreach (Tarifa::query()->with('temporadas')->where('propiedad_id', $propiedad->id)->where('activa', true)->orderBy('nombre')->get() as $tarifa) {
+        foreach (Tarifa::query()->with('temporadas')->where('propiedad_id', $propiedad->id)->where('activa', true)->whereNull('tarifa_base_id')->orderBy('nombre')->get() as $tarifa) {
             $filas[] = [$tarifa->nombre, $hoy->format('Y-m-d'), $hoy->addYear()->format('Y-m-d'), Dinero::aDecimal($tarifa->precio_noche, $propiedad->moneda), Dinero::aDecimal($tarifa->precio_persona_extra, $propiedad->moneda)];
             foreach ($tarifa->temporadas->sortBy('desde') as $temporada) {
                 $filas[] = [$tarifa->nombre, $temporada->desde->format('Y-m-d'), $temporada->hasta->format('Y-m-d'), Dinero::aDecimal($temporada->precio_noche, $propiedad->moneda), $temporada->precio_persona_extra === null ? '' : Dinero::aDecimal($temporada->precio_persona_extra, $propiedad->moneda)];

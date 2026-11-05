@@ -4,10 +4,10 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-05): versión de prueba 1.0.24**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-05): versión de prueba 1.0.25**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
-  D-029) y D-036 se revisan con el usuario. El plan de [docs/plan-paridad.md](docs/plan-paridad.md) quedó completo en la 1.0.24; falta decidir qué entra del núcleo heredado ([docs/nucleo-heredado.md](docs/nucleo-heredado.md)).
+  D-029) y D-036 se revisan con el usuario. El plan de [docs/plan-paridad.md](docs/plan-paridad.md) quedó completo en la 1.0.24. En curso: lo que se eligió del núcleo heredado ([docs/nucleo-heredado.md](docs/nucleo-heredado.md), D-117).
 - **Idioma:** español de México en la conversación, la documentación, el código
   (identificadores y comentarios) y los mensajes de commit. Interfaz en español y en los
   idiomas de la regla 7.
@@ -199,7 +199,7 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   - `CopiaBaseDatos`, `Firma`, `Manifiesto` y `Rutas` (qué no toca nunca una actualización).
 - `app/Reservas/` — propiedades independientes: `GestorReservas` es el único que escribe reservas,
   noches y pagos propios, `Cotizador` calcula el precio con la tarifa y sus temporadas, y `Mensualidades` lleva el calendario
-  de cobros de una estancia larga (D-107, D-108).
+  de cobros de una estancia larga (D-107, D-108). Una unidad se vende con su tarifa principal y otras (`Unidad::tarifasIds`, D-118); una tarifa puede salir de otra (`Tarifa::precios`, D-119).
 - `app/Reservas/GestorGrupos.php` y `app/Grupos/` — grupos: `CalculadorPrecio` (D-095), `CalendarioPagos`, `AccesoCoordinador` y `ContratoGrupo` (D-096), `ListaHuespedes`. `app/Comprobantes/`, comprobantes de pago (D-097). Página pública en `GrupoPublicoController`.
 - `app/Reservas/DetectorDuplicados.php` (D-088). `app/Propiedades/RegistrosTuristicos.php` (D-091). `app/Paises/CatalogoRegiones.php` (D-092).
 - `app/Reservas/Restricciones.php` (D-084) e `ImportadorPrecios.php` (D-083). `app/Pagos/GestorEnlacesPago.php` (D-085). `app/Comunicacion/Opiniones.php` (D-087).

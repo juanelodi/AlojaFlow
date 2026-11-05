@@ -31,23 +31,25 @@ use Illuminate\Database\Eloquent\Collection;
  * noches de viernes y sábado usan el de fin de semana si existe. Si dos temporadas se pisan, vale la
  * que empieza más tarde. Una estancia larga usa el precio por semana o por mes de la tarifa o de su
  * temporada; una temporada que no los tiene cobra su precio normal, para no regalar la temporada alta (D-107).
+ * Una unidad puede venderse con varias tarifas (D-118), y una tarifa puede salir de otra, con un ajuste (D-119).
  */
 final class Cotizador
 {
     private const ORDEN_LARGOS = [Mensualidades::SEMANA => 1, Mensualidades::MES => 2, Cotizacion::TEMPORADA => 3];
 
-    public static function cotizar(Unidad $unidad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas = 1): ?Cotizacion
+    public static function cotizar(Unidad $unidad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas = 1, ?int $tarifaId = null): ?Cotizacion
     {
         // Las temporadas son fechas sin zona: una llegada con la zona de la propiedad caería en el día de al lado.
         $llegada = CarbonImmutable::parse($llegada->format('Y-m-d'));
         $salida = CarbonImmutable::parse($salida->format('Y-m-d'));
-        $tarifa = $unidad->tarifa_id === null ? null : Tarifa::query()->where('activa', true)->find($unidad->tarifa_id);
+        $tarifa = self::tarifaDe($unidad, $tarifaId);
         // El recorrido es por noche: sin este tope, unas fechas absurdas ocupan el servidor.
         if ($tarifa === null || $salida->lte($llegada) || $llegada->diffInDays($salida) > GestorReservas::NOCHES_MAXIMAS) {
             return null;
         }
 
-        $temporadas = TemporadaTarifa::query()->where('tarifa_id', $tarifa->id)
+        $precios = $tarifa->precios();
+        $temporadas = TemporadaTarifa::query()->where('tarifa_id', $precios->id)
             ->where('desde', '<', $salida->format('Y-m-d'))
             ->where('hasta', '>=', $llegada->format('Y-m-d'))
             ->orderByDesc('desde')->orderByDesc('id')
@@ -56,7 +58,7 @@ final class Cotizador
         $nochesDeSuMes = self::nochesDeSuMes($llegada, $salida);
 
         $noches = [];
-        $estanciaMinima = $tarifa->estancia_minima;
+        $estanciaMinima = max($tarifa->estancia_minima, $precios->estancia_minima);
         $estanciaLarga = null;
         // Un mes entre 31 no da centavos justos: se redondea lo acumulado, para que la suma dé el precio del mes.
         $exacto = 0.0;
@@ -66,14 +68,28 @@ final class Cotizador
             if ($dia->equalTo($llegada) && $temporada?->estancia_minima !== null) {
                 $estanciaMinima = max($estanciaMinima, $temporada->estancia_minima);
             }
-            [$largo, $tipo] = self::precioDeTemporadaCompleta($temporada, $llegada, $salida) ?? self::precioLargo($temporada ?? $tarifa, count($nochesDeSuMes), $nochesDeSuMes[$i]);
+            [$largo, $tipo] = self::precioDeTemporadaCompleta($temporada, $llegada, $salida) ?? self::precioLargo($temporada ?? $precios, count($nochesDeSuMes), $nochesDeSuMes[$i]);
             $estanciaLarga = (self::ORDEN_LARGOS[(string) $tipo] ?? 0) > (self::ORDEN_LARGOS[(string) $estanciaLarga] ?? 0) ? $tipo : $estanciaLarga;
-            $exacto += self::precioNoche($tarifa, $temporada, $dia, $personas, $largo);
+            $exacto += $tarifa->conAjuste(self::precioNoche($precios, $temporada, $dia, $personas, $largo));
             $noches[] = (int) round($exacto) - $sumado;
             $sumado += $noches[$i];
         }
 
-        return new Cotizacion($tarifa->nombre, array_sum($noches), $noches, max(1, $estanciaMinima), $estanciaLarga);
+        return new Cotizacion($tarifa->nombre, array_sum($noches), $noches, max(1, $estanciaMinima), $estanciaLarga, $tarifa->id);
+    }
+
+    /**
+     * La que se pidió, si esa unidad la vende y sigue activa; si no, la principal.
+     */
+    private static function tarifaDe(Unidad $unidad, ?int $tarifaId): ?Tarifa
+    {
+        $ids = $unidad->tarifasIds();
+        if ($ids === []) {
+            return null;
+        }
+        $activas = Tarifa::query()->with('base')->where('activa', true)->whereIn('id', $ids)->get()->keyBy('id');
+
+        return $activas->get((int) $tarifaId) ?? $activas->get($ids[0]) ?? $activas->first();
     }
 
     /**
@@ -128,9 +144,9 @@ final class Cotizador
      *
      * @param  array<int, float>  $cargosElegidos  id del concepto => cantidad
      */
-    public static function presupuesto(Unidad $unidad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas, array $cargosElegidos = [], ?Cupon $cupon = null, int $descuentoManual = 0, int $exentosPorEdad = 0, bool $canalCobraImpuestos = false): Presupuesto
+    public static function presupuesto(Unidad $unidad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas, array $cargosElegidos = [], ?Cupon $cupon = null, int $descuentoManual = 0, int $exentosPorEdad = 0, bool $canalCobraImpuestos = false, ?int $tarifaId = null): Presupuesto
     {
-        $cotizacion = self::cotizar($unidad, $llegada, $salida, $personas);
+        $cotizacion = self::cotizar($unidad, $llegada, $salida, $personas, $tarifaId);
         $alojamiento = $cotizacion->total ?? 0;
         $noches = max(0, (int) $llegada->diffInDays($salida));
         $personas = max(1, $personas);

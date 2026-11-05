@@ -68,8 +68,10 @@ return [
         'ver_texto' => 'Texto para copiar',
         'texto_para_copiar' => 'Texto de la política',
         'texto_cancelacion' => 'Puedes cancelar sin costo hasta :dias días antes de la llegada; después se cobra el :porcentaje % del total.',
+        'texto_no_reembolsable' => 'Esta tarifa no se reembolsa: si cancelas, se cobra el total.',
         'texto_no_show' => 'Si no llegas y no avisas, se cobra el :porcentaje % del total.',
         'texto_deposito' => 'Se pide un depósito del :porcentaje %, en un plazo de :dias días desde la reserva.',
+        'texto_deposito_ya' => 'Se pide un depósito del :porcentaje % al reservar.',
     ],
     'bloqueos' => [
         'accion' => 'Bloquear fechas',
@@ -103,6 +105,7 @@ return [
         'temporada' => 'Importada :desde',
         'error_tamano' => 'El archivo pasa de 1 MB.',
         'error_tarifa' => 'No existe esa tarifa.',
+        'error_tarifa_basada' => 'Esa tarifa sale de otra: cambia los precios de aquella.',
         'error_fecha' => 'Fecha no válida: usa año-mes-día o día/mes/año.',
         'error_orden' => 'La fecha final es anterior a la inicial.',
         'error_precio' => 'Precio no válido.',

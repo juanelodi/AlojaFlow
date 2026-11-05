@@ -4,6 +4,8 @@ Con la 1.0.24 terminó el plan de [plan-paridad.md](plan-paridad.md), que trajo 
 **encima** de HotelDruid. Faltaba revisar lo de abajo: lo que HotelDruid 3.0.8 ya traía de fábrica (reservas, tarifas,
 costes, documentos, usuarios…). Esta lista es para que el dueño del proyecto decida qué entra.
 
+**Lo que se decidió (2026-11-05, D-117):** entran los números 2, 4, 5, 6, 10, 11, 13, 16, 28 y 32, en el orden del final de este documento. Lo demás se queda fuera hasta que alguien lo pida.
+
 **A quién le importa.** Solo a las propiedades independientes. En una subordinada, todo esto lo sigue haciendo la
 principal, y AlojaFlow nada más lo copia y lo muestra.
 

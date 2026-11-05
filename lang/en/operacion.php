@@ -68,8 +68,10 @@ return [
         'ver_texto' => 'Text to copy',
         'texto_para_copiar' => 'Policy text',
         'texto_cancelacion' => 'You can cancel free of charge up to :dias days before arrival; after that, :porcentaje % of the total is charged.',
+        'texto_no_reembolsable' => 'This rate is non-refundable: if you cancel, the full amount is charged.',
         'texto_no_show' => 'If you do not arrive and do not let us know, :porcentaje % of the total is charged.',
         'texto_deposito' => 'A deposit of :porcentaje % is required, within :dias days of booking.',
+        'texto_deposito_ya' => 'A deposit of :porcentaje % is required when booking.',
     ],
     'bloqueos' => [
         'accion' => 'Block dates',
@@ -103,6 +105,7 @@ return [
         'temporada' => 'Imported :desde',
         'error_tamano' => 'The file is over 1 MB.',
         'error_tarifa' => 'That rate does not exist.',
+        'error_tarifa_basada' => 'That rate comes from another one: change the prices of that one.',
         'error_fecha' => 'Invalid date: use year-month-day or day/month/year.',
         'error_orden' => 'The end date is before the start date.',
         'error_precio' => 'Invalid price.',

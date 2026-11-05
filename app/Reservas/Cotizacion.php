@@ -25,6 +25,7 @@ final readonly class Cotizacion
      * @param  list<int>  $noches  precio de cada noche
      * @param  int  $estanciaMinima  noches mínimas que pide la tarifa o la temporada de la llegada
      * @param  string|null  $estanciaLarga  si alguna noche se cobró con el precio por semana o por mes
+     * @param  int|null  $tarifaId  la tarifa con que se calculó
      */
     public function __construct(
         public string $tarifa,
@@ -32,6 +33,7 @@ final readonly class Cotizacion
         public array $noches,
         public int $estanciaMinima = 1,
         public ?string $estanciaLarga = null,
+        public ?int $tarifaId = null,
     ) {
     }
 

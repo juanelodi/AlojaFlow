@@ -38,8 +38,11 @@
             @endforeach
             <tr class="total"><td>{{ __('ui.comun.total') }}</td><td class="num">{{ Formato::dinero($oferta->presupuesto->total(), $propiedad->moneda) }}</td></tr>
         </table>
-        @if ($ajustes->anticipoPorcentaje() > 0)
-            <p class="gris" style="margin:8px 0 0">{{ __('motor.anticipo', ['porcentaje' => $ajustes->anticipoPorcentaje()]) }}</p>
+        @if ($oferta->anticipo > 0)
+            <p class="gris" style="margin:8px 0 0">{{ __('motor.anticipo', ['porcentaje' => Formato::tasa($oferta->anticipo)]) }}</p>
+        @endif
+        @if ($oferta->politica)
+            <p class="gris" style="margin:8px 0 0">{{ $oferta->politica }}</p>
         @endif
     </section>
 

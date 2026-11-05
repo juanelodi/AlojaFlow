@@ -68,8 +68,10 @@ return [
         'ver_texto' => 'Text zum Kopieren',
         'texto_para_copiar' => 'Text der Richtlinie',
         'texto_cancelacion' => 'Kostenlose Stornierung bis :dias Tage vor der Anreise; danach werden :porcentaje % des Gesamtbetrags berechnet.',
+        'texto_no_reembolsable' => 'Dieser Tarif ist nicht erstattbar: Bei Stornierung wird der Gesamtbetrag berechnet.',
         'texto_no_show' => 'Bei Nichterscheinen ohne Nachricht werden :porcentaje % des Gesamtbetrags berechnet.',
         'texto_deposito' => 'Es wird eine Anzahlung von :porcentaje % verlangt, innerhalb von :dias Tagen nach der Buchung.',
+        'texto_deposito_ya' => 'Beim Buchen wird eine Anzahlung von :porcentaje % verlangt.',
     ],
     'bloqueos' => [
         'accion' => 'Daten sperren',
@@ -103,6 +105,7 @@ return [
         'temporada' => 'Importiert :desde',
         'error_tamano' => 'Die Datei ist größer als 1 MB.',
         'error_tarifa' => 'Diesen Tarif gibt es nicht.',
+        'error_tarifa_basada' => 'Dieser Tarif basiert auf einem anderen: Ändern Sie dessen Preise.',
         'error_fecha' => 'Ungültiges Datum: Jahr-Monat-Tag oder Tag/Monat/Jahr verwenden.',
         'error_orden' => 'Das Enddatum liegt vor dem Startdatum.',
         'error_precio' => 'Ungültiger Preis.',

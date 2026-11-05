@@ -68,8 +68,10 @@ return [
         'ver_texto' => 'Texte à copier',
         'texto_para_copiar' => 'Texte de la politique',
         'texto_cancelacion' => 'Annulation gratuite jusqu’à :dias jours avant l’arrivée ; ensuite, :porcentaje % du total est facturé.',
+        'texto_no_reembolsable' => 'Ce tarif n’est pas remboursable : en cas d’annulation, le total est facturé.',
         'texto_no_show' => 'En cas de non-présentation sans prévenir, :porcentaje % du total est facturé.',
         'texto_deposito' => 'Un acompte de :porcentaje % est demandé, dans les :dias jours suivant la réservation.',
+        'texto_deposito_ya' => 'Un acompte de :porcentaje % est demandé à la réservation.',
     ],
     'bloqueos' => [
         'accion' => 'Bloquer des dates',
@@ -103,6 +105,7 @@ return [
         'temporada' => 'Importée :desde',
         'error_tamano' => 'Le fichier dépasse 1 Mo.',
         'error_tarifa' => 'Ce tarif n’existe pas.',
+        'error_tarifa_basada' => 'Ce tarif dépend d’un autre : modifiez les prix de celui-là.',
         'error_fecha' => 'Date non valide : utilisez année-mois-jour ou jour/mois/année.',
         'error_orden' => 'La date de fin précède la date de début.',
         'error_precio' => 'Prix non valide.',

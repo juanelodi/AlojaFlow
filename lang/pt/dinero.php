@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 return [
     'politicas' => [
+        'no_reembolsable' => 'Não reembolsável',
+        'no_reembolsable_ayuda' => 'Se cancelarem, em qualquer momento, é cobrado o total.',
         'modelo' => 'política',
         'modelos' => 'Políticas',
         'nombre' => 'Nome',

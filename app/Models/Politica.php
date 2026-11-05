@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $propiedad_id
  * @property string $nombre
  * @property int $dias_cancelacion_gratuita
+ * @property bool $no_reembolsable
  * @property string $penalizacion_porcentaje
  * @property string $no_show_porcentaje
  * @property string $deposito_porcentaje
@@ -36,6 +37,7 @@ class Politica extends ModeloBase
     {
         return [
             'dias_cancelacion_gratuita' => 'integer',
+            'no_reembolsable' => 'boolean',
             'penalizacion_porcentaje' => 'decimal:2',
             'no_show_porcentaje' => 'decimal:2',
             'deposito_porcentaje' => 'decimal:2',

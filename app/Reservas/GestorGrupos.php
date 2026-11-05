@@ -237,7 +237,7 @@ final class GestorGrupos
                 'noches' => $reserva->noches,
                 'capacidad' => $reserva->unidad->capacidad,
                 'precio_noche' => $reserva->habitacionGrupo?->precio_noche,
-                'base_tarifa' => $grupo->modo_precio === ModoPrecioGrupo::Tarifa ? Cotizador::presupuesto($reserva->unidad, $reserva->llegada, $reserva->salida, $reserva->personas)->total() : 0,
+                'base_tarifa' => $grupo->modo_precio === ModoPrecioGrupo::Tarifa ? Cotizador::presupuesto($reserva->unidad, $reserva->llegada, $reserva->salida, $reserva->personas, tarifaId: $reserva->tarifa_id)->total() : 0,
             ];
         }
 

@@ -349,7 +349,7 @@ class MotorReservasController extends Controller
         $lugar = null;
         $unidadId = (int) ($valores['unidad_id'] ?? $valores['unidad'] ?? 0);
         if ($oferta !== null && $unidadId > 0 && $ajustes->elegirLugar()) {
-            $lugar = $this->motor->libres($propiedad, $llegada, $salida, $personas, $filtro)->first(fn (Unidad $u): bool => $u->id === $unidadId && $u->tarifa_id === $tarifa->id);
+            $lugar = $this->motor->libres($propiedad, $llegada, $salida, $personas, $filtro)->first(fn (Unidad $u): bool => $u->id === $unidadId && in_array($tarifa->id, $u->tarifasIds(), true));
             $oferta = $lugar === null ? null : $this->motor->conLugar($oferta, $lugar, $llegada, $salida, $personas);
         }
         if ($oferta === null) {

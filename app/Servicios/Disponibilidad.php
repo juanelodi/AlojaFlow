@@ -61,7 +61,7 @@ final class Disponibilidad
     {
         $libres = self::libres([$propiedadId], $llegada, $salida, $personas);
 
-        return $libres->first(fn (Unidad $u): bool => $tarifaId === null || $u->tarifa_id === $tarifaId);
+        return $libres->first(fn (Unidad $u): bool => $tarifaId === null || in_array($tarifaId, $u->tarifasIds(), true));
     }
 
     /**

@@ -41,6 +41,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $origen_texto
  * @property string|null $grupo_codigo
  * @property string|null $tarifa_nombre
+ * @property int|null $tarifa_id
  * @property string $moneda
  * @property int $total
  * @property int $pagado
@@ -127,6 +128,12 @@ class Reserva extends ModeloBase
     public function unidad(): BelongsTo
     {
         return $this->belongsTo(Unidad::class);
+    }
+
+    /** @return BelongsTo<Tarifa, $this> */
+    public function tarifa(): BelongsTo
+    {
+        return $this->belongsTo(Tarifa::class);
     }
 
     /** @return BelongsTo<Huesped, $this> */

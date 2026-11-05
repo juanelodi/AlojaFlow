@@ -14,6 +14,7 @@ use App\Camping\AtributosLugar;
 use App\Camping\CupoExtras;
 use App\Camping\FiltroLugares;
 use App\Comunicacion\Mensajero;
+use App\Dinero\GestorPoliticas;
 use App\Enums\EstadoReserva;
 use App\Enums\NivelAviso;
 use App\Enums\TipoContacto;
@@ -43,7 +44,8 @@ use Illuminate\Support\Str;
 
 /**
  * Reservas directas desde el sitio del alojamiento (D-042). El huésped ve tarifas con unidades
- * libres; la unidad concreta la asigna el sistema, según el orden que eligió el alojamiento.
+ * libres; la unidad concreta la asigna el sistema, según el orden que eligió el alojamiento. Una
+ * misma unidad puede salir en varias tarifas (D-118).
  */
 final class MotorReservas
 {
@@ -88,31 +90,48 @@ final class MotorReservas
     public function ofertas(Propiedad $propiedad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas, ?FiltroLugares $filtro = null): array
     {
         $ofertas = [];
-        $libres = $this->libres($propiedad, $llegada, $salida, $personas, $filtro)->groupBy('tarifa_id');
+        $libres = $this->libres($propiedad, $llegada, $salida, $personas, $filtro);
+        $ajustes = new AjustesMotor($propiedad);
 
-        foreach (Tarifa::query()->where('propiedad_id', $propiedad->id)->where('activa', true)->where('visible_motor', true)->orderBy('precio_noche')->get() as $tarifa) {
-            $unidades = $libres->get($tarifa->id);
-            if ($unidades === null || $unidades->isEmpty()) {
+        foreach (Tarifa::query()->with(['politica', 'base.politica'])->where('propiedad_id', $propiedad->id)->where('activa', true)->where('visible_motor', true)->get() as $tarifa) {
+            $unidades = $libres->filter(fn (Unidad $u): bool => in_array($tarifa->id, $u->tarifasIds(), true));
+            if ($unidades->isEmpty() || ! $tarifa->admitePersonas($personas)) {
                 continue;
             }
             /** @var Unidad $primera */
             $primera = $unidades->first();
-            $presupuesto = Cotizador::presupuesto($primera, $llegada, $salida, $personas);
+            $presupuesto = Cotizador::presupuesto($primera, $llegada, $salida, $personas, tarifaId: $tarifa->id);
             if ($presupuesto->cotizacion === null) {
                 continue;
             }
+            $politica = $tarifa->politicaPropia();
             $ofertas[] = new Oferta(
                 $tarifa,
                 $unidades->count(),
-                (int) $unidades->max('capacidad'),
+                min((int) $unidades->max('capacidad'), $tarifa->personas_maximas ?? PHP_INT_MAX),
                 $presupuesto,
                 $presupuesto->cotizacion->estanciaMinima,
                 $presupuesto->cotizacion->cumpleEstanciaMinima(),
                 Modulos::activo(Modulo::Camping) ? AtributosLugar::comunes($unidades) : [],
+                $politica === null ? null : app(GestorPoliticas::class)->textoDe($politica),
+                $politica?->nombre,
+                $this->anticipo($tarifa, $ajustes),
             );
         }
+        // La más barata primero. Lo de cada noche ya está calculado: el precio base no dice nada de una que sale de otra.
+        usort($ofertas, fn (Oferta $a, Oferta $b): int => $a->presupuesto->total() <=> $b->presupuesto->total());
 
         return $ofertas;
+    }
+
+    /**
+     * El anticipo de esa tarifa: el depósito de su propia política o, si no tiene, el del motor.
+     */
+    public function anticipo(Tarifa $tarifa, AjustesMotor $ajustes): float
+    {
+        $politica = $tarifa->politicaPropia();
+
+        return $politica === null ? (float) $ajustes->anticipoPorcentaje() : (float) $politica->deposito_porcentaje;
     }
 
     /**
@@ -122,8 +141,8 @@ final class MotorReservas
      */
     public function libres(Propiedad $propiedad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas, ?FiltroLugares $filtro = null): \Illuminate\Database\Eloquent\Collection
     {
-        return Disponibilidad::libres([$propiedad->id], $llegada->format('Y-m-d'), $salida->format('Y-m-d'), $personas)
-            ->filter(fn (Unidad $u): bool => $u->tarifa_id !== null && Restricciones::deUnidad($u, $llegada, $salida, $propiedad->hoy()) === [] && ($filtro === null || $filtro->cumple($u)));
+        return Disponibilidad::libres([$propiedad->id], $llegada->format('Y-m-d'), $salida->format('Y-m-d'), $personas)->load('otrasTarifas:id')
+            ->filter(fn (Unidad $u): bool => $u->tarifasIds() !== [] && Restricciones::deUnidad($u, $llegada, $salida, $propiedad->hoy()) === [] && ($filtro === null || $filtro->cumple($u)));
     }
 
     /**
@@ -138,17 +157,19 @@ final class MotorReservas
             return [];
         }
         $libres = $this->libres($propiedad, $llegada, $salida, $personas, $filtro)->keyBy('id');
-        $porTarifa = collect($ofertas)->filter(fn (Oferta $o): bool => $o->cumpleEstancia)->keyBy(fn (Oferta $o): int => $o->tarifa->id);
+        $vendibles = collect($ofertas)->filter(fn (Oferta $o): bool => $o->cumpleEstancia);
         $mapas = [];
         foreach (Plano::query()->with('posiciones.unidad.propiedad')->where('propiedad_id', $propiedad->id)->whereNotNull('archivo_id')->orderBy('orden')->orderBy('nombre')->get() as $plano) {
             $lugares = [];
             foreach ($plano->posiciones as $posicion) {
                 /** @var PlanoUnidad $posicion */
+                $libre = $libres->get($posicion->unidad_id);
                 $lugares[] = [
                     'unidad' => $posicion->unidad,
                     'x' => (float) $posicion->x,
                     'y' => (float) $posicion->y,
-                    'oferta' => $libres->has($posicion->unidad_id) ? $porTarifa->get((int) $posicion->unidad->tarifa_id) : null,
+                    // Con varias tarifas, la más barata: las ofertas ya vienen en ese orden.
+                    'oferta' => $libre === null ? null : $vendibles->first(fn (Oferta $o): bool => in_array($o->tarifa->id, $libre->tarifasIds(), true)),
                 ];
             }
             if ($lugares !== []) {
@@ -169,7 +190,7 @@ final class MotorReservas
             return $oferta;
         }
 
-        return new Oferta($oferta->tarifa, $oferta->libres, $oferta->capacidad, Cotizador::presupuesto($unidad, $llegada, $salida, $personas, [$cargo => 1.0]), $oferta->estanciaMinima, $oferta->cumpleEstancia, AtributosLugar::etiquetas($unidad));
+        return new Oferta($oferta->tarifa, $oferta->libres, $oferta->capacidad, Cotizador::presupuesto($unidad, $llegada, $salida, $personas, [$cargo => 1.0], tarifaId: $oferta->tarifa->id), $oferta->estanciaMinima, $oferta->cumpleEstancia, AtributosLugar::etiquetas($unidad), $oferta->politica, $oferta->politicaNombre, $oferta->anticipo);
     }
 
     /**
@@ -223,10 +244,10 @@ final class MotorReservas
         $this->comprobarLimites($propiedad, $datos['correo']);
 
         $tarifa = Tarifa::query()->where('propiedad_id', $propiedad->id)->where('activa', true)->where('visible_motor', true)->find($datos['tarifa_id']);
-        if ($tarifa === null) {
+        if ($tarifa === null || ! $tarifa->admitePersonas($datos['personas'])) {
             throw new ReservaRechazada(__('motor.error.sin_lugar'));
         }
-        $candidatas = $this->libres($propiedad, $llegada, $salida, $datos['personas'], $datos['filtro'] ?? null)->filter(fn (Unidad $u): bool => $u->tarifa_id === $tarifa->id);
+        $candidatas = $this->libres($propiedad, $llegada, $salida, $datos['personas'], $datos['filtro'] ?? null)->filter(fn (Unidad $u): bool => in_array($tarifa->id, $u->tarifasIds(), true));
         if ($candidatas->isEmpty()) {
             throw new ReservaRechazada(__('motor.error.sin_lugar'));
         }
@@ -259,7 +280,7 @@ final class MotorReservas
             $elegidos[$ajustes->cargoLugarId()] = 1.0;
         }
 
-        $reserva = DB::transaction(function () use ($propiedad, $ajustes, $datos, $candidatas, $llegada, $salida, $cupon, $elegidos): Reserva {
+        $reserva = DB::transaction(function () use ($propiedad, $ajustes, $datos, $tarifa, $candidatas, $llegada, $salida, $cupon, $elegidos): Reserva {
             if (Modulos::activo(Modulo::Camping)) {
                 CupoExtras::apartar($elegidos, $llegada, $salida);
             }
@@ -270,12 +291,12 @@ final class MotorReservas
             $huesped = $this->huesped($propiedad, $datos);
             /** @var Unidad $primera */
             $primera = $candidatas->first();
-            $presupuesto = Cotizador::presupuesto($primera, $llegada, $salida, $datos['personas'], $elegidos, $cupon);
+            $presupuesto = Cotizador::presupuesto($primera, $llegada, $salida, $datos['personas'], $elegidos, $cupon, tarifaId: $tarifa->id);
             if ($presupuesto->cotizacion === null || ! $presupuesto->cotizacion->cumpleEstanciaMinima()) {
                 throw new ReservaRechazada(__('motor.error.estancia_minima', ['noches' => $presupuesto->cotizacion->estanciaMinima ?? 1]));
             }
             $total = $presupuesto->total();
-            $anticipo = (int) round($total * $ajustes->anticipoPorcentaje() / 100);
+            $anticipo = (int) round($total * $this->anticipo($tarifa, $ajustes) / 100);
             $pagaraEnLinea = $anticipo > 0 && (new Pasarelas($propiedad))->disponibles() !== [];
             $confirmada = ! $pagaraEnLinea && $ajustes->confirmacionInmediata();
 
@@ -284,6 +305,7 @@ final class MotorReservas
                 try {
                     return $this->reservas->crear($propiedad, [
                         'unidad_id' => $unidad->id,
+                        'tarifa_id' => $tarifa->id,
                         'titular_id' => $huesped->id,
                         'llegada' => $llegada->format('Y-m-d'),
                         'salida' => $salida->format('Y-m-d'),

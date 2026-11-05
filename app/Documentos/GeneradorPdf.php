@@ -128,7 +128,7 @@ final class GeneradorPdf
         // Lo que se guardó al crearla; las de antes de la 1.0.15 no lo tienen, y se calcula con los datos de hoy.
         $impuestos = $reserva->impuestos()->where('cobrado_por_canal', false)->get(['nombre', 'importe', 'incluido'])->toArray();
         if ($impuestos === []) {
-            $impuestos = Cotizador::presupuesto($reserva->unidad, $reserva->llegada, $reserva->salida, max(1, $reserva->personas))->impuestos;
+            $impuestos = Cotizador::presupuesto($reserva->unidad, $reserva->llegada, $reserva->salida, max(1, $reserva->personas), tarifaId: $reserva->tarifa_id)->impuestos;
         }
         $alojamiento = $reserva->total - (int) $reserva->cargos->sum('importe');
 

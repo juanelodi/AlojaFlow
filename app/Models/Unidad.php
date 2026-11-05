@@ -13,6 +13,7 @@ namespace App\Models;
 use App\Enums\OrigenFila;
 use App\Models\Concerns\ProtegidaPorSincronizacion;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -86,6 +87,28 @@ class Unidad extends ModeloBase
     public function tarifa(): BelongsTo
     {
         return $this->belongsTo(Tarifa::class);
+    }
+
+    /**
+     * Con qué más se vende, además de la principal (D-118).
+     *
+     * @return BelongsToMany<Tarifa, $this>
+     */
+    public function otrasTarifas(): BelongsToMany
+    {
+        return $this->belongsToMany(Tarifa::class, 'tarifa_unidad');
+    }
+
+    /**
+     * Todas las tarifas con que se vende, la principal primero.
+     *
+     * @return list<int>
+     */
+    public function tarifasIds(): array
+    {
+        $otras = $this->otrasTarifas->map(fn (Tarifa $tarifa): int => $tarifa->id)->all();
+
+        return array_values(array_unique($this->tarifa_id === null ? $otras : [$this->tarifa_id, ...$otras]));
     }
 
     /** @return HasMany<Reserva, $this> */

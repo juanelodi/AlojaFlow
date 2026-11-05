@@ -26,6 +26,7 @@ use App\Models\Impuesto;
 use App\Models\Propiedad;
 use App\Models\Propietario;
 use App\Models\Reserva;
+use App\Models\Tarifa;
 use App\Models\Unidad;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
@@ -121,7 +122,13 @@ class ReservaForm
                         ->disableOptionWhen(fn (string $value, Get $get, ?Reserva $record): bool => in_array((int) $value, self::ocupadas($get, $record), true))
                         ->default(fn (): ?int => self::unidadDeLaDireccion()?->id)
                         ->validationMessages(['in' => __('ui.reservas.error_ocupada')])
-                        ->afterStateUpdated($alCambiar)
+                        ->afterStateUpdated(function (Get $get, Set $set, string $operation, ?Reserva $record) use ($alCambiar): void {
+                            // La que esta unidad no vende no se queda elegida.
+                            if (! array_key_exists((int) $get('tarifa_id'), self::tarifasDeUnidad($get('propiedad_id'), $get('unidad_id'), $record?->tarifa_id))) {
+                                $set('tarifa_id', null);
+                            }
+                            $alCambiar($get, $set, $operation);
+                        })
                         ->hintAction(
                             Action::make('primeraLibre')->label(__('ui.reservas.primera_libre'))->icon(Heroicon::OutlinedSparkles)
                                 ->action(function (Get $get, Set $set, string $operation): void {
@@ -131,12 +138,18 @@ class ReservaForm
                                     }
                                     $unidad = Disponibilidad::primeraLibre(self::propiedadPermitida($get('propiedad_id')), $llegada->format('Y-m-d'), $salida->format('Y-m-d'), max(1, (int) $get('personas')));
                                     $set('unidad_id', $unidad?->id);
+                                    $set('tarifa_id', null);
                                     if ($operation === 'create') {
                                         self::aplicarTarifa($get, $set);
                                     }
                                 })
                         )
                         ->columnSpan(['lg' => 2]),
+                    // Solo si esa unidad se vende con más de una.
+                    Select::make('tarifa_id')->label(__('ui.reservas.tarifa'))->native(false)->live()->placeholder(__('ui.reservas.tarifa_principal'))
+                        ->options(fn (Get $get, ?Reserva $record): array => self::tarifasDeUnidad($get('propiedad_id'), $get('unidad_id'), $record?->tarifa_id))
+                        ->visible(fn (Get $get, ?Reserva $record): bool => $esReserva($get) && count(self::tarifasDeUnidad($get('propiedad_id'), $get('unidad_id'), $record?->tarifa_id)) > 1)
+                        ->afterStateUpdated($alCambiar),
                     TextInput::make('origen_texto')->maxLength(100)->live(onBlur: true)
                         ->label(fn (Get $get): string => $esReserva($get) ? __('ui.comun.origen') : __('ui.reservas.motivo'))
                         ->datalist(fn (Get $get): array => $esReserva($get) ? self::canales($get('propiedad_id')) : [])
@@ -395,6 +408,23 @@ class ReservaForm
     }
 
     /**
+     * Las que vende esa unidad, y la que ya tiene la reserva aunque la hayan retirado.
+     *
+     * @return array<int, string>
+     */
+    private static function tarifasDeUnidad(mixed $propiedadId, mixed $unidadId, ?int $actual = null): array
+    {
+        $unidad = blank($propiedadId) || blank($unidadId) ? null : Unidad::query()->where('propiedad_id', self::propiedadPermitida($propiedadId))->find((int) $unidadId);
+        if ($unidad === null) {
+            return [];
+        }
+
+        return Tarifa::query()->where('propiedad_id', $unidad->propiedad_id)
+            ->where(fn (Builder $q): Builder => $q->where(fn (Builder $vende): Builder => $vende->where('activa', true)->whereIn('id', $unidad->tarifasIds()))->orWhere('id', $actual))
+            ->orderBy('nombre')->pluck('nombre', 'id')->all();
+    }
+
+    /**
      * @return array<int, string>
      */
     private static function opcionesCargo(mixed $propiedadId): array
@@ -472,7 +502,7 @@ class ReservaForm
 
         $canalCobra = (bool) Canal::query()->where('propiedad_id', $unidad->propiedad_id)->where('nombre', (string) $get($ruta.'origen_texto'))->value('cobra_impuestos');
 
-        return Cotizador::presupuesto($unidad, $llegada, $salida, max(1, (int) $get($ruta.'personas')), $elegidos, null, $descuento, max(0, (int) $get($ruta.'ninos')), $canalCobra);
+        return Cotizador::presupuesto($unidad, $llegada, $salida, max(1, (int) $get($ruta.'personas')), $elegidos, null, $descuento, max(0, (int) $get($ruta.'ninos')), $canalCobra, blank($get($ruta.'tarifa_id')) ? null : (int) $get($ruta.'tarifa_id'));
     }
 
     /**
@@ -515,6 +545,12 @@ class ReservaForm
         $presupuesto = self::presupuesto($get);
         if ($presupuesto?->cotizacion !== null && ! $presupuesto->cotizacion->cumpleEstanciaMinima()) {
             $avisos[] = __('ui.reservas.aviso_estancia_minima', ['noches' => $presupuesto->cotizacion->estanciaMinima]);
+        }
+        $tarifa = $presupuesto?->cotizacion?->tarifaId === null ? null : Tarifa::query()->find($presupuesto->cotizacion->tarifaId);
+        if ($tarifa !== null && ! $tarifa->admitePersonas(max(1, (int) $get('personas')))) {
+            $avisos[] = max(1, (int) $get('personas')) < (int) $tarifa->personas_minimas
+                ? __('ui.reservas.aviso_tarifa_minimo', ['tarifa' => $tarifa->nombre, 'personas' => $tarifa->personas_minimas])
+                : __('ui.reservas.aviso_tarifa_maximo', ['tarifa' => $tarifa->nombre, 'personas' => $tarifa->personas_maximas]);
         }
         [$llegada, $salida] = self::fechas($get);
         $unidad = $llegada === null || $salida === null || blank($get('unidad_id')) ? null

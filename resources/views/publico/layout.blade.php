@@ -27,6 +27,7 @@ button,.boton{display:inline-block;min-height:44px;padding:10px 18px;border:0;bo
 .gris{color:var(--gris);font-size:.9375rem}
 .precio{font-size:1.35rem;font-weight:700}
 .oferta{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+.oferta>div:first-child{flex:1 1 240px;min-width:0}
 .mensaje{padding:12px;border-radius:8px;margin:0 0 14px;border:1px solid var(--borde)}
 .mensaje.error{border-color:var(--rojo);color:var(--rojo)}
 .mensaje.bien{border-color:var(--verde);color:var(--verde)}

@@ -131,6 +131,7 @@ final class GeneradorDemo
             ]);
             $unidades = $this->crearCatalogo($propiedad);
             $this->crearCatalogosExtra($propiedad);
+            $this->crearTarifasDeLaDoble($propiedad);
             $this->crearMensajes($propiedad);
             $huespedes = $this->crearHuespedes($propiedad);
             foreach ($unidades as $indice => $unidad) {
@@ -211,6 +212,23 @@ final class GeneradorDemo
         $documentos = app(GestorDocumentosLegales::class);
         $documentos->crearBase($propiedad);
         DocumentoLegal::query()->where('propiedad_id', $propiedad->id)->where('tipo', TipoDocumentoLegal::AvisoPrivacidad->value)->each(fn (DocumentoLegal $documento) => $documentos->publicar($documento));
+    }
+
+    /**
+     * Otras dos maneras de vender las dobles: para enseñar las tarifas que salen de otra (D-118, D-119).
+     */
+    private function crearTarifasDeLaDoble(Propiedad $propiedad): void
+    {
+        $doble = Tarifa::query()->where('propiedad_id', $propiedad->id)->where('nombre', 'Doble')->firstOrFail();
+        $politica = Politica::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.politica_no_reembolsable'), 'no_reembolsable' => true, 'no_show_porcentaje' => 100, 'deposito_porcentaje' => 100, 'deposito_plazo_dias' => 0]);
+        $comunes = ['propiedad_id' => $propiedad->id, 'tarifa_base_id' => $doble->id, 'modo' => $doble->modo, 'precio_noche' => 0, 'personas_incluidas' => $doble->personas_incluidas, 'activa' => true];
+        $tarifas = [
+            Tarifa::query()->create($comunes + ['nombre' => __('ui.demo.tarifa_no_reembolsable'), 'ajuste_porcentaje' => -10, 'politica_id' => $politica->id, 'descripcion_publica' => __('ui.demo.tarifa_no_reembolsable_texto')]),
+            Tarifa::query()->create($comunes + ['nombre' => __('ui.demo.tarifa_desayuno'), 'ajuste_noche' => 30000, 'descripcion_publica' => __('ui.demo.tarifa_desayuno_texto')]),
+        ];
+        foreach ($tarifas as $tarifa) {
+            $tarifa->otrasUnidades()->sync($doble->unidades()->pluck('id')->all());
+        }
     }
 
     private function crearCatalogosExtra(Propiedad $propiedad): void
