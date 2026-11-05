@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Reservas;
 
+use App\Caja\GestorTurnos;
 use App\Comunicacion\Mensajero;
 use App\Comunicacion\VariablesMensaje;
 use App\Dinero\GestorPoliticas;
@@ -23,6 +24,7 @@ use App\Facturacion\ErrorFacturacion;
 use App\Facturacion\GestorFacturas;
 use App\Limpieza\GestorLimpieza;
 use App\Llegada\GestorLlegadas;
+use App\Models\Caja;
 use App\Models\Plantilla;
 use App\Models\ReceptorFiscal;
 use App\Models\ReglaLimpieza;
@@ -30,11 +32,14 @@ use App\Models\Reserva;
 use App\Models\SerieFacturacion;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
+use App\Motor\Pasarelas;
+use App\Pagos\GestorEnlacesPago;
 use App\Paises\Paises;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
 use App\Seguridad\Acceso;
 use App\Seguridad\Limites;
+use App\Support\Dinero;
 use App\Support\Formato;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
@@ -214,6 +219,37 @@ final class AccionesReserva
                     EstadoEnvio::Manual => Notification::make()->warning()->persistent()->title(__('mensajes.mandar.manual'))->send(),
                     default => Notification::make()->danger()->title(__('mensajes.mandar.fallo'))->body($envio->ultimo_error)->send(),
                 };
+            });
+    }
+
+    /**
+     * Un enlace para cobrar lo que se decida: un anticipo, un extra, un daño (D-085).
+     */
+    public static function enlacePago(): Action
+    {
+        return Action::make('enlacePago')
+            ->label(__('operacion.enlaces.crear'))
+            ->icon(Heroicon::OutlinedLink)
+            ->color('gray')
+            ->modalDescription(__('operacion.enlaces.crear_ayuda'))
+            ->visible(fn (Reserva $record): bool => self::gestionable($record) && Modulos::activo(Modulo::Pagos) && $record->tipo === TipoReserva::Reserva
+                && $record->estado !== EstadoReserva::Cancelada && (new Pasarelas($record->propiedad))->disponibles() !== [])
+            ->fillForm(fn (Reserva $record): array => [
+                'importe' => $record->pendiente > 0 ? Dinero::aDecimal($record->pendiente, $record->moneda) : null,
+                'dias' => 3,
+                'caja_id' => GestorTurnos::cajaPropuesta($record->propiedad_id),
+            ])
+            ->schema(fn (Reserva $record): array => [
+                TextInput::make('importe')->label(__('ui.pagos.importe'))->required()->numeric()->minValue(0.01)->step('any')->prefix($record->moneda),
+                TextInput::make('concepto')->label(__('operacion.enlaces.concepto_campo'))->helperText(__('operacion.enlaces.concepto_ayuda'))->required()->maxLength(150),
+                TextInput::make('dias')->label(__('operacion.enlaces.dias'))->required()->integer()->minValue(1)->maxValue(60),
+                Select::make('caja_id')->label(__('ui.cajas.modelo_campo'))->native(false)->visible(fn (): bool => Modulos::activo(Modulo::Caja))
+                    ->options(fn (): array => Caja::query()->where('propiedad_id', $record->propiedad_id)->where('activa', true)->orderBy('nombre')->pluck('nombre', 'id')->all()),
+            ])
+            ->action(function (Reserva $record, array $data, GestorEnlacesPago $enlaces): void {
+                $cajaId = filled($data['caja_id'] ?? null) ? Caja::query()->where('propiedad_id', $record->propiedad_id)->whereKey((int) $data['caja_id'])->value('id') : null;
+                $enlace = $enlaces->crear($record, Dinero::aUnidadMenor((string) $data['importe'], $record->moneda), (string) $data['concepto'], (int) $data['dias'], $cajaId);
+                Notification::make()->success()->persistent()->title(__('operacion.enlaces.creado'))->body((string) $enlaces->url($enlace, Mensajero::idiomaDe($record)))->send();
             });
     }
 

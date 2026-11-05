@@ -16,4 +16,11 @@ enum AccionAutomatizacion: string
 
     case CorreoHuesped = 'correo_huesped';
     case CorreoFijo = 'correo_fijo';
+    case CrearTarea = 'crear_tarea';
+    case NotaBitacora = 'nota_bitacora';
+
+    public function esCorreo(): bool
+    {
+        return $this === self::CorreoHuesped || $this === self::CorreoFijo;
+    }
 }

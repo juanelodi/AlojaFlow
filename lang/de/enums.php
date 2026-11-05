@@ -160,10 +160,14 @@ return [
         'despues_salida' => 'Tage nach der Abreise',
     ],
     'AccionAutomatizacion' => [
+        'crear_tarea' => 'Aufgabe für das Team anlegen',
+        'nota_bitacora' => 'Wichtige Notiz im Schichtbuch hinterlassen',
         'correo_huesped' => 'E-Mail an den Gast',
         'correo_fijo' => 'E-Mail an eine feste Adresse',
     ],
     'TipoEnlace' => [
+        'pago' => 'Zahlung',
+        'opinion' => 'Meinung',
         'ical' => 'iCal-Kalender',
         'llegada' => 'Online-Check-in',
         'contrato' => 'Vertrag',

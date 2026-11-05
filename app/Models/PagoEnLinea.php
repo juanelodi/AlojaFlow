@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $propiedad_id
  * @property int $reserva_id
+ * @property int|null $enlace_pago_id
  * @property int|null $pago_id
  * @property string $pasarela
  * @property string|null $referencia

@@ -169,6 +169,12 @@ class Reserva extends ModeloBase
         return $this->hasMany(CargoReserva::class);
     }
 
+    /** @return HasMany<EnlacePago, $this> */
+    public function enlacesPago(): HasMany
+    {
+        return $this->hasMany(EnlacePago::class);
+    }
+
     /** @return HasMany<ImpuestoReserva, $this> */
     public function impuestos(): HasMany
     {

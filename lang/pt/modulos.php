@@ -44,6 +44,7 @@ return [
         'mensajes' => ['nombre' => 'Mensagens aos hóspedes', 'descripcion' => 'Modelos, envios por e-mail e WhatsApp, e mensagens automáticas.'],
         'bitacora' => ['nombre' => 'Diário de turnos', 'descripcion' => 'O que um turno deixa para o seguinte. O importante aparece em Hoje.'],
         'empresas' => ['nombre' => 'Empresas e agências', 'descripcion' => 'Quem reserva ou paga por seus hóspedes, com suas condições e extrato de conta.'],
+        'opiniones' => ['nombre' => 'Opiniões dos hóspedes', 'descripcion' => 'Uma pesquisa após a estadia, com link para sua página de avaliações.'],
         'caja' => ['nombre' => 'Caixa e fechamento do dia', 'descripcion' => 'Caixas, movimentos de dinheiro e o fechamento diário.'],
         'facturacion' => ['nombre' => 'Faturas e recibos', 'descripcion' => 'Dados fiscais, faturas, recibos e exportações para o contador.'],
         'informes' => ['nombre' => 'Relatórios e indicadores', 'descripcion' => 'Ocupação, receitas e outros relatórios.'],

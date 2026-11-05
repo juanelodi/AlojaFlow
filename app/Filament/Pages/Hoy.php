@@ -10,11 +10,16 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Enums\EstadoTarea;
+use App\Enums\TipoTarea;
 use App\Filament\Concerns\ConPropiedadSeleccionada;
 use App\Filament\Resources\Bitacora\NotaBitacoraResource;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\NotaBitacora;
 use App\Models\Reserva;
+use App\Models\Tarea;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
 use App\Seguridad\Acceso;
@@ -111,6 +116,38 @@ class Hoy extends Page
     public function registrarSalida(int $reservaId): void
     {
         $this->cambiar($reservaId, fn (GestorReservas $g, Reserva $r) => $g->registrarSalida($r), __('ui.reservas.salida_ok'));
+    }
+
+    /**
+     * Lo pendiente de cobro de las reservas del día y las unidades por limpiar. Lo primero, solo donde se pueden ver datos de dinero.
+     *
+     * @param  array<string, Collection<int, Reserva>>  $listas
+     * @return array{pendiente: array<string, int>, por_limpiar: int|null}
+     */
+    public function cifrasDelDia(array $listas): array
+    {
+        $conDatos = Acceso::propiedades(Acceso::usuarioActual(), Acceso::DATOS);
+        $pendiente = [];
+        foreach ($listas as $lista) {
+            foreach ($lista as $reserva) {
+                if ($reserva->pendiente > 0 && in_array($reserva->propiedad_id, $conDatos, true)) {
+                    $pendiente[$reserva->id] = [$reserva->moneda, $reserva->pendiente];
+                }
+            }
+        }
+        $porMoneda = [];
+        foreach ($pendiente as [$moneda, $importe]) {
+            $porMoneda[$moneda] = ($porMoneda[$moneda] ?? 0) + $importe;
+        }
+        $limpieza = array_values(array_filter(TipoTarea::cases(), fn (TipoTarea $t): bool => $t->esLimpieza()));
+
+        return [
+            'pendiente' => $porMoneda,
+            'por_limpiar' => ! Modulos::activo(Modulo::Limpieza) ? null : Tarea::query()->whereIn('propiedad_id', $this->propiedadesElegidas())
+                ->whereIn('tipo', array_map(fn (TipoTarea $t): string => $t->value, $limpieza))
+                ->whereIn('estado', [EstadoTarea::Pendiente->value, EstadoTarea::EnCurso->value])
+                ->where('fecha', '<=', $this->fechaElegida()->format('Y-m-d'))->count(),
+        ];
     }
 
     /**

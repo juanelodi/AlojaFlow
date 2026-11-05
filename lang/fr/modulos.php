@@ -44,6 +44,7 @@ return [
         'mensajes' => ['nombre' => 'Messages aux clients', 'descripcion' => 'Modèles, envois par e-mail et WhatsApp, et messages automatiques.'],
         'bitacora' => ['nombre' => 'Journal des équipes', 'descripcion' => 'Ce qu’une équipe laisse à la suivante. L’important apparaît dans Aujourd’hui.'],
         'empresas' => ['nombre' => 'Entreprises et agences', 'descripcion' => 'Qui réserve ou paie pour ses clients, avec ses conditions et son relevé de compte.'],
+        'opiniones' => ['nombre' => 'Avis des clients', 'descripcion' => 'Une enquête après le séjour, avec un lien vers votre page d’avis.'],
         'caja' => ['nombre' => 'Caisse et clôture du jour', 'descripcion' => 'Caisses, mouvements d\'argent et la clôture quotidienne.'],
         'facturacion' => ['nombre' => 'Factures et reçus', 'descripcion' => 'Données fiscales, factures, reçus et exportations pour le comptable.'],
         'informes' => ['nombre' => 'Rapports et indicateurs', 'descripcion' => 'Occupation, revenus et autres rapports.'],

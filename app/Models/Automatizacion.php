@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\AccionAutomatizacion;
 use App\Enums\DisparadorAutomatizacion;
+use App\Enums\EstadoRegistroLlegada;
 use App\Enums\EstadoReserva;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -26,11 +27,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $hora
  * @property array<string, mixed>|null $condiciones
  * @property AccionAutomatizacion $accion
- * @property int $plantilla_id
+ * @property int|null $plantilla_id
  * @property string|null $destino
  * @property bool $activa
  * @property \Illuminate\Support\Carbon|null $creado_en
- * @property Plantilla $plantilla
+ * @property Plantilla|null $plantilla
  * @property Propiedad $propiedad
  */
 class Automatizacion extends ModeloBase
@@ -62,10 +63,33 @@ class Automatizacion extends ModeloBase
         return $this->belongsTo(Plantilla::class);
     }
 
+    /**
+     * Antes de la llegada, si no se cumple todavía, se vuelve a revisar cada día: los datos de acceso esperan a que haya pagado.
+     */
+    public function esperaACumplir(): bool
+    {
+        return $this->disparador === DisparadorAutomatizacion::AntesLlegada && ! empty(((array) $this->condiciones)['esperar']);
+    }
+
     public function cumpleCondiciones(Reserva $reserva): bool
     {
-        $estado = EstadoReserva::tryFrom((string) (((array) $this->condiciones)['estado'] ?? ''));
+        $condiciones = (array) $this->condiciones;
+        $estado = EstadoReserva::tryFrom((string) ($condiciones['estado'] ?? ''));
+        if ($estado !== null && $reserva->estado !== $estado) {
+            return false;
+        }
+        $saldo = (string) ($condiciones['saldo'] ?? '');
+        if (($saldo === 'con_saldo' && $reserva->pendiente <= 0) || ($saldo === 'sin_saldo' && $reserva->pendiente > 0)) {
+            return false;
+        }
+        $canal = trim((string) ($condiciones['canal'] ?? ''));
+        if ($canal !== '' && mb_strtolower(trim((string) $reserva->origen_texto)) !== mb_strtolower($canal)) {
+            return false;
+        }
+        if (! empty($condiciones['llegada_hecha']) && ! RegistroLlegada::query()->where('reserva_id', $reserva->id)->whereIn('estado', [EstadoRegistroLlegada::Recibido->value, EstadoRegistroLlegada::Revisado->value])->exists()) {
+            return false;
+        }
 
-        return $estado === null || $reserva->estado === $estado;
+        return empty($condiciones['contrato_aceptado']) || Aceptacion::query()->where('reserva_id', $reserva->id)->exists();
     }
 }

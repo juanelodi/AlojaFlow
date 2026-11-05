@@ -20,6 +20,7 @@ use App\Filament\Resources\Base\RecursoDeCualquierPropiedad;
 use App\Models\Automatizacion;
 use App\Models\Plantilla;
 use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Seguridad\Acceso;
 use BackedEnum;
 use Filament\Actions\EditAction;
@@ -86,6 +87,25 @@ class AutomatizacionResource extends RecursoDeCualquierPropiedad
         return ['plantilla_id' => Plantilla::class];
     }
 
+    /**
+     * @return array<string, string>
+     */
+    private static function acciones(): array
+    {
+        return array_filter(AccionAutomatizacion::opciones(), fn (string $accion): bool => match ($accion) {
+            AccionAutomatizacion::CrearTarea->value => Modulos::activo(Modulo::Limpieza),
+            AccionAutomatizacion::NotaBitacora->value => Modulos::activo(Modulo::Bitacora),
+            default => true,
+        }, ARRAY_FILTER_USE_KEY);
+    }
+
+    private static function esCorreo(Get $get): bool
+    {
+        $accion = $get('accion');
+
+        return ($accion instanceof AccionAutomatizacion ? $accion : AccionAutomatizacion::tryFrom((string) $accion))?->esCorreo() ?? true;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -100,11 +120,18 @@ class AutomatizacionResource extends RecursoDeCualquierPropiedad
                     ->visible(fn (Get $get): bool => (bool) self::disparador($get)?->esDeTiempo()),
                 Select::make('condiciones.estado')->label(__('mensajes.automatizaciones.estado'))->native(false)->placeholder(__('mensajes.automatizaciones.cualquier_estado'))
                     ->options([EstadoReserva::Confirmada->value => EstadoReserva::Confirmada->etiqueta(), EstadoReserva::SinConfirmar->value => EstadoReserva::SinConfirmar->etiqueta()]),
-                Select::make('accion')->label(__('mensajes.automatizaciones.accion'))->options(AccionAutomatizacion::opciones())->required()->native(false)->live()->default(AccionAutomatizacion::CorreoHuesped->value),
+                Select::make('condiciones.saldo')->label(__('operacion.automatizaciones.saldo'))->native(false)->placeholder(__('operacion.automatizaciones.saldo_cualquiera'))
+                    ->options(['con_saldo' => __('operacion.automatizaciones.con_saldo'), 'sin_saldo' => __('operacion.automatizaciones.sin_saldo')]),
+                TextInput::make('condiciones.canal')->label(__('operacion.automatizaciones.canal'))->helperText(__('operacion.automatizaciones.canal_ayuda'))->maxLength(100),
+                Toggle::make('condiciones.llegada_hecha')->label(__('operacion.automatizaciones.llegada_hecha')),
+                Toggle::make('condiciones.contrato_aceptado')->label(__('operacion.automatizaciones.contrato_aceptado')),
+                Toggle::make('condiciones.esperar')->label(__('operacion.automatizaciones.esperar'))->helperText(__('operacion.automatizaciones.esperar_ayuda'))
+                    ->visible(fn (Get $get): bool => self::disparador($get) === DisparadorAutomatizacion::AntesLlegada),
+                Select::make('accion')->label(__('mensajes.automatizaciones.accion'))->options(self::acciones())->required()->native(false)->live()->default(AccionAutomatizacion::CorreoHuesped->value),
                 TextInput::make('destino')->label(__('mensajes.automatizaciones.destino'))->email()->maxLength(255)
                     ->required(fn (Get $get): bool => in_array($get('accion'), [AccionAutomatizacion::CorreoFijo, AccionAutomatizacion::CorreoFijo->value], true))
                     ->visible(fn (Get $get): bool => in_array($get('accion'), [AccionAutomatizacion::CorreoFijo, AccionAutomatizacion::CorreoFijo->value], true)),
-                Select::make('plantilla_id')->label(__('mensajes.automatizaciones.plantilla'))->required()->native(false)
+                Select::make('plantilla_id')->label(__('mensajes.automatizaciones.plantilla'))->helperText(fn (Get $get): ?string => self::esCorreo($get) ? null : __('operacion.automatizaciones.plantilla_opcional'))->required(fn (Get $get): bool => self::esCorreo($get))->native(false)
                     ->options(fn (Get $get): array => Plantilla::query()->where('propiedad_id', self::propiedadDe($get))->where('activa', true)->orderBy('nombre')->pluck('nombre', 'id')->all()),
                 Toggle::make('activa')->label(__('mensajes.automatizaciones.activa'))->default(true),
             ]),
@@ -120,7 +147,7 @@ class AutomatizacionResource extends RecursoDeCualquierPropiedad
                 TextColumn::make('nombre')->label(__('mensajes.automatizaciones.nombre'))->searchable(),
                 self::columnaPropiedad(),
                 TextColumn::make('disparador')->label(__('mensajes.automatizaciones.disparador'))->formatStateUsing(fn (DisparadorAutomatizacion $state): string => $state->etiqueta()),
-                TextColumn::make('plantilla.nombre')->label(__('mensajes.automatizaciones.plantilla'))->toggleable(),
+                TextColumn::make('plantilla.nombre')->label(__('mensajes.automatizaciones.plantilla'))->placeholder('—')->toggleable(),
                 IconColumn::make('activa')->label(__('mensajes.automatizaciones.activa'))->boolean(),
             ])
             ->emptyStateHeading(__('mensajes.automatizaciones.vacio'))

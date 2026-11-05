@@ -26,6 +26,43 @@
                     <div class="af-kpi"><dt>{{ __('cierre.gastos') }}</dt><dd>{{ Formato::dinero($r['gastos'], $moneda) }}</dd></div>
                     <div class="af-kpi"><dt>{{ __('cierre.ingresos') }}</dt><dd>{{ Formato::dinero($r['ingresos'], $moneda) }}</dd></div>
                 </dl>
+                <ul class="af-lista-comprobacion">
+                    @foreach (['llegadas_sin_registrar', 'salidas_sin_registrar', 'salidas_con_saldo', 'sin_confirmar'] as $apartado)
+                        @php($lista = $r['detalle'][$apartado] ?? [])
+                        <li @class(['af-lista-comprobacion__pendiente' => $lista !== []])>
+                            <span>{{ $lista === [] ? '✓' : '!' }}</span>
+                            {{ __('operacion.cierre.'.$apartado) }}: {{ count($lista) }}
+                            @foreach ($lista as $reserva)
+                                <a class="af-enlace" href="{{ \App\Filament\Resources\Reservas\ReservaResource::getUrl('view', ['record' => $reserva['id']]) }}">{{ $reserva['numero'] }}</a>
+                            @endforeach
+                        </li>
+                    @endforeach
+                </ul>
+                @if (($r['caja'] ?? []) !== [])
+                    <div class="af-tabla-contenedor" style="margin-top: 1rem" tabindex="0" role="region" aria-label="{{ __('operacion.cierre.caja') }}">
+                        <table class="af-tabla">
+                            <caption class="af-sr">{{ __('operacion.cierre.caja') }}</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">{{ __('ui.cajas.modelo_campo') }}</th>
+                                    <th scope="col">{{ __('ui.pagos.metodo') }}</th>
+                                    <th scope="col">{{ __('operacion.cierre.entradas') }}</th>
+                                    <th scope="col">{{ __('operacion.cierre.salidas') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($r['caja'] as $fila)
+                                    <tr>
+                                        <td>{{ $fila['caja'] ?? '—' }}</td>
+                                        <td>{{ MetodoPago::tryFrom($fila['metodo'])?->etiqueta() ?? $fila['metodo'] }}</td>
+                                        <td>{{ Formato::dinero($fila['entradas'], $moneda) }}</td>
+                                        <td>{{ Formato::dinero($fila['salidas'], $moneda) }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
                 @if (($r['turnos'] ?? []) !== [])
                     <div class="af-tabla-contenedor" style="margin-top: 1rem" tabindex="0" role="region" aria-label="{{ __('caja.turnos.modelos') }}">
                         <table class="af-tabla">

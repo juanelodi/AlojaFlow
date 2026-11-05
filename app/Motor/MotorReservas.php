@@ -29,6 +29,7 @@ use App\Reservas\Cotizador;
 use App\Reservas\Cupones;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
+use App\Reservas\Restricciones;
 use App\Servicios\Disponibilidad;
 use App\Support\Contactos;
 use Carbon\CarbonImmutable;
@@ -66,7 +67,7 @@ final class MotorReservas
             return __('motor.error.fecha_pasada');
         }
 
-        return null;
+        return Restricciones::deLaPropiedad($propiedad->id, $llegada, $salida, $propiedad->hoy())[0] ?? null;
     }
 
     public function rangoCotizable(Propiedad $propiedad, CarbonImmutable $llegada, CarbonImmutable $salida): bool
@@ -83,7 +84,7 @@ final class MotorReservas
     {
         $ofertas = [];
         $libres = Disponibilidad::libres([$propiedad->id], $llegada->format('Y-m-d'), $salida->format('Y-m-d'), $personas)
-            ->filter(fn (Unidad $u): bool => $u->tarifa_id !== null)
+            ->filter(fn (Unidad $u): bool => $u->tarifa_id !== null && Restricciones::deUnidad($u, $llegada, $salida, $propiedad->hoy()) === [])
             ->groupBy('tarifa_id');
 
         foreach (Tarifa::query()->where('propiedad_id', $propiedad->id)->where('activa', true)->where('visible_motor', true)->orderBy('precio_noche')->get() as $tarifa) {
@@ -145,7 +146,7 @@ final class MotorReservas
             throw new ReservaRechazada(__('motor.error.sin_lugar'));
         }
         $candidatas = Disponibilidad::libres([$propiedad->id], $llegada->format('Y-m-d'), $salida->format('Y-m-d'), $datos['personas'])
-            ->filter(fn (Unidad $u): bool => $u->tarifa_id === $tarifa->id);
+            ->filter(fn (Unidad $u): bool => $u->tarifa_id === $tarifa->id && Restricciones::deUnidad($u, $llegada, $salida, $propiedad->hoy()) === []);
         if ($candidatas->isEmpty()) {
             throw new ReservaRechazada(__('motor.error.sin_lugar'));
         }

@@ -83,6 +83,26 @@ final class GestorPoliticas
         ]);
     }
 
+    /**
+     * El texto de la política para pegarlo donde haga falta: el que se escribió o, si no hay, uno que sale de sus números.
+     */
+    public function textoDe(Politica $politica): string
+    {
+        if (filled($politica->texto)) {
+            return (string) $politica->texto;
+        }
+        $porcentaje = fn (string $valor): string => rtrim(rtrim(number_format((float) $valor, 2, '.', ''), '0'), '.');
+        $partes = [__('operacion.politicas.texto_cancelacion', ['dias' => $politica->dias_cancelacion_gratuita, 'porcentaje' => $porcentaje($politica->penalizacion_porcentaje)])];
+        if ((float) $politica->no_show_porcentaje > 0) {
+            $partes[] = __('operacion.politicas.texto_no_show', ['porcentaje' => $porcentaje($politica->no_show_porcentaje)]);
+        }
+        if ((float) $politica->deposito_porcentaje > 0) {
+            $partes[] = __('operacion.politicas.texto_deposito', ['porcentaje' => $porcentaje($politica->deposito_porcentaje), 'dias' => $politica->deposito_plazo_dias]);
+        }
+
+        return implode(' ', $partes);
+    }
+
     public function puedeMarcarNoShow(Reserva $reserva): bool
     {
         return $reserva->tipo === TipoReserva::Reserva

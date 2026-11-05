@@ -10,9 +10,12 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Enums\TipoReserva;
 use App\Filament\Concerns\ConPropiedadSeleccionada;
 use App\Filament\Resources\Reservas\ReservaResource;
+use App\Models\Propiedad;
 use App\Models\Reserva;
+use App\Models\Unidad;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
 use App\Seguridad\Acceso;
@@ -22,8 +25,13 @@ use App\Servicios\Operacion;
 use BackedEnum;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Livewire\Attributes\Url;
@@ -107,7 +115,54 @@ class Calendario extends Page
             Action::make('nuevaReserva')->label(__('ui.reservas.nueva'))->icon(Heroicon::OutlinedPlus)
                 ->url(fn (): string => ReservaResource::getUrl('create'))
                 ->visible(fn (): bool => ReservaResource::canCreate()),
+            Action::make('bloquearFechas')->label(__('operacion.bloqueos.accion'))->icon(Heroicon::OutlinedNoSymbol)->color('gray')
+                ->modalDescription(__('operacion.bloqueos.ayuda'))
+                ->visible(fn (): bool => ReservaResource::canCreate())
+                ->schema([
+                    Select::make('propiedad_id')->label(__('ui.comun.propiedad'))->required()->native(false)->live()
+                        ->options(fn (): array => Propiedad::query()->whereIn('id', ReservaResource::propiedadesGestionables())->orderBy('nombre')->pluck('nombre', 'id')->all())
+                        ->default(fn (): ?int => count(ReservaResource::propiedadesGestionables()) === 1 ? ReservaResource::propiedadesGestionables()[0] : null),
+                    CheckboxList::make('unidades')->label(__('operacion.bloqueos.unidades'))->required()->columns(2)
+                        ->options(fn (Get $get): array => Unidad::query()->where('propiedad_id', Acceso::propiedadElegida($get('propiedad_id'), ReservaResource::propiedadesGestionables()))->where('activa', true)->orderBy('orden')->orderBy('nombre')->pluck('nombre', 'id')->all()),
+                    DatePicker::make('desde')->label(__('ui.indicadores.desde'))->required(),
+                    DatePicker::make('hasta')->label(__('operacion.bloqueos.hasta'))->helperText(__('operacion.bloqueos.hasta_ayuda'))->required()->afterOrEqual('desde'),
+                    TextInput::make('motivo')->label(__('ui.reservas.motivo'))->maxLength(100),
+                ])
+                ->action(fn (array $data) => $this->bloquearFechas($data)),
         ];
+    }
+
+    /**
+     * Cierra sin crear una reserva. Si ya hay algo en una unidad, esa se salta y se avisa: nada se mueve solo.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function bloquearFechas(array $data): void
+    {
+        $propiedad = Propiedad::query()->whereIn('id', ReservaResource::propiedadesGestionables())->findOrFail((int) $data['propiedad_id']);
+        $salida = CarbonImmutable::parse((string) $data['hasta'])->addDay()->format('Y-m-d');
+        $bloqueadas = 0;
+        $saltadas = [];
+        foreach (Unidad::query()->where('propiedad_id', $propiedad->id)->whereIn('id', array_map('intval', (array) $data['unidades']))->get() as $unidad) {
+            try {
+                app(GestorReservas::class)->crear($propiedad, [
+                    'tipo' => TipoReserva::Bloqueo->value,
+                    'unidad_id' => $unidad->id,
+                    'llegada' => (string) $data['desde'],
+                    'salida' => $salida,
+                    'origen_texto' => $data['motivo'] ?? null,
+                ]);
+                $bloqueadas++;
+            } catch (ReservaRechazada) {
+                $saltadas[] = $unidad->nombre;
+            }
+        }
+        $aviso = Notification::make()->title(__('operacion.bloqueos.hecho', ['n' => $bloqueadas]))->status($saltadas === [] ? 'success' : 'warning');
+        if ($saltadas !== []) {
+            // Para que dé tiempo de leer cuáles no se bloquearon.
+            $aviso->body(__('operacion.bloqueos.saltadas', ['unidades' => implode(', ', $saltadas)]))->persistent();
+        }
+        $aviso->send();
     }
 
     /**

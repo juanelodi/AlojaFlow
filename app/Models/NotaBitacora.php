@@ -23,6 +23,7 @@ use Illuminate\Support\Carbon;
  * @property bool $importante
  * @property Carbon|null $resuelta_en
  * @property int|null $resuelta_por
+ * @property string|null $clave_generacion
  * @property Carbon|null $creado_en
  * @property-read Propiedad $propiedad
  * @property-read User|null $autor

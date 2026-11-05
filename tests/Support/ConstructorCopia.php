@@ -33,7 +33,7 @@ final class ConstructorCopia
         'rclientiprenota' => ['idprenota', 'idclienti', 'num_ordine', 'parentela'],
         'periodi' => ['idperiodi', 'datainizio', 'datafine', 'tariffa1'],
         'ntariffe' => ['idntariffe', 'nomecostoagg'],
-        'regole' => ['idregole', 'app_agenzia'],
+        'regole' => ['idregole', 'app_agenzia', 'motivazione', 'motivazione2', 'iddatainizio', 'iddatafine'],
         'soldi' => ['idsoldi', 'motivazione', 'metodo_pagamento', 'saldo_prenota', 'data_transazione', 'data_inserimento'],
         'costi' => ['idcosti', 'nome_costo', 'val_costo', 'tipo_costo', 'nome_cassa', 'provenienza_costo', 'metodo_pagamento', 'data_transazione', 'datainserimento'],
     ];

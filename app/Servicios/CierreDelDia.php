@@ -18,6 +18,7 @@ use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
 use App\Models\TurnoCaja;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -46,7 +47,50 @@ final class CierreDelDia
             'gastos' => $movimientos(TipoMovimiento::Gasto),
             'ingresos' => $movimientos(TipoMovimiento::Ingreso),
             'turnos' => $this->turnos($propiedad, $fecha),
+            'sin_confirmar' => $reservas()->where('estado', EstadoReserva::SinConfirmar->value)->where('llegada', '>', $dia)->where('llegada', '<=', $fecha->addDays(3)->format('Y-m-d'))->count(),
+            // Solo el número: el cierre se guarda, y no hace falta guardar con él el nombre de nadie.
+            'detalle' => [
+                'llegadas_sin_registrar' => $this->numeros($reservas()->where('llegada', $dia)->whereNull('entrada_registrada_en')),
+                'salidas_sin_registrar' => $this->numeros($reservas()->where('salida', $dia)->whereNull('salida_registrada_en')),
+                'salidas_con_saldo' => $this->numeros($reservas()->where('salida', $dia)->where('pendiente', '>', 0)),
+                'sin_confirmar' => $this->numeros($reservas()->where('estado', EstadoReserva::SinConfirmar->value)->where('llegada', '>', $dia)->where('llegada', '<=', $fecha->addDays(3)->format('Y-m-d'))),
+            ],
+            'caja' => $this->caja($propiedad, $dia),
         ];
+    }
+
+    /**
+     * @return list<array{id: int, numero: string}>
+     */
+    private function numeros(Builder $consulta): array
+    {
+        return $consulta->orderBy('llegada')->orderBy('id')->limit(50)->get(['id', 'numero'])
+            ->map(fn (object $r): array => ['id' => (int) $r->id, 'numero' => (string) $r->numero])->all();
+    }
+
+    /**
+     * Lo que entró y salió ese día, por caja y método.
+     *
+     * @return list<array{caja: string|null, metodo: string, entradas: int, salidas: int}>
+     */
+    private function caja(Propiedad $propiedad, string $dia): array
+    {
+        $nombres = DB::table('cajas')->where('propiedad_id', $propiedad->id)->pluck('nombre', 'id');
+        $filas = [];
+        $sumar = function (?int $caja, string $metodo, string $campo, int $importe) use (&$filas): void {
+            $clave = (int) $caja.'|'.$metodo;
+            $filas[$clave] ??= ['caja_id' => $caja, 'metodo' => $metodo, 'entradas' => 0, 'salidas' => 0];
+            $filas[$clave][$campo] += $importe;
+        };
+        foreach (DB::table('pagos')->where('propiedad_id', $propiedad->id)->where('fecha', $dia)->groupBy('caja_id', 'metodo')->get(['caja_id', 'metodo', DB::raw('SUM(importe) as total')]) as $f) {
+            $sumar($f->caja_id === null ? null : (int) $f->caja_id, (string) $f->metodo, 'entradas', (int) $f->total);
+        }
+        foreach (DB::table('movimientos')->where('propiedad_id', $propiedad->id)->where('fecha', $dia)->groupBy('caja_id', 'metodo', 'tipo')->get(['caja_id', 'metodo', 'tipo', DB::raw('SUM(importe) as total')]) as $f) {
+            $sumar($f->caja_id === null ? null : (int) $f->caja_id, (string) $f->metodo, $f->tipo === TipoMovimiento::Gasto->value ? 'salidas' : 'entradas', (int) $f->total);
+        }
+        ksort($filas);
+
+        return array_values(array_map(fn (array $f): array => ['caja' => $f['caja_id'] === null ? null : (string) $nombres->get($f['caja_id']), 'metodo' => $f['metodo'], 'entradas' => $f['entradas'], 'salidas' => $f['salidas']], $filas));
     }
 
     /**

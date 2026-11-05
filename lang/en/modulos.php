@@ -44,6 +44,7 @@ return [
         'mensajes' => ['nombre' => 'Messages to guests', 'descripcion' => 'Templates, sending by email and WhatsApp, and automatic messages.'],
         'bitacora' => ['nombre' => 'Shift log', 'descripcion' => 'What one shift leaves for the next. Important notes appear on Today.'],
         'empresas' => ['nombre' => 'Companies and agencies', 'descripcion' => 'Who books or pays for their guests, with their terms and statement of account.'],
+        'opiniones' => ['nombre' => 'Guest reviews', 'descripcion' => 'A survey after the stay, with a link to your reviews page.'],
         'caja' => ['nombre' => 'Cash and end of day', 'descripcion' => 'Cash boxes, money movements and the daily closing.'],
         'facturacion' => ['nombre' => 'Invoices and receipts', 'descripcion' => 'Tax details, invoices, receipts and exports for the accountant.'],
         'informes' => ['nombre' => 'Reports and indicators', 'descripcion' => 'Occupancy, income and other reports.'],

@@ -160,10 +160,14 @@ return [
         'despues_salida' => 'Dias depois da saída',
     ],
     'AccionAutomatizacion' => [
+        'crear_tarea' => 'Criar uma tarefa para a equipe',
+        'nota_bitacora' => 'Deixar uma nota importante no diário',
         'correo_huesped' => 'E-mail ao hóspede',
         'correo_fijo' => 'E-mail para um endereço fixo',
     ],
     'TipoEnlace' => [
+        'pago' => 'Pagamento',
+        'opinion' => 'Opinião',
         'ical' => 'Calendário iCal',
         'llegada' => 'Check-in online',
         'contrato' => 'Contrato',

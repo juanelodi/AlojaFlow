@@ -14,6 +14,7 @@ use App\Enums\EstadoReserva;
 use App\Enums\MetodoPago;
 use App\Enums\NivelAviso;
 use App\Models\Aviso;
+use App\Models\EnlacePago;
 use App\Models\PagoEnLinea;
 use App\Models\Reserva;
 use App\Motor\Pasarelas;
@@ -42,15 +43,15 @@ final class CobrosEnLinea
         return max(0, min($reserva->pendiente, $reserva->deposito - $reserva->pagado));
     }
 
-    public function iniciar(Reserva $reserva, ProveedorPago $proveedor, string $concepto, string $urlExito, string $urlCancelar, string $urlAviso): string
+    public function iniciar(Reserva $reserva, ProveedorPago $proveedor, string $concepto, string $urlExito, string $urlCancelar, string $urlAviso, ?EnlacePago $enlace = null): string
     {
-        $importe = $this->porCobrar($reserva);
+        $importe = $enlace === null ? $this->porCobrar($reserva) : $enlace->importe;
         if ($importe <= 0) {
             throw new ErrorPago(__('motor.error.nada_que_cobrar'));
         }
         // Volver a pulsar «Pagar» sigue en el mismo cobro: con dos abiertos a la vez se pueden pagar los dos.
         $abierto = PagoEnLinea::query()->where('reserva_id', $reserva->id)->where('pasarela', $proveedor->nombre())
-            ->where('estado', 'pendiente')->where('importe', $importe)->where('creado_en', '>=', now('UTC')->subMinutes(self::MINUTOS_COBRO_ABIERTO))
+            ->where('estado', 'pendiente')->where('importe', $importe)->where('enlace_pago_id', $enlace?->id)->where('creado_en', '>=', now('UTC')->subMinutes(self::MINUTOS_COBRO_ABIERTO))
             ->orderByDesc('id')->first();
         $url = $abierto->datos['url'] ?? null;
         if (is_string($url)) {
@@ -59,6 +60,7 @@ final class CobrosEnLinea
         $cobro = PagoEnLinea::query()->create([
             'propiedad_id' => $reserva->propiedad_id,
             'reserva_id' => $reserva->id,
+            'enlace_pago_id' => $enlace?->id,
             'pasarela' => $proveedor->nombre(),
             'estado' => 'pendiente',
             'importe' => $importe,
@@ -103,8 +105,10 @@ final class CobrosEnLinea
                 return $bloqueado;
             }
             $reserva = $bloqueado->reserva;
-            // El dinero ya entró a la cuenta, así que se anota de todos modos; devolverlo lo decide una persona.
-            if ($bloqueado->importe > max(0, $reserva->pendiente)) {
+            $enlace = $bloqueado->enlace_pago_id === null ? null : EnlacePago::query()->lockForUpdate()->find($bloqueado->enlace_pago_id);
+            // El dinero ya entró a la cuenta, así que se anota de todos modos; devolverlo lo decide una persona. Un enlace puede
+            // cobrar un extra que no está en el total: ahí no hay duplicado, salvo que el mismo enlace se pague dos veces.
+            if ($enlace === null ? $bloqueado->importe > max(0, $reserva->pendiente) : $enlace->pagado_en !== null) {
                 Aviso::abrir($reserva->propiedad_id, 'pago_duplicado', NivelAviso::Error, ['reserva' => $reserva->numero]);
             }
             $pago = $this->reservas->registrarPago(
@@ -113,8 +117,12 @@ final class CobrosEnLinea
                 MetodoPago::Tarjeta,
                 CarbonImmutable::now($reserva->propiedad->zona_horaria),
                 mb_substr($proveedor->nombre().' '.($resultado->idPago ?? $bloqueado->referencia), 0, 100),
+                $enlace?->caja_id,
             );
             $bloqueado->update(['estado' => 'pagado', 'pago_id' => $pago->id, 'datos' => ['id_pago' => $resultado->idPago]]);
+            if ($enlace !== null && $enlace->pagado_en === null) {
+                $enlace->update(['pagado_en' => now('UTC'), 'pago_id' => $pago->id]);
+            }
             $this->asegurarReserva($reserva->refresh());
 
             return $bloqueado;

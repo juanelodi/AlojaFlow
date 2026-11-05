@@ -20,6 +20,7 @@ use App\Seguridad\Limites;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Consultas del día a día: «Hoy» y el resumen de propiedades (M3).
@@ -81,9 +82,24 @@ final class Operacion
             'pendiente' => (int) $base()->where('pendiente', '>', 0)
                 ->where('llegada', '<=', $hoy->addDays(7)->format('Y-m-d'))
                 ->where('salida', '>=', $hoy->subDays(7)->format('Y-m-d'))->sum('pendiente'),
+            // Lo que suele pasar desapercibido: quien sale con saldo, y lo que se pisa en una subordinada.
+            'salidas_con_saldo' => $base()->where('pendiente', '>', 0)->where('salida', '<', $fecha)->where('salida', '>=', $hoy->subDays(7)->format('Y-m-d'))->count(),
+            'solapes' => $propiedad->esIndependiente() ? 0 : self::solapes($propiedad->id, $fecha),
             'principal' => $propiedad->principal,
             'avisos' => Aviso::query()->where('propiedad_id', $propiedad->id)->whereNull('resuelto_en')->orderByDesc('abierto_en')->get(),
         ];
+    }
+
+    /**
+     * Noches de aquí en adelante con dos reservas en la misma unidad. En una independiente no pueden existir; en una subordinada, la principal lo permite.
+     */
+    private static function solapes(int $propiedadId, string $desde): int
+    {
+        $pisadas = DB::table('reservas_noches as n')->join('reservas as r', 'r.id', '=', 'n.reserva_id')->where('n.propiedad_id', $propiedadId)->where('n.fecha', '>=', $desde)
+            ->where('r.tipo', TipoReserva::Reserva->value)->whereNull('r.eliminada_en_principal_en')
+            ->groupBy('n.unidad_id', 'n.fecha')->havingRaw('COUNT(*) > 1')->select('n.unidad_id', 'n.fecha');
+
+        return DB::query()->fromSub($pisadas, 'pisadas')->count();
     }
 
     public static function hoyDe(?Propiedad $propiedad): CarbonImmutable

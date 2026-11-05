@@ -10,9 +10,12 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Tarifas\Pages;
 
+use App\Filament\Pages\ImportarPrecios;
 use App\Filament\Resources\Tarifas\TarifaResource;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Icons\Heroicon;
 
 class ListTarifas extends ListRecords
 {
@@ -20,6 +23,10 @@ class ListTarifas extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()];
+        return [
+            Action::make('importarPrecios')->label(__('operacion.precios.titulo'))->icon(Heroicon::OutlinedArrowUpTray)->color('gray')
+                ->url(fn (): string => ImportarPrecios::getUrl()),
+            CreateAction::make(),
+        ];
     }
 }

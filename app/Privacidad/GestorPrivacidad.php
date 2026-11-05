@@ -18,6 +18,7 @@ use App\Models\Archivo;
 use App\Models\ContactoHuesped;
 use App\Models\Envio;
 use App\Models\Huesped;
+use App\Models\Opinion;
 use App\Models\PersonaLlegada;
 use App\Models\RegistroAuditoria;
 use App\Models\RegistroLlegada;
@@ -60,6 +61,7 @@ final class GestorPrivacidad
                 'total' => $r->total, 'pagado' => $r->pagado, 'moneda' => $r->moneda, 'comentario' => $r->comentario,
                 'pagos' => $r->pagos->map(fn ($p): array => ['fecha' => $p->fecha->format('Y-m-d'), 'importe' => $p->importe, 'metodo' => $p->metodo->value])->all(),
             ])->all(),
+            'opiniones' => Opinion::query()->whereIn('reserva_id', $idsReservas)->get(['calificacion', 'comentario', 'respondida_en'])->toArray(),
             'registros_llegada' => $registros->map(fn (RegistroLlegada $r): array => [
                 'estado' => $r->estado->value,
                 // Solo los suyos: el mismo registro trae los datos de quienes viajaron con esa persona.
@@ -113,6 +115,7 @@ final class GestorPrivacidad
                 }
             }
             $this->anonimizarComoAcompanante($huesped, $marca);
+            Opinion::query()->whereIn('reserva_id', $reservas)->update(['comentario' => null]);
             foreach (Aceptacion::query()->with('copia')->whereIn('reserva_id', $reservas)->get() as $aceptacion) {
                 $copia = $aceptacion->copia;
                 $aceptacion->update(['firmante_nombre' => $marca, 'ip' => null, 'agente' => null, 'copia_archivo_id' => null]);

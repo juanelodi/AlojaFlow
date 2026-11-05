@@ -18,4 +18,6 @@ enum TipoEnlace: string
     case Llegada = 'llegada';
     case Contrato = 'contrato';
     case Factura = 'factura';
+    case Pago = 'pago';
+    case Opinion = 'opinion';
 }

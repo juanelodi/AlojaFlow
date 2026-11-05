@@ -2,6 +2,27 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.16 — 2026-11-05
+
+**Lo que se usa todos los días: Hoy y el cierre más completos, mensajes por periodo, depósitos, bloqueos, restricciones, enlaces de pago, automatizaciones que deciden y encuesta a los huéspedes.**
+
+**Llega apagado:** Opiniones es un módulo nuevo. Préndelo en Sistema → Módulos.
+
+**Lo que hay**
+- **Hoy** suma lo pendiente de cobro del día y lo que falta por limpiar.
+- **Cierre del día:** quiénes faltan (llegadas sin entrada, salidas sin registrar o con saldo, sin confirmar que llegan en 3 días), con enlace a cada reserva, y la caja por caja y método.
+- **Mensajes por periodo:** eliges fechas y plantilla, y por cada reserva tienes WhatsApp, copiar y correo. Nada se manda solo. Y **variables propias** en las plantillas, como `{wifi}`.
+- **Depósitos y no-shows:** los depósitos que faltan, con recordatorio por WhatsApp y los vencidos en rojo; quién no llegó en los últimos 7 días; cuánto cuesta cancelar hoy una reserva, y el texto de cada política para copiar. Nada se cancela ni se cobra solo.
+- **Bloquear fechas** desde el calendario: varias unidades a la vez. Si una ya tiene algo, se salta y te avisa. Lo que una principal HotelDruid tiene cerrado también se ve como bloqueo.
+- **Importar precios** desde un CSV o pegando de Excel, con la plantilla de los precios de hoy y revisión antes de importar.
+- **Avisos en el Resumen:** quien salió esta semana con saldo, noches con dos reservas en una subordinada y propiedades con monedas distintas.
+- **Restricciones de venta:** cerrar llegadas o salidas, días de entrada, estancia máxima, anticipación máxima y noches de preparación. El motor las cumple siempre; a recepción solo se le avisa.
+- **Enlaces de pago por importe libre** desde la reserva: un anticipo, un extra, un daño. Se pagan una vez, vencen, y el cobro entra a la caja que elijas.
+- **Automatizaciones con condiciones:** saldo, canal, datos de llegada y documentos aceptados. Pueden crear una tarea o una nota en la bitácora en lugar de un correo, y los datos de acceso pueden esperar a que paguen.
+- **Encuesta a los huéspedes:** una plantilla con el enlace y la automatización apagada, para que la revises. A todos se les pregunta lo mismo y a todos se les ofrece tu página de reseñas.
+
+**Sin verificar:** los enlaces de pago se probaron con respuestas simuladas de Stripe, no con una cuenta real; ni en un hosting real. Los cierres de la principal se probaron con copias armadas para la prueba: la copia de demostración no trae ninguno.
+
 ## 1.0.15 — 2026-11-05
 
 **La caja completa, también de la principal, y los informes con gráficas y reportes nuevos.**

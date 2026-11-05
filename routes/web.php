@@ -11,10 +11,12 @@ declare(strict_types=1);
 use App\Http\Controllers\ActualizacionController;
 use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\CodigoFuenteController;
+use App\Http\Controllers\EnlacePagoController;
 use App\Http\Controllers\EntradaInstalacionController;
 use App\Http\Controllers\IcalController;
 use App\Http\Controllers\LlegadaController;
 use App\Http\Controllers\MotorReservasController;
+use App\Http\Controllers\OpinionController;
 use App\Http\Middleware\MismoOrigen;
 use App\Http\Middleware\ModuloActivo;
 use App\Http\Middleware\UsuarioActivo;
@@ -33,6 +35,17 @@ Route::get('/entrar/{token}', EntradaInstalacionController::class)->where('token
 
 // Calendario de una unidad para los portales: lo identifica un token, y solo lleva fechas.
 Route::get('/ical/{token}.ics', IcalController::class)->where('token', '[0-9a-f]{40}')->middleware([ModuloActivo::class.':ical', 'throttle:60,1'])->name('ical.exportar');
+
+// Enlace de pago y encuesta: también los identifica un token.
+Route::prefix('pagar/{token}')->where(['token' => '[0-9a-f]{40}'])->name('pagar.')->middleware([ModuloActivo::class.':pagos', 'throttle:publico'])->group(function (): void {
+    Route::get('/', [EnlacePagoController::class, 'ver'])->name('ver');
+    Route::post('/{pasarela}', [EnlacePagoController::class, 'pagar'])->middleware(['throttle:publico-envio'])->name('pagar');
+    Route::get('/retorno/{pasarela}', [EnlacePagoController::class, 'retorno'])->name('retorno');
+});
+Route::prefix('opinion/{token}')->where(['token' => '[0-9a-f]{40}'])->name('opinion.')->middleware([ModuloActivo::class.':opiniones', 'throttle:publico'])->group(function (): void {
+    Route::get('/', [OpinionController::class, 'ver'])->name('ver');
+    Route::post('/', [OpinionController::class, 'guardar'])->middleware('throttle:publico-envio')->name('guardar');
+});
 
 // Llegada en línea: lo identifica un token; el huésped no tiene cuenta.
 Route::prefix('llegada/{token}')->where(['token' => '[0-9a-f]{40}'])->name('llegada.')->middleware([ModuloActivo::class.':llegada', 'throttle:publico'])->group(function (): void {

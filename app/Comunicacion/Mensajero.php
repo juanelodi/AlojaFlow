@@ -15,19 +15,23 @@ use App\Enums\CanalEnvio;
 use App\Enums\DisparadorAutomatizacion;
 use App\Enums\EstadoEnvio;
 use App\Enums\EstadoReserva;
+use App\Enums\EstadoTarea;
 use App\Enums\LugarOmision;
 use App\Enums\NivelAviso;
 use App\Enums\TipoContacto;
 use App\Enums\TipoEventoReserva;
 use App\Enums\TipoReserva;
+use App\Enums\TipoTarea;
 use App\Limpieza\Omisiones;
 use App\Llegada\GestorLlegadas;
 use App\Models\Automatizacion;
 use App\Models\Aviso;
 use App\Models\Envio;
 use App\Models\EventoReserva;
+use App\Models\NotaBitacora;
 use App\Models\Plantilla;
 use App\Models\Reserva;
+use App\Models\Tarea;
 use App\Models\Webhook;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
@@ -103,10 +107,15 @@ final class Mensajero
             };
             $reservas = Reserva::query()->with(['propiedad', 'titular.contactos', 'unidad'])->where('propiedad_id', $propiedad->id)
                 ->where('tipo', TipoReserva::Reserva->value)->where('estado', '!=', EstadoReserva::Cancelada->value)->whereNull('eliminada_en_principal_en')
-                ->where($columna, $fecha->format('Y-m-d'))->get();
+                ->when(
+                    $automatizacion->esperaACumplir(),
+                    fn ($q) => $q->whereBetween($columna, [$hoy->format('Y-m-d'), $fecha->format('Y-m-d')]),
+                    fn ($q) => $q->where($columna, $fecha->format('Y-m-d')),
+                )->get();
             foreach ($reservas as $reserva) {
+                // La ocasión es la fecha de la reserva: si se revisa cada día, se manda una sola vez.
                 if ($automatizacion->cumpleCondiciones($reserva)
-                    && $this->programar($automatizacion, $reserva, $automatizacion->disparador->value.':'.$fecha->format('Y-m-d')) !== null) {
+                    && $this->programar($automatizacion, $reserva, $automatizacion->disparador->value.':'.$reserva->{$columna}->format('Y-m-d')) !== null) {
                     $generados++;
                 }
             }
@@ -253,6 +262,9 @@ final class Mensajero
         if (str_contains($cuerpo, '{enlace_llegada}')) {
             $variables['enlace_llegada'] = Modulos::activo(Modulo::Llegada) ? app(GestorLlegadas::class)->urlDe($reserva, $idioma) : '';
         }
+        if (str_contains($cuerpo, '{enlace_opinion}')) {
+            $variables['enlace_opinion'] = Modulos::activo(Modulo::Opiniones) ? app(Opiniones::class)->urlDe($reserva, $idioma) : '';
+        }
 
         return [
             'asunto' => VariablesMensaje::aplicar($plantilla->texto('asunto', $idioma), $variables),
@@ -332,8 +344,42 @@ final class Mensajero
         }
     }
 
+    /**
+     * Lo que no sale hacia afuera: una tarea para el equipo o una nota en la bitácora. Una vez por ocasión.
+     */
+    private function accionInterna(Automatizacion $automatizacion, Reserva $reserva, string $ocasion): void
+    {
+        $clave = mb_substr('auto:'.$automatizacion->id.':reserva:'.$reserva->id.':'.$ocasion, 0, 150);
+        $texto = $automatizacion->plantilla === null ? null : self::textoDe($automatizacion->plantilla, $reserva, $automatizacion->propiedad->idioma)['cuerpo'];
+        $titulo = $automatizacion->nombre.' · '.__('ui.reservas.modelo', [], $automatizacion->propiedad->idioma).' '.$reserva->numero;
+        if ($automatizacion->accion === AccionAutomatizacion::CrearTarea && Modulos::activo(Modulo::Limpieza)) {
+            Tarea::query()->firstOrCreate(['clave_generacion' => $clave], [
+                'propiedad_id' => $reserva->propiedad_id,
+                'unidad_id' => $reserva->unidad_id,
+                'reserva_id' => $reserva->id,
+                'tipo' => TipoTarea::Otra,
+                'titulo' => mb_substr($titulo, 0, 150),
+                'descripcion' => $texto,
+                'fecha' => $reserva->propiedad->hoy()->format('Y-m-d'),
+                'estado' => EstadoTarea::Pendiente,
+            ]);
+        }
+        if ($automatizacion->accion === AccionAutomatizacion::NotaBitacora && Modulos::activo(Modulo::Bitacora)) {
+            NotaBitacora::query()->firstOrCreate(['clave_generacion' => $clave], [
+                'propiedad_id' => $reserva->propiedad_id,
+                'texto' => $texto === null ? $titulo : $titulo."\n".$texto,
+                'importante' => true,
+            ]);
+        }
+    }
+
     private function programar(Automatizacion $automatizacion, Reserva $reserva, string $ocasion): ?Envio
     {
+        if (! $automatizacion->accion->esCorreo()) {
+            $this->accionInterna($automatizacion, $reserva, $ocasion);
+
+            return null;
+        }
         $reserva->loadMissing(['titular.contactos', 'unidad']);
         $aHuesped = $automatizacion->accion === AccionAutomatizacion::CorreoHuesped;
         if ($aHuesped && Omisiones::estaOmitido($reserva->titular_id, $reserva->propiedad_id, LugarOmision::Mensajes)) {
@@ -341,9 +387,10 @@ final class Mensajero
         }
         $idioma = $aHuesped ? self::idiomaDe($reserva) : $automatizacion->propiedad->idioma;
         $destino = $aHuesped ? self::correoDe($reserva) : $automatizacion->destino;
-        $texto = self::textoDe($automatizacion->plantilla, $reserva, $idioma);
+        $plantilla = $automatizacion->plantilla;
+        $texto = $plantilla === null ? ['asunto' => '', 'cuerpo' => ''] : self::textoDe($plantilla, $reserva, $idioma);
         $estado = match (true) {
-            blank($destino) || ! $automatizacion->plantilla->activa => EstadoEnvio::Omitido,
+            blank($destino) || $plantilla === null || ! $plantilla->activa => EstadoEnvio::Omitido,
             $this->correo->configurado() => EstadoEnvio::Pendiente,
             default => EstadoEnvio::Manual,
         };

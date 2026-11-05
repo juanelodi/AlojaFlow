@@ -15,6 +15,7 @@ use App\Filament\Resources\Reservas\Pages\CreateReserva;
 use App\Filament\Resources\Reservas\Pages\EditReserva;
 use App\Filament\Resources\Reservas\Pages\ListReservas;
 use App\Filament\Resources\Reservas\Pages\ViewReserva;
+use App\Filament\Resources\Reservas\RelationManagers\EnlacesPagoRelationManager;
 use App\Filament\Resources\Reservas\RelationManagers\HuespedesRelationManager;
 use App\Filament\Resources\Reservas\RelationManagers\NotasRelationManager;
 use App\Filament\Resources\Reservas\RelationManagers\PagosRelationManager;
@@ -142,7 +143,7 @@ class ReservaResource extends Resource
 
     public static function getRelations(): array
     {
-        return [PagosRelationManager::class, HuespedesRelationManager::class, NotasRelationManager::class];
+        return [PagosRelationManager::class, EnlacesPagoRelationManager::class, HuespedesRelationManager::class, NotasRelationManager::class];
     }
 
     public static function getPages(): array

@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Politicas;
 
+use App\Dinero\GestorPoliticas;
 use App\Filament\Resources\Base\RecursoDeCualquierPropiedad;
 use App\Filament\Resources\Politicas\Pages\CreatePolitica;
 use App\Filament\Resources\Politicas\Pages\EditPolitica;
@@ -17,6 +18,7 @@ use App\Filament\Resources\Politicas\Pages\ListPoliticas;
 use App\Models\Politica;
 use App\Seguridad\Acceso;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -95,7 +97,14 @@ class PoliticaResource extends RecursoDeCualquierPropiedad
                 IconColumn::make('predeterminada')->label(__('dinero.politicas.predeterminada'))->boolean(),
             ])
             ->emptyStateHeading(__('dinero.politicas.vacio'))
-            ->recordActions([EditAction::make()->visible(fn (Politica $record): bool => self::canEdit($record))]);
+            ->recordActions([
+                Action::make('textoPolitica')->label(__('operacion.politicas.ver_texto'))->icon(Heroicon::OutlinedDocumentText)->color('gray')
+                    ->modalHeading(fn (Politica $record): string => $record->nombre)
+                    ->modalSubmitAction(false)
+                    ->fillForm(fn (Politica $record): array => ['texto' => app(GestorPoliticas::class)->textoDe($record)])
+                    ->schema([Textarea::make('texto')->label(__('operacion.politicas.texto_para_copiar'))->rows(8)->readOnly()]),
+                EditAction::make()->visible(fn (Politica $record): bool => self::canEdit($record)),
+            ]);
     }
 
     public static function getPages(): array

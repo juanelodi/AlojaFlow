@@ -24,6 +24,18 @@
 
         <p class="af-nota">{{ \App\Support\Formato::fechaLarga($this->fechaElegida()) }}@if ($this->haySubordinadas()) · {{ __('ui.comun.solo_consulta') }}@endif</p>
 
+        @php($cifras = $this->cifrasDelDia($listas))
+        @if ($cifras['pendiente'] !== [] || $cifras['por_limpiar'] !== null)
+            <dl class="af-kpis">
+                @foreach ($cifras['pendiente'] as $moneda => $importe)
+                    <div class="af-kpi"><dt>{{ __('operacion.hoy.pendiente') }}</dt><dd>{{ \App\Support\Formato::dinero($importe, $moneda) }}</dd></div>
+                @endforeach
+                @if ($cifras['por_limpiar'] !== null)
+                    <div class="af-kpi"><dt>{{ __('operacion.hoy.por_limpiar') }}</dt><dd>{{ $cifras['por_limpiar'] }}</dd></div>
+                @endif
+            </dl>
+        @endif
+
         @php($notas = $this->notasImportantes())
         @if ($notas->isNotEmpty())
             <x-filament::section :heading="__('caja.bitacora.importantes')">

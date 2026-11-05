@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Empresas\Pages;
 
 use App\Enums\EstadoReserva;
+use App\Filament\Resources\Base\EditaEnPropiedad;
 use App\Filament\Resources\Empresas\EmpresaResource;
 use App\Models\Empresa;
 use App\Models\RegistroAuditoria;
@@ -28,6 +29,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EditEmpresa extends EditRecord
 {
+    use EditaEnPropiedad;
+
     protected static string $resource = EmpresaResource::class;
 
     protected function getHeaderActions(): array

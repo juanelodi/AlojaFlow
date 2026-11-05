@@ -160,10 +160,14 @@ return [
         'despues_salida' => 'Giorni dopo la partenza',
     ],
     'AccionAutomatizacion' => [
+        'crear_tarea' => 'Crea un’attività per il team',
+        'nota_bitacora' => 'Lascia una nota importante nel registro',
         'correo_huesped' => 'E-mail all’ospite',
         'correo_fijo' => 'E-mail a un indirizzo fisso',
     ],
     'TipoEnlace' => [
+        'pago' => 'Pagamento',
+        'opinion' => 'Opinione',
         'ical' => 'Calendario iCal',
         'llegada' => 'Check-in online',
         'contrato' => 'Contratto',

@@ -97,11 +97,15 @@ return [
     ],
 
     'AccionAutomatizacion' => [
+        'crear_tarea' => 'Crear una tarea para el equipo',
+        'nota_bitacora' => 'Dejar una nota importante en la bitácora',
         'correo_huesped' => 'Correo al huésped',
         'correo_fijo' => 'Correo a una dirección fija',
     ],
 
     'TipoEnlace' => [
+        'pago' => 'Pago',
+        'opinion' => 'Opinión',
         'ical' => 'Calendario iCal',
         'llegada' => 'Llegada en línea',
         'contrato' => 'Contrato',

@@ -28,6 +28,7 @@ use App\Modulos\Modulos;
 use App\Reservas\Cotizador;
 use App\Reservas\Cupones;
 use App\Reservas\Presupuesto;
+use App\Reservas\Restricciones;
 use App\Seguridad\Acceso;
 use App\Seguridad\Limites;
 use App\Servicios\Disponibilidad;
@@ -453,12 +454,20 @@ class ReservaForm
 
     private static function avisoEstancia(Get $get): ?string
     {
+        $avisos = [];
         $presupuesto = self::presupuesto($get);
-        if ($presupuesto?->cotizacion === null || $presupuesto->cotizacion->cumpleEstanciaMinima()) {
-            return null;
+        if ($presupuesto?->cotizacion !== null && ! $presupuesto->cotizacion->cumpleEstanciaMinima()) {
+            $avisos[] = __('ui.reservas.aviso_estancia_minima', ['noches' => $presupuesto->cotizacion->estanciaMinima]);
+        }
+        [$llegada, $salida] = self::fechas($get);
+        $unidad = $llegada === null || $salida === null || blank($get('unidad_id')) ? null
+            : Unidad::query()->with('propiedad')->where('propiedad_id', self::propiedadPermitida($get('propiedad_id')))->find((int) $get('unidad_id'));
+        if ($unidad !== null) {
+            // Solo un aviso: un caso especial lo decide quien atiende, no el sistema.
+            $avisos = [...$avisos, ...Restricciones::deUnidad($unidad, $llegada, $salida, $unidad->propiedad->hoy())];
         }
 
-        return __('ui.reservas.aviso_estancia_minima', ['noches' => $presupuesto->cotizacion->estanciaMinima]);
+        return $avisos === [] ? null : implode(' ', $avisos);
     }
 
     private static function textoPresupuesto(Get $get, ?Reserva $record): string

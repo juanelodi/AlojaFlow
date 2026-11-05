@@ -342,3 +342,25 @@ describe('la caja de la principal', function () {
             ->and((int) Pago::query()->where('reserva_id', $reserva->id)->sum('importe'))->toBe(100000);
     });
 });
+
+it('lo que la principal tiene cerrado se ve como bloqueo, y se va cuando lo abre', function () {
+    $conCierre = fn () => copiaBase();
+    $copia = $conCierre();
+    $inicio = $copia->idPeriodo(2026, '2026-12-20');
+    $fin = $copia->idPeriodo(2026, '2026-12-22');
+    fingirPrincipal($copia->fila('regole2026', ['idregole' => 7, 'app_agenzia' => 'Cabaña 1', 'motivazione' => 'Pintura', 'motivazione2' => 'x', 'iddatainizio' => $inicio, 'iddatafine' => $fin])
+        ->fila('regole2026', ['idregole' => 8, 'app_agenzia' => 'Cabaña 1', 'motivazione' => 'Otra regla', 'motivazione2' => '', 'iddatainizio' => $inicio, 'iddatafine' => $fin]));
+    expect(sincronizar($this->principal)->estado)->toBe(EstadoEjecucion::Correcta);
+
+    $cierre = Reserva::query()->where('clave_origen', 'cierre:2026:7')->sole();
+    expect($cierre->tipo)->toBe(TipoReserva::Bloqueo)->and($cierre->origen_texto)->toBe('Pintura')
+        ->and($cierre->llegada->format('Y-m-d'))->toBe('2026-12-20')->and($cierre->salida->format('Y-m-d'))->toBe('2026-12-23')
+        ->and($cierre->sincronizada)->toBeTrue()
+        ->and(DB::table('reservas_noches')->where('reserva_id', $cierre->id)->count())->toBe(3)
+        ->and(Reserva::query()->where('clave_origen', 'cierre:2026:8')->exists())->toBeFalse();
+
+    fingirPrincipal(copiaBase());
+    expect(sincronizar($this->principal->refresh())->estado)->toBe(EstadoEjecucion::Correcta);
+    expect($cierre->refresh()->eliminada_en_principal_en)->not->toBeNull()
+        ->and(DB::table('reservas_noches')->where('reserva_id', $cierre->id)->count())->toBe(0);
+});

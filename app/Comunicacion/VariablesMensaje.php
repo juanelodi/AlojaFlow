@@ -13,15 +13,19 @@ namespace App\Comunicacion;
 use App\Models\Reserva;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
+use App\Support\Ajustes;
 use App\Support\Contactos;
 use App\Support\Formato;
+use Illuminate\Support\Str;
 
 /**
  * Las variables de las plantillas. Se sustituyen como texto: una plantilla nunca ejecuta código.
  */
 final class VariablesMensaje
 {
-    public const DISPONIBLES = ['huesped', 'nombre', 'propiedad', 'telefono_propiedad', 'correo_propiedad', 'numero', 'codigo', 'llegada', 'salida', 'noches', 'personas', 'unidad', 'total', 'pagado', 'pendiente', 'enlace_reserva', 'enlace_llegada'];
+    public const DISPONIBLES = ['huesped', 'nombre', 'propiedad', 'telefono_propiedad', 'correo_propiedad', 'numero', 'codigo', 'llegada', 'salida', 'noches', 'personas', 'unidad', 'total', 'pagado', 'pendiente', 'enlace_reserva', 'enlace_llegada', 'enlace_opinion'];
+
+    public const AJUSTE_PROPIAS = 'mensajes.variables.';
 
     /**
      * @return array<string, string>
@@ -51,7 +55,35 @@ final class VariablesMensaje
         ];
         app()->setLocale($idiomaAnterior);
 
-        return $variables;
+        // Las propias del alojamiento (la clave del wifi…), sin pisar las del sistema.
+        return $variables + self::propias($reserva->propiedad_id);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function propias(int $propiedadId): array
+    {
+        $propias = Ajustes::obtener(self::AJUSTE_PROPIAS.$propiedadId);
+
+        return is_array($propias) ? array_map('strval', $propias) : [];
+    }
+
+    /**
+     * «Mi clave» se vuelve mi_clave: lo que se escribe entre llaves en una plantilla.
+     *
+     * @param  array<string, string|null>  $variables
+     */
+    public static function guardarPropias(int $propiedadId, array $variables): void
+    {
+        $limpias = [];
+        foreach ($variables as $nombre => $valor) {
+            $clave = (string) preg_replace('/[^a-z0-9_]+/', '_', (string) Str::of((string) $nombre)->ascii()->lower());
+            if (trim($clave, '_') !== '' && ! in_array($clave, self::DISPONIBLES, true)) {
+                $limpias[trim($clave, '_')] = (string) $valor;
+            }
+        }
+        Ajustes::guardar(self::AJUSTE_PROPIAS.$propiedadId, $limpias);
     }
 
     /**

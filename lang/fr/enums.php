@@ -160,10 +160,14 @@ return [
         'despues_salida' => 'Jours après le départ',
     ],
     'AccionAutomatizacion' => [
+        'crear_tarea' => 'Créer une tâche pour l’équipe',
+        'nota_bitacora' => 'Laisser une note importante dans le journal',
         'correo_huesped' => 'E-mail au client',
         'correo_fijo' => 'E-mail à une adresse fixe',
     ],
     'TipoEnlace' => [
+        'pago' => 'Paiement',
+        'opinion' => 'Avis',
         'ical' => 'Calendrier iCal',
         'llegada' => 'Enregistrement en ligne',
         'contrato' => 'Contrat',

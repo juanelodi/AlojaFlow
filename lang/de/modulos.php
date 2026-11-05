@@ -44,6 +44,7 @@ return [
         'mensajes' => ['nombre' => 'Nachrichten an Gäste', 'descripcion' => 'Vorlagen, Versand per E-Mail und WhatsApp sowie automatische Nachrichten.'],
         'bitacora' => ['nombre' => 'Schichtbuch', 'descripcion' => 'Was eine Schicht der nächsten hinterlässt. Wichtiges erscheint unter Heute.'],
         'empresas' => ['nombre' => 'Unternehmen und Agenturen', 'descripcion' => 'Wer für seine Gäste bucht oder zahlt, mit Konditionen und Kontoauszug.'],
+        'opiniones' => ['nombre' => 'Gästemeinungen', 'descripcion' => 'Eine Umfrage nach dem Aufenthalt, mit Link zu Ihrer Bewertungsseite.'],
         'caja' => ['nombre' => 'Kasse und Tagesabschluss', 'descripcion' => 'Kassen, Geldbewegungen und der tägliche Abschluss.'],
         'facturacion' => ['nombre' => 'Rechnungen und Quittungen', 'descripcion' => 'Steuerdaten, Rechnungen, Quittungen und Exporte für die Buchhaltung.'],
         'informes' => ['nombre' => 'Berichte und Kennzahlen', 'descripcion' => 'Auslastung, Einnahmen und weitere Berichte.'],

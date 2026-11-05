@@ -67,6 +67,9 @@
             @endif
         </x-filament::empty-state>
     @else
+        @if (collect($tarjetas)->pluck('propiedad.moneda')->unique()->count() > 1)
+            <p class="af-nota" style="margin-block-end: .75rem">{{ __('operacion.resumen.monedas') }}</p>
+        @endif
         <div class="af-tarjetas">
             @foreach ($tarjetas as $t)
                 @php($propiedad = $t['propiedad'])
@@ -89,6 +92,14 @@
                         @endif
                     </dl>
 
+                    @if (\App\Seguridad\Acceso::puede(\App\Seguridad\Acceso::usuarioActual(), \App\Seguridad\Acceso::DATOS, $propiedad->id))
+                        @if ($t['salidas_con_saldo'] > 0)
+                            <div class="af-aviso" role="status">{{ trans_choice('operacion.resumen.salidas_con_saldo', $t['salidas_con_saldo'], ['n' => $t['salidas_con_saldo']]) }}</div>
+                        @endif
+                        @if ($t['solapes'] > 0)
+                            <div class="af-aviso af-aviso--error" role="status">{{ trans_choice('operacion.resumen.solapes', $t['solapes'], ['n' => $t['solapes']]) }}</div>
+                        @endif
+                    @endif
                     {{-- Hablan de pagos, sincronización y mensajes: no son para limpieza ni mantenimiento. --}}
                     @foreach (\App\Seguridad\Acceso::puede(\App\Seguridad\Acceso::usuarioActual(), \App\Seguridad\Acceso::DATOS, $propiedad->id) ? $t['avisos'] : [] as $aviso)
                         <div @class(['af-aviso', 'af-aviso--error' => $aviso->nivel === \App\Enums\NivelAviso::Error]) role="status">

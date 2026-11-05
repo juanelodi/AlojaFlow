@@ -582,6 +582,21 @@ Por propiedad, como los huéspedes: cada una tiene su lista de precios y sus con
 ### D-082 · 2026-11-05 · Reglas de impuesto y una foto de lo cobrado
 Vigencia por fecha de llegada, tope de noches y edad mínima, en el impuesto. Sin fechas de nacimiento en la reserva, la edad mínima usa cuántos menores se capturaron, y el campo solo aparece si algún impuesto lo necesita. Con tope, un porcentaje se reparte parejo entre las noches: el precio de cada una ya no se sabe si alguien cambió el total a mano. **Cada reserva guarda lo que se cobró (`reservas_impuestos`)**, despejándolo de su total: si cambian el total a mano, el impuesto lo sigue, y si mañana cambia la tasa, el informe no cambia. Las reservas anteriores no se rellenan, porque se inventaría con las tasas de hoy. **El catálogo de ISH es un punto de partida:** para 30 de 32 entidades viene de una fuente secundaria (elcontribuyente.mx), y Querétaro, Hidalgo, Oaxaca y Baja California Sur tienen cifras que no coinciden entre fuentes. Solo la Ciudad de México y Quintana Roo se cotejaron con su ley (praxiumconsultores.com). Por eso cada tasa enseña su fuente y la ley donde comprobarla, y un asesor fiscal sigue pendiente.
 
+### D-083 · 2026-11-05 · Lo de todos los días de la 1.2.3: mensajes, depósitos, bloqueos y precios
+Vuelven con la misma idea: **nada sale solo**. Mensajes por periodo y recordatorios de depósito preparan el texto y una persona pulsa; un cliente omitido sí se puede escribir a mano, porque lo omitido es lo automático. Las variables propias se guardan por propiedad y no pisan las del sistema. **Bloquear fechas usa reservas de tipo bloqueo,** no otra tabla: el calendario, el motor y la base de datos ya las entienden, y la que tiene algo se salta sin mover nada. Los cierres de HotelDruid (`regole` con `motivazione2 = x`) se proyectan igual. **Importar precios parte las temporadas** en lugar de solo poner una encima: como vale la que empieza más tarde, una que empezara antes no habría sustituido a las que ya hubiera en ese rango. El archivo lo lee el navegador y llega como texto: así no pasa por el disco, y se vuelve a revisar al importar. El cierre guarda solo números de reserva: el cierre se conserva, y con él no hace falta conservar el nombre de nadie.
+
+### D-084 · 2026-11-05 · Restricciones de venta
+Por fechas y, opcionalmente, por unidad. **El motor las cumple; a recepción solo se le avisa:** en el motor nadie puede decidir, y en recepción un caso especial lo resuelve quien atiende. Las noches de preparación miran las noches antes de llegar y después de salir, en esa unidad. Solo restringen lo que se vende por el motor: no se reprograma nada de lo ya reservado.
+
+### D-085 · 2026-11-05 · Enlaces de pago por importe libre
+Para cobrar un anticipo, un extra o un daño: la página del motor solo cobra lo que falta. Usan el mismo `enlaces_publicos` y las mismas pasarelas. **Se pagan una vez y vencen:** cobrar de más por un enlace viejo cuesta más trabajo que hacer otro. Un extra puede dejar la reserva con saldo a favor sin ser un pago duplicado, así que el aviso de duplicado solo salta si el mismo enlace se paga dos veces. La página pública enseña el concepto, el importe y el número de reserva, no el nombre del huésped: quien tenga el enlace no tiene por qué saberlo.
+
+### D-086 · 2026-11-05 · Automatizaciones con condiciones
+Saldo, canal, datos de llegada y documentos aceptados, además del estado. Pueden crear una tarea o una nota importante en la bitácora en vez de un correo, y entonces la plantilla es opcional. **«Esperar» es lo que resuelve los datos de acceso:** antes de la llegada se revisa cada día hasta que se cumpla, y la clave de envío es la fecha de la reserva, así que sale una sola vez. Sin esperar, la regla mira solo el día que toca, como antes.
+
+### D-087 · 2026-11-05 · Encuesta a los huéspedes
+En una tabla propia y con un módulo aparte, porque mucha gente no la va a querer. **A todos se les ofrece la página pública de reseñas, contesten lo que contesten:** mandar solo a los contentos falsea las reseñas y los portales lo prohíben. La automatización que se prepara queda apagada: un correo a todos los huéspedes es una decisión de quien la va a usar. El comentario puede llevar datos personales: entra en la exportación y se borra al anonimizar.
+
 ---
 
 ## Pendientes

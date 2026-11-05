@@ -345,6 +345,30 @@ class Proyector
         }
         $this->insertarReservas($pendientes, $huespedes);
 
+        // Las unidades que la principal tiene cerradas (`regole` con motivazione2 = 'x'): se ven como bloqueos.
+        foreach ($this->filas('regole') as [$anio, $f]) {
+            $idRegla = (int) ($f['idregole'] ?? 0);
+            $unidadId = $unidades[trim((string) ($f['app_agenzia'] ?? ''))] ?? null;
+            $llegada = $periodos[$anio][(int) ($f['iddatainizio'] ?? 0)][0] ?? null;
+            $salida = $periodos[$anio][(int) ($f['iddatafine'] ?? 0)][1] ?? null;
+            if (($f['motivazione2'] ?? '') !== 'x' || $unidadId === null || $llegada === null || $salida === null || $salida <= $llegada) {
+                continue;
+            }
+            $clave = 'cierre:'.$anio.':'.$idRegla;
+            $vistas[$clave] = true;
+            $datos = ['tipo' => TipoReserva::Bloqueo->value, 'estado' => EstadoReserva::Confirmada->value, 'numero' => 'C'.$idRegla.'/'.$anio, 'personas' => 0, 'total' => 0, 'pagado' => 0, 'deposito' => 0]
+                + $this->datosReserva(['origine' => $f['motivazione'] ?? null], false, $unidadId, null, $llegada, $salida, $idRegla, (int) $anio);
+            $huella = Huellas::datos(['datos' => $datos, 'acompanantes' => []]);
+            /** @var stdClass|null $existente */
+            $existente = $existentes->get($clave);
+            if ($existente === null) {
+                $pendientes = [$clave => ['fila' => $datos + $this->columnasOrigen($clave, 'cierre', $huella) + ['codigo_publico' => Huellas::codigoPublico()], 'acompanantes' => []]];
+                $this->insertarReservas($pendientes, $huespedes);
+            } elseif ($existente->huella_datos !== $huella || $existente->eliminada_en_principal_en !== null) {
+                $this->actualizarReserva($existente, $datos, $huella, [], $huespedes);
+            }
+        }
+
         foreach ($existentes as $clave => $existente) {
             if (! isset($vistas[(string) $clave]) && $existente->eliminada_en_principal_en === null) {
                 $this->eliminarReserva($existente, false);
