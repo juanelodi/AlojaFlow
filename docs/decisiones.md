@@ -730,12 +730,14 @@ UTF-16 ocupa el doble, y Livewire arma la descarga completa en memoria. Con lo q
 ### D-129 · 2026-11-05 · Los documentos no nombran el servidor de prueba
 El repositorio es público: lo que dice dónde está la instalación de prueba y con qué hosting se cambió por «el servidor de prueba» o «un hosting real». Sigue en el historial y en los paquetes ya publicados, y no hay usuarios, contraseñas ni nombres de base. La guía del instalador sí nombra hostings, porque es para quien use cada uno, y no dice cuál usa este proyecto.
 
+### D-130 · 2026-11-05 · El sitio alojaflow.com y su wiki
+Sitio estático con Astro, y buscador con Pagefind, que corre en el navegador y no manda a nadie lo que se escribe. Va en español y en inglés, y vive fuera de este repositorio: no se empaqueta con el sistema, y su código de capturas no tiene por qué ser público. La portada ofrece la descarga gratis y servicios, sin precios, porque siguen sin decidirse. Dice que es una versión de prueba y qué falta verificar, con la misma lista de `CAMBIOS.md`: una promesa fiscal sin probar le costaría más a un alojamiento que a nosotros. No hay demo en vivo: las capturas son reales, con datos ficticios, de una instalación aislada. Google Analytics queda preparado y apagado hasta tener su ID, y solo se carga con consentimiento.
+
 ---
 
 ## Pendientes
 
 - Precios y modelo de venta.
-- El sitio alojaflow.com y su wiki.
 - Titular del copyright en las cabeceras de licencia.
 - Proveedor de correo y canal del OTP.
 - Inventario, almacenes y punto de venta: fase 2 o posterior.

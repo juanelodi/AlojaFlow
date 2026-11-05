@@ -225,7 +225,6 @@ Cada entrega sale en varias versiones 1.0.x (D-030).
 ## 13. Pendiente de decidir
 
 - Precios y modelo de venta.
-- El sitio alojaflow.com y su wiki.
 - Titular del copyright en las cabeceras (nombre legal o razón social).
 - PAC para CFDI, proveedor de correo y canal del OTP (correo; WhatsApp o SMS si hay proveedor).
 - Inventario, almacenes y punto de venta: fase 2 o posterior.
