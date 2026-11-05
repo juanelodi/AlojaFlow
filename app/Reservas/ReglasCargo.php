@@ -23,12 +23,21 @@ final class ReglasCargo
     public static function tieneReglas(ConceptoCargo $concepto): bool
     {
         return ! empty($concepto->dias_semana) || (int) $concepto->cada_noches > 1 || $concepto->desde !== null || $concepto->hasta !== null
-            || $concepto->noches_minimas !== null || ! empty($concepto->solo_tarifas) || ! empty($concepto->solo_unidades);
+            || $concepto->noches_minimas !== null || ! empty($concepto->solo_tarifas) || ! empty($concepto->solo_unidades) || $concepto->por_cama_extra;
     }
 
-    public static function aplica(ConceptoCargo $concepto, Unidad $unidad, ?int $tarifaId, CarbonImmutable $llegada, CarbonImmutable $salida): bool
+    /**
+     * Las camas extra que usan esas personas en esa unidad (D-125).
+     */
+    public static function camasExtra(Unidad $unidad, int $personas): int
     {
-        return ($concepto->noches_minimas === null || self::noches($llegada, $salida) >= $concepto->noches_minimas)
+        return $unidad->capacidad > 0 ? max(0, $personas - $unidad->capacidad) : 0;
+    }
+
+    public static function aplica(ConceptoCargo $concepto, Unidad $unidad, ?int $tarifaId, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas = 1): bool
+    {
+        return (! $concepto->por_cama_extra || self::camasExtra($unidad, $personas) > 0)
+            && ($concepto->noches_minimas === null || self::noches($llegada, $salida) >= $concepto->noches_minimas)
             && (empty($concepto->solo_unidades) || in_array($unidad->id, $concepto->solo_unidades, true))
             && (empty($concepto->solo_tarifas) || in_array($tarifaId, $concepto->solo_tarifas, true))
             // Fechas sin zona: se comparan como texto. La última noche es la anterior a la salida.

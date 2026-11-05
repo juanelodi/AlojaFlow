@@ -109,7 +109,7 @@ final class MotorReservas
             $ofertas[] = new Oferta(
                 $tarifa,
                 $unidades->count(),
-                min((int) $unidades->max('capacidad'), $tarifa->personas_maximas ?? PHP_INT_MAX),
+                min((int) $unidades->max(fn (Unidad $u): int => $u->capacidadMaxima()), $tarifa->personas_maximas ?? PHP_INT_MAX),
                 $presupuesto,
                 $presupuesto->cotizacion->estanciaMinima,
                 $presupuesto->cotizacion->cumpleEstanciaMinima(),
@@ -200,12 +200,12 @@ final class MotorReservas
      *
      * @return \Illuminate\Database\Eloquent\Collection<int, ConceptoCargo>
      */
-    public function cargosOpcionales(Propiedad $propiedad, Unidad $unidad, int $tarifaId, CarbonImmutable $llegada, CarbonImmutable $salida): \Illuminate\Database\Eloquent\Collection
+    public function cargosOpcionales(Propiedad $propiedad, Unidad $unidad, int $tarifaId, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas): \Illuminate\Database\Eloquent\Collection
     {
         return ConceptoCargo::query()->where('propiedad_id', $propiedad->id)->where('activo', true)
             ->where('obligatorio', false)->where('visible_motor', true)->when((new AjustesMotor($propiedad))->cargoLugarId(), fn ($q, int $cargo) => $q->whereKeyNot($cargo))
             ->orderBy('orden')->orderBy('nombre')->get()
-            ->filter(fn (ConceptoCargo $concepto): bool => ReglasCargo::aplica($concepto, $unidad, $tarifaId, $llegada, $salida))->values();
+            ->filter(fn (ConceptoCargo $concepto): bool => ReglasCargo::aplica($concepto, $unidad, $tarifaId, $llegada, $salida, $personas))->values();
     }
 
     /**
@@ -274,7 +274,7 @@ final class MotorReservas
 
         /** @var Unidad $candidata */
         $candidata = $candidatas->first();
-        $permitidos = $this->cargosOpcionales($propiedad, $candidata, $tarifa->id, $llegada, $salida)->pluck('id')->all();
+        $permitidos = $this->cargosOpcionales($propiedad, $candidata, $tarifa->id, $llegada, $salida, $datos['personas'])->pluck('id')->all();
         $elegidos = array_fill_keys(array_values(array_intersect($datos['cargos'], $permitidos)), 1.0);
         foreach ((array) ($datos['cantidades'] ?? []) as $concepto => $cantidad) {
             if ($cantidad > 0 && in_array((int) $concepto, $permitidos, true)) {

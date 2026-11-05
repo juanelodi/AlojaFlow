@@ -30,7 +30,7 @@ class UnidadesTable
                 TextColumn::make('nombre')->label(__('ui.unidades.nombre'))->searchable()->sortable(),
                 TextColumn::make('propiedad.nombre')->label(__('ui.comun.propiedad'))
                     ->visible(fn (): bool => count(UnidadResource::propiedadesVisibles()) > 1),
-                TextColumn::make('capacidad')->label(__('ui.unidades.capacidad'))->alignEnd()->sortable(),
+                TextColumn::make('capacidad')->label(__('ui.unidades.capacidad'))->alignEnd()->formatStateUsing(fn (Unidad $record): string => $record->capacidad.($record->camas_extra > 0 ? ' + '.$record->camas_extra : ''))->sortable(),
                 TextColumn::make('tarifa.nombre')->label(__('ui.unidades.tarifa'))->placeholder('—'),
                 TextColumn::make('edificio')->label(__('ui.unidades.edificio'))->placeholder('—')->toggleable(),
                 TextColumn::make('piso')->label(__('ui.unidades.piso'))->placeholder('—')->toggleable(),

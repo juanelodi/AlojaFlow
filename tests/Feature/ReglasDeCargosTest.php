@@ -201,7 +201,7 @@ describe('el motor', function (): void {
         ($this->cargo)(['nombre' => 'Muy largo', 'obligatorio' => false, 'noches_minimas' => 30]);
         $motor = app(MotorReservas::class);
 
-        $ofrecidos = $motor->cargosOpcionales($this->propiedad, $this->unidad->refresh(), $this->doble->id, $lunes, $lunes->addDays(2));
+        $ofrecidos = $motor->cargosOpcionales($this->propiedad, $this->unidad->refresh(), $this->doble->id, $lunes, $lunes->addDays(2), 2);
 
         expect($ofrecidos->pluck('nombre')->all())->toBe(['Sí']);
 

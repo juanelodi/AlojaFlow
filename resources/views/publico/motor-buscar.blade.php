@@ -70,6 +70,10 @@
         @endif
     </form>
 
+    @if ($conCalendario)
+        <p style="margin:-6px 0 14px"><a href="{{ route('motor.calendario', ['codigo' => $propiedad->codigo, 'idioma' => app()->getLocale()]) }}">{{ __('motor.calendario.ver') }}</a></p>
+    @endif
+
     @if ($error)
         <p class="mensaje error" role="alert">{{ $error }}</p>
     @endif

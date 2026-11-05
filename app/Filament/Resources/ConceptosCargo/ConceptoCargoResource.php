@@ -98,6 +98,7 @@ class ConceptoCargoResource extends RecursoDePropiedad
                     ->options(fn (): array => Formato::diasDeLaSemana())->visible($porNoche)->dehydrateStateUsing($lista),
                 TextInput::make('cada_noches')->label(__('ui.cargos.cada_noches'))->helperText(__('ui.cargos.cada_noches_ayuda'))->numeric()->integer()->minValue(1)->maxValue(366)->visible($porNoche),
                 TextInput::make('noches_minimas')->label(__('ui.cargos.noches_minimas'))->numeric()->integer()->minValue(1)->maxValue(366),
+                Toggle::make('por_cama_extra')->label(__('ui.cargos.por_cama_extra'))->helperText(__('ui.cargos.por_cama_extra_ayuda'))->columnSpanFull(),
                 DatePicker::make('desde')->label(__('ui.cargos.desde'))->helperText(__('ui.cargos.fechas_ayuda')),
                 DatePicker::make('hasta')->label(__('ui.cargos.hasta'))->minDate(fn (Get $get): mixed => $get('desde')),
                 Select::make('solo_tarifas')->label(__('ui.cargos.solo_tarifas'))->multiple()->native(false)->dehydrateStateUsing($lista)

@@ -203,7 +203,12 @@
 
 /* Arrastrar reservas: las barras dejan pasar el ratón a los días de abajo. */
 .af-arrastrando .af-barra { pointer-events: none; opacity: .55; }
-.af-barra[draggable="true"] { cursor: grab; }
+.af-barra[draggable="true"] { cursor: grab; position: relative; }
+/* Los extremos de una barra: arrastrarlos cambia las fechas. */
+.af-asa { position: absolute; top: 0; bottom: 0; width: .5rem; cursor: ew-resize; }
+.af-asa--inicio { left: 0; }
+.af-asa--fin { right: 0; }
+.af-asa:hover { background: rgb(255 255 255 / .35); }
 .af-enlace { color: var(--primary-700); font-weight: 500; text-decoration: underline; text-underline-offset: 2px; }
 .dark .af-enlace { color: var(--primary-400); }
 

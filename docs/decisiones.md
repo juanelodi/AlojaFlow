@@ -705,6 +705,15 @@ Texto, o sí o no, de un huésped o de una reserva. Los valores van en `valores_
 ### D-123 · 2026-11-05 · Documentos sin lenguaje de plantillas
 Se escriben con el editor del panel, sin repeticiones `[r]` ni condiciones `[c]` como en HotelDruid, porque casi nadie las usaba bien. **Solo variables entre llaves, y lo que usa datos de una lista se repite:** la fila, el punto de lista o el párrafo. Una fila con datos de un huésped sale por cada huésped; en uno de varias reservas, lo que usa datos de una reserva sale por cada una, y dentro de eso, por huésped. Nada se ejecuta: el texto no pasa por Blade, y sale por `Str::sanitizeHtml` antes de llenarse; los datos se escapan al ponerlos, y dompdf va sin PHP, sin JavaScript y sin nada remoto. Solo salen en PDF: en la pantalla, un `gerente` podría dejarle código a otro. Sin permiso de huéspedes, el número de identificación sale con los últimos cuatro dígitos. El de varias reservas respeta los límites de cada usuario y a los omitidos de los informes, y se niega con más de 500 reservas: no caben en la memoria de un hosting compartido. El contrato de partida es de muestra: nadie lo ha revisado.
 
+### D-124 · 2026-11-05 · Cambiar fechas arrastrando un extremo
+Se suelta en la nueva llegada o en la última noche, porque eso es lo que se ve en la barra. **El total no cambia solo,** igual que al editar: un precio acordado no se pisa. Si con la tarifa fuera otro, el aviso lo dice y un botón lo aplica, recalculando también los cargos; el cálculo es el de `GestorReservas::aplicarTarifa`, en el servidor, y no el número que mande el navegador. Lo de un grupo no se arrastra: su precio depende de todas sus habitaciones. A quien ya llegó solo se le mueve la salida, y a quien ya salió, nada.
+
+### D-125 · 2026-11-05 · Camas extra
+`capacidad` sigue siendo lo normal, y `camas_extra` lo que cabe de más: el tope es la suma. El precio de un grupo por capacidad sigue con la normal. Para cobrarlas hay dos caminos, y no se mezclan solos: la persona extra de la tarifa, que ya existía, o un cargo «por cama extra», que se multiplica por las camas que se usan. Si se usan los dos se cobra dos veces, y por eso la ayuda de la unidad lo dice.
+
+### D-126 · 2026-11-05 · Calendario público
+Solo dice si hay lugar o no, sin cuántos: es lo que hace falta para elegir fechas, y lo demás le serviría a la competencia. Aun así deja ver la ocupación, y por eso llega apagado y se prende en los ajustes del motor. Va de este mes hasta donde se puede reservar. Sin JavaScript, como el resto del motor, y un día con lugar es un enlace a la búsqueda de una noche. No mira restricciones de llegada ni estancia mínima: esas las dice la búsqueda con sus fechas.
+
 ---
 
 ## Pendientes

@@ -31,6 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $noches_minimas
  * @property list<int>|null $solo_tarifas
  * @property list<int>|null $solo_unidades
+ * @property bool $por_cama_extra
  * @property bool $para_administrador
  * @property bool $obligatorio
  * @property bool $visible_motor
@@ -53,6 +54,7 @@ class ConceptoCargo extends ModeloBase
             'noches_minimas' => 'integer',
             'solo_tarifas' => 'array',
             'solo_unidades' => 'array',
+            'por_cama_extra' => 'boolean',
             'base' => BaseCargo::class,
             'importe' => 'integer',
             'porcentaje' => 'decimal:4',

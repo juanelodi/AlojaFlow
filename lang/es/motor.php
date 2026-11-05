@@ -13,6 +13,17 @@ return [
     'meta_descripcion' => 'Reserva directo en :propiedad: consulta fechas y precios en línea.',
     'idioma' => 'Idioma',
     'buscar' => 'Buscar',
+    'calendario' => [
+        'ver' => 'Ver qué días hay lugar',
+        'titulo' => 'Días con lugar',
+        'ayuda' => 'Pulsa un día con lugar para ver los precios.',
+        'anterior' => 'Mes anterior',
+        'siguiente' => 'Mes siguiente',
+        'libre' => 'Hay lugar',
+        'lleno' => 'Sin lugar',
+        'no_disponible' => 'No se puede reservar',
+        'volver' => 'Buscar por fechas',
+    ],
     'reservar' => 'Reservar',
     'capacidad' => 'Hasta :personas personas',
     'quedan' => '{1} queda 1|[2,*] quedan :count',
@@ -64,6 +75,8 @@ return [
     ],
     // Panel.
     'panel' => [
+        'calendario' => 'Mostrar un calendario de los días con lugar',
+        'calendario_ayuda' => 'Para quien todavía no tiene fechas. Solo dice si hay lugar o no, pero deja ver cómo va la ocupación.',
         'redsys' => 'Redsys (TPV de tu banco en España)',
         'redsys_ayuda' => 'Los datos están en el módulo de administración de Redsys, en consulta de datos de comercio. Configura ahí la notificación online. Empieza en pruebas.',
         'redsys_comercio' => 'Código de comercio (FUC)',

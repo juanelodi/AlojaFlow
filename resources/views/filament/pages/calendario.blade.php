@@ -62,6 +62,7 @@
             <div class="af-calendario"
                  x-data="{
                      moviendo: null,
+                     lado: null,
                      {{-- Sobre un texto, target puede ser el propio texto, que no tiene closest. --}}
                      buscar(evento, selector) {
                          return evento.target.closest?.(selector) ?? null;
@@ -77,14 +78,21 @@
                          }
                          evento.dataTransfer.effectAllowed = 'move';
                          evento.dataTransfer.setData('text/plain', barra.dataset.reserva);
-                         setTimeout(() => this.moviendo = Number(barra.dataset.reserva), 0);
+                         {{-- De un extremo cambia las fechas; de en medio, la mueve completa. --}}
+                         const lado = this.buscar(evento, '[data-asa]')?.dataset.asa ?? null;
+                         setTimeout(() => { this.moviendo = Number(barra.dataset.reserva); this.lado = lado; }, 0);
                      },
                      soltar(evento) {
                          const dia = this.buscar(evento, '[data-fecha]');
                          if (this.moviendo && dia) {
-                             this.$wire.moverReserva(this.moviendo, Number(dia.parentElement.dataset.unidad), dia.dataset.fecha);
+                             if (this.lado) {
+                                 this.$wire.cambiarFechas(this.moviendo, this.lado, dia.dataset.fecha);
+                             } else {
+                                 this.$wire.moverReserva(this.moviendo, Number(dia.parentElement.dataset.unidad), dia.dataset.fecha);
+                             }
                          }
                          this.moviendo = null;
+                         this.lado = null;
                      },
                  }"
                  :class="moviendo && 'af-arrastrando'"
@@ -141,7 +149,7 @@
                                @class(['af-barra', $barra['clase'], 'af-barra--marcada' => $barra['color'], 'af-barra--grupo' => $barra['grupo'], 'af-barra--sigue-antes' => $barra['sigue_antes'], 'af-barra--sigue-despues' => $barra['sigue_despues']])
                                style="grid-column: {{ $barra['columna'] + 1 }} / span {{ $barra['ancho'] }}@if ($barra['color']); --af-marca: {{ $barra['color'] }}@endif @if ($barra['grupo']?->color); --af-grupo: {{ $barra['grupo']->color }}@endif"
                                title="{{ __('ui.calendario.detalle', ['huesped' => $texto, 'noches' => $reserva->noches, 'llegada' => Formato::fechaCorta($reserva->llegada), 'salida' => Formato::fechaCorta($reserva->salida)]) }}@if (! $ajena && $barra['grupo']) · {{ $barra['grupo']->nombre }}@endif"
-                            >{{ $texto }}</a>
+                            >{{ $texto }}@if (! $ajena && ! $reserva->sincronizada && $gestionable && $reserva->salida_registrada_en === null && $barra['grupo'] === null)@if (! $barra['sigue_antes'] && $reserva->entrada_registrada_en === null)<span class="af-asa af-asa--inicio" draggable="true" data-asa="inicio" title="{{ __('ui.calendario.asa_inicio') }}"></span>@endif @if (! $barra['sigue_despues'])<span class="af-asa af-asa--fin" draggable="true" data-asa="fin" title="{{ __('ui.calendario.asa_fin') }}"></span>@endif @endif</a>
                         @endforeach
                     </div>
                 @endforeach

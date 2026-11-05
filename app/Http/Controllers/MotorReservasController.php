@@ -35,6 +35,7 @@ use App\Motor\Pasarelas;
 use App\Pagos\CobrosEnLinea;
 use App\Pagos\ErrorPago;
 use App\Pagos\PagoConFormulario;
+use App\Publico\CalendarioPublico;
 use App\Publico\PaginaPublica;
 use App\Reservas\Mensualidades;
 use App\Reservas\ReservaRechazada;
@@ -123,6 +124,7 @@ class MotorReservasController extends Controller
             'personas' => $personas,
             'ofertas' => $ofertas,
             'conEstanciasLargas' => Modulos::activo(Modulo::EstanciasLargas),
+            'conCalendario' => (new AjustesMotor($propiedad))->calendarioPublico(),
             'filtro' => $filtro,
             'conFiltros' => Modulos::activo(Modulo::Camping) && AtributosLugar::hayQueFiltrar($propiedad),
             'mapas' => $mapas,
@@ -130,6 +132,27 @@ class MotorReservasController extends Controller
             'noches' => $llegada !== null && $salida !== null && $salida->gt($llegada) ? (int) $llegada->diffInDays($salida) : 0,
             'error' => $error,
             'minimoFecha' => $hoy->format('Y-m-d'),
+        ]);
+    }
+
+    /**
+     * Qué días hay lugar, mes por mes (D-126). Desde este mes hasta donde se puede reservar: lo demás no le sirve a nadie.
+     */
+    public function calendario(Request $request, string $codigo): View
+    {
+        $propiedad = $this->propiedad($request, $codigo);
+        abort_unless((new AjustesMotor($propiedad))->calendarioPublico(), 404);
+        $primero = CarbonImmutable::parse($propiedad->hoy()->format('Y-m-01'));
+        $ultimo = CarbonImmutable::parse($propiedad->hoy()->addDays(MotorReservas::DIAS_HORIZONTE)->format('Y-m-01'));
+        $pedido = is_string($request->query('mes')) ? $this->fecha($request->query('mes').'-01') : null;
+        $mes = $pedido === null || $pedido->lt($primero) || $pedido->gt($ultimo) ? $primero : $pedido;
+
+        return view('publico.motor-calendario', [
+            'propiedad' => $propiedad,
+            'mes' => $mes,
+            'semanas' => (new CalendarioPublico($propiedad))->semanas($mes),
+            'anterior' => $mes->gt($primero) ? $mes->subMonth()->format('Y-m') : null,
+            'siguiente' => $mes->lt($ultimo) ? $mes->addMonth()->format('Y-m') : null,
         ]);
     }
 
@@ -363,7 +386,7 @@ class MotorReservasController extends Controller
             'tarifa' => $tarifa,
             'filtro' => $filtro,
             'lugar' => $lugar,
-            'cupos' => $this->motor->cupos($cargos = $this->motor->cargosOpcionales($propiedad, $lugar ?? $oferta->unidad, $tarifa->id, $llegada, $salida), $llegada, $salida),
+            'cupos' => $this->motor->cupos($cargos = $this->motor->cargosOpcionales($propiedad, $lugar ?? $oferta->unidad, $tarifa->id, $llegada, $salida, $personas), $llegada, $salida),
             'unidadLargo' => AtributosLugar::unidadLargo($propiedad),
             'llegada' => $llegada,
             'salida' => $salida,

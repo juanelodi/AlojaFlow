@@ -164,12 +164,12 @@ final class Cotizador
             if (! $elegido && ! $concepto->obligatorio) {
                 continue;
             }
-            $aplica = ReglasCargo::aplica($concepto, $unidad, $cotizacion?->tarifaId, $llegada, $salida);
+            $aplica = ReglasCargo::aplica($concepto, $unidad, $cotizacion?->tarifaId, $llegada, $salida, $personas);
             // Lo que se suma solo pasa por sus reglas; lo que alguien añadió a mano se cobra igual, por toda la estancia (D-121).
             if (! $elegido && ! $aplica) {
                 continue;
             }
-            $cantidad = (float) ($cargosElegidos[$concepto->id] ?? 1);
+            $cantidad = (float) ($cargosElegidos[$concepto->id] ?? ($concepto->por_cama_extra ? ReglasCargo::camasExtra($unidad, $personas) : 1));
             $cargos[] = [
                 'concepto_cargo_id' => $concepto->id,
                 'nombre' => $concepto->nombre,

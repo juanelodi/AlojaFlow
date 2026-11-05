@@ -119,7 +119,7 @@ class GrupoPublicoController extends Controller
     {
         $grupo = $this->exigirCuenta($request, $token);
         $habitacion = $grupo->reservas()->with('unidad')->where('estado', '!=', EstadoReserva::Cancelada->value)->findOrFail($reserva);
-        $capacidad = $habitacion->unidad->capacidad;
+        $capacidad = $habitacion->unidad->capacidadMaxima();
         $bolsa = 'habitacion_'.$habitacion->id;
         $datos = $request->validateWithBag($bolsa, [
             'responsable' => ['required', 'string', 'max:150'],

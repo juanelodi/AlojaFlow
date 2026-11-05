@@ -16,6 +16,7 @@ use App\Enums\OrigenFila;
 use App\Enums\TipoEventoReserva;
 use App\Enums\TipoReserva;
 use App\Limpieza\GestorLimpieza;
+use App\Models\Canal;
 use App\Models\CargoReserva;
 use App\Models\Empresa;
 use App\Models\EventoReserva;
@@ -141,8 +142,8 @@ final class GestorReservas
             if ($unidad === null) {
                 throw new ReservaRechazada(__('ui.reservas.error_unidad'));
             }
-            if ($actual->tipo === TipoReserva::Reserva && $unidad->capacidad > 0 && $actual->personas > $unidad->capacidad) {
-                throw new ReservaRechazada(__('ui.reservas.error_capacidad', ['capacidad' => $unidad->capacidad]));
+            if ($actual->tipo === TipoReserva::Reserva && $unidad->capacidad > 0 && $actual->personas > $unidad->capacidadMaxima()) {
+                throw new ReservaRechazada(__('ui.reservas.error_capacidad', ['capacidad' => $unidad->capacidadMaxima()]));
             }
             $noches = (int) $actual->llegada->diffInDays($actual->salida);
             $antes = $this->resumen($actual);
@@ -175,8 +176,8 @@ final class GestorReservas
             if ($unidad === null) {
                 throw new ReservaRechazada(__('ui.reservas.error_unidad'), 'unidad_id');
             }
-            if ($unidad->capacidad > 0 && $actual->personas > $unidad->capacidad) {
-                throw new ReservaRechazada(__('ui.reservas.error_capacidad', ['capacidad' => $unidad->capacidad]), 'unidad_id');
+            if ($unidad->capacidad > 0 && $actual->personas > $unidad->capacidadMaxima()) {
+                throw new ReservaRechazada(__('ui.reservas.error_capacidad', ['capacidad' => $unidad->capacidadMaxima()]), 'unidad_id');
             }
             [$llegada, $salida] = $this->fechas(['llegada' => $llegada->format('Y-m-d'), 'salida' => $salida->format('Y-m-d')]);
             $antes = $this->resumen($actual);
@@ -192,6 +193,88 @@ final class GestorReservas
 
             return $actual;
         });
+    }
+
+    /**
+     * Otras fechas en la misma unidad: arrastrar un extremo en el calendario (D-124). Un grupo pone su propio precio y sus fechas se cambian desde el grupo, y quien
+     * ya llegó no cambia su llegada. El total no cambia: quien atiende decide.
+     */
+    public function cambiarFechas(Reserva $reserva, CarbonImmutable $llegada, CarbonImmutable $salida): Reserva
+    {
+        if ($reserva->grupo_id !== null) {
+            throw new ReservaRechazada(__('ui.calendario.error_grupo'));
+        }
+        if ($reserva->salida_registrada_en !== null || ($reserva->entrada_registrada_en !== null && $llegada->format('Y-m-d') !== $reserva->llegada->format('Y-m-d'))) {
+            throw new ReservaRechazada(__('ui.calendario.error_ya_llego'));
+        }
+
+        return $this->cambiarEstancia($reserva, $reserva->unidad_id, $llegada, $salida);
+    }
+
+    /**
+     * Lo que costaría hoy según su tarifa, con sus cargos, su descuento y lo que no viene del catálogo. Null: sin tarifa.
+     */
+    public function totalSegunTarifa(Reserva $reserva): ?int
+    {
+        $presupuesto = $this->presupuestoDe($reserva);
+
+        return $presupuesto->cotizacion === null ? null : $presupuesto->total() + $this->cargosSinCatalogo($reserva);
+    }
+
+    /**
+     * Pone el total y los cargos que salen de la tarifa, como el botón del formulario.
+     */
+    public function aplicarTarifa(Reserva $reserva): Reserva
+    {
+        $presupuesto = $this->presupuestoDe($reserva);
+        if ($presupuesto->cotizacion === null || $reserva->grupo_id !== null) {
+            return $reserva;
+        }
+
+        return $this->modificar($reserva, [
+            'unidad_id' => $reserva->unidad_id,
+            'titular_id' => $reserva->titular_id,
+            'llegada' => $reserva->llegada->format('Y-m-d'),
+            'salida' => $reserva->salida->format('Y-m-d'),
+            'personas' => $reserva->personas,
+            'comentario' => $reserva->comentario,
+            'origen_texto' => $reserva->origen_texto,
+            'deposito' => $reserva->deposito,
+            'comision' => $reserva->comision,
+            'descuento' => $presupuesto->descuento,
+            'total' => $presupuesto->total() + $this->cargosSinCatalogo($reserva),
+            'cargos' => array_map(fn (int $concepto, float $cantidad): array => ['concepto_cargo_id' => $concepto, 'cantidad' => $cantidad], array_keys($this->cargosElegidos($reserva)), array_values($this->cargosElegidos($reserva))),
+        ]);
+    }
+
+    private function presupuestoDe(Reserva $reserva): Presupuesto
+    {
+        $cupon = $reserva->cupon;
+        $canalCobra = filled($reserva->origen_texto) && (bool) Canal::query()->where('propiedad_id', $reserva->propiedad_id)->where('nombre', $reserva->origen_texto)->value('cobra_impuestos');
+
+        return Cotizador::presupuesto($reserva->unidad, $reserva->llegada, $reserva->salida, max(1, $reserva->personas), $this->cargosElegidos($reserva), $cupon, $cupon === null ? $reserva->descuento : 0, max(0, (int) $reserva->ninos), $canalCobra, $reserva->tarifa_id);
+    }
+
+    /**
+     * Los que alguien eligió: los obligatorios se suman solos.
+     *
+     * @return array<int, float>
+     */
+    private function cargosElegidos(Reserva $reserva): array
+    {
+        $elegidos = [];
+        foreach ($reserva->cargos()->with('concepto')->whereNotNull('concepto_cargo_id')->get() as $cargo) {
+            if ($cargo->concepto !== null && ! $cargo->concepto->obligatorio) {
+                $elegidos[$cargo->concepto->id] = (float) $cargo->cantidad;
+            }
+        }
+
+        return $elegidos;
+    }
+
+    private function cargosSinCatalogo(Reserva $reserva): int
+    {
+        return (int) $reserva->cargos()->whereNull('concepto_cargo_id')->sum('importe');
     }
 
     /**
@@ -256,7 +339,7 @@ final class GestorReservas
             if ($personas < 1) {
                 throw new ReservaRechazada(__('ui.reservas.error_personas'), 'personas');
             }
-            $capacidad = $actual->unidad->capacidad;
+            $capacidad = $actual->unidad->capacidadMaxima();
             if ($capacidad > 0 && $personas > $capacidad) {
                 throw new ReservaRechazada(__('ui.reservas.error_capacidad', ['capacidad' => $capacidad]), 'personas');
             }
@@ -505,8 +588,8 @@ final class GestorReservas
         if ($personas < 1) {
             throw new ReservaRechazada(__('ui.reservas.error_personas'), 'personas');
         }
-        if ($unidad->capacidad > 0 && $personas > $unidad->capacidad) {
-            throw new ReservaRechazada(__('ui.reservas.error_capacidad', ['capacidad' => $unidad->capacidad]), 'personas');
+        if ($unidad->capacidad > 0 && $personas > $unidad->capacidadMaxima()) {
+            throw new ReservaRechazada(__('ui.reservas.error_capacidad', ['capacidad' => $unidad->capacidadMaxima()]), 'personas');
         }
         $importes = [];
         foreach (['total', 'deposito', 'descuento', 'comision'] as $campo) {

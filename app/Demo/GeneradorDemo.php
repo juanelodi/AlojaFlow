@@ -131,7 +131,7 @@ final class GeneradorDemo
                 'idioma' => 'es',
                 'activa' => true,
                 'es_demo' => true,
-                'ajustes' => ['motor' => ['activo' => true, 'anticipo_porcentaje' => 30, 'instrucciones' => __('ui.demo.instrucciones_pago')]],
+                'ajustes' => ['motor' => ['activo' => true, 'calendario_publico' => true, 'anticipo_porcentaje' => 30, 'instrucciones' => __('ui.demo.instrucciones_pago')]],
             ]);
             $unidades = $this->crearCatalogo($propiedad);
             $this->crearCatalogosExtra($propiedad);
@@ -250,7 +250,8 @@ final class GeneradorDemo
     {
         Impuesto::query()->create(['propiedad_id' => $propiedad->id, 'codigo' => 'IVA', 'nombre' => 'IVA', 'base' => BaseCargo::PorcentajeAlojamiento, 'tasa' => 16, 'incluido_en_precio' => true, 'orden' => 1]);
         Impuesto::query()->create(['propiedad_id' => $propiedad->id, 'codigo' => 'ISH', 'nombre' => 'Impuesto sobre hospedaje', 'base' => BaseCargo::PorcentajeAlojamiento, 'tasa' => 3, 'incluido_en_precio' => true, 'orden' => 2]);
-        ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Cama extra', 'base' => BaseCargo::PorNoche, 'importe' => 30000, 'orden' => 1]);
+        ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Cama extra', 'base' => BaseCargo::PorNoche, 'importe' => 30000, 'obligatorio' => true, 'por_cama_extra' => true, 'orden' => 1]);
+        Unidad::query()->where('propiedad_id', $propiedad->id)->whereIn('codigo', ['103', '104'])->update(['camas_extra' => 1]);
         ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Desayuno', 'base' => BaseCargo::PorPersonaNoche, 'importe' => 15000, 'orden' => 2]);
         ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Traslado al aeropuerto', 'base' => BaseCargo::PorEstancia, 'importe' => 45000, 'orden' => 3]);
         ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.kayak'), 'base' => BaseCargo::PorNoche, 'importe' => 25000, 'cupo_diario' => 3, 'orden' => 4]);

@@ -69,6 +69,7 @@ class UnidadForm
                     TextInput::make('nombre')->label(__('ui.unidades.nombre'))->helperText(__('ui.unidades.nombre_ayuda'))->required()->maxLength(100)
                         ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', Acceso::propiedadElegida($get('propiedad_id'), UnidadResource::propiedadesGestionables()))),
                     TextInput::make('capacidad')->label(__('ui.unidades.capacidad'))->required()->numeric()->minValue(1)->maxValue(1000)->default(2),
+                    TextInput::make('camas_extra')->label(__('ui.unidades.camas_extra'))->helperText(__('ui.unidades.camas_extra_ayuda'))->numeric()->integer()->minValue(0)->maxValue(100)->default(0),
                     Select::make('tarifa_id')->label(__('ui.unidades.tarifa'))->helperText(__('ui.unidades.tarifa_ayuda'))->native(false)
                         ->options(fn (Get $get): array => blank($get('propiedad_id')) ? [] : Tarifa::query()->where('propiedad_id', Acceso::propiedadElegida($get('propiedad_id'), UnidadResource::propiedadesGestionables()))->orderBy('nombre')->pluck('nombre', 'id')->all()),
                     Select::make('otras_tarifas')->label(__('ui.unidades.otras_tarifas'))->helperText(__('ui.unidades.otras_tarifas_ayuda'))->multiple()->native(false)

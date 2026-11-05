@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string|null $piso
  * @property string|null $edificio
  * @property int $capacidad
+ * @property int $camas_extra
  * @property array<string, mixed>|null $atributos
  * @property int $orden
  * @property bool $activa
@@ -49,6 +50,7 @@ class Unidad extends ModeloBase
     protected function casts(): array
     {
         return [
+            'camas_extra' => 'integer',
             'activa' => 'boolean',
             'atributos' => 'array',
             'comision_propietario' => 'decimal:2',
@@ -87,6 +89,14 @@ class Unidad extends ModeloBase
     public function tarifa(): BelongsTo
     {
         return $this->belongsTo(Tarifa::class);
+    }
+
+    /**
+     * Cuántas personas caben a lo sumo: las normales y las camas extra (D-125). Cero: la principal no lo dijo.
+     */
+    public function capacidadMaxima(): int
+    {
+        return $this->capacidad > 0 ? $this->capacidad + $this->camas_extra : 0;
     }
 
     /**

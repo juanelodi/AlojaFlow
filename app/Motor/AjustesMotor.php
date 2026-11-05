@@ -120,6 +120,14 @@ final class AjustesMotor
     /**
      * Si el huésped elige su lugar en el plano (D-110).
      */
+    /**
+     * Si cualquiera puede ver qué días hay lugar (D-126). Dice algo de cómo va el negocio: se prende a propósito.
+     */
+    public function calendarioPublico(): bool
+    {
+        return (bool) $this->valor('calendario_publico', false);
+    }
+
     public function elegirLugar(): bool
     {
         return Modulos::activo(Modulo::Camping) && Modulos::activo(Modulo::Plano) && (bool) $this->valor('elegir_lugar', false);

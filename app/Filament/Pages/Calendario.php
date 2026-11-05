@@ -22,6 +22,7 @@ use App\Seguridad\Acceso;
 use App\Seguridad\Limites;
 use App\Servicios\Calendario as ServicioCalendario;
 use App\Servicios\Operacion;
+use App\Support\Formato;
 use BackedEnum;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
@@ -34,6 +35,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Throwable;
 
@@ -170,10 +172,8 @@ class Calendario extends Page
      */
     public function moverReserva(int $reservaId, int $unidadId, string $llegada): void
     {
-        $reserva = Reserva::query()->whereIn('propiedad_id', $this->propiedadesGestionables())->where('sincronizada', false)->findOrFail($reservaId);
-        if (! Limites::puedeModificar(Acceso::usuarioActual(), $reserva)) {
-            Notification::make()->danger()->title(__('permisos.limites.no_modificar'))->send();
-
+        $reserva = $this->reservaParaCambiar($reservaId);
+        if ($reserva === null) {
             return;
         }
         try {
@@ -182,6 +182,67 @@ class Calendario extends Page
         } catch (ReservaRechazada $e) {
             Notification::make()->danger()->title($e->getMessage())->send();
         }
+    }
+
+    /**
+     * Arrastrar un extremo de la barra (D-124). El día en que se suelta es la nueva llegada o la última noche. El total se queda: si con la tarifa fuera otro, se le pregunta.
+     */
+    public function cambiarFechas(int $reservaId, string $lado, string $fecha): void
+    {
+        $reserva = $this->reservaParaCambiar($reservaId);
+        if ($reserva === null) {
+            return;
+        }
+        $gestor = app(GestorReservas::class);
+        try {
+            $dia = CarbonImmutable::createFromFormat('!Y-m-d', $fecha) ?: throw new ReservaRechazada(__('ui.reservas.error_fechas'));
+            [$llegada, $salida] = $lado === 'inicio'
+                ? [$dia, CarbonImmutable::parse($reserva->salida->format('Y-m-d'))]
+                : [CarbonImmutable::parse($reserva->llegada->format('Y-m-d')), $dia->addDay()];
+            $cambiada = $gestor->cambiarFechas($reserva, $llegada, $salida);
+        } catch (ReservaRechazada $e) {
+            Notification::make()->danger()->title($e->getMessage())->send();
+
+            return;
+        }
+        $aviso = Notification::make()->success()->title(__('ui.calendario.fechas_cambiadas'));
+        $nuevo = $cambiada->tipo === TipoReserva::Reserva ? $gestor->totalSegunTarifa($cambiada) : null;
+        if ($nuevo !== null && $nuevo !== $cambiada->total) {
+            $aviso->persistent()
+                ->body(__('ui.calendario.total_distinto', ['total' => Formato::dinero($cambiada->total, $cambiada->moneda), 'nuevo' => Formato::dinero($nuevo, $cambiada->moneda)]))
+                ->actions([Action::make('usarTotal')->label(__('ui.calendario.usar_ese_total'))->button()->close()->dispatch('aplicarTarifaEnCalendario', ['reservaId' => $cambiada->id])]);
+        }
+        $aviso->send();
+    }
+
+    #[On('aplicarTarifaEnCalendario')]
+    public function aplicarTarifa(int $reservaId): void
+    {
+        $reserva = $this->reservaParaCambiar($reservaId);
+        if ($reserva === null) {
+            return;
+        }
+        try {
+            app(GestorReservas::class)->aplicarTarifa($reserva);
+            Notification::make()->success()->title(__('ui.calendario.total_aplicado'))->send();
+        } catch (ReservaRechazada $e) {
+            Notification::make()->danger()->title($e->getMessage())->send();
+        }
+    }
+
+    /**
+     * La que este usuario puede cambiar; si no, se lo dice.
+     */
+    private function reservaParaCambiar(int $reservaId): ?Reserva
+    {
+        $reserva = Reserva::query()->whereIn('propiedad_id', $this->propiedadesGestionables())->where('sincronizada', false)->findOrFail($reservaId);
+        if (! Limites::puedeModificar(Acceso::usuarioActual(), $reserva)) {
+            Notification::make()->danger()->title(__('permisos.limites.no_modificar'))->send();
+
+            return null;
+        }
+
+        return $reserva;
     }
 
     public function hoy(): CarbonImmutable

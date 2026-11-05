@@ -103,6 +103,7 @@ Route::get('/archivos/{archivo}', ArchivoController::class)->middleware(['auth',
 // Motor de reservas: páginas públicas del alojamiento (D-042). El aviso de un cobro no depende de ningún módulo: ese dinero ya se movió.
 Route::prefix('reservar/{codigo}')->name('motor.')->middleware([ModuloActivo::class.':motor', 'throttle:publico'])->group(function (): void {
     Route::get('/', [MotorReservasController::class, 'buscar'])->name('buscar');
+    Route::get('/calendario', [MotorReservasController::class, 'calendario'])->name('calendario');
     Route::get('/datos', [MotorReservasController::class, 'datos'])->name('datos');
     Route::post('/', [MotorReservasController::class, 'reservar'])->middleware([MismoOrigen::class, 'throttle:motor-reserva'])->name('reservar');
     Route::get('/plano/{plano}', [MotorReservasController::class, 'plano'])->whereNumber('plano')->name('plano');

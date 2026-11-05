@@ -35,6 +35,7 @@ use App\Modulos\Modulos;
 use App\Reservas\Cotizador;
 use App\Reservas\Cupones;
 use App\Reservas\Presupuesto;
+use App\Reservas\ReglasCargo;
 use App\Reservas\Restricciones;
 use App\Seguridad\Acceso;
 use App\Seguridad\Limites;
@@ -406,7 +407,7 @@ class ReservaForm
 
         return Unidad::query()->with('tarifa')->where('propiedad_id', self::propiedadPermitida($propiedadId))->where('activa', true)
             ->orderBy('orden')->orderBy('nombre')->get()
-            ->mapWithKeys(fn (Unidad $u): array => [$u->id => trim($u->nombre.($u->capacidad > 0 ? ' · '.__('ui.disponibilidad.capacidad', ['personas' => $u->capacidad]) : '').($u->tarifa ? ' · '.$u->tarifa->nombre : ''))])
+            ->mapWithKeys(fn (Unidad $u): array => [$u->id => trim($u->nombre.($u->capacidad > 0 ? ' · '.__('ui.disponibilidad.capacidad', ['personas' => $u->capacidad.($u->camas_extra > 0 ? ' + '.$u->camas_extra : '')]) : '').($u->tarifa ? ' · '.$u->tarifa->nombre : ''))])
             ->all();
     }
 
@@ -561,6 +562,10 @@ class ReservaForm
         if ($unidad !== null) {
             // Solo un aviso: un caso especial lo decide quien atiende, no el sistema.
             $avisos = [...$avisos, ...Restricciones::deUnidad($unidad, $llegada, $salida, $unidad->propiedad->hoy()), ...self::avisosCamping($get, $unidad, $llegada, $salida)];
+            $camas = ReglasCargo::camasExtra($unidad, max(1, (int) $get('personas')));
+            if ($camas > 0 && $camas <= $unidad->camas_extra) {
+                $avisos[] = __('ui.reservas.aviso_camas_extra', ['camas' => $camas]);
+            }
         }
 
         return $avisos === [] ? null : implode(' ', $avisos);

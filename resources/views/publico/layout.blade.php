@@ -58,6 +58,16 @@ footer a{color:inherit}
 .dia.dueno{background:#0b1f2a}
 .dia.bloqueo{background:#94a3b8}
 .dia.muestra{display:inline-block;width:12px;height:12px;vertical-align:middle;margin-left:8px;border-radius:2px}
+.calendario{width:100%;border-collapse:collapse;table-layout:fixed}
+.calendario th{font-size:.8125rem;font-weight:600;padding:4px 0;color:var(--gris);text-align:center}
+.calendario td{padding:2px;text-align:center}
+.calendario td a,.calendario td span{display:block;min-height:44px;line-height:44px;border-radius:6px}
+.calendario td a{font-weight:700;color:var(--tinta);border:2px solid var(--marca);line-height:40px;text-decoration:none}
+.calendario td.lleno span{background:var(--borde);color:var(--tinta);text-decoration:line-through}
+.calendario td.pasado span{color:var(--gris)}
+.calendario-muestra{display:inline-block;width:14px;height:14px;vertical-align:middle;margin-left:8px;border-radius:3px;border:1px solid var(--borde)}
+.calendario-muestra.libre{border:2px solid var(--marca)}
+.calendario-muestra.lleno{background:var(--borde)}
 details.filtros{margin-top:12px}
 details.filtros summary{cursor:pointer;font-weight:600;min-height:32px}
 </style>

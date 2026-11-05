@@ -2,6 +2,25 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.28 — 2026-11-05
+
+**Calendario**
+- **Las fechas se cambian arrastrando:** toma el borde izquierdo de una barra para cambiar la llegada, o el derecho para cambiar la salida.
+- El total no cambia solo. Si con la tarifa fuera otro, te lo dice y un botón lo aplica, con sus cargos.
+- Lo de un grupo se sigue cambiando desde el grupo, y a quien ya llegó solo se le puede cambiar la salida.
+
+**Camas extra**
+- En cada unidad, cuántas personas más caben con cama extra. El motor y las reservas ya cuentan con ellas.
+- Un cargo del catálogo puede ser «solo por cama extra»: se cobra una vez por cada cama que se use.
+
+**Calendario público (Motor de reservas → Ajustes)**
+- Para quien todavía no tiene fechas: una página con los días que tienen lugar, mes por mes. Pulsar uno lleva a sus precios.
+- **Llega apagado:** solo dice si hay lugar o no, pero deja ver cómo va la ocupación.
+
+**Demostración:** dos dobles con cama extra, y el calendario público prendido.
+
+**Sin verificar:** arrastrar solo se probó con ratón. En un teléfono se siguen cambiando desde la reserva.
+
 ## 1.0.27 — 2026-11-05
 
 **Documentos propios y campos propios.** Es un módulo nuevo y llega apagado: se prende en Sistema → Módulos.

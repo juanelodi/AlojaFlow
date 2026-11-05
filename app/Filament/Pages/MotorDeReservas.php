@@ -130,6 +130,7 @@ class MotorDeReservas extends Page
             ->components([
                 Section::make()->columns(['default' => 1, 'md' => 2])->schema([
                     Toggle::make('activo')->label(__('motor.panel.activo'))->columnSpanFull(),
+                    Toggle::make('calendario_publico')->label(__('motor.panel.calendario'))->helperText(__('motor.panel.calendario_ayuda'))->columnSpanFull(),
                     TextInput::make('anticipo_porcentaje')->label(__('motor.panel.anticipo'))->helperText(__('motor.panel.anticipo_ayuda'))->numeric()->minValue(0)->maxValue(100)->required(),
                     TextInput::make('minutos_retencion')->label(__('motor.panel.retencion'))->helperText(__('motor.panel.retencion_ayuda'))->numeric()->minValue(5)->maxValue(10080)->required(),
                     Toggle::make('confirmacion_inmediata')->label(__('motor.panel.confirmacion_inmediata'))->helperText(__('motor.panel.confirmacion_inmediata_ayuda')),
@@ -185,6 +186,7 @@ class MotorDeReservas extends Page
         $ajustes = new AjustesMotor($propiedad);
         $ajustes->guardar([
             'activo' => (bool) ($datos['activo'] ?? false),
+            'calendario_publico' => (bool) ($datos['calendario_publico'] ?? false),
             'anticipo_porcentaje' => (int) $datos['anticipo_porcentaje'],
             'minutos_retencion' => (int) $datos['minutos_retencion'],
             'confirmacion_inmediata' => (bool) ($datos['confirmacion_inmediata'] ?? false),
