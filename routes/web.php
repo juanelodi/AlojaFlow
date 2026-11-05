@@ -84,6 +84,7 @@ Route::prefix('reservar/{codigo}')->name('motor.')->middleware([ModuloActivo::cl
     Route::get('/r/{publico}/confirmacion.pdf', [MotorReservasController::class, 'confirmacionPdf'])->name('pdf');
     Route::post('/r/{publico}/pagar/{pasarela}', [MotorReservasController::class, 'pagar'])->middleware([ModuloActivo::class.':pagos', MismoOrigen::class, 'throttle:publico-envio'])->name('pagar');
     Route::get('/r/{publico}/retorno/{pasarela}', [MotorReservasController::class, 'retorno'])->name('retorno');
+    Route::get('/ir/{pasarela}/{referencia}', [MotorReservasController::class, 'ir'])->where('referencia', '[0-9]+-[0-9a-f]{24}')->middleware([ModuloActivo::class.':pagos', 'throttle:publico'])->name('ir');
     Route::post('/r/{publico}/comprobante', [MotorReservasController::class, 'comprobante'])->middleware([MismoOrigen::class, 'throttle:publico-envio', 'throttle:comprobante-envio'])->name('comprobante');
 });
 Route::post('/avisos-pago/{codigo}/{pasarela}', [MotorReservasController::class, 'aviso'])->middleware('throttle:120,1')->name('motor.aviso');

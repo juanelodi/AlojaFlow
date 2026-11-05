@@ -49,6 +49,7 @@ return [
         'ayuda' => 'Wer die Rechnungen ausstellt. In Mexiko wird das XML des CFDI 4.0 vorbereitet; zum Stempeln muss ein PAC angebunden werden.',
     ],
     'facturas' => [
+        'concepto_estancias' => ':impuesto: :unidades Aufenthaltseinheiten zu :tarifa',
         'modelo' => 'Rechnung',
         'modelos' => 'Rechnungen und Quittungen',
         'factura' => 'Rechnung',

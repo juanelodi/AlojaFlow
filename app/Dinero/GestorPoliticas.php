@@ -19,6 +19,7 @@ use App\Models\RegistroAuditoria;
 use App\Models\Reserva;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -41,7 +42,8 @@ final class GestorPoliticas
 
     public function penalizacionCancelacion(Reserva $reserva, Politica $politica): int
     {
-        $dias = (int) $reserva->propiedad->hoy()->diffInDays($reserva->llegada, false);
+        // Se comparan días, no instantes: la llegada no tiene zona, y al oeste de Greenwich faltaría un día; al este, sobraría uno.
+        $dias = (int) CarbonImmutable::parse($reserva->propiedad->hoy()->format('Y-m-d'))->diffInDays(CarbonImmutable::parse($reserva->llegada->format('Y-m-d')), false);
         if ($dias >= $politica->dias_cancelacion_gratuita) {
             return 0;
         }

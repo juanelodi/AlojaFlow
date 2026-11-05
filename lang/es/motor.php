@@ -42,6 +42,8 @@ return [
     'pagar_titulo' => 'Pagar :importe',
     'pagar_ayuda' => 'Se abre la página segura de la empresa de pagos. Tus datos de tarjeta no pasan por este sitio.',
     'pagar_con' => [
+        'redsys' => 'Pagar con tarjeta',
+        'bizum' => 'Pagar con Bizum',
         'stripe' => 'Pagar con tarjeta (Stripe)',
         'mercadopago' => 'Pagar con Mercado Pago',
     ],
@@ -62,6 +64,16 @@ return [
     ],
     // Panel.
     'panel' => [
+        'redsys' => 'Redsys (TPV de tu banco en España)',
+        'redsys_ayuda' => 'Los datos están en el módulo de administración de Redsys, en consulta de datos de comercio. Configura ahí la notificación online. Empieza en pruebas.',
+        'redsys_comercio' => 'Código de comercio (FUC)',
+        'redsys_comercio_ayuda' => 'Nueve dígitos.',
+        'redsys_terminal' => 'Terminal',
+        'redsys_clave' => 'Clave de firma',
+        'redsys_pruebas' => 'Entorno de pruebas',
+        'redsys_pruebas_ayuda' => 'Apagado, se cobra de verdad.',
+        'redsys_bizum' => 'Ofrecer también Bizum',
+        'redsys_bizum_ayuda' => 'Tu banco tiene que tenerlo activado en este terminal.',
         'titulo' => 'Motor de reservas',
         'propiedad_ayuda' => 'Cada propiedad independiente tiene su propia página pública de reservas.',
         'activo' => 'Aceptar reservas en línea',
@@ -109,4 +121,7 @@ return [
         'hasta' => 'Tienes hasta :fecha.',
         'boton' => 'Ver mi ficha de pago',
     ],
+    'ir_titulo' => 'Te llevamos a la página de pago',
+    'ir_ayuda' => 'Si no pasa nada en unos segundos, pulsa el botón.',
+    'ir_boton' => 'Ir a pagar',
 ];

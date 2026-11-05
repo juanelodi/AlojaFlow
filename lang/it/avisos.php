@@ -23,4 +23,8 @@ return [
     'registro_por_vencer' => 'Un numero di registrazione o licenza di questa struttura scade tra meno di 30 giorni, o è già scaduto. Rinnovalo e aggiorna la data in Registrazioni turistiche.',
     'comprobantes_por_revisar' => 'Ci sono ricevute di pagamento da controllare. Vedile in Finanze → Ricevute di pagamento.',
     'grupo_habitaciones_liberadas' => 'Del gruppo :grupo sono state liberate :habitaciones camere senza responsabile, perché il termine è passato.',
+    'autoridad_rechazadas' => 'Il registro dei viaggiatori ha rifiutato delle comunicazioni. Controllale in Operazioni → Registro dei viaggiatori.',
+    'autoridad_faltan_datos' => 'Ad alcune comunicazioni del registro mancano dati. Completali in Operazioni → Registro dei viaggiatori.',
+    'autoridad_atrasadas' => 'Ci sono comunicazioni al registro fuori termine: sono 24 ore. Gestiscile in Operazioni → Registro dei viaggiatori.',
+    'autoridad_sin_conexion' => 'Impossibile contattare il registro dopo vari tentativi. Controlla la connessione in Operazioni → Registro dei viaggiatori.',
 ];

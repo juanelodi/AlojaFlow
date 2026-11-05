@@ -15,7 +15,10 @@ namespace App\Pagos;
  */
 final readonly class InicioPago
 {
-    public function __construct(public string $referencia, public string $url)
+    /**
+     * @param  array<string, mixed>  $datos  lo que hace falta guardar en el cobro, además de a dónde mandar
+     */
+    public function __construct(public string $referencia, public string $url, public array $datos = [])
     {
     }
 }

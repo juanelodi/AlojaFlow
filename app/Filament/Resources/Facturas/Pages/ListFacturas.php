@@ -12,6 +12,8 @@ namespace App\Filament\Resources\Facturas\Pages;
 
 use App\Filament\Resources\Facturas\FacturaResource;
 use App\Models\Factura;
+use App\Models\Propiedad;
+use App\Paises\Paises;
 use App\Support\Csv;
 use App\Support\Dinero;
 use Filament\Actions\Action;
@@ -36,10 +38,80 @@ class ListFacturas extends ListRecords
                     DatePicker::make('desde')->label(__('dinero.facturas.desde'))->required()->default(now()->startOfMonth()),
                     DatePicker::make('hasta')->label(__('dinero.facturas.hasta'))->required()->default(now()->endOfMonth())->afterOrEqual('desde'),
                     Select::make('formato')->label(__('herramientas.facturas.formato'))->required()->native(false)->default('excel')
-                        ->options(['excel' => __('herramientas.facturas.excel'), 'csv' => __('herramientas.facturas.csv')]),
+                        ->options(fn (): array => ['excel' => __('herramientas.facturas.excel'), 'csv' => __('herramientas.facturas.csv')] + ($this->hayLibroFiscal() ? ['libro' => __('autoridad.libro.formato')] : [])),
                 ])
-                ->action(fn (array $data): StreamedResponse => $this->csv((string) $data['desde'], (string) $data['hasta'], (string) $data['formato'])),
+                ->action(fn (array $data): StreamedResponse => $data['formato'] === 'libro'
+                    ? $this->libro((string) $data['desde'], (string) $data['hasta'])
+                    : $this->csv((string) $data['desde'], (string) $data['hasta'], (string) $data['formato'])),
         ];
+    }
+
+    private function hayLibroFiscal(): bool
+    {
+        return Propiedad::query()->whereIn('id', FacturaResource::propiedadesGestionables())->whereNotNull('paquete_pais')->get()
+            ->contains(fn (Propiedad $propiedad): bool => Paises::de($propiedad)->exportaLibroFiscal());
+    }
+
+    /**
+     * Una fila por factura y tipo de impuesto, que es como las pide un programa de facturación. No es un registro de VeriFactu: el documento fiscal lo emite ese programa.
+     */
+    private function libro(string $desde, string $hasta): StreamedResponse
+    {
+        $propiedades = Propiedad::query()->whereIn('id', FacturaResource::propiedadesGestionables())->whereNotNull('paquete_pais')->get()
+            ->filter(fn (Propiedad $propiedad): bool => Paises::de($propiedad)->exportaLibroFiscal())->pluck('id');
+        $facturas = Factura::query()->with('lineas.impuestos')->whereIn('propiedad_id', $propiedades)
+            ->whereDate('emitida_en', '>=', $desde)->whereDate('emitida_en', '<=', $hasta)->orderBy('emitida_en')->get();
+        $importe = fn (int $centavos, string $moneda): string => str_replace('.', ',', Dinero::aDecimal($centavos, $moneda));
+
+        return response()->streamDownload(function () use ($facturas, $importe): void {
+            $salida = fopen('php://output', 'w');
+            if ($salida === false) {
+                return;
+            }
+            fwrite($salida, "\xEF\xBB\xBF");
+            $campos = ['nif_emisor', 'emisor', 'serie', 'numero', 'fecha', 'tipo', 'nif_receptor', 'receptor', 'impuesto', 'tasa', 'base', 'cuota', 'no_sujeto', 'total', 'estado'];
+            fputcsv($salida, array_map(fn (string $c): string => __('autoridad.libro.'.$c), $campos), ';');
+            foreach ($facturas as $factura) {
+                /** @var Factura $factura */
+                $porTipo = [];
+                $sinImpuesto = 0;
+                foreach ($factura->lineas as $linea) {
+                    if ($linea->impuestos->isEmpty()) {
+                        $sinImpuesto += $linea->importe;
+                    }
+                    foreach ($linea->impuestos as $impuesto) {
+                        $clave = $impuesto->nombre.'|'.(float) $impuesto->tasa;
+                        $porTipo[$clave] ??= ['nombre' => $impuesto->nombre, 'tasa' => (float) $impuesto->tasa, 'base' => 0, 'cuota' => 0];
+                        $porTipo[$clave]['base'] += $impuesto->base;
+                        $porTipo[$clave]['cuota'] += $impuesto->importe;
+                    }
+                }
+                $nif = (string) ($factura->receptor['identificador_fiscal'] ?? '');
+                $comun = [
+                    $factura->emisor['identificador_fiscal'] ?? '',
+                    $factura->emisor['nombre'] ?? '',
+                    $factura->serie,
+                    $factura->numero,
+                    $factura->emitida_en->format('Y-m-d'),
+                    $nif !== '' ? 'F1' : 'F2',
+                    $nif,
+                    $factura->receptor['nombre'] ?? '',
+                ];
+                foreach ($porTipo === [] ? [null] : array_values($porTipo) as $i => $fila) {
+                    fputcsv($salida, Csv::fila([
+                        ...$comun,
+                        $fila['nombre'] ?? '',
+                        $fila === null ? '' : str_replace('.', ',', (string) $fila['tasa']),
+                        $fila === null ? '' : $importe($fila['base'], $factura->moneda),
+                        $fila === null ? '' : $importe($fila['cuota'], $factura->moneda),
+                        $i === 0 ? $importe($sinImpuesto, $factura->moneda) : '',
+                        $i === 0 ? $importe($factura->total, $factura->moneda) : '',
+                        $factura->estado->etiqueta(),
+                    ]), ';');
+                }
+            }
+            fclose($salida);
+        }, 'libro-facturas-'.$desde.'-'.$hasta.'.csv', ['Content-Type' => 'text/csv; charset=utf-8']);
     }
 
     /**

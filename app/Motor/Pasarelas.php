@@ -15,6 +15,7 @@ use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Pagos\ProveedorMercadoPago;
 use App\Pagos\ProveedorPago;
+use App\Pagos\ProveedorRedsys;
 use App\Pagos\ProveedorStripe;
 
 /**
@@ -25,6 +26,10 @@ final class Pasarelas
     public const STRIPE = 'stripe';
 
     public const MERCADOPAGO = 'mercadopago';
+
+    public const REDSYS = 'redsys';
+
+    public const BIZUM = 'bizum';
 
     public function __construct(private readonly Propiedad $propiedad)
     {
@@ -50,6 +55,14 @@ final class Pasarelas
         }
         if ($ajustes->tieneLlave('mercadopago_token')) {
             $disponibles[self::MERCADOPAGO] = new ProveedorMercadoPago((string) $ajustes->llave('mercadopago_token'), $ajustes->llave('mercadopago_webhook'));
+        }
+        $redsys = $ajustes->redsys();
+        if ($this->propiedad->moneda === 'EUR' && $ajustes->tieneLlave('redsys_clave') && filled($redsys['comercio'])) {
+            $clave = (string) $ajustes->llave('redsys_clave');
+            $disponibles[self::REDSYS] = new ProveedorRedsys($redsys['comercio'], $redsys['terminal'], $clave, $redsys['pruebas']);
+            if ($redsys['bizum']) {
+                $disponibles[self::BIZUM] = new ProveedorRedsys($redsys['comercio'], $redsys['terminal'], $clave, $redsys['pruebas'], bizum: true);
+            }
         }
 
         return $disponibles;

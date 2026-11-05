@@ -52,6 +52,8 @@ return [
         'gastos' => 'Ausgaben und Einnahmen',
     ],
     'columnas' => [
+        'unidades' => 'Besteuerte Einheiten',
+        'exentas' => 'Befreite Einheiten',
         'revpar' => 'RevPAR',
         'vendidas' => 'Verkaufte Nächte',
         'total_anterior' => 'Gesamt im Vorjahr',

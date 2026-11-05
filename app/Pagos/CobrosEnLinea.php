@@ -77,7 +77,7 @@ final class CobrosEnLinea
         ]);
         $separador = str_contains($urlExito, '?') ? '&' : '?';
         $inicio = $proveedor->iniciar($reserva, $importe, $concepto, $urlExito.$separador.'cobro='.$cobro->id, $urlCancelar, $urlAviso, self::referenciaInterna($cobro->id));
-        $cobro->update(['referencia' => $inicio->referencia, 'datos' => ['url' => $inicio->url]]);
+        $cobro->update(['referencia' => $inicio->referencia, 'datos' => ['url' => $inicio->url] + $inicio->datos]);
 
         return $inicio->url;
     }
@@ -243,6 +243,16 @@ final class CobrosEnLinea
      * Lo que viaja a la pasarela para reconocer el cobro cuando vuelve. Va firmado: otro pago de la
      * misma cuenta de la pasarela con un número cualquiera no se aplica a una reserva.
      */
+    /**
+     * El cobro que dice una referencia firmada, si sigue esperando el pago.
+     */
+    public static function pendienteDeReferencia(string $referencia, int $propiedadId, string $pasarela): ?PagoEnLinea
+    {
+        $id = self::idDeReferencia($referencia);
+
+        return $id === null ? null : PagoEnLinea::query()->where('propiedad_id', $propiedadId)->where('pasarela', $pasarela)->where('estado', 'pendiente')->find($id);
+    }
+
     public static function referenciaInterna(int $id): string
     {
         return $id.'-'.self::firmaReferencia($id);

@@ -52,6 +52,8 @@ return [
         'gastos' => 'Spese ed entrate',
     ],
     'columnas' => [
+        'unidades' => 'Pernottamenti tassati',
+        'exentas' => 'Pernottamenti esenti',
         'revpar' => 'RevPAR',
         'vendidas' => 'Notti vendute',
         'total_anterior' => 'Totale dell’anno scorso',

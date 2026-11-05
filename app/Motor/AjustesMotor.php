@@ -72,6 +72,21 @@ final class AjustesMotor
         ];
     }
 
+    /**
+     * El TPV de Redsys (D-102). La clave va aparte, cifrada.
+     *
+     * @return array{comercio: string, terminal: string, pruebas: bool, bizum: bool}
+     */
+    public function redsys(): array
+    {
+        return [
+            'comercio' => trim((string) $this->valor('redsys_comercio', '')),
+            'terminal' => trim((string) $this->valor('redsys_terminal', '1')) ?: '1',
+            'pruebas' => (bool) $this->valor('redsys_pruebas', true),
+            'bizum' => (bool) $this->valor('redsys_bizum', false),
+        ];
+    }
+
     public function diasMinimosAntelacion(): int
     {
         return max(0, (int) $this->valor('dias_antelacion', 0));

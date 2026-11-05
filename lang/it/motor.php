@@ -42,6 +42,8 @@ return [
     'pagar_titulo' => 'Paga :importe',
     'pagar_ayuda' => 'Si apre la pagina sicura della società di pagamento. I dati della tua carta non passano da questo sito.',
     'pagar_con' => [
+        'redsys' => 'Paga con carta',
+        'bizum' => 'Paga con Bizum',
         'stripe' => 'Paga con carta (Stripe)',
         'mercadopago' => 'Paga con Mercado Pago',
     ],
@@ -61,6 +63,16 @@ return [
         'nada_que_cobrar' => 'Questa prenotazione non ha nulla da pagare online.',
     ],
     'panel' => [
+        'redsys' => 'Redsys (POS della tua banca in Spagna)',
+        'redsys_ayuda' => 'I dati sono nel modulo di amministrazione di Redsys, consultazione dati esercente. Configura lì la notifica online. Inizia in prova.',
+        'redsys_comercio' => 'Codice esercente (FUC)',
+        'redsys_comercio_ayuda' => 'Nove cifre.',
+        'redsys_terminal' => 'Terminale',
+        'redsys_clave' => 'Chiave di firma',
+        'redsys_pruebas' => 'Ambiente di prova',
+        'redsys_pruebas_ayuda' => 'Spento, si incassa davvero.',
+        'redsys_bizum' => 'Offri anche Bizum',
+        'redsys_bizum_ayuda' => 'La tua banca deve averlo attivato su questo terminale.',
         'titulo' => 'Motore di prenotazione',
         'propiedad_ayuda' => 'Ogni struttura indipendente ha la propria pagina pubblica di prenotazione.',
         'activo' => 'Accetta prenotazioni online',
@@ -108,4 +120,7 @@ return [
         'hasta' => 'Hai tempo fino al :fecha.',
         'boton' => 'Vedi la mia scheda di pagamento',
     ],
+    'ir_titulo' => 'Ti portiamo alla pagina di pagamento',
+    'ir_ayuda' => 'Se non succede nulla entro pochi secondi, premi il pulsante.',
+    'ir_boton' => 'Vai al pagamento',
 ];

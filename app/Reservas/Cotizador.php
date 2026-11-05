@@ -33,6 +33,9 @@ final class Cotizador
 {
     public static function cotizar(Unidad $unidad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas = 1): ?Cotizacion
     {
+        // Las temporadas son fechas sin zona: una llegada con la zona de la propiedad caería en el día de al lado.
+        $llegada = CarbonImmutable::parse($llegada->format('Y-m-d'));
+        $salida = CarbonImmutable::parse($salida->format('Y-m-d'));
         $tarifa = $unidad->tarifa_id === null ? null : Tarifa::query()->where('activa', true)->find($unidad->tarifa_id);
         // El recorrido es por noche: sin este tope, unas fechas absurdas ocupan el servidor.
         if ($tarifa === null || $salida->lte($llegada) || $llegada->diffInDays($salida) > GestorReservas::NOCHES_MAXIMAS) {
@@ -94,10 +97,10 @@ final class Cotizador
 
         $base = $alojamiento - $descuento;
         $impuestos = [];
-        foreach (self::impuestosAplicables($unidad->propiedad_id, $llegada) as $impuesto) {
+        foreach (self::impuestosAplicables($unidad->propiedad_id, $llegada, CarbonImmutable::now($unidad->propiedad->zona_horaria)->format('Y-m-d')) as $impuesto) {
             $impuestos[] = [
                 'nombre' => $impuesto->nombre,
-                'importe' => self::importeImpuesto($impuesto, $base, $noches, $personas, $exentosPorEdad),
+                'importe' => self::importeImpuesto($impuesto, $base, $noches, $personas, $exentosPorEdad, $llegada),
                 'incluido' => $impuesto->incluido_en_precio,
                 'canal' => $canalCobraImpuestos && ! $impuesto->incluido_en_precio,
             ];
@@ -123,7 +126,7 @@ final class Cotizador
         return $base + max(0, $personas - $tarifa->personas_incluidas) * $extra;
     }
 
-    private static function importeSegunBase(BaseCargo $base, int $importe, ?string $porcentaje, int $alojamiento, int $noches, int $personas): float
+    private static function importeSegunBase(BaseCargo $base, int $importe, ?string $porcentaje, int $alojamiento, float $noches, int $personas): float
     {
         return match ($base) {
             BaseCargo::PorEstancia => $importe,
@@ -138,18 +141,46 @@ final class Cotizador
      * Si el impuesto va incluido en un precio porcentual, se saca del precio («hacia atrás»): del
      * total con 19 % incluido, el impuesto es total − total / 1.19.
      */
-    private static function importeImpuesto(Impuesto $impuesto, int $base, int $noches, int $personas, int $exentosPorEdad = 0): int
+    private static function importeImpuesto(Impuesto $impuesto, int $base, int $noches, int $personas, int $exentosPorEdad, CarbonImmutable $llegada): int
     {
         if ($impuesto->base === BaseCargo::PorcentajeAlojamiento) {
             $tasa = self::tasaEfectiva($impuesto, $noches);
 
             return (int) round($impuesto->incluido_en_precio ? $base - $base / (1 + $tasa) : $base * $tasa);
         }
-        $gravadas = $impuesto->tope_noches === null ? $noches : min($noches, $impuesto->tope_noches);
         // Sin fechas de nacimiento en la reserva, la edad mínima se toma de cuántos menores se capturaron.
         $personasGravadas = $impuesto->edad_minima === null ? $personas : max(0, $personas - $exentosPorEdad);
 
-        return (int) round(self::importeSegunBase($impuesto->base, (int) $impuesto->importe, null, $base, $gravadas, $personasGravadas));
+        return (int) round(self::importeSegunBase($impuesto->base, (int) $impuesto->importe, null, $base, self::nochesConDescuento($impuesto, $llegada, $noches), $personasGravadas));
+    }
+
+    private static function nochesGravadas(Impuesto $impuesto, int $noches): int
+    {
+        return $impuesto->tope_noches === null ? $noches : min($noches, $impuesto->tope_noches);
+    }
+
+    /**
+     * Las noches que paga, valiendo menos las de temporada baja y las de una estancia larga (D-101). Cada noche se mira por su fecha.
+     */
+    private static function nochesConDescuento(Impuesto $impuesto, CarbonImmutable $llegada, int $noches): float
+    {
+        $gravadas = self::nochesGravadas($impuesto, $noches);
+        if ($impuesto->temporada_baja_descuento === null && $impuesto->dias_largos_desde === null) {
+            return $gravadas;
+        }
+        $suma = 0.0;
+        for ($i = 0; $i < $gravadas; $i++) {
+            $factor = 1.0;
+            if ($impuesto->enTemporadaBaja($llegada->addDays($i))) {
+                $factor *= 1 - (float) $impuesto->temporada_baja_descuento / 100;
+            }
+            if ($impuesto->dias_largos_desde !== null && $i + 1 >= $impuesto->dias_largos_desde) {
+                $factor *= 1 - (float) $impuesto->dias_largos_descuento / 100;
+            }
+            $suma += $factor;
+        }
+
+        return $suma;
     }
 
     /**
@@ -166,16 +197,16 @@ final class Cotizador
     /**
      * @return Collection<int, Impuesto>
      */
-    private static function impuestosAplicables(int $propiedadId, CarbonImmutable $llegada): Collection
+    private static function impuestosAplicables(int $propiedadId, CarbonImmutable $llegada, string $reservadaEn): Collection
     {
-        return Impuesto::query()->aplicables($propiedadId, $llegada->format('Y-m-d'))->orderBy('orden')->orderBy('nombre')->get();
+        return Impuesto::query()->aplicables($propiedadId, $llegada->format('Y-m-d'), $reservadaEn)->orderBy('orden')->orderBy('nombre')->get();
     }
 
     /**
      * Lo que se cobró de impuestos en una reserva ya guardada, a partir de su total: si alguien lo cambió a mano, el impuesto lo sigue. Se
      * despeja lo que quedó de alojamiento y se calcula sobre eso, con las reglas de su fecha de llegada (D-082).
      *
-     * @return list<array{impuesto_id: int, nombre: string, importe: int, incluido: bool, cobrado_por_canal: bool}>
+     * @return list<array{impuesto_id: int, nombre: string, importe: int, incluido: bool, cobrado_por_canal: bool, unidades: int, unidades_exentas: int, importe_unitario: int|null}>
      */
     public static function impuestosDeReserva(Reserva $reserva): array
     {
@@ -184,7 +215,9 @@ final class Cotizador
         $exentos = max(0, (int) $reserva->ninos);
         $canalCobra = $reserva->origen_texto !== null
             && Canal::query()->where('propiedad_id', $reserva->propiedad_id)->where('nombre', $reserva->origen_texto)->value('cobra_impuestos');
-        $impuestos = self::impuestosAplicables($reserva->propiedad_id, $reserva->llegada);
+        $reservadaEn = CarbonImmutable::parse($reserva->creado_en ?? now('UTC'))->setTimezone($reserva->propiedad->zona_horaria)->format('Y-m-d');
+        $llegada = CarbonImmutable::parse($reserva->llegada->format('Y-m-d'));
+        $impuestos = self::impuestosAplicables($reserva->propiedad_id, $llegada, $reservadaEn);
 
         $sinCargos = $reserva->total - (int) $reserva->cargos()->sum('importe');
         $fijos = 0;
@@ -196,17 +229,27 @@ final class Cotizador
             if ($impuesto->base === BaseCargo::PorcentajeAlojamiento) {
                 $tasas += self::tasaEfectiva($impuesto, $noches);
             } else {
-                $fijos += self::importeImpuesto($impuesto, 0, $noches, $personas, $exentos);
+                $fijos += self::importeImpuesto($impuesto, 0, $noches, $personas, $exentos, $llegada);
             }
         }
         $base = (int) round(max(0, $sinCargos - $fijos) / (1 + $tasas));
 
-        return $impuestos->map(fn (Impuesto $impuesto): array => [
-            'impuesto_id' => $impuesto->id,
-            'nombre' => $impuesto->nombre,
-            'importe' => self::importeImpuesto($impuesto, $base, $noches, $personas, $exentos),
-            'incluido' => $impuesto->incluido_en_precio,
-            'cobrado_por_canal' => $canalCobra && ! $impuesto->incluido_en_precio,
-        ])->values()->all();
+        return $impuestos->map(function (Impuesto $impuesto) use ($base, $noches, $personas, $exentos, $llegada, $canalCobra): array {
+            $porPersonaNoche = $impuesto->base === BaseCargo::PorPersonaNoche;
+            $gravadas = self::nochesGravadas($impuesto, $noches);
+            $exentosAqui = $impuesto->edad_minima === null ? 0 : min($exentos, $personas);
+
+            return [
+                'impuesto_id' => $impuesto->id,
+                'nombre' => $impuesto->nombre,
+                'importe' => self::importeImpuesto($impuesto, $base, $noches, $personas, $exentos, $llegada),
+                'incluido' => $impuesto->incluido_en_precio,
+                'cobrado_por_canal' => $canalCobra && ! $impuesto->incluido_en_precio,
+                // Lo que la declaración y la factura tienen que decir: cuántas unidades de estancia, y a cuánto.
+                'unidades' => $porPersonaNoche ? $gravadas * max(0, $personas - $exentosAqui) : 0,
+                'unidades_exentas' => $porPersonaNoche ? $gravadas * $exentosAqui : 0,
+                'importe_unitario' => $impuesto->base === BaseCargo::PorcentajeAlojamiento ? null : (int) $impuesto->importe,
+            ];
+        })->values()->all();
     }
 }

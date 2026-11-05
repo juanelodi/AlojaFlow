@@ -270,7 +270,7 @@ describe('reglas de impuesto', function (): void {
         $impuesto = Impuesto::query()->sole();
         expect($impuesto->codigo)->toBe('ISH')->and($impuesto->nombre)->toContain('Quintana Roo')->and((float) $impuesto->tasa)->toBe(5.0)->and($impuesto->incluido_en_precio)->toBeFalse();
 
-        $this->propiedad->update(['pais' => 'ES', 'paquete_pais' => PaquetePais::Espana]);
+        $this->propiedad->update(['pais' => 'US', 'paquete_pais' => PaquetePais::EstadosUnidos]);
         Livewire::actingAs($this->admin)->test(ListImpuestos::class)->assertActionHidden('catalogo');
     });
 });
@@ -365,7 +365,7 @@ describe('informes', function (): void {
         ($this->reservar)(3, 4, ['total' => 100000, 'origen_texto' => 'Portal']);
 
         $fila = Informes::generar('impuestos', [$this->propiedad->id], $this->hoy, $this->hoy->addDays(5))['filas'][0];
-        expect($fila[0])->toBe('ISH')->and($fila[1])->toBe('2')->and($fila[2])->toContain('100.00')->and($fila[3])->toContain('100.00');
+        expect($fila[0])->toBe('ISH')->and($fila[1])->toBe('2')->and($fila[4])->toContain('100.00')->and($fila[5])->toContain('100.00');
     });
 
     it('limpieza por persona y grupos', function (): void {

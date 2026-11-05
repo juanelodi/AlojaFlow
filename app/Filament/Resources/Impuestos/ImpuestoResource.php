@@ -85,6 +85,15 @@ class ImpuestoResource extends RecursoDePropiedad
                 TextInput::make('tope_noches')->label(__('caja.impuestos.tope_noches'))->helperText(__('caja.impuestos.tope_noches_ayuda'))->numeric()->minValue(1)->maxValue(3650),
                 TextInput::make('edad_minima')->label(__('caja.impuestos.edad_minima'))->helperText(__('caja.impuestos.edad_minima_ayuda'))->numeric()->minValue(1)->maxValue(99)
                     ->visible(fn (Get $get): bool => ! $esPorcentaje($get)),
+                Toggle::make('fijar_al_reservar')->label(__('autoridad.tasa.fijar'))->helperText(__('autoridad.tasa.fijar_ayuda')),
+                Section::make(__('autoridad.tasa.descuentos'))->description(__('autoridad.tasa.descuentos_ayuda'))->collapsed()->columnSpanFull()->columns(['default' => 1, 'md' => 3])
+                    ->visible(fn (Get $get): bool => ! $esPorcentaje($get))->schema([
+                        TextInput::make('temporada_baja_desde')->label(__('autoridad.tasa.baja_desde'))->placeholder('11-01')->regex('/^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/')->maxLength(5),
+                        TextInput::make('temporada_baja_hasta')->label(__('autoridad.tasa.baja_hasta'))->placeholder('04-30')->regex('/^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/')->maxLength(5),
+                        TextInput::make('temporada_baja_descuento')->label(__('autoridad.tasa.baja_descuento'))->numeric()->minValue(0)->maxValue(100)->step('any')->suffix('%'),
+                        TextInput::make('dias_largos_desde')->label(__('autoridad.tasa.largos_desde'))->numeric()->integer()->minValue(2)->maxValue(3650),
+                        TextInput::make('dias_largos_descuento')->label(__('autoridad.tasa.largos_descuento'))->numeric()->minValue(0)->maxValue(100)->step('any')->suffix('%'),
+                    ]),
                 TextInput::make('codigo')->label(__('ui.impuestos.codigo'))->helperText(__('ui.impuestos.codigo_ayuda'))->maxLength(30),
                 TextInput::make('orden')->label(__('ui.unidades.orden'))->numeric()->default(0),
                 Toggle::make('activo')->label(__('ui.tarifas.activa'))->default(true),

@@ -52,6 +52,8 @@ return [
         'gastos' => 'Despesas e receitas',
     ],
     'columnas' => [
+        'unidades' => 'Estadias tributadas',
+        'exentas' => 'Estadias isentas',
         'revpar' => 'RevPAR',
         'vendidas' => 'Noites vendidas',
         'total_anterior' => 'Total do ano passado',

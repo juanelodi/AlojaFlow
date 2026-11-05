@@ -49,6 +49,7 @@ return [
         'ayuda' => 'Quem emite as faturas. No México, o XML do CFDI 4.0 fica preparado; para o timbrar é preciso ligar um PAC.',
     ],
     'facturas' => [
+        'concepto_estancias' => ':impuesto: :unidades estadias a :tarifa',
         'modelo' => 'fatura',
         'modelos' => 'Faturas e recibos',
         'factura' => 'Fatura',

@@ -117,7 +117,7 @@ final class GestorLimpieza
 
         foreach ($reservas as $reserva) {
             $nombreUnidad = $reserva->unidad->nombre ?? '';
-            if ($reserva->salida->lte($hasta)) {
+            if ($reserva->salida->format('Y-m-d') <= $hasta->format('Y-m-d')) {
                 $fecha = $reserva->salida->format('Y-m-d');
                 $clave = 'salida:'.$reserva->unidad_id.':'.$fecha.':'.$reserva->id;
                 $vigentes[] = $clave;
@@ -166,10 +166,10 @@ final class GestorLimpieza
         foreach (MantenimientoRecurrente::query()->where('propiedad_id', $propiedad->id)->where('activo', true)->where('proxima_fecha', '<=', $hasta->format('Y-m-d'))->get() as $trabajo) {
             $cada = max(1, $trabajo->cada_dias);
             $fecha = $trabajo->proxima_fecha;
-            while ($fecha->lt($hoy)) {
+            while ($fecha->format('Y-m-d') < $hoy->format('Y-m-d')) {
                 $fecha = $fecha->addDays($cada);
             }
-            while ($fecha->lte($hasta)) {
+            while ($fecha->format('Y-m-d') <= $hasta->format('Y-m-d')) {
                 $nuevas += Tarea::query()->insertOrIgnore([
                     'propiedad_id' => $propiedad->id,
                     'unidad_id' => $trabajo->unidad_id,

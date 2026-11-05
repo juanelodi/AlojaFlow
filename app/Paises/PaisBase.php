@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Paises;
 
+use App\Autoridades\RegistroViajeros;
 use App\Enums\TipoDocumentoLegal;
 use App\Facturacion\GeneradorFiscal;
 use Illuminate\Support\Facades\Lang;
@@ -54,6 +55,21 @@ abstract class PaisBase implements Pais
     public function generadorFiscal(): ?GeneradorFiscal
     {
         return null;
+    }
+
+    public function registroViajeros(): ?RegistroViajeros
+    {
+        return null;
+    }
+
+    public function declaracionEstancias(): ?DeclaracionEstancias
+    {
+        return null;
+    }
+
+    public function exportaLibroFiscal(): bool
+    {
+        return false;
     }
 
     public function textosBase(string $idioma): array

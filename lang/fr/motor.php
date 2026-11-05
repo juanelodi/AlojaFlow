@@ -42,6 +42,8 @@ return [
     'pagar_titulo' => 'Payer :importe',
     'pagar_ayuda' => 'La page sécurisée de la société de paiement s’ouvre. Vos données de carte ne passent pas par ce site.',
     'pagar_con' => [
+        'redsys' => 'Payer par carte',
+        'bizum' => 'Payer avec Bizum',
         'stripe' => 'Payer par carte (Stripe)',
         'mercadopago' => 'Payer avec Mercado Pago',
     ],
@@ -61,6 +63,16 @@ return [
         'nada_que_cobrar' => 'Cette réservation n’a plus rien à payer en ligne.',
     ],
     'panel' => [
+        'redsys' => 'Redsys (TPV de votre banque en Espagne)',
+        'redsys_ayuda' => 'Les données se trouvent dans le module d’administration de Redsys, consultation des données du commerce. Configurez-y la notification en ligne. Commencez en test.',
+        'redsys_comercio' => 'Code commerçant (FUC)',
+        'redsys_comercio_ayuda' => 'Neuf chiffres.',
+        'redsys_terminal' => 'Terminal',
+        'redsys_clave' => 'Clé de signature',
+        'redsys_pruebas' => 'Environnement de test',
+        'redsys_pruebas_ayuda' => 'Désactivé, les paiements sont réels.',
+        'redsys_bizum' => 'Proposer aussi Bizum',
+        'redsys_bizum_ayuda' => 'Votre banque doit l’avoir activé sur ce terminal.',
         'titulo' => 'Moteur de réservation',
         'propiedad_ayuda' => 'Chaque établissement indépendant a sa propre page publique de réservation.',
         'activo' => 'Accepter les réservations en ligne',
@@ -108,4 +120,7 @@ return [
         'hasta' => 'Vous avez jusqu’au :fecha.',
         'boton' => 'Voir ma fiche de paiement',
     ],
+    'ir_titulo' => 'Direction la page de paiement',
+    'ir_ayuda' => 'Si rien ne se passe dans quelques secondes, cliquez sur le bouton.',
+    'ir_boton' => 'Aller au paiement',
 ];

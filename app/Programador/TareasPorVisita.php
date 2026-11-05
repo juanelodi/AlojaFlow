@@ -48,6 +48,7 @@ final class TareasPorVisita
         'alojaflow:limpieza' => 15,
         'alojaflow:limpiar' => 1440,
         'alojaflow:grupos' => 1440,
+        'alojaflow:autoridades' => 10,
         'alojaflow:copia --programada' => 1440,
     ];
 

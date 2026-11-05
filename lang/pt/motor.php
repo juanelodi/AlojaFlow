@@ -42,6 +42,8 @@ return [
     'pagar_titulo' => 'Pagar :importe',
     'pagar_ayuda' => 'Abre-se a página segura da empresa de pagamentos. Os dados do seu cartão não passam por este site.',
     'pagar_con' => [
+        'redsys' => 'Pagar com cartão',
+        'bizum' => 'Pagar com Bizum',
         'stripe' => 'Pagar com cartão (Stripe)',
         'mercadopago' => 'Pagar com Mercado Pago',
     ],
@@ -61,6 +63,16 @@ return [
         'nada_que_cobrar' => 'Esta reserva não tem nada a pagar online.',
     ],
     'panel' => [
+        'redsys' => 'Redsys (TPV do seu banco em Espanha)',
+        'redsys_ayuda' => 'Os dados estão no módulo de administração da Redsys, em consulta de dados do comércio. Configure aí a notificação online. Comece em testes.',
+        'redsys_comercio' => 'Código de comerciante (FUC)',
+        'redsys_comercio_ayuda' => 'Nove dígitos.',
+        'redsys_terminal' => 'Terminal',
+        'redsys_clave' => 'Chave de assinatura',
+        'redsys_pruebas' => 'Ambiente de testes',
+        'redsys_pruebas_ayuda' => 'Desligado, cobra-se a sério.',
+        'redsys_bizum' => 'Oferecer também Bizum',
+        'redsys_bizum_ayuda' => 'O seu banco tem de o ter ativado neste terminal.',
         'titulo' => 'Motor de reservas',
         'propiedad_ayuda' => 'Cada alojamento independente tem a sua própria página pública de reservas.',
         'activo' => 'Aceitar reservas online',
@@ -108,4 +120,7 @@ return [
         'hasta' => 'Tens até :fecha.',
         'boton' => 'Ver a minha ficha de pagamento',
     ],
+    'ir_titulo' => 'A levá-lo para a página de pagamento',
+    'ir_ayuda' => 'Se nada acontecer em alguns segundos, carregue no botão.',
+    'ir_boton' => 'Ir pagar',
 ];

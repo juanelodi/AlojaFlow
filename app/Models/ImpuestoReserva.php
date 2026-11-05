@@ -23,6 +23,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $importe
  * @property bool $incluido
  * @property bool $cobrado_por_canal
+ * @property int $unidades
+ * @property int $unidades_exentas
+ * @property int|null $importe_unitario
  */
 class ImpuestoReserva extends Model
 {
@@ -34,7 +37,7 @@ class ImpuestoReserva extends Model
 
     protected function casts(): array
     {
-        return ['importe' => 'integer', 'incluido' => 'boolean', 'cobrado_por_canal' => 'boolean'];
+        return ['importe' => 'integer', 'incluido' => 'boolean', 'cobrado_por_canal' => 'boolean', 'unidades' => 'integer', 'unidades_exentas' => 'integer', 'importe_unitario' => 'integer'];
     }
 
     /** @return BelongsTo<Reserva, $this> */

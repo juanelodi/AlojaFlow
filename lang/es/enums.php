@@ -185,4 +185,14 @@ return [
         '03' => '03 · No se llevó a cabo la operación',
         '04' => '04 · Operación incluida en una factura global',
     ],
+    'EstadoEnvioAutoridad' => [
+        'pendiente' => 'Por enviar',
+        'falta_datos' => 'Faltan datos',
+        'enviado' => 'Enviado, sin respuesta',
+        'aceptado' => 'Comunicado',
+        'rechazado' => 'Rechazado',
+        'por_anular' => 'Por anular',
+        'anulando' => 'Anulando',
+        'anulado' => 'Anulado',
+    ],
 ];

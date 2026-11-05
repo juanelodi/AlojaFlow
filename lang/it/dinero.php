@@ -49,6 +49,7 @@ return [
         'ayuda' => 'Chi emette le fatture. In Messico, l’XML del CFDI 4.0 resta pronto; per timbrarlo serve collegare un PAC.',
     ],
     'facturas' => [
+        'concepto_estancias' => ':impuesto: :unidades pernottamenti a :tarifa',
         'modelo' => 'fattura',
         'modelos' => 'Fatture e ricevute',
         'factura' => 'Fattura',

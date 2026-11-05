@@ -52,6 +52,8 @@ return [
         'gastos' => 'Dépenses et recettes',
     ],
     'columnas' => [
+        'unidades' => 'Nuitées taxées',
+        'exentas' => 'Nuitées exonérées',
         'revpar' => 'RevPAR',
         'vendidas' => 'Nuits vendues',
         'total_anterior' => 'Total de l’an dernier',

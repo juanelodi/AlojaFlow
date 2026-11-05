@@ -23,4 +23,8 @@ return [
     'registro_por_vencer' => 'Eine Registrierungs- oder Lizenznummer dieser Unterkunft läuft in weniger als 30 Tagen ab oder ist bereits abgelaufen. Erneuern Sie sie und aktualisieren Sie das Datum unter Tourismusregistrierungen.',
     'comprobantes_por_revisar' => 'Es gibt Zahlungsbelege zu prüfen. Siehe Finanzen → Zahlungsbelege.',
     'grupo_habitaciones_liberadas' => 'Aus der Gruppe :grupo wurden :habitaciones Zimmer ohne verantwortliche Person freigegeben, weil die Frist abgelaufen ist.',
+    'autoridad_rechazadas' => 'Das Gästeregister hat Meldungen abgelehnt. Prüfen Sie sie unter Betrieb → Gästeregister.',
+    'autoridad_faltan_datos' => 'Einigen Meldungen des Gästeregisters fehlen Daten. Ergänzen Sie sie unter Betrieb → Gästeregister.',
+    'autoridad_atrasadas' => 'Meldungen an das Gästeregister sind überfällig: Die Frist beträgt 24 Stunden. Bearbeiten Sie sie unter Betrieb → Gästeregister.',
+    'autoridad_sin_conexion' => 'Das Gästeregister war nach mehreren Versuchen nicht erreichbar. Prüfen Sie die Verbindung unter Betrieb → Gästeregister.',
 ];

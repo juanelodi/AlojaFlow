@@ -329,7 +329,7 @@ final class GestorReservas
             if ($actual->tipo !== TipoReserva::Reserva || $actual->estado === EstadoReserva::Cancelada || $actual->entrada_registrada_en !== null) {
                 throw new ReservaRechazada(__('ui.reservas.error_entrada'));
             }
-            if ($actual->llegada->gt($actual->propiedad->hoy())) {
+            if ($actual->llegada->format('Y-m-d') > $actual->propiedad->hoy()->format('Y-m-d')) {
                 throw new ReservaRechazada(__('ui.reservas.error_entrada_futura'));
             }
             $actual->entrada_registrada_en = now('UTC');

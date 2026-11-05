@@ -49,6 +49,7 @@ return [
         'ayuda' => 'Qui émet les factures. Au Mexique, le XML du CFDI 4.0 est prêt ; pour le timbrer, il faut connecter un PAC.',
     ],
     'facturas' => [
+        'concepto_estancias' => ':impuesto : :unidades nuitées à :tarifa',
         'modelo' => 'facture',
         'modelos' => 'Factures et reçus',
         'factura' => 'Facture',

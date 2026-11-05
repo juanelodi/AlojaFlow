@@ -22,6 +22,9 @@ final readonly class SugerenciaImpuesto
      * @param  float|null  $tasaPlataforma  cuando cobra una plataforma digital o un intermediario, si es distinta
      * @param  string  $ley  dónde comprobarla
      * @param  bool  $verificada  se cotejó contra la ley; si no, solo viene de una fuente secundaria
+     * @param  list<array{importe: int, desde: string|null, hasta: string|null}>  $tramos  importes por persona y noche, en centavos, si no es un porcentaje
+     * @param  array{desde: string, hasta: string, descuento: float}|null  $temporadaBaja
+     * @param  array{desde: int, descuento: float}|null  $diasLargos
      */
     public function __construct(
         public string $codigo,
@@ -32,6 +35,12 @@ final readonly class SugerenciaImpuesto
         public string $fuente,
         public string $fecha,
         public bool $verificada,
+        public array $tramos = [],
+        public ?int $topeNoches = null,
+        public ?int $edadMinima = null,
+        public bool $fijarAlReservar = false,
+        public ?array $temporadaBaja = null,
+        public ?array $diasLargos = null,
     ) {
     }
 }

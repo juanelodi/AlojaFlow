@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Paises;
 
+use App\Autoridades\RegistroViajeros;
 use App\Facturacion\GeneradorFiscal;
 
 /**
@@ -50,6 +51,21 @@ interface Pais
      * El documento fiscal del país; null si solo se emiten recibos sin valor fiscal.
      */
     public function generadorFiscal(): ?GeneradorFiscal;
+
+    /**
+     * A quién hay que comunicarle las reservas y las llegadas; null si en este país no hay un registro al que se le pueda mandar.
+     */
+    public function registroViajeros(): ?RegistroViajeros;
+
+    /**
+     * El archivo para declarar las estancias de una tasa turística, si hay un formato oficial que se conozca.
+     */
+    public function declaracionEstancias(): ?DeclaracionEstancias;
+
+    /**
+     * Si las facturas se exportan por tipo de impuesto para pasarlas a un programa de facturación del país (D-103).
+     */
+    public function exportaLibroFiscal(): bool;
 
     /**
      * Impuestos al hospedaje que se pueden proponer, por estado o provincia. Vacío si no se tiene un catálogo.

@@ -52,6 +52,8 @@ return [
         'gastos' => 'Gastos e ingresos',
     ],
     'columnas' => [
+        'unidades' => 'Estancias gravadas',
+        'exentas' => 'Estancias exentas',
         'revpar' => 'RevPAR',
         'vendidas' => 'Noches vendidas',
         'total_anterior' => 'Total del año pasado',

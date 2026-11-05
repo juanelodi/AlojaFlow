@@ -18,6 +18,7 @@ use App\Models\Archivo;
 use App\Models\ComprobantePago;
 use App\Models\ContactoHuesped;
 use App\Models\Envio;
+use App\Models\EnvioAutoridad;
 use App\Models\Grupo;
 use App\Models\GrupoHabitacion;
 use App\Models\Huesped;
@@ -147,6 +148,7 @@ final class GestorPrivacidad
             }
             $this->anonimizarComoAcompanante($huesped, $marca);
             Opinion::query()->whereIn('reserva_id', $reservas)->update(['comentario' => null]);
+            EnvioAutoridad::query()->whereIn('reserva_id', $reservas)->update(['correcciones' => null, 'ultimo_error' => null]);
             foreach (Aceptacion::query()->with('copia')->whereIn('reserva_id', $reservas)->get() as $aceptacion) {
                 $copia = $aceptacion->copia;
                 $aceptacion->update(['firmante_nombre' => $marca, 'ip' => null, 'agente' => null, 'copia_archivo_id' => null]);

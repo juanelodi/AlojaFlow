@@ -42,6 +42,8 @@ return [
     'pagar_titulo' => ':importe zahlen',
     'pagar_ayuda' => 'Die sichere Seite des Zahlungsanbieters wird geöffnet. Ihre Kartendaten laufen nicht über diese Website.',
     'pagar_con' => [
+        'redsys' => 'Mit Karte zahlen',
+        'bizum' => 'Mit Bizum zahlen',
         'stripe' => 'Mit Karte zahlen (Stripe)',
         'mercadopago' => 'Mit Mercado Pago zahlen',
     ],
@@ -61,6 +63,16 @@ return [
         'nada_que_cobrar' => 'Für diese Buchung ist online nichts mehr zu zahlen.',
     ],
     'panel' => [
+        'redsys' => 'Redsys (POS Ihrer Bank in Spanien)',
+        'redsys_ayuda' => 'Die Daten finden Sie im Verwaltungsmodul von Redsys unter Händlerdaten. Richten Sie dort die Online-Benachrichtigung ein. Beginnen Sie im Testmodus.',
+        'redsys_comercio' => 'Händlercode (FUC)',
+        'redsys_comercio_ayuda' => 'Neun Ziffern.',
+        'redsys_terminal' => 'Terminal',
+        'redsys_clave' => 'Signaturschlüssel',
+        'redsys_pruebas' => 'Testumgebung',
+        'redsys_pruebas_ayuda' => 'Ausgeschaltet wird wirklich abgebucht.',
+        'redsys_bizum' => 'Auch Bizum anbieten',
+        'redsys_bizum_ayuda' => 'Ihre Bank muss es für dieses Terminal aktiviert haben.',
         'titulo' => 'Buchungsmaschine',
         'propiedad_ayuda' => 'Jede eigenständige Unterkunft hat ihre eigene öffentliche Buchungsseite.',
         'activo' => 'Online-Buchungen annehmen',
@@ -108,4 +120,7 @@ return [
         'hasta' => 'Sie haben bis :fecha Zeit.',
         'boton' => 'Meinen Zahlungsbeleg ansehen',
     ],
+    'ir_titulo' => 'Weiter zur Zahlungsseite',
+    'ir_ayuda' => 'Falls in einigen Sekunden nichts passiert, klicken Sie auf die Schaltfläche.',
+    'ir_boton' => 'Zur Zahlung',
 ];

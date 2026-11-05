@@ -49,6 +49,7 @@ return [
         'ayuda' => 'Who issues the invoices. In Mexico, the CFDI 4.0 XML is prepared; stamping it requires connecting a PAC.',
     ],
     'facturas' => [
+        'concepto_estancias' => ':impuesto: :unidades stays at :tarifa',
         'modelo' => 'invoice',
         'modelos' => 'Invoices and receipts',
         'factura' => 'Invoice',

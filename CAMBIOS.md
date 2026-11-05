@@ -2,6 +2,42 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.20 — 2026-11-05
+
+**España: comunicar a SES.Hospedajes, tasa turística, Redsys y Bizum.** Los detalles y las fuentes están en `docs/paises/espana.md`.
+
+**SES.Hospedajes (Operación → Registro de viajeros)**
+- Te conectas con las credenciales del servicio web del Ministerio del Interior. Solo se guardan si funcionan, y la contraseña va cifrada.
+- Cada reserva confirmada y cada entrada se comunican solas en unos minutos. El plazo legal es de 24 horas.
+- Si se cancela, se anula lo comunicado. Si cambian las fechas, las personas o los documentos, se anula y se manda otra.
+- **Lo que falta se dice antes de mandarlo:** qué persona y qué dato, y se corrige ahí mismo. Un DNI o NIE con la letra mal no se manda. El municipio del INE se busca solo con la ciudad y el código postal.
+- Si la autoridad rechaza algo, o no contesta, o se pasa el plazo, sale en los avisos del inicio.
+- Lo anterior a conectarte no se manda.
+- Se puede probar antes en su ambiente de pruebas, que no cuenta como comunicado.
+
+**Tasa turística (Impuestos → Proponer por lugar)**
+- **Cataluña** (Barcelona con su recargo y el resto) e **Illes Balears**, por tipo de alojamiento, con las tarifas de cada periodo cotejadas con la ley.
+- Los impuestos por persona y noche ahora saben de temporada baja, de estancias largas y de tarifa fijada al reservar.
+- **En la factura van aparte**, con las unidades y la tarifa, y sin IVA encima. Antes se mezclaban con el hospedaje.
+- **Informes** dice cuántas estancias se gravaron y cuántas quedaron exentas. **Archivo para la ATC** genera el CSV de la carga masiva del semestre.
+
+**Cobros**
+- **Redsys**, el TPV de tu banco, y **Bizum** con el mismo terminal, en Motor de reservas, si cobras en euros. Se paga en su página: los datos de la tarjeta no pasan por AlojaFlow.
+
+**Facturas**
+- Exportar **para tu programa de facturación**: una fila por factura y tipo de impuesto. **No es VeriFactu:** AlojaFlow no genera el registro encadenado. Se hará cuando el aplazamiento anunciado esté en el BOE y lo revise un asesor.
+
+**Formulario de llegada:** en España ya no se le exige documento a un menor, que no tiene.
+
+**Errores de fechas corregidos, que no eran de España.** La fecha de llegada no tiene zona horaria y se comparaba con «hoy» en la zona de la propiedad:
+- **Al este de Greenwich no se podía registrar la entrada el día de llegada.** Decía que era antes de tiempo. Toda Europa.
+- **Al oeste, como en México, la cancelación gratuita contaba un día de menos:** una reserva que todavía estaba en plazo se cobraba.
+- Un mantenimiento recurrente que tocaba hoy saltaba al siguiente, y el último día del horizonte de limpieza podía quedarse fuera.
+
+**Comprobado de verdad:** **un cobro completo en el entorno de pruebas de Redsys**, con su comercio y su tarjeta de pruebas, desde el botón de la reserva hasta quedar confirmada, con su firma de vuelta y su código de autorización. Con Bizum, su entorno abre sin error, sin llegar a pagar. Los XML de SES validan contra los esquemas XSD 3.1.3 del Ministerio, y sus dos ambientes responden y su certificado se comprueba con la cadena que va en la instalación.
+
+**Sin verificar:** **nunca se ha mandado nada a SES.Hospedajes con credenciales de verdad:** el servicio está simulado con el formato de los ejemplos de su documento. Tampoco se ha cobrado con un comercio real de Redsys ni llegado a pagar con Bizum, y el aviso de Redsys no llega a un equipo local. Los códigos de catálogo de SES vienen de repositorios públicos que coinciden, no del documento oficial. La tarifa de Baleares es la de la ley consolidada: el Govern anunció cambios que no se pudieron confirmar. **No lo ha revisado un asesor.**
+
 ## 1.0.19 — 2026-11-05
 
 **México: timbrar facturas de verdad, y cobrar en OXXO, a meses y por transferencia.**

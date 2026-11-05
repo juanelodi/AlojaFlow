@@ -23,6 +23,7 @@ use App\Motor\MotorReservas;
 use App\Motor\Pasarelas;
 use App\Pagos\CobrosEnLinea;
 use App\Pagos\ErrorPago;
+use App\Pagos\PagoConFormulario;
 use App\Reservas\ReservaRechazada;
 use App\Support\Dinero;
 use Carbon\CarbonImmutable;
@@ -233,6 +234,19 @@ class MotorReservasController extends Controller
         }
 
         return redirect()->route('motor.reserva', ['codigo' => $codigo, 'publico' => $publico, 'idioma' => app()->getLocale()]);
+    }
+
+    /**
+     * La página que manda el formulario firmado a una pasarela que no admite un simple enlace. La firma de la referencia ya dice que el cobro es de verdad.
+     */
+    public function ir(Request $request, string $codigo, string $pasarela, string $referencia): View
+    {
+        $propiedad = $this->propiedad($request, $codigo, soloActivo: false);
+        $proveedor = (new Pasarelas($propiedad))->proveedor($pasarela);
+        $cobro = CobrosEnLinea::pendienteDeReferencia($referencia, $propiedad->id, $pasarela);
+        abort_if(! $proveedor instanceof PagoConFormulario || $cobro === null || ! is_array($cobro->datos['formulario'] ?? null), 404);
+
+        return view('publico.ir-a-pago', ['propiedad' => $propiedad, 'formulario' => $proveedor->formulario($cobro->datos['formulario'])]);
     }
 
     /**

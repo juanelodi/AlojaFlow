@@ -23,4 +23,8 @@ return [
     'registro_por_vencer' => 'Um número de registo ou licença desta propriedade expira em menos de 30 dias, ou já expirou. Renove-o e atualize a data em Registos turísticos.',
     'comprobantes_por_revisar' => 'Há comprovativos de pagamento por rever. Vê-os em Finanças → Comprovativos de pagamento.',
     'grupo_habitaciones_liberadas' => 'Do grupo :grupo foram libertados :habitaciones quartos sem responsável, porque passou a data limite.',
+    'autoridad_rechazadas' => 'O registo de viajantes rejeitou comunicações. Reveja-as em Operação → Registo de viajantes.',
+    'autoridad_faltan_datos' => 'Faltam dados a algumas comunicações do registo. Complete-os em Operação → Registo de viajantes.',
+    'autoridad_atrasadas' => 'Há comunicações ao registo fora de prazo: são 24 horas. Trate delas em Operação → Registo de viajantes.',
+    'autoridad_sin_conexion' => 'Não foi possível contactar o registo em várias tentativas. Reveja a ligação em Operação → Registo de viajantes.',
 ];

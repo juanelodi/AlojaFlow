@@ -54,3 +54,9 @@ Antes de cada versión se revisan todas las licencias con `composer licenses` y
 ## Calendarios iCal
 
 - [sabre/vobject](https://github.com/sabre-io/vobject) — BSD-3-Clause.
+
+## Datos incluidos
+
+- **`resources/datos/municipios-ine.json`**: relación de municipios y códigos a 1 de enero de 2026, del Instituto Nacional de Estadística de España (https://www.ine.es). Fuente: INE. Reutilización según su aviso legal (CC BY 4.0, Ley 37/2007 y RD 1495/2011). Se conservaron el código y el nombre; el INE no participa ni respalda este uso.
+- **`resources/certificados/fnmt.pem`**: certificados públicos «AC RAIZ FNMT-RCM» y «AC Componentes Informáticos» de la FNMT-RCM (http://www.cert.fnmt.es/certs/), para comprobar el servidor de SES.Hospedajes.
+- **Códigos ISO 3166-1** en `app/Paises/CatalogoPaises.php`: una lista de códigos del estándar.

@@ -263,7 +263,7 @@ final class InformesGestion
         $propios = DB::table('reservas_impuestos as i')->join('reservas as r', 'r.id', '=', 'i.reserva_id')
             ->whereIn('r.propiedad_id', $propiedades)->where('r.estado', '!=', EstadoReserva::Cancelada->value)->whereBetween('r.llegada', $rango)
             ->groupBy('i.nombre', 'r.moneda')->orderBy('i.nombre')
-            ->get(['i.nombre', 'r.moneda', DB::raw('COUNT(DISTINCT r.id) as reservas'), DB::raw('SUM(CASE WHEN i.cobrado_por_canal = 0 THEN i.importe ELSE 0 END) as cobrado'), DB::raw('SUM(CASE WHEN i.cobrado_por_canal = 1 THEN i.importe ELSE 0 END) as canal')]);
+            ->get(['i.nombre', 'r.moneda', DB::raw('COUNT(DISTINCT r.id) as reservas'), DB::raw('SUM(i.unidades) as unidades'), DB::raw('SUM(i.unidades_exentas) as exentas'), DB::raw('SUM(CASE WHEN i.cobrado_por_canal = 0 THEN i.importe ELSE 0 END) as cobrado'), DB::raw('SUM(CASE WHEN i.cobrado_por_canal = 1 THEN i.importe ELSE 0 END) as canal')]);
         $dePrincipal = DB::table('reservas')->whereIn('propiedad_id', $propiedades)->whereNotIn('id', DB::table('reservas_impuestos')->select('reserva_id'))->whereNull('eliminada_en_principal_en')
             ->where('estado', '!=', EstadoReserva::Cancelada->value)->whereBetween('llegada', $rango)->where('impuestos_porcentaje', '>', 0)
             ->groupBy('impuestos_porcentaje', 'moneda')->orderBy('impuestos_porcentaje')
@@ -271,15 +271,15 @@ final class InformesGestion
 
         $datos = [];
         foreach ($propios as $f) {
-            $datos[] = ['nombre' => (string) $f->nombre, 'moneda' => (string) $f->moneda, 'reservas' => (int) $f->reservas, 'cobrado' => (int) $f->cobrado, 'canal' => (int) $f->canal];
+            $datos[] = ['nombre' => (string) $f->nombre, 'moneda' => (string) $f->moneda, 'reservas' => (int) $f->reservas, 'unidades' => (int) $f->unidades, 'exentas' => (int) $f->exentas, 'cobrado' => (int) $f->cobrado, 'canal' => (int) $f->canal];
         }
         foreach ($dePrincipal as $f) {
             $datos[] = ['nombre' => __('informes.impuesto_principal', ['porcentaje' => rtrim(rtrim(number_format((float) $f->impuestos_porcentaje, 2, '.', ''), '0'), '.')]), 'moneda' => (string) $f->moneda, 'reservas' => (int) $f->reservas, 'cobrado' => (int) round((float) $f->cobrado), 'canal' => 0];
         }
 
         return [
-            'columnas' => Informes::titulos('impuesto', 'reservas', 'cobrado', 'cobrado_canal'),
-            'filas' => array_map(fn (array $d): array => [$d['nombre'], (string) $d['reservas'], Dinero::formatear($d['cobrado'], $d['moneda']), Dinero::formatear($d['canal'], $d['moneda'])], $datos),
+            'columnas' => Informes::titulos('impuesto', 'reservas', 'unidades', 'exentas', 'cobrado', 'cobrado_canal'),
+            'filas' => array_map(fn (array $d): array => [$d['nombre'], (string) $d['reservas'], (string) ($d['unidades'] ?? 0), (string) ($d['exentas'] ?? 0), Dinero::formatear($d['cobrado'], $d['moneda']), Dinero::formatear($d['canal'], $d['moneda'])], $datos),
             'grafica' => Grafica::de(
                 [__('informes.columnas.cobrado')],
                 $datos,

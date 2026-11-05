@@ -238,4 +238,14 @@ return [
         '03' => '03 · L’opération n’a pas eu lieu',
         '04' => '04 · Opération incluse dans une facture globale',
     ],
+    'EstadoEnvioAutoridad' => [
+        'pendiente' => 'À envoyer',
+        'falta_datos' => 'Données manquantes',
+        'enviado' => 'Envoyé, sans réponse',
+        'aceptado' => 'Communiqué',
+        'rechazado' => 'Rejeté',
+        'por_anular' => 'À annuler',
+        'anulando' => 'Annulation en cours',
+        'anulado' => 'Annulé',
+    ],
 ];

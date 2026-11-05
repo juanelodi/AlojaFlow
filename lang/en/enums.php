@@ -185,4 +185,14 @@ return [
         '03' => '03 · The transaction did not take place',
         '04' => '04 · Transaction included in a global invoice',
     ],
+    'EstadoEnvioAutoridad' => [
+        'pendiente' => 'To send',
+        'falta_datos' => 'Details missing',
+        'enviado' => 'Sent, no answer yet',
+        'aceptado' => 'Reported',
+        'rechazado' => 'Rejected',
+        'por_anular' => 'To cancel',
+        'anulando' => 'Cancelling',
+        'anulado' => 'Cancelled',
+    ],
 ];

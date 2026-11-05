@@ -150,6 +150,15 @@ class MotorDeReservas extends Page
                         Toggle::make('stripe_spei')->label(__('motor.panel.stripe_spei'))->helperText(__('motor.panel.stripe_spei_ayuda')),
                     ]),
                 ]),
+                Section::make(__('motor.panel.redsys'))->description(__('motor.panel.redsys_ayuda'))->hidden(fn (): bool => ModoDemo::activo() || ! Modulos::activo(Modulo::Pagos) || $this->propiedad()?->moneda !== 'EUR')->collapsible()->columns(['default' => 1, 'md' => 2])->schema([
+                    TextInput::make('redsys_comercio')->label(__('motor.panel.redsys_comercio'))->helperText(__('motor.panel.redsys_comercio_ayuda'))->regex('/^[0-9]{1,9}$/')->maxLength(9),
+                    TextInput::make('redsys_terminal')->label(__('motor.panel.redsys_terminal'))->regex('/^[0-9]{1,3}$/')->maxLength(3),
+                    TextInput::make('redsys_clave')->label(__('motor.panel.redsys_clave'))->password()->revealable()->autocomplete('new-password')->maxLength(100)->regex('/^[A-Za-z0-9+\/]{32}$/')
+                        ->helperText(fn (): string => $ayudaLlave('redsys_clave')),
+                    Toggle::make('redsys_pruebas')->label(__('motor.panel.redsys_pruebas'))->helperText(__('motor.panel.redsys_pruebas_ayuda')),
+                    Toggle::make('redsys_bizum')->label(__('motor.panel.redsys_bizum'))->helperText(__('motor.panel.redsys_bizum_ayuda')),
+                    Toggle::make('redsys_quitar')->label(__('motor.panel.quitar_llaves')),
+                ]),
                 Section::make(__('motor.panel.mercadopago'))->description(__('motor.panel.mercadopago_ayuda'))->hidden(fn (): bool => ModoDemo::activo() || ! Modulos::activo(Modulo::Pagos))->collapsible()->columns(['default' => 1, 'md' => 2])->schema([
                     TextInput::make('mercadopago_token')->label(__('motor.panel.mercadopago_token'))->password()->revealable()->autocomplete('new-password')->maxLength(300)
                         ->helperText(fn (): string => $ayudaLlave('mercadopago_token')),
@@ -179,9 +188,13 @@ class MotorDeReservas extends Page
             'stripe_oxxo_dias' => (int) ($datos['stripe_oxxo_dias'] ?? 3),
             'stripe_meses' => (bool) ($datos['stripe_meses'] ?? false),
             'stripe_spei' => (bool) ($datos['stripe_spei'] ?? false),
+            'redsys_comercio' => trim((string) ($datos['redsys_comercio'] ?? '')),
+            'redsys_terminal' => trim((string) ($datos['redsys_terminal'] ?? '')),
+            'redsys_pruebas' => (bool) ($datos['redsys_pruebas'] ?? true),
+            'redsys_bizum' => (bool) ($datos['redsys_bizum'] ?? false),
             'condiciones' => $datos['condiciones'] ?? null,
         ]);
-        foreach (ModoDemo::activo() ? [] : ['stripe' => ['stripe_secreta', 'stripe_webhook'], 'mercadopago' => ['mercadopago_token', 'mercadopago_webhook']] as $pasarela => $llaves) {
+        foreach (ModoDemo::activo() ? [] : ['stripe' => ['stripe_secreta', 'stripe_webhook'], 'mercadopago' => ['mercadopago_token', 'mercadopago_webhook'], 'redsys' => ['redsys_clave']] as $pasarela => $llaves) {
             foreach ($llaves as $llave) {
                 if (! empty($datos[$pasarela.'_quitar'])) {
                     $ajustes->guardarLlave($llave, null);
@@ -216,6 +229,10 @@ class MotorDeReservas extends Page
             'stripe_oxxo_dias' => (int) ($motor['stripe_oxxo_dias'] ?? 3),
             'stripe_meses' => (bool) ($motor['stripe_meses'] ?? false),
             'stripe_spei' => (bool) ($motor['stripe_spei'] ?? false),
+            'redsys_comercio' => $motor['redsys_comercio'] ?? null,
+            'redsys_terminal' => $motor['redsys_terminal'] ?? '1',
+            'redsys_pruebas' => (bool) ($motor['redsys_pruebas'] ?? true),
+            'redsys_bizum' => (bool) ($motor['redsys_bizum'] ?? false),
             'condiciones' => $motor['condiciones'] ?? null,
         ]);
     }

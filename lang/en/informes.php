@@ -52,6 +52,8 @@ return [
         'gastos' => 'Expenses and income',
     ],
     'columnas' => [
+        'unidades' => 'Taxed stays',
+        'exentas' => 'Exempt stays',
         'revpar' => 'RevPAR',
         'vendidas' => 'Nights sold',
         'total_anterior' => 'Total last year',

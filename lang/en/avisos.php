@@ -23,4 +23,8 @@ return [
     'registro_por_vencer' => 'A registration or licence number of this property expires in less than 30 days, or has already expired. Renew it and update the date under Tourism registrations.',
     'comprobantes_por_revisar' => 'There are payment receipts to review. See them under Money → Payment receipts.',
     'grupo_habitaciones_liberadas' => ':habitaciones rooms without a responsible person were released from group :grupo, because its deadline passed.',
+    'autoridad_rechazadas' => 'The guest register rejected reports. Check them in Operations → Guest register.',
+    'autoridad_faltan_datos' => 'Some guest register reports are missing details. Complete them in Operations → Guest register.',
+    'autoridad_atrasadas' => 'Guest register reports are overdue: the limit is 24 hours. Handle them in Operations → Guest register.',
+    'autoridad_sin_conexion' => 'The guest register could not be reached after several attempts. Check the connection in Operations → Guest register.',
 ];

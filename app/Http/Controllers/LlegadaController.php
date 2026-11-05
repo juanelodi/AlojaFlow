@@ -19,6 +19,7 @@ use App\Paises\Paises;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use RuntimeException;
 use Throwable;
@@ -84,8 +85,12 @@ class LlegadaController extends Controller
             $reglas[$llave] = [$definicion['requerido'] ? 'required' : 'nullable', 'string', 'max:100'];
         }
         if ($pais->documentoDeTodos()) {
-            $reglas['personas.*.documento_tipo'] = ['required', Rule::in(array_keys($pais->tiposDocumento()))];
-            $reglas['personas.*.documento_numero'] = ['required', 'string', 'max:50'];
+            foreach (array_keys((array) $request->input('personas')) as $indice) {
+                $nacimiento = $request->input('personas.'.$indice.'.fecha_nacimiento');
+                $menor = is_string($nacimiento) && strtotime($nacimiento) !== false && Carbon::parse($nacimiento)->addYears(18)->isFuture();
+                $reglas['personas.'.$indice.'.documento_tipo'] = [$menor ? 'nullable' : 'required', Rule::in(array_keys($pais->tiposDocumento()))];
+                $reglas['personas.'.$indice.'.documento_numero'] = [$menor ? 'nullable' : 'required', 'string', 'max:50'];
+            }
         }
         foreach ($documentos as $documento) {
             $reglas['aceptar.'.$documento->id] = ['accepted'];

@@ -42,6 +42,8 @@ return [
     'pagar_titulo' => 'Pay :importe',
     'pagar_ayuda' => 'The payment company\'s secure page opens. Your card details do not go through this site.',
     'pagar_con' => [
+        'redsys' => 'Pay by card',
+        'bizum' => 'Pay with Bizum',
         'stripe' => 'Pay by card (Stripe)',
         'mercadopago' => 'Pay with Mercado Pago',
     ],
@@ -61,6 +63,16 @@ return [
         'nada_que_cobrar' => 'This booking has nothing left to pay online.',
     ],
     'panel' => [
+        'redsys' => 'Redsys (your bank’s POS in Spain)',
+        'redsys_ayuda' => 'The details are in Redsys’s administration module, under merchant data. Set up the online notification there. Start in test mode.',
+        'redsys_comercio' => 'Merchant code (FUC)',
+        'redsys_comercio_ayuda' => 'Nine digits.',
+        'redsys_terminal' => 'Terminal',
+        'redsys_clave' => 'Signing key',
+        'redsys_pruebas' => 'Test environment',
+        'redsys_pruebas_ayuda' => 'When off, real charges are made.',
+        'redsys_bizum' => 'Also offer Bizum',
+        'redsys_bizum_ayuda' => 'Your bank must have it enabled on this terminal.',
         'titulo' => 'Booking engine',
         'propiedad_ayuda' => 'Each independent property has its own public booking page.',
         'activo' => 'Accept online bookings',
@@ -108,4 +120,7 @@ return [
         'hasta' => 'You have until :fecha.',
         'boton' => 'See my payment slip',
     ],
+    'ir_titulo' => 'Taking you to the payment page',
+    'ir_ayuda' => 'If nothing happens in a few seconds, press the button.',
+    'ir_boton' => 'Go to payment',
 ];

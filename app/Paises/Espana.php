@@ -10,9 +10,11 @@ declare(strict_types=1);
 
 namespace App\Paises;
 
+use App\Autoridades\RegistroViajeros;
+use App\Autoridades\Ses\SesHospedajes;
+
 /**
- * España, básico: recoge los datos, pero todavía no los envía a SES.Hospedajes. Plazos y textos
- * sin verificar contra fuentes oficiales (docs/paises/espana.md).
+ * España: comunica a SES.Hospedajes (D-100) y propone la tasa turística (D-101). Los textos legales siguen sin revisar por un asesor (docs/paises/espana.md).
  */
 final class Espana extends PaisBase
 {
@@ -46,6 +48,26 @@ final class Espana extends PaisBase
 
     public function diasConservarRegistro(): int
     {
-        return 3 * 365; // Plazo a verificar: el registro de viajeros pide conservarlo varios años.
+        return 3 * 365; // RD 933/2021, art. 5.3: tres años desde que termina el servicio.
+    }
+
+    public function registroViajeros(): RegistroViajeros
+    {
+        return new SesHospedajes();
+    }
+
+    public function sugerenciasImpuesto(): array
+    {
+        return CatalogoTasaTuristica::todas();
+    }
+
+    public function declaracionEstancias(): DeclaracionEstancias
+    {
+        return new DeclaracionEstancias();
+    }
+
+    public function exportaLibroFiscal(): bool
+    {
+        return true;
     }
 }

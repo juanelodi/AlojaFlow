@@ -30,6 +30,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable|null $vigente_hasta
  * @property int|null $tope_noches
  * @property int|null $edad_minima
+ * @property bool $fijar_al_reservar
+ * @property string|null $temporada_baja_desde
+ * @property string|null $temporada_baja_hasta
+ * @property string|null $temporada_baja_descuento
+ * @property int|null $dias_largos_desde
+ * @property string|null $dias_largos_descuento
  * @property int $orden
  * @property bool $activo
  */
@@ -50,21 +56,44 @@ class Impuesto extends ModeloBase
             'vigente_hasta' => 'immutable_date',
             'tope_noches' => 'integer',
             'edad_minima' => 'integer',
+            'fijar_al_reservar' => 'boolean',
+            'temporada_baja_descuento' => 'decimal:2',
+            'dias_largos_desde' => 'integer',
+            'dias_largos_descuento' => 'decimal:2',
             'activo' => 'boolean',
         ];
     }
 
     /**
-     * Los que aplican a una fecha de llegada.
+     * Los que aplican a una fecha de llegada. Una tarifa que se fija al reservar se mira con el día en que se reservó (D-101).
      *
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
-    public function scopeAplicables(Builder $query, int $propiedadId, string $fecha): Builder
+    public function scopeAplicables(Builder $query, int $propiedadId, string $fecha, ?string $reservadaEn = null): Builder
     {
-        return $query->where('propiedad_id', $propiedadId)->where('activo', true)
-            ->where(fn (Builder $q): Builder => $q->whereNull('vigente_desde')->orWhere('vigente_desde', '<=', $fecha))
-            ->where(fn (Builder $q): Builder => $q->whereNull('vigente_hasta')->orWhere('vigente_hasta', '>=', $fecha));
+        $vigente = fn (Builder $q, string $dia): Builder => $q
+            ->where(fn (Builder $r): Builder => $r->whereNull('vigente_desde')->orWhere('vigente_desde', '<=', $dia))
+            ->where(fn (Builder $r): Builder => $r->whereNull('vigente_hasta')->orWhere('vigente_hasta', '>=', $dia));
+
+        return $query->where('propiedad_id', $propiedadId)->where('activo', true)->where(fn (Builder $q): Builder => $q
+            ->where(fn (Builder $r): Builder => $vigente($r->where('fijar_al_reservar', false), $fecha))
+            ->orWhere(fn (Builder $r): Builder => $vigente($r->where('fijar_al_reservar', true), $reservadaEn ?? $fecha)));
+    }
+
+    /**
+     * Si esa noche cae en la temporada baja, que puede cruzar el fin de año.
+     */
+    public function enTemporadaBaja(CarbonImmutable $dia): bool
+    {
+        if ($this->temporada_baja_desde === null || $this->temporada_baja_hasta === null) {
+            return false;
+        }
+        $hoy = $dia->format('m-d');
+
+        return $this->temporada_baja_desde <= $this->temporada_baja_hasta
+            ? $hoy >= $this->temporada_baja_desde && $hoy <= $this->temporada_baja_hasta
+            : $hoy >= $this->temporada_baja_desde || $hoy <= $this->temporada_baja_hasta;
     }
 
     /** @return BelongsTo<Propiedad, $this> */

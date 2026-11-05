@@ -238,4 +238,14 @@ return [
         '03' => '03 · Der Vorgang fand nicht statt',
         '04' => '04 · Vorgang in einer Sammelrechnung enthalten',
     ],
+    'EstadoEnvioAutoridad' => [
+        'pendiente' => 'Zu senden',
+        'falta_datos' => 'Daten fehlen',
+        'enviado' => 'Gesendet, noch keine Antwort',
+        'aceptado' => 'Gemeldet',
+        'rechazado' => 'Abgelehnt',
+        'por_anular' => 'Zu stornieren',
+        'anulando' => 'Wird storniert',
+        'anulado' => 'Storniert',
+    ],
 ];

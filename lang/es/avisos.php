@@ -23,4 +23,8 @@ return [
     'registro_por_vencer' => 'Un número de registro o licencia de esta propiedad vence en menos de 30 días, o ya venció. Renuévalo y actualiza la fecha en Registros turísticos.',
     'comprobantes_por_revisar' => 'Hay comprobantes de pago por revisar. Míralos en Dinero → Comprobantes de pago.',
     'grupo_habitaciones_liberadas' => 'Del grupo :grupo se liberaron :habitaciones habitaciones sin responsable, porque pasó su fecha límite.',
+    'autoridad_rechazadas' => 'El registro de viajeros rechazó comunicaciones. Revísalas en Operación → Registro de viajeros.',
+    'autoridad_faltan_datos' => 'A algunas comunicaciones del registro de viajeros les faltan datos. Complétalos en Operación → Registro de viajeros.',
+    'autoridad_atrasadas' => 'Hay comunicaciones al registro de viajeros fuera de plazo: son 24 horas. Atiéndelas en Operación → Registro de viajeros.',
+    'autoridad_sin_conexion' => 'No se ha podido hablar con el registro de viajeros en varios intentos. Revisa la conexión en Operación → Registro de viajeros.',
 ];

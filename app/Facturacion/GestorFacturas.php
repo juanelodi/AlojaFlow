@@ -27,6 +27,7 @@ use App\Models\Reserva;
 use App\Models\SerieFacturacion;
 use App\Paises\Paises;
 use App\Support\Dinero;
+use App\Support\Formato;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -217,7 +218,9 @@ final class GestorFacturas
         $tasas = Impuesto::query()->aplicables($reserva->propiedad_id, $reserva->llegada->format('Y-m-d'))->where('base', BaseCargo::PorcentajeAlojamiento->value)->orderBy('orden')->get();
         $sumaTasas = (float) $tasas->sum(fn (Impuesto $i): float => (float) $i->tasa) / 100;
 
-        $cargos = (int) $reserva->cargos->sum('importe');
+        // Lo que es por persona y noche no es parte del precio del hospedaje ni lleva IVA encima: va en su línea, con unidades y tarifa (Ley 5/2017 de Cataluña, art. 35).
+        $porEstancia = $reserva->impuestos()->whereNotNull('importe_unitario')->where('incluido', false)->where('cobrado_por_canal', false)->where('importe', '>', 0)->get();
+        $cargos = (int) $reserva->cargos->sum('importe') + (int) $porEstancia->sum('importe');
         $brutos = [[__('dinero.facturas.concepto_hospedaje', ['unidad' => $reserva->unidad->nombre ?? '', 'noches' => $reserva->llegada->diffInDays($reserva->salida), 'numero' => $reserva->numero], $reserva->propiedad->idioma), $reserva->total - $cargos]];
         foreach ($reserva->cargos as $cargo) {
             $brutos[] = [$cargo->nombre, $cargo->importe];
@@ -243,6 +246,12 @@ final class GestorFacturas
                 $base = $bruto;
             }
             $lineas[] = ['concepto' => $concepto, 'clave_producto' => $claves['producto'], 'clave_unidad' => $claves['unidad'], 'importe' => $base, 'impuestos' => $impuestos];
+        }
+        foreach ($porEstancia as $impuesto) {
+            $concepto = $impuesto->unidades > 0
+                ? __('dinero.facturas.concepto_estancias', ['impuesto' => $impuesto->nombre, 'unidades' => $impuesto->unidades, 'tarifa' => Formato::dinero((int) $impuesto->importe_unitario, $reserva->moneda)], $reserva->propiedad->idioma)
+                : $impuesto->nombre;
+            $lineas[] = ['concepto' => $concepto, 'clave_producto' => $claves['producto'], 'clave_unidad' => $claves['unidad'], 'importe' => $impuesto->importe, 'impuestos' => []];
         }
 
         return $lineas;
