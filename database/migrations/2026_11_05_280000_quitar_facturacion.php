@@ -22,6 +22,38 @@ use Spatie\Permission\PermissionRegistrar;
 return new class () extends Migration {
     private const TABLAS = ['eventos_fiscales', 'facturas_reservas', 'facturas_impuestos', 'facturas_lineas', 'facturas', 'receptores_fiscales', 'series_facturacion', 'entidades_fiscales'];
 
+    /**
+     * Los roles lo apuntan por su id, pero lo que se le da o se le quita a una persona guarda el nombre: si no cambia ahí, quien lo tenía
+     * quitado lo recuperaría con su rol (D-075). Si el nombre nuevo ya existe, por haber corrido antes el seeder, se juntan.
+     */
+    private function renombrarPermiso(string $viejo, string $nuevo): void
+    {
+        $idViejo = DB::table('permissions')->where('name', $viejo)->value('id');
+        $idNuevo = DB::table('permissions')->where('name', $nuevo)->value('id');
+        if ($idViejo !== null && $idNuevo !== null) {
+            foreach (DB::table('role_has_permissions')->where('permission_id', $idViejo)->pluck('role_id') as $rol) {
+                DB::table('role_has_permissions')->insertOrIgnore(['permission_id' => $idNuevo, 'role_id' => $rol]);
+            }
+            DB::table('permissions')->where('id', $idViejo)->delete();
+        } else {
+            DB::table('permissions')->where('name', $viejo)->update(['name' => $nuevo]);
+        }
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        foreach (DB::table('accesos_usuario')->get(['id', 'permisos_agregados', 'permisos_quitados']) as $fila) {
+            $cambios = [];
+            foreach (['permisos_agregados', 'permisos_quitados'] as $columna) {
+                $lista = is_string($fila->{$columna}) ? json_decode($fila->{$columna}, true) : null;
+                if (is_array($lista) && in_array($viejo, $lista, true)) {
+                    $cambios[$columna] = json_encode(array_values(array_unique(array_map(fn (string $p): string => $p === $viejo ? $nuevo : $p, $lista))));
+                }
+            }
+            if ($cambios !== []) {
+                DB::table('accesos_usuario')->where('id', $fila->id)->update($cambios);
+            }
+        }
+    }
+
     public function up(): void
     {
         foreach (DB::table('archivos')->whereIn('clase', ['factura_xml', 'factura_pdf'])->pluck('ruta') as $ruta) {
@@ -35,8 +67,7 @@ return new class () extends Migration {
         }
         Schema::enableForeignKeyConstraints();
 
-        DB::table('permissions')->where('name', 'facturacion.gestionar')->update(['name' => 'cuentas.gestionar']);
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $this->renombrarPermiso('facturacion.gestionar', 'cuentas.gestionar');
 
         foreach (['modulos.activos', 'modulos.conocidos'] as $clave) {
             $valor = DB::table('ajustes')->where('clave', $clave)->value('valor');
@@ -52,8 +83,7 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        DB::table('permissions')->where('name', 'cuentas.gestionar')->update(['name' => 'facturacion.gestionar']);
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $this->renombrarPermiso('cuentas.gestionar', 'facturacion.gestionar');
 
         Schema::create('entidades_fiscales', function (Blueprint $table): void {
             $table->id();

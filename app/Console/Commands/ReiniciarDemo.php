@@ -44,6 +44,8 @@ class ReiniciarDemo extends Command
         }
         File::ensureDirectoryExists(dirname($marca));
         File::put($marca, $hoy);
+        // Puede correr al terminar la visita de alguien: la demostración de todos no sale en el idioma de esa persona.
+        app()->setLocale((string) config('app.locale'));
 
         if (Artisan::call('migrate:fresh', ['--force' => true]) !== 0) {
             $this->error(trim(Artisan::output()));

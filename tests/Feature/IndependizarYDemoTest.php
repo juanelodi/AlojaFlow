@@ -205,10 +205,13 @@ describe('demostración pública', function () {
         try {
             Propiedad::query()->create(['nombre' => 'Basura', 'codigo' => 'basura', 'modo' => ModoPropiedad::Nativa, 'zona_horaria' => 'UTC', 'moneda' => 'MXN']);
 
+            // Corre al terminar una visita: el idioma de quien visita no decide el de la demostración.
+            app()->setLocale('de');
             $this->artisan('alojaflow:demo-reiniciar')->assertSuccessful();
 
             expect(Propiedad::query()->where('codigo', 'basura')->exists())->toBeFalse()
                 ->and(GeneradorDemo::existente())->not->toBeNull()
+                ->and(GeneradorDemo::existente()->idioma)->toBe((string) config('app.locale'))
                 ->and(User::query()->where('email', ModoDemo::CORREO)->where('es_administrador', true)->exists())->toBeTrue();
 
             // Sin esto, a medianoche ya es otro día y sí toca.

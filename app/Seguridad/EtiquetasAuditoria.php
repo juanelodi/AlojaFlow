@@ -26,6 +26,9 @@ final class EtiquetasAuditoria
 
     private const CAMPOS_CON_COLUMNAS = 'campos';
 
+    /** Solo estos guardan un valor del programa. En los demás, un «salida» lo escribió alguien, y la auditoría debe decir lo que se guardó. */
+    private const CAMPOS_CON_VALORES = ['estado', 'origen', 'accion'];
+
     public static function accion(string $accion): string
     {
         return self::texto('auditoria.acciones.'.$accion)
@@ -106,7 +109,7 @@ final class EtiquetasAuditoria
         }
         $texto = is_scalar($valor) ? (string) $valor : (string) json_encode($valor, JSON_UNESCAPED_UNICODE);
 
-        return self::texto('auditoria.valores.'.$texto) ?? $texto;
+        return in_array($campo, self::CAMPOS_CON_VALORES, true) ? (self::texto('auditoria.valores.'.$texto) ?? $texto) : $texto;
     }
 
     /**

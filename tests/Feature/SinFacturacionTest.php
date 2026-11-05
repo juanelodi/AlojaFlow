@@ -12,6 +12,7 @@ use App\Enums\EstadoReserva;
 use App\Enums\MetodoPago;
 use App\Enums\ModoPropiedad;
 use App\Filament\Resources\Reservas\Pages\ViewReserva;
+use App\Models\AccesoUsuario;
 use App\Models\Huesped;
 use App\Models\Propiedad;
 use App\Models\Unidad;
@@ -75,15 +76,30 @@ it('el contador conserva los estados de cuenta y el calendario de cobros', funct
         ->and(Permission::query()->where('name', 'facturacion.gestionar')->exists())->toBeFalse();
 });
 
+it('si el permiso nuevo ya existe por el seeder, la migración junta los dos', function (): void {
+    $migracion = require database_path('migrations/2026_11_05_280000_quitar_facturacion.php');
+    $migracion->down();
+    $nuevo = Permission::query()->create(['name' => 'cuentas.gestionar', 'guard_name' => 'web']);
+
+    $migracion->up();
+
+    expect(Permission::query()->where('name', 'facturacion.gestionar')->exists())->toBeFalse()
+        ->and(Permission::query()->where('name', 'cuentas.gestionar')->sole()->id)->toBe($nuevo->id)
+        ->and(DB::table('role_has_permissions')->where('permission_id', $nuevo->id)->count())->toBeGreaterThan(0);
+});
+
 it('el registro de llegada de México ya no pide el RFC', function (): void {
     expect((new Mexico())->camposLlegada())->not->toHaveKey('rfc');
 });
 
-it('la migración se lleva las tablas, lo emitido y el módulo, y conserva quién tiene el permiso', function (): void {
+it('la migración se lleva las tablas, lo emitido y el módulo, y respeta quién tiene el permiso', function (): void {
     $contador = User::factory()->create(['activo' => true, 'idioma' => 'es']);
     Acceso::asignarRoles($contador, [['propiedad_id' => $this->propiedad->id, 'rol' => 'contador']]);
+    $conAgregado = User::factory()->create(['activo' => true, 'idioma' => 'es']);
     $migracion = require database_path('migrations/2026_11_05_280000_quitar_facturacion.php');
     $migracion->down();
+    AccesoUsuario::query()->create(['user_id' => $contador->id, 'propiedad_id' => $this->propiedad->id, 'permisos_quitados' => ['facturacion.gestionar']]);
+    AccesoUsuario::query()->create(['user_id' => $conAgregado->id, 'propiedad_id' => $this->propiedad->id, 'permisos_agregados' => ['facturacion.gestionar', 'datos.ver']]);
 
     expect(Schema::hasTable('facturas'))->toBeTrue();
     Storage::disk('local')->put('archivos/factura-de-prueba.pdf', 'pdf');
@@ -98,8 +114,13 @@ it('la migración se lleva las tablas, lo emitido y el módulo, y conserva quié
         ->and(Storage::disk('local')->exists('archivos/factura-de-prueba.pdf'))->toBeFalse()
         ->and(DB::table('archivos')->where('clase', 'factura_pdf')->exists())->toBeFalse()
         ->and(Ajustes::obtener('modulos.activos'))->toBe(['caja'])
-        ->and(Acceso::puede($contador->refresh(), Acceso::CUENTAS, $this->propiedad->id))->toBeTrue();
+        // A quien se le quitó el permiso no lo recupera, y a quien se le agregó no lo pierde.
+        ->and(Acceso::puede($contador->refresh(), Acceso::CUENTAS, $this->propiedad->id))->toBeFalse()
+        ->and(AccesoUsuario::query()->where('user_id', $contador->id)->sole()->permisos_quitados)->toBe([Acceso::CUENTAS])
+        ->and(AccesoUsuario::query()->where('user_id', $conAgregado->id)->sole()->permisos_agregados)->toBe([Acceso::CUENTAS, 'datos.ver'])
+        ->and(Acceso::puede($conAgregado->refresh(), Acceso::CUENTAS, $this->propiedad->id))->toBeTrue();
 
     // Las tablas se cambian fuera de la transacción de la prueba: lo escrito se queda.
+    AccesoUsuario::query()->delete();
     Ajustes::borrar('modulos.activos');
 });

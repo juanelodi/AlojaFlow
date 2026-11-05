@@ -84,7 +84,9 @@ it('el detalle se lee en el idioma de quien lo mira', function (): void {
         ->and(EtiquetasAuditoria::detalle(['precio_noche' => ['antes' => 100, 'despues' => 200]]))->toBe('Price per night: 100 → 200')
         ->and(EtiquetasAuditoria::detalle(['despues' => ['total' => 5000, 'estado' => 'confirmada', 'llegada' => '2027-01-03']]))->toBe('After: (Total: 5000, Status: Confirmed, Arrival: 2027-01-03)')
         ->and(EtiquetasAuditoria::detalle(['copia' => 'copia-1.zip', 'automaticas' => true, 'seguridad' => null]))->toBe('Backup: copia-1.zip · Automatic: Yes · Prior backup: —')
-        ->and(EtiquetasAuditoria::detalle(['campos' => ['nombre', 'columna_rara']]))->toBe('Fields: Name, columna rara');
+        ->and(EtiquetasAuditoria::detalle(['campos' => ['nombre', 'columna_rara']]))->toBe('Fields: Name, columna rara')
+        // Lo que escribió una persona no se traduce, aunque coincida con un valor del programa.
+        ->and(EtiquetasAuditoria::detalle(['nombre' => ['antes' => 'salida', 'despues' => 'manual'], 'accion' => 'salida']))->toBe('Name: salida → manual · Action: Check-out');
 });
 
 describe('en la pantalla', function (): void {
