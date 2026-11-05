@@ -13,6 +13,7 @@ namespace App\Comunicacion;
 use App\Models\Reserva;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
+use App\Reservas\Mensualidades;
 use App\Support\Ajustes;
 use App\Support\Contactos;
 use App\Support\Formato;
@@ -23,7 +24,7 @@ use Illuminate\Support\Str;
  */
 final class VariablesMensaje
 {
-    public const DISPONIBLES = ['huesped', 'nombre', 'propiedad', 'telefono_propiedad', 'correo_propiedad', 'numero', 'codigo', 'llegada', 'salida', 'noches', 'personas', 'unidad', 'total', 'pagado', 'pendiente', 'enlace_reserva', 'enlace_llegada', 'enlace_opinion', 'enlace_mi_reserva'];
+    public const DISPONIBLES = ['huesped', 'nombre', 'propiedad', 'telefono_propiedad', 'correo_propiedad', 'numero', 'codigo', 'llegada', 'salida', 'noches', 'personas', 'unidad', 'total', 'pagado', 'pendiente', 'enlace_reserva', 'enlace_llegada', 'enlace_opinion', 'enlace_mi_reserva', 'cuota_importe', 'cuota_vence', 'cuota_periodo'];
 
     public const AJUSTE_PROPIAS = 'mensajes.variables.';
 
@@ -53,6 +54,10 @@ final class VariablesMensaje
             'pendiente' => Formato::dinero($reserva->pendiente, $reserva->moneda),
             'enlace_reserva' => $propiedad->esIndependiente() && Modulos::activo(Modulo::Motor) ? self::enlaceInstalado('motor.reserva', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico, 'idioma' => $idioma]) : '',
         ];
+        $pago = Mensualidades::siguiente($reserva);
+        $variables['cuota_importe'] = $pago === null ? '' : Formato::dinero($pago['cuota']->importe - $pago['pagado'], $reserva->moneda);
+        $variables['cuota_vence'] = $pago === null ? '' : Formato::fecha($pago['cuota']->vence_en, 'LL');
+        $variables['cuota_periodo'] = $pago === null ? '' : $pago['cuota']->periodo();
         app()->setLocale($idiomaAnterior);
 
         // Las propias del alojamiento (la clave del wifi…), sin pisar las del sistema.

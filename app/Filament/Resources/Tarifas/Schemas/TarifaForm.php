@@ -14,6 +14,8 @@ use App\Enums\ModoTarifa;
 use App\Filament\Campos\CampoDinero;
 use App\Filament\Resources\Tarifas\TarifaResource;
 use App\Models\Propiedad;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Seguridad\Acceso;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
@@ -21,6 +23,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
@@ -61,6 +64,10 @@ class TarifaForm
                     Toggle::make('visible_motor')->label(__('ui.tarifas.visible_motor'))->default(true),
                     Textarea::make('descripcion_publica')->label(__('ui.tarifas.descripcion_publica'))->helperText(__('ui.tarifas.descripcion_publica_ayuda'))->rows(2)->maxLength(1000)->columnSpanFull(),
                 ]),
+            Section::make(__('estancias.tarifa.seccion'))->columnSpanFull()->columns(['default' => 1, 'md' => 2])
+                ->description(__('estancias.tarifa.seccion_ayuda').' '.__('estancias.tarifa.temporada_ayuda'))
+                ->visible(fn (): bool => Modulos::activo(Modulo::EstanciasLargas))
+                ->schema(self::preciosLargos('propiedad_id')),
             Section::make(__('ui.tarifas.temporadas'))->columnSpanFull()
                 ->description(__('ui.tarifas.temporadas_ayuda'))
                 ->schema([
@@ -76,9 +83,25 @@ class TarifaForm
                             CampoDinero::make('precio_fin_semana', '../../propiedad_id')->label(__('ui.tarifas.fin_semana'))
                                 ->dehydrateStateUsing(fn (mixed $state, Get $get): ?int => blank($state) ? null : \App\Support\Dinero::aUnidadMenor((string) $state, CampoDinero::moneda($get('../../propiedad_id')))),
                             TextInput::make('estancia_minima')->label(__('ui.tarifas.estancia_minima'))->numeric()->minValue(1),
+                            Grid::make(['default' => 1, 'md' => 2])->columnSpanFull()
+                                ->visible(fn (): bool => Modulos::activo(Modulo::EstanciasLargas))
+                                ->schema(self::preciosLargos('../../propiedad_id')),
                         ]),
                 ]),
         ]);
+    }
+
+    /**
+     * Vacío es «sin este precio», no cero.
+     *
+     * @return list<TextInput>
+     */
+    private static function preciosLargos(string $rutaPropiedad): array
+    {
+        $campo = fn (string $nombre, string $etiqueta): TextInput => CampoDinero::make($nombre, $rutaPropiedad)->label($etiqueta)
+            ->dehydrateStateUsing(fn (mixed $state, Get $get): ?int => blank($state) ? null : \App\Support\Dinero::aUnidadMenor((string) $state, CampoDinero::moneda($get($rutaPropiedad))));
+
+        return [$campo('precio_semana', __('estancias.tarifa.semana')), $campo('precio_mes', __('estancias.tarifa.mes'))];
     }
 
     private static function modo(Get $get): ModoTarifa

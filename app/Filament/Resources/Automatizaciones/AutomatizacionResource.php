@@ -99,6 +99,14 @@ class AutomatizacionResource extends RecursoDeCualquierPropiedad
         }, ARRAY_FILTER_USE_KEY);
     }
 
+    /**
+     * @return array<string, string>
+     */
+    private static function disparadores(): array
+    {
+        return array_filter(DisparadorAutomatizacion::opciones(), fn (string $disparador): bool => Modulos::activo(Modulo::EstanciasLargas) || ! DisparadorAutomatizacion::from($disparador)->esDeCuota(), ARRAY_FILTER_USE_KEY);
+    }
+
     private static function esCorreo(Get $get): bool
     {
         $accion = $get('accion');
@@ -112,7 +120,7 @@ class AutomatizacionResource extends RecursoDeCualquierPropiedad
             Section::make()->description(__('mensajes.automatizaciones.ayuda'))->columnSpanFull()->columns(['default' => 1, 'md' => 2])->schema([
                 self::campoPropiedad(),
                 TextInput::make('nombre')->label(__('mensajes.automatizaciones.nombre'))->required()->maxLength(100),
-                Select::make('disparador')->label(__('mensajes.automatizaciones.disparador'))->options(DisparadorAutomatizacion::opciones())->required()->native(false)->live(),
+                Select::make('disparador')->label(__('mensajes.automatizaciones.disparador'))->options(self::disparadores())->required()->native(false)->live(),
                 TextInput::make('dias')->label(__('mensajes.automatizaciones.dias'))->integer()->minValue(0)->maxValue(365)->default(1)
                     ->required(fn (Get $get): bool => (bool) self::disparador($get)?->usaDias())
                     ->visible(fn (Get $get): bool => (bool) self::disparador($get)?->usaDias()),

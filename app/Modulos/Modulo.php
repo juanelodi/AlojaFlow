@@ -23,6 +23,7 @@ enum Modulo: string
     case Ical = 'ical';
     case Cupones = 'cupones';
     case Grupos = 'grupos';
+    case EstanciasLargas = 'estancias_largas';
     case Empresas = 'empresas';
     case Limpieza = 'limpieza';
     case AvisoEquipo = 'aviso_equipo';
@@ -73,7 +74,7 @@ enum Modulo: string
     {
         return match ($this) {
             self::VariasPropiedades, self::Subordinacion => 'propiedades',
-            self::Motor, self::Pagos, self::Ical, self::Cupones, self::Grupos, self::Empresas => 'reservas',
+            self::Motor, self::Pagos, self::Ical, self::Cupones, self::Grupos, self::EstanciasLargas, self::Empresas => 'reservas',
             self::Limpieza, self::AvisoEquipo, self::Plano, self::Llegada, self::Mensajes, self::Bitacora, self::Opiniones, self::Portal => 'operacion',
             self::Caja, self::Facturacion, self::Informes => 'dinero',
             self::Integraciones => 'sistema',

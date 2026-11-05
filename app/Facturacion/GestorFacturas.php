@@ -15,9 +15,11 @@ use App\Documentos\GeneradorPdf;
 use App\Enums\BaseCargo;
 use App\Enums\ClaseArchivo;
 use App\Enums\EstadoFactura;
+use App\Enums\EstadoReserva;
 use App\Enums\MotivoCancelacionCfdi;
 use App\Enums\TipoDocumentoFiscal;
 use App\Models\Archivo;
+use App\Models\CuotaReserva;
 use App\Models\EventoFiscal;
 use App\Models\Factura;
 use App\Models\Impuesto;
@@ -49,9 +51,55 @@ final class GestorFacturas
      */
     public function emitir(Reserva $reserva, SerieFacturacion $serie, array $receptor, ?string $formaPago = null, ?string $metodoPago = null): Factura
     {
+        $generador = $this->comprobar($reserva, $serie, $receptor);
+        if ($this->facturaVigenteDe($reserva) !== null) {
+            throw new ErrorFacturacion(__('dinero.facturas.error_ya_facturada'));
+        }
+
+        $factura = DB::transaction(fn (): Factura => $this->crear($reserva, $serie, $receptor, $formaPago, $metodoPago, $generador));
+        $this->generarArchivos($factura, $generador);
+
+        return $factura->refresh();
+    }
+
+    /**
+     * La factura de un pago del calendario de cobros (D-109): lo que se cobra cada mes se factura cada mes. Se comprueba con la cuota
+     * bloqueada: dos clics a la vez darían dos documentos fiscales del mismo pago.
+     *
+     * @param  array<string, mixed>  $receptor
+     */
+    public function emitirCuota(CuotaReserva $cuota, SerieFacturacion $serie, array $receptor, ?string $formaPago = null, ?string $metodoPago = null): Factura
+    {
+        $reserva = $cuota->reserva;
+        $generador = $this->comprobar($reserva, $serie, $receptor);
+
+        $factura = DB::transaction(function () use ($cuota, $reserva, $serie, $receptor, $formaPago, $metodoPago, $generador): Factura {
+            $bloqueada = CuotaReserva::query()->lockForUpdate()->findOrFail($cuota->id);
+            if ($reserva->refresh()->estado === EstadoReserva::Cancelada) {
+                throw new ErrorFacturacion(__('ui.reservas.error_cancelada'));
+            }
+            $vigentes = Factura::query()->whereHas('reservas', fn ($q) => $q->where('reservas.id', $reserva->id))->where('estado', '!=', EstadoFactura::Cancelada->value)->get();
+            if ($vigentes->contains(fn (Factura $f): bool => $f->cuota_reserva_id === null || $f->cuota_reserva_id === $bloqueada->id)) {
+                throw new ErrorFacturacion(__('dinero.facturas.error_ya_facturada'));
+            }
+            if ($bloqueada->importe <= 0 || (int) $vigentes->sum('total') + $bloqueada->importe > $reserva->total) {
+                throw new ErrorFacturacion(__('estancias.cuotas.error_factura_total'));
+            }
+
+            return $this->crear($reserva, $serie, $receptor, $formaPago, $metodoPago, $generador, $bloqueada);
+        });
+        $this->generarArchivos($factura, $generador);
+
+        return $factura->refresh();
+    }
+
+    /**
+     * @param  array<string, mixed>  $receptor
+     */
+    private function comprobar(Reserva $reserva, SerieFacturacion $serie, array $receptor): ?GeneradorFiscal
+    {
         $reserva->loadMissing(['propiedad', 'cargos', 'unidad']);
-        $entidad = $serie->entidad;
-        if ($entidad->propiedad_id !== $reserva->propiedad_id) {
+        if ($serie->entidad->propiedad_id !== $reserva->propiedad_id) {
             throw new ErrorFacturacion(__('dinero.facturas.error_entidad'));
         }
         if (! $serie->activa) {
@@ -60,66 +108,65 @@ final class GestorFacturas
         if ($reserva->total <= 0) {
             throw new ErrorFacturacion(__('dinero.facturas.error_total'));
         }
-        if ($this->facturaVigenteDe($reserva) !== null) {
-            throw new ErrorFacturacion(__('dinero.facturas.error_ya_facturada'));
-        }
         $generador = $serie->tipo_documento === TipoDocumentoFiscal::Factura ? Paises::de($reserva->propiedad)->generadorFiscal() : null;
-        if ($generador !== null) {
-            $error = $generador->errorEnReceptor($receptor);
-            if ($error !== null) {
-                throw new ErrorFacturacion($error);
-            }
+        $error = $generador?->errorEnReceptor($receptor);
+        if ($error !== null) {
+            throw new ErrorFacturacion($error);
         }
 
-        $factura = DB::transaction(function () use ($reserva, $serie, $entidad, $receptor, $formaPago, $metodoPago, $generador): Factura {
-            $bloqueada = SerieFacturacion::query()->whereKey($serie->id)->lockForUpdate()->firstOrFail();
-            $numero = $bloqueada->siguiente_numero;
-            $bloqueada->update(['siguiente_numero' => $numero + 1]);
+        return $generador;
+    }
 
-            $lineas = $this->lineasDe($reserva, $generador);
-            $factura = Factura::query()->create([
-                'propiedad_id' => $reserva->propiedad_id,
-                'entidad_fiscal_id' => $entidad->id,
-                'serie_id' => $serie->id,
-                'serie' => $serie->serie,
-                'numero' => $numero,
-                'tipo' => $serie->tipo_documento,
-                'estado' => EstadoFactura::Emitida,
-                'emisor' => ['nombre' => $entidad->nombre, 'identificador_fiscal' => $entidad->identificador_fiscal, 'regimen_fiscal' => $entidad->regimen_fiscal, 'codigo_postal' => $entidad->codigo_postal, 'domicilio' => $entidad->domicilio, 'pais' => $entidad->pais],
-                'receptor' => $receptor,
-                'moneda' => $reserva->moneda,
-                'subtotal' => array_sum(array_column($lineas, 'importe')),
-                'impuestos' => array_sum(array_map(fn (array $l): int => array_sum(array_column($l['impuestos'], 'importe')), $lineas)),
-                'total' => $reserva->total,
-                'emitida_en' => now('UTC'),
-                'lugar_expedicion' => $entidad->codigo_postal,
-                'forma_pago' => $formaPago,
-                'metodo_pago' => $metodoPago,
+    /**
+     * @param  array<string, mixed>  $receptor
+     */
+    private function crear(Reserva $reserva, SerieFacturacion $serie, array $receptor, ?string $formaPago, ?string $metodoPago, ?GeneradorFiscal $generador, ?CuotaReserva $cuota = null): Factura
+    {
+        $entidad = $serie->entidad;
+        $bloqueada = SerieFacturacion::query()->whereKey($serie->id)->lockForUpdate()->firstOrFail();
+        $numero = $bloqueada->siguiente_numero;
+        $bloqueada->update(['siguiente_numero' => $numero + 1]);
+
+        $lineas = $this->lineasDe($reserva, $generador, $cuota);
+        $factura = Factura::query()->create([
+            'propiedad_id' => $reserva->propiedad_id,
+            'entidad_fiscal_id' => $entidad->id,
+            'serie_id' => $serie->id,
+            'cuota_reserva_id' => $cuota?->id,
+            'serie' => $serie->serie,
+            'numero' => $numero,
+            'tipo' => $serie->tipo_documento,
+            'estado' => EstadoFactura::Emitida,
+            'emisor' => ['nombre' => $entidad->nombre, 'identificador_fiscal' => $entidad->identificador_fiscal, 'regimen_fiscal' => $entidad->regimen_fiscal, 'codigo_postal' => $entidad->codigo_postal, 'domicilio' => $entidad->domicilio, 'pais' => $entidad->pais],
+            'receptor' => $receptor,
+            'moneda' => $reserva->moneda,
+            'subtotal' => array_sum(array_column($lineas, 'importe')),
+            'impuestos' => array_sum(array_map(fn (array $l): int => array_sum(array_column($l['impuestos'], 'importe')), $lineas)),
+            'total' => $cuota->importe ?? $reserva->total,
+            'emitida_en' => now('UTC'),
+            'lugar_expedicion' => $entidad->codigo_postal,
+            'forma_pago' => $formaPago,
+            'metodo_pago' => $metodoPago,
+        ]);
+        foreach ($lineas as $i => $linea) {
+            $fila = $factura->lineas()->create([
+                'orden' => $i,
+                'concepto' => mb_substr($linea['concepto'], 0, 255),
+                'clave_producto' => $linea['clave_producto'],
+                'clave_unidad' => $linea['clave_unidad'],
+                'cantidad' => 1,
+                'valor_unitario' => Dinero::aDecimal($linea['importe'], $reserva->moneda),
+                'importe' => $linea['importe'],
             ]);
-            foreach ($lineas as $i => $linea) {
-                $fila = $factura->lineas()->create([
-                    'orden' => $i,
-                    'concepto' => mb_substr($linea['concepto'], 0, 255),
-                    'clave_producto' => $linea['clave_producto'],
-                    'clave_unidad' => $linea['clave_unidad'],
-                    'cantidad' => 1,
-                    'valor_unitario' => Dinero::aDecimal($linea['importe'], $reserva->moneda),
-                    'importe' => $linea['importe'],
-                ]);
-                foreach ($linea['impuestos'] as $impuesto) {
-                    $fila->impuestos()->create($impuesto + ['tipo' => 'traslado']);
-                }
+            foreach ($linea['impuestos'] as $impuesto) {
+                $fila->impuestos()->create($impuesto + ['tipo' => 'traslado']);
             }
-            $factura->reservas()->attach($reserva->id);
-            $this->guardarReceptor($reserva, $receptor);
-            RegistroAuditoria::anotar('factura.emitir', $factura, ['folio' => $factura->folio(), 'total' => $factura->total], $reserva->propiedad_id);
+        }
+        $factura->reservas()->attach($reserva->id);
+        $this->guardarReceptor($reserva, $receptor);
+        RegistroAuditoria::anotar('factura.emitir', $factura, ['folio' => $factura->folio(), 'total' => $factura->total], $reserva->propiedad_id);
 
-            return $factura;
-        });
-
-        $this->generarArchivos($factura, $generador);
-
-        return $factura->refresh();
+        return $factura;
     }
 
     /**
@@ -212,22 +259,44 @@ final class GestorFacturas
      *
      * @return list<array{concepto: string, clave_producto: string|null, clave_unidad: string|null, importe: int, impuestos: list<array{nombre: string, codigo: string|null, base: int, tasa: string, importe: int}>}>
      */
-    private function lineasDe(Reserva $reserva, ?GeneradorFiscal $generador): array
+    private function lineasDe(Reserva $reserva, ?GeneradorFiscal $generador, ?CuotaReserva $cuota = null): array
     {
         $claves = $generador?->clavesHospedaje() ?? ['producto' => null, 'unidad' => null];
-        $tasas = Impuesto::query()->aplicables($reserva->propiedad_id, $reserva->llegada->format('Y-m-d'))->where('base', BaseCargo::PorcentajeAlojamiento->value)->orderBy('orden')->get();
+        $noches = (int) $reserva->llegada->diffInDays($reserva->salida);
+        $tasas = Impuesto::query()->aplicables($reserva->propiedad_id, $reserva->llegada->format('Y-m-d'))->where('base', BaseCargo::PorcentajeAlojamiento->value)->orderBy('orden')->get()
+            ->reject(fn (Impuesto $impuesto): bool => $impuesto->exentoPara($noches));
         $sumaTasas = (float) $tasas->sum(fn (Impuesto $i): float => (float) $i->tasa) / 100;
 
         // Lo que es por persona y noche no es parte del precio del hospedaje ni lleva IVA encima: va en su línea, con unidades y tarifa (Ley 5/2017 de Cataluña, art. 35).
         $porEstancia = $reserva->impuestos()->whereNotNull('importe_unitario')->where('incluido', false)->where('cobrado_por_canal', false)->where('importe', '>', 0)->get();
         $cargos = (int) $reserva->cargos->sum('importe') + (int) $porEstancia->sum('importe');
-        $brutos = [[__('dinero.facturas.concepto_hospedaje', ['unidad' => $reserva->unidad->nombre ?? '', 'noches' => $reserva->llegada->diffInDays($reserva->salida), 'numero' => $reserva->numero], $reserva->propiedad->idioma), $reserva->total - $cargos]];
+        $idioma = $reserva->propiedad->idioma;
+        $hospedaje = $cuota === null
+            ? __('dinero.facturas.concepto_hospedaje', ['unidad' => $reserva->unidad->nombre ?? '', 'noches' => $noches, 'numero' => $reserva->numero], $idioma)
+            : __('estancias.cuotas.concepto_factura', ['unidad' => $reserva->unidad->nombre ?? '', 'periodo' => $cuota->periodo($idioma), 'numero' => $reserva->numero], $idioma);
+        $brutos = [[$hospedaje, $reserva->total - $cargos]];
         foreach ($reserva->cargos as $cargo) {
             $brutos[] = [$cargo->nombre, $cargo->importe];
         }
 
+        // Una cuota lleva lo mismo que la reserva, en proporción. Se redondea lo acumulado, para que la suma dé justo lo de la cuota.
+        $acumulado = 0;
+        $repartido = 0;
+        $parte = function (int $importe) use ($cuota, $reserva, &$acumulado, &$repartido): int {
+            if ($cuota === null) {
+                return $importe;
+            }
+            $acumulado += $importe;
+            $hasta = (int) round($acumulado * $cuota->importe / $reserva->total);
+            $resultado = $hasta - $repartido;
+            $repartido = $hasta;
+
+            return $resultado;
+        };
+
         $lineas = [];
         foreach ($brutos as [$concepto, $bruto]) {
+            $bruto = $parte($bruto);
             if ($bruto <= 0) {
                 continue;
             }
@@ -248,10 +317,11 @@ final class GestorFacturas
             $lineas[] = ['concepto' => $concepto, 'clave_producto' => $claves['producto'], 'clave_unidad' => $claves['unidad'], 'importe' => $base, 'impuestos' => $impuestos];
         }
         foreach ($porEstancia as $impuesto) {
-            $concepto = $impuesto->unidades > 0
+            $importe = $parte($impuesto->importe);
+            $concepto = $cuota === null && $impuesto->unidades > 0
                 ? __('dinero.facturas.concepto_estancias', ['impuesto' => $impuesto->nombre, 'unidades' => $impuesto->unidades, 'tarifa' => Formato::dinero((int) $impuesto->importe_unitario, $reserva->moneda)], $reserva->propiedad->idioma)
                 : $impuesto->nombre;
-            $lineas[] = ['concepto' => $concepto, 'clave_producto' => $claves['producto'], 'clave_unidad' => $claves['unidad'], 'importe' => $impuesto->importe, 'impuestos' => []];
+            $lineas[] = ['concepto' => $concepto, 'clave_producto' => $claves['producto'], 'clave_unidad' => $claves['unidad'], 'importe' => $importe, 'impuestos' => []];
         }
 
         return $lineas;

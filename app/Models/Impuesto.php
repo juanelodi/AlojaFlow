@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable|null $vigente_desde
  * @property CarbonImmutable|null $vigente_hasta
  * @property int|null $tope_noches
+ * @property int|null $exento_desde_noches
  * @property int|null $edad_minima
  * @property bool $fijar_al_reservar
  * @property string|null $temporada_baja_desde
@@ -55,6 +56,7 @@ class Impuesto extends ModeloBase
             'vigente_desde' => 'immutable_date',
             'vigente_hasta' => 'immutable_date',
             'tope_noches' => 'integer',
+            'exento_desde_noches' => 'integer',
             'edad_minima' => 'integer',
             'fijar_al_reservar' => 'boolean',
             'temporada_baja_descuento' => 'decimal:2',
@@ -79,6 +81,14 @@ class Impuesto extends ModeloBase
         return $query->where('propiedad_id', $propiedadId)->where('activo', true)->where(fn (Builder $q): Builder => $q
             ->where(fn (Builder $r): Builder => $vigente($r->where('fijar_al_reservar', false), $fecha))
             ->orWhere(fn (Builder $r): Builder => $vigente($r->where('fijar_al_reservar', true), $reservadaEn ?? $fecha)));
+    }
+
+    /**
+     * Una estancia que llega a esas noches no lo paga: algunos lugares exentan así al residente permanente.
+     */
+    public function exentoPara(int $noches): bool
+    {
+        return $this->exento_desde_noches !== null && $noches >= $this->exento_desde_noches;
     }
 
     /**

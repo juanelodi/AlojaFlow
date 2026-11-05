@@ -42,6 +42,7 @@ return [
         'plano' => ['nombre' => 'Pianta della struttura', 'descripcion' => 'Vedere le unità disposte su un disegno del tuo alloggio.'],
         'llegada' => ['nombre' => 'Arrivo online', 'descripcion' => 'L\'ospite compila i suoi dati e accetta i documenti prima di arrivare.'],
         'mensajes' => ['nombre' => 'Messaggi agli ospiti', 'descripcion' => 'Modelli, invii via e-mail e WhatsApp, e messaggi automatici.'],
+        'estancias_largas' => ['nombre' => 'Soggiorni lunghi e mensilità', 'descripcion' => 'Prezzo a settimana e al mese, calendario dei pagamenti con promemoria e una fattura per pagamento.'],
         'portal' => ['nombre' => 'La mia prenotazione e guida digitale', 'descripcion' => 'Una pagina per ogni ospite, con la prenotazione e ciò che deve sapere, e un codice QR in ogni unità.'],
         'bitacora' => ['nombre' => 'Registro dei turni', 'descripcion' => 'Ciò che un turno lascia al successivo. L’importante compare in Oggi.'],
         'empresas' => ['nombre' => 'Aziende e agenzie', 'descripcion' => 'Chi prenota o paga per i propri ospiti, con condizioni ed estratto conto.'],

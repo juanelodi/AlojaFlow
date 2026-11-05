@@ -481,6 +481,9 @@ class ReservaForm
             'tarifa' => $presupuesto->cotizacion->tarifa,
             'precio' => Formato::dinero($presupuesto->total(), $moneda),
         ]);
+        if ($presupuesto->cotizacion->estanciaLarga !== null) {
+            $texto .= ' '.__('estancias.motor.aplicado.'.$presupuesto->cotizacion->estanciaLarga).'.';
+        }
         if ($presupuesto->totalCargos() > 0) {
             $texto .= ' '.__('ui.reservas.incluye_cargos', ['importe' => Formato::dinero($presupuesto->totalCargos(), $moneda)]);
         }

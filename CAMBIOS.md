@@ -2,6 +2,36 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.22 — 2026-11-05
+
+**Estancias largas y mensualidades.** Es un módulo nuevo y llega apagado: se prende en Sistema → Módulos.
+
+**Precio por semana y por mes (en cada tarifa)**
+- Por semana desde 7 noches y por mes desde 28. **Un mes completo cuesta lo mismo con 28 o con 31 noches**; lo que sobra se cobra a treintavos.
+- **Una temporada sin estos precios cobra su precio normal**, también en una estancia larga: así el precio del mes no regala la temporada alta. Si quieres, cada temporada puede tener los suyos.
+- El motor los enseña y dice cuál aplicó. El formulario de la reserva, también.
+
+**Calendario de cobros (en cada reserva)**
+- «Generar calendario» reparte el total en pagos por mes o por semana, desde la fecha que digas. El último cubre lo que no llene un periodo.
+- Se puede ajustar a mano: cambiar un pago, agregar otro como un depósito, quitarlo. Si deja de sumar el total, lo avisa.
+- **Lo pagado se aplica solo a los primeros en vencer.** No hay que marcar nada: registras el pago como siempre y ves qué está pagado, parcial, atrasado o pendiente.
+
+**Mensualidades (Dinero → Mensualidades)**
+- Lo vencido y lo que vence en 30 días, de todas las estancias largas, con un botón de WhatsApp con el recordatorio ya escrito.
+- **Recordatorios por correo con un clic:** 3 días antes y al día siguiente de vencer. Salen de Automatizaciones y Plantillas, donde puedes cambiar días y texto. Solo a quien debe.
+
+**Una factura por pago**
+- Cada pago se puede facturar aparte, con sus fechas y con los impuestos y cargos en proporción. No se puede facturar dos veces, ni pasar del total. Lo facturado ya no se puede cambiar: generar otra vez reparte solo lo que falta.
+
+**El huésped (en Mi reserva)**
+- Ve sus pagos y su estado, paga en línea lo que toca (lo vencido o el siguiente) y manda su comprobante de transferencia. Mi reserva ahora también dice cómo pagar: antes solo lo decía la página del motor.
+
+**Impuestos:** un campo nuevo, «No cobrar desde (noches)», para los lugares que no cobran un impuesto en una estancia larga. Viene vacío: lo que aplique en tu lugar, confírmalo con tu contador.
+
+**Demostración:** trae una estancia de tres meses con un pago vencido, para verlo funcionando.
+
+**Sin verificar:** no se ha probado con un cobro real ni con un PAC: las facturas de cuota se revisaron en el XML y el PDF, sin timbrar. El correo de los recordatorios se revisó en la cola de envíos, sin mandarlo. No se ha probado en un teléfono de verdad ni con un huésped real. Nada de esto lo ha revisado un contador: confirma con el tuyo cómo facturar por pagos en tu país.
+
 ## 1.0.21 — 2026-11-05
 
 **Lo que ve el huésped: una página con fotos, «Mi reserva» y una guía digital.**

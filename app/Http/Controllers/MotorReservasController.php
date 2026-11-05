@@ -10,17 +10,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Comprobantes\ComprobanteRechazado;
 use App\Comprobantes\GestorComprobantes;
 use App\Dinero\GestorPoliticas;
 use App\Documentos\GeneradorPdf;
 use App\Enums\EstadoReserva;
+use App\Http\Controllers\Concerns\RecibeComprobante;
 use App\Models\Foto;
 use App\Models\PagoEnLinea;
 use App\Models\Politica;
 use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Tarifa;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Motor\AjustesMotor;
 use App\Motor\MotorReservas;
 use App\Motor\Pasarelas;
@@ -28,8 +30,8 @@ use App\Pagos\CobrosEnLinea;
 use App\Pagos\ErrorPago;
 use App\Pagos\PagoConFormulario;
 use App\Publico\PaginaPublica;
+use App\Reservas\Mensualidades;
 use App\Reservas\ReservaRechazada;
-use App\Support\Dinero;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -46,6 +48,8 @@ use Throwable;
  */
 class MotorReservasController extends Controller
 {
+    use RecibeComprobante;
+
     private const REGLAS = [
         'tarifa_id' => ['required', 'integer'],
         'llegada' => ['required', 'date_format:Y-m-d'],
@@ -96,6 +100,7 @@ class MotorReservasController extends Controller
             'salida' => $salida?->format('Y-m-d') ?? $hoy->addDay()->format('Y-m-d'),
             'personas' => $personas,
             'ofertas' => $ofertas,
+            'conEstanciasLargas' => Modulos::activo(Modulo::EstanciasLargas),
             'noches' => $llegada !== null && $salida !== null && $salida->gt($llegada) ? (int) $llegada->diffInDays($salida) : 0,
             'error' => $error,
             'minimoFecha' => $hoy->format('Y-m-d'),
@@ -161,6 +166,7 @@ class MotorReservasController extends Controller
             'porCobrar' => $this->cobros->porCobrar($reserva),
             'pasarelas' => $reserva->estado === EstadoReserva::Cancelada ? [] : array_keys((new Pasarelas($propiedad))->disponibles()),
             'comprobantes' => $reserva->comprobantes()->latest('id')->limit(20)->get(),
+            'calendario' => $reserva->estado === EstadoReserva::Cancelada ? null : Mensualidades::de($reserva),
             'espera' => $reserva->estado === EstadoReserva::Cancelada || $this->cobros->porCobrar($reserva) <= 0 ? null : $this->cobros->enEspera($reserva),
         ]);
     }
@@ -176,29 +182,8 @@ class MotorReservasController extends Controller
         if (! (new AjustesMotor($propiedad))->aceptaComprobantes()) {
             abort(404);
         }
-        $validador = Validator::make($request->all(), [
-            'importe' => ['required', 'numeric', 'min:0.01', 'max:99999999'],
-            'fecha' => ['required', 'date', 'before_or_equal:'.$propiedad->hoy()->addDay()->format('Y-m-d')],
-            'referencia' => ['nullable', 'string', 'max:100'],
-            'comprobante' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-        ]);
-        if ($validador->fails()) {
-            return $volver('comprobante_datos');
-        }
-        $datos = $validador->validated();
-        try {
-            $comprobantes->recibirDeReserva(
-                $reserva,
-                (string) file_get_contents((string) $request->file('comprobante')?->getRealPath()),
-                Dinero::aUnidadMenor((string) $datos['importe'], $reserva->moneda),
-                CarbonImmutable::parse((string) $datos['fecha'])->startOfDay(),
-                $datos['referencia'] ?? null,
-            );
-        } catch (ComprobanteRechazado) {
-            return $volver('comprobante_imagen');
-        }
 
-        return $volver('comprobante_recibido');
+        return $volver($this->recibirComprobante($request, $reserva, $comprobantes));
     }
 
     public function pagar(Request $request, string $codigo, string $publico, string $pasarela): RedirectResponse

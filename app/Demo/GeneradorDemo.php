@@ -43,6 +43,7 @@ use App\Models\Unidad;
 use App\Propiedades\BorradorPropiedad;
 use App\Reservas\Cotizador;
 use App\Reservas\GestorReservas;
+use App\Reservas\Mensualidades;
 use App\Seguridad\AuditoriaModelos;
 use App\Support\Contactos;
 use Carbon\CarbonImmutable;
@@ -64,6 +65,8 @@ final class GeneradorDemo
     private const DIAS_ADELANTE = 90;
 
     private const CANTIDAD_HUESPEDES = 60;
+
+    private const UNIDAD_ESTANCIA_LARGA = 11;
 
     private const NOMBRES = ['Ana', 'Luis', 'Carmen', 'Jorge', 'Elena', 'Marco', 'Lucía', 'Diego', 'Sofía', 'Andrés', 'Paula', 'Tomás', 'Julia', 'Raúl', 'Inés', 'Emma', 'Noah', 'Grace', 'Oliver', 'Claire'];
 
@@ -172,6 +175,7 @@ final class GeneradorDemo
             $tarifa = Tarifa::query()->create([
                 'propiedad_id' => $propiedad->id, 'nombre' => $nombre, 'modo' => ModoTarifa::PorNoche, 'precio_noche' => $pesos * 100, 'activa' => true,
                 'personas_incluidas' => 2, 'precio_persona_extra' => 25000, 'precio_fin_semana' => $this->conAumento($pesos, 15),
+                'precio_semana' => $pesos * 600, 'precio_mes' => $pesos * 2000,
             ]);
             foreach ([$anio - 1, $anio, $anio + 1] as $a) {
                 $tarifa->temporadas()->createMany([
@@ -278,13 +282,18 @@ final class GeneradorDemo
     private function llenarUnidad(Propiedad $propiedad, Unidad $unidad, int $indice, array $huespedes): void
     {
         $hoy = $propiedad->hoy();
-        [$inicio, $fin] = match ($indice % 4) {
-            0 => [$hoy, $hoy->addDays($this->azar->getInt(2, 5))],
-            1 => [$hoy->subDays($this->azar->getInt(2, 5)), $hoy],
-            2 => [$hoy->subDays($this->azar->getInt(1, 3)), $hoy->addDays($this->azar->getInt(1, 4))],
+        [$inicio, $fin] = match (true) {
+            $indice === self::UNIDAD_ESTANCIA_LARGA => [$hoy->subDays(45), $hoy->addDays(45)],
+            $indice % 4 === 0 => [$hoy, $hoy->addDays($this->azar->getInt(2, 5))],
+            $indice % 4 === 1 => [$hoy->subDays($this->azar->getInt(2, 5)), $hoy],
+            $indice % 4 === 2 => [$hoy->subDays($this->azar->getInt(1, 3)), $hoy->addDays($this->azar->getInt(1, 4))],
             default => [$hoy->addDays(1), $hoy->addDays($this->azar->getInt(3, 6))],
         };
-        $this->crearEstancia($propiedad, $unidad, $inicio, $fin, $huespedes, ancla: true);
+        if ($indice === self::UNIDAD_ESTANCIA_LARGA) {
+            $this->crearEstanciaLarga($propiedad, $unidad, $inicio, $fin, $huespedes);
+        } else {
+            $this->crearEstancia($propiedad, $unidad, $inicio, $fin, $huespedes, ancla: true);
+        }
 
         for ($cursor = $fin->addDays($this->azar->getInt(0, 4)); $cursor->lt($hoy->addDays(self::DIAS_ADELANTE));) {
             $salida = $cursor->addDays($this->azar->getInt(1, 7));
@@ -296,6 +305,31 @@ final class GeneradorDemo
             $this->crearEstancia($propiedad, $unidad, $llegada, $cursor, $huespedes);
             $cursor = $llegada->subDays($this->azar->getInt(0, 3));
         }
+    }
+
+    /**
+     * Tres meses con su calendario de cobros (D-108): el primero pagado y el segundo, vencido.
+     *
+     * @param  list<int>  $huespedes
+     */
+    private function crearEstanciaLarga(Propiedad $propiedad, Unidad $unidad, CarbonImmutable $llegada, CarbonImmutable $salida, array $huespedes): void
+    {
+        $reserva = $this->gestor->crear($propiedad, [
+            'tipo' => TipoReserva::Reserva->value,
+            'unidad_id' => $unidad->id,
+            'titular_id' => $huespedes[0],
+            'llegada' => $llegada->format('Y-m-d'),
+            'salida' => $salida->format('Y-m-d'),
+            'personas' => 2,
+            'estado' => EstadoReserva::Confirmada->value,
+            'total' => Cotizador::cotizar($unidad, $llegada, $salida, 2)->total ?? 0,
+            'origen_texto' => 'Directo',
+            'comentario' => __('ui.demo.estancia_larga'),
+        ]);
+        $reserva->entrada_registrada_en = Carbon::parse($llegada->format('Y-m-d').' 15:00:00', $reserva->propiedad->zona_horaria)->utc();
+        $reserva->save();
+        app(Mensualidades::class)->generar($reserva, Mensualidades::MES, $llegada);
+        $this->cobrar($reserva, (int) $reserva->cuotas()->value('importe'), MetodoPago::Efectivo, $llegada);
     }
 
     /**

@@ -25,6 +25,7 @@ use App\Facturacion\GestorFacturas;
 use App\Limpieza\GestorLimpieza;
 use App\Llegada\GestorLlegadas;
 use App\Models\Caja;
+use App\Models\Factura;
 use App\Models\Plantilla;
 use App\Models\ReceptorFiscal;
 use App\Models\ReglaLimpieza;
@@ -103,63 +104,84 @@ final class AccionesReserva
             ->icon(Heroicon::OutlinedDocumentCurrencyDollar)
             ->color('gray')
             ->visible(fn (Reserva $record): bool => Modulos::activo(Modulo::Facturacion) && $record->tipo === TipoReserva::Reserva && $record->estado !== EstadoReserva::Cancelada && Acceso::puede(Acceso::usuarioActual(), Acceso::FACTURACION, $record->propiedad_id))
-            ->fillForm(function (Reserva $record): array {
-                // D-081: la factura de una reserva de empresa se le propone a ella, con lo que ya se le haya facturado antes. Nunca con el régimen o el
-                // código postal del huésped: un dato de cada quien daría una factura inválida.
-                $empresa = $record->empresa;
-                $guardado = ReceptorFiscal::query()->where('propiedad_id', $record->propiedad_id)
-                    ->when(
-                        $empresa !== null,
-                        fn (Builder $query): Builder => $query->where('identificador_fiscal', mb_strtoupper((string) $empresa?->identificador_fiscal)),
-                        fn (Builder $query): Builder => $query->where('huesped_id', $record->titular_id),
-                    )
-                    ->latest('id')->first();
-
-                $primeraSerie = SerieFacturacion::query()->where('activa', true)->whereHas('entidad', fn ($q) => $q->where('propiedad_id', $record->propiedad_id))->value('id');
-
-                return [
-                    'serie_id' => $primeraSerie,
-                    'metodo_pago' => 'PUE',
-                    'identificador_fiscal' => $empresa !== null ? $empresa->identificador_fiscal : ($guardado->identificador_fiscal ?? ($record->titular->id_fiscal_empresa ?? $record->titular->id_fiscal_personal ?? null)),
-                    'nombre' => $empresa !== null ? $empresa->nombre : ($guardado->nombre ?? $record->titular?->nombreCompleto()),
-                    'regimen_fiscal' => $guardado->regimen_fiscal ?? null,
-                    'codigo_postal' => $guardado->codigo_postal ?? null,
-                    'uso' => $guardado->uso ?? null,
-                    'correo' => $empresa !== null ? ($empresa->correo ?? $guardado->correo ?? null) : ($guardado->correo ?? Mensajero::correoDe($record)),
-                ];
-            })
-            ->schema(function (Reserva $record): array {
-                $catalogos = Paises::de($record->propiedad)->generadorFiscal()?->catalogos() ?? [];
-                $series = SerieFacturacion::query()->with('entidad')->where('activa', true)
-                    ->whereHas('entidad', fn ($q) => $q->where('propiedad_id', $record->propiedad_id))->get()
-                    ->mapWithKeys(fn (SerieFacturacion $s): array => [$s->id => $s->serie.' · '.$s->tipo_documento->etiqueta().' · '.$s->entidad->nombre])->all();
-                $campos = [
-                    Select::make('serie_id')->label(__('dinero.facturas.serie'))->native(false)->required()->options($series)->helperText($series === [] ? __('dinero.facturas.sin_entidad') : null),
-                    TextInput::make('identificador_fiscal')->label(__('dinero.facturas.identificador'))->required()->maxLength(30),
-                    TextInput::make('nombre')->label(__('dinero.facturas.nombre'))->required()->maxLength(200),
-                    TextInput::make('correo')->label(__('dinero.facturas.correo'))->email()->maxLength(150),
-                ];
-                if ($catalogos !== []) {
-                    $campos[] = Select::make('regimen_fiscal')->label(__('dinero.facturas.regimen'))->native(false)->options($catalogos['regimen'])->required();
-                    $campos[] = TextInput::make('codigo_postal')->label(__('dinero.facturas.codigo_postal'))->required()->maxLength(10);
-                    $campos[] = Select::make('uso')->label(__('dinero.facturas.uso'))->native(false)->options($catalogos['uso'])->required();
-                    $campos[] = Select::make('forma_pago')->label(__('dinero.facturas.forma_pago'))->native(false)->options($catalogos['forma_pago'])->required();
-                    $campos[] = Select::make('metodo_pago')->label(__('dinero.facturas.metodo_pago'))->native(false)->options($catalogos['metodo_pago'])->required();
-                }
-
-                return $campos;
-            })
+            ->fillForm(fn (Reserva $record): array => self::datosFactura($record))
+            ->schema(fn (Reserva $record): array => self::camposFactura($record))
             ->action(function (Reserva $record, array $data, GestorFacturas $facturas): void {
                 $serie = SerieFacturacion::query()->with('entidad')->findOrFail((int) $data['serie_id']);
-                $receptor = array_intersect_key($data, array_flip(['identificador_fiscal', 'nombre', 'regimen_fiscal', 'codigo_postal', 'uso', 'correo']));
-                try {
-                    $factura = $facturas->emitir($record, $serie, $receptor, $data['forma_pago'] ?? null, $data['metodo_pago'] ?? null);
-                    Notification::make()->success()->persistent()->title(__('dinero.facturas.emitida_ok', ['folio' => $factura->folio()]))
-                        ->actions([Action::make('pdf')->label(__('dinero.facturas.descargar_pdf'))->url(route('archivos.ver', (int) $factura->pdf_archivo_id), shouldOpenInNewTab: true)])->send();
-                } catch (ErrorFacturacion $e) {
-                    Notification::make()->danger()->persistent()->title($e->getMessage())->send();
-                }
+                self::emitirFactura($data, fn (array $receptor): Factura => $facturas->emitir($record, $serie, $receptor, $data['forma_pago'] ?? null, $data['metodo_pago'] ?? null));
             });
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @param  callable(array<string, mixed>): Factura  $emitir
+     */
+    public static function emitirFactura(array $data, callable $emitir): void
+    {
+        $receptor = array_intersect_key($data, array_flip(['identificador_fiscal', 'nombre', 'regimen_fiscal', 'codigo_postal', 'uso', 'correo']));
+        try {
+            $factura = $emitir($receptor);
+            Notification::make()->success()->persistent()->title(__('dinero.facturas.emitida_ok', ['folio' => $factura->folio()]))
+                ->actions([Action::make('pdf')->label(__('dinero.facturas.descargar_pdf'))->url(route('archivos.ver', (int) $factura->pdf_archivo_id), shouldOpenInNewTab: true)])->send();
+        } catch (ErrorFacturacion $e) {
+            Notification::make()->danger()->persistent()->title($e->getMessage())->send();
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function datosFactura(Reserva $record): array
+    {
+        // D-081: la factura de una reserva de empresa se le propone a ella, con lo que ya se le haya facturado antes. Nunca con el régimen o el
+        // código postal del huésped: un dato de cada quien daría una factura inválida.
+        $empresa = $record->empresa;
+        $guardado = ReceptorFiscal::query()->where('propiedad_id', $record->propiedad_id)
+            ->when(
+                $empresa !== null,
+                fn (Builder $query): Builder => $query->where('identificador_fiscal', mb_strtoupper((string) $empresa?->identificador_fiscal)),
+                fn (Builder $query): Builder => $query->where('huesped_id', $record->titular_id),
+            )
+            ->latest('id')->first();
+
+        $primeraSerie = SerieFacturacion::query()->where('activa', true)->whereHas('entidad', fn ($q) => $q->where('propiedad_id', $record->propiedad_id))->value('id');
+
+        return [
+            'serie_id' => $primeraSerie,
+            'metodo_pago' => 'PUE',
+            'identificador_fiscal' => $empresa !== null ? $empresa->identificador_fiscal : ($guardado->identificador_fiscal ?? ($record->titular->id_fiscal_empresa ?? $record->titular->id_fiscal_personal ?? null)),
+            'nombre' => $empresa !== null ? $empresa->nombre : ($guardado->nombre ?? $record->titular?->nombreCompleto()),
+            'regimen_fiscal' => $guardado->regimen_fiscal ?? null,
+            'codigo_postal' => $guardado->codigo_postal ?? null,
+            'uso' => $guardado->uso ?? null,
+            'correo' => $empresa !== null ? ($empresa->correo ?? $guardado->correo ?? null) : ($guardado->correo ?? Mensajero::correoDe($record)),
+        ];
+    }
+
+    /**
+     * @return list<\Filament\Forms\Components\Field>
+     */
+    public static function camposFactura(Reserva $record): array
+    {
+        $catalogos = Paises::de($record->propiedad)->generadorFiscal()?->catalogos() ?? [];
+        $series = SerieFacturacion::query()->with('entidad')->where('activa', true)
+            ->whereHas('entidad', fn ($q) => $q->where('propiedad_id', $record->propiedad_id))->get()
+            ->mapWithKeys(fn (SerieFacturacion $s): array => [$s->id => $s->serie.' · '.$s->tipo_documento->etiqueta().' · '.$s->entidad->nombre])->all();
+        $campos = [
+            Select::make('serie_id')->label(__('dinero.facturas.serie'))->native(false)->required()->options($series)->helperText($series === [] ? __('dinero.facturas.sin_entidad') : null),
+            TextInput::make('identificador_fiscal')->label(__('dinero.facturas.identificador'))->required()->maxLength(30),
+            TextInput::make('nombre')->label(__('dinero.facturas.nombre'))->required()->maxLength(200),
+            TextInput::make('correo')->label(__('dinero.facturas.correo'))->email()->maxLength(150),
+        ];
+        if ($catalogos !== []) {
+            $campos[] = Select::make('regimen_fiscal')->label(__('dinero.facturas.regimen'))->native(false)->options($catalogos['regimen'])->required();
+            $campos[] = TextInput::make('codigo_postal')->label(__('dinero.facturas.codigo_postal'))->required()->maxLength(10);
+            $campos[] = Select::make('uso')->label(__('dinero.facturas.uso'))->native(false)->options($catalogos['uso'])->required();
+            $campos[] = Select::make('forma_pago')->label(__('dinero.facturas.forma_pago'))->native(false)->options($catalogos['forma_pago'])->required();
+            $campos[] = Select::make('metodo_pago')->label(__('dinero.facturas.metodo_pago'))->native(false)->options($catalogos['metodo_pago'])->required();
+        }
+
+        return $campos;
     }
 
     public static function enlaceLlegada(): Action

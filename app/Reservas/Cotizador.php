@@ -20,6 +20,8 @@ use App\Models\Reserva;
 use App\Models\Tarifa;
 use App\Models\TemporadaTarifa;
 use App\Models\Unidad;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -27,7 +29,8 @@ use Illuminate\Database\Eloquent\Collection;
  * Calcula precios (D-036, D-041). Cada tarifa elige si cobra por noche con persona extra o por
  * persona. Cada noche usa el precio de la temporada que la cubre o, si no hay, el de la tarifa; las
  * noches de viernes y sábado usan el de fin de semana si existe. Si dos temporadas se pisan, vale la
- * que empieza más tarde.
+ * que empieza más tarde. Una estancia larga usa el precio por semana o por mes de la tarifa o de su
+ * temporada; una temporada que no los tiene cobra su precio normal, para no regalar la temporada alta (D-107).
  */
 final class Cotizador
 {
@@ -48,18 +51,60 @@ final class Cotizador
             ->orderByDesc('desde')->orderByDesc('id')
             ->get();
         $personas = max(1, $personas);
+        $nochesDeSuMes = self::nochesDeSuMes($llegada, $salida);
 
         $noches = [];
         $estanciaMinima = $tarifa->estancia_minima;
-        for ($dia = $llegada; $dia->lt($salida); $dia = $dia->addDay()) {
+        $estanciaLarga = null;
+        // Un mes entre 31 no da centavos justos: se redondea lo acumulado, para que la suma dé el precio del mes.
+        $exacto = 0.0;
+        $sumado = 0;
+        for ($dia = $llegada, $i = 0; $dia->lt($salida); $dia = $dia->addDay(), $i++) {
             $temporada = $temporadas->first(fn (TemporadaTarifa $t): bool => $t->desde->lte($dia) && $t->hasta->gte($dia));
             if ($dia->equalTo($llegada) && $temporada?->estancia_minima !== null) {
                 $estanciaMinima = max($estanciaMinima, $temporada->estancia_minima);
             }
-            $noches[] = self::precioNoche($tarifa, $temporada, $dia, $personas);
+            [$largo, $tipo] = self::precioLargo($temporada ?? $tarifa, count($nochesDeSuMes), $nochesDeSuMes[$i]);
+            $estanciaLarga = $tipo === Mensualidades::MES ? $tipo : ($estanciaLarga ?? $tipo);
+            $exacto += self::precioNoche($tarifa, $temporada, $dia, $personas, $largo);
+            $noches[] = (int) round($exacto) - $sumado;
+            $sumado += $noches[$i];
         }
 
-        return new Cotizacion($tarifa->nombre, array_sum($noches), $noches, max(1, $estanciaMinima));
+        return new Cotizacion($tarifa->nombre, array_sum($noches), $noches, max(1, $estanciaMinima), $estanciaLarga);
+    }
+
+    /**
+     * Por cada noche, entre cuántas se reparte el precio de su mes: un mes completo cuesta lo mismo con 28 que con 31, y lo que sobra se cobra a treintavos.
+     *
+     * @return list<int>
+     */
+    private static function nochesDeSuMes(CarbonImmutable $llegada, CarbonImmutable $salida): array
+    {
+        $lista = [];
+        foreach (Mensualidades::periodos($llegada, $salida, Mensualidades::MES) as $periodo) {
+            $lista = [...$lista, ...array_fill(0, $periodo['noches'], $periodo['completo'] ? $periodo['noches'] : 30)];
+        }
+
+        return $lista;
+    }
+
+    /**
+     * @return array{0: float|null, 1: string|null} el precio base de la noche y de qué tipo es; sin módulo, sin precios o sin noches, ninguno
+     */
+    private static function precioLargo(Tarifa|TemporadaTarifa $fila, int $noches, int $nochesDeSuMes): array
+    {
+        if (! Modulos::activo(Modulo::EstanciasLargas)) {
+            return [null, null];
+        }
+        if ($noches >= Cotizacion::NOCHES_MES && $fila->precio_mes !== null) {
+            return [$fila->precio_mes / $nochesDeSuMes, Mensualidades::MES];
+        }
+        if ($noches >= Cotizacion::NOCHES_SEMANA && $fila->precio_semana !== null) {
+            return [$fila->precio_semana / Cotizacion::NOCHES_SEMANA, Mensualidades::SEMANA];
+        }
+
+        return [null, null];
     }
 
     /**
@@ -97,7 +142,7 @@ final class Cotizador
 
         $base = $alojamiento - $descuento;
         $impuestos = [];
-        foreach (self::impuestosAplicables($unidad->propiedad_id, $llegada, CarbonImmutable::now($unidad->propiedad->zona_horaria)->format('Y-m-d')) as $impuesto) {
+        foreach (self::impuestosAplicables($unidad->propiedad_id, $llegada, CarbonImmutable::now($unidad->propiedad->zona_horaria)->format('Y-m-d'), $noches) as $impuesto) {
             $impuestos[] = [
                 'nombre' => $impuesto->nombre,
                 'importe' => self::importeImpuesto($impuesto, $base, $noches, $personas, $exentosPorEdad, $llegada),
@@ -109,11 +154,11 @@ final class Cotizador
         return new Presupuesto($cotizacion, $alojamiento, $descuento, $cargos, $impuestos);
     }
 
-    private static function precioNoche(Tarifa $tarifa, ?TemporadaTarifa $temporada, CarbonImmutable $dia, int $personas): int
+    private static function precioNoche(Tarifa $tarifa, ?TemporadaTarifa $temporada, CarbonImmutable $dia, int $personas, ?float $largo): float
     {
-        $base = $temporada->precio_noche ?? $tarifa->precio_noche;
+        $base = $largo ?? $temporada->precio_noche ?? $tarifa->precio_noche;
         // Viernes y sábado: son las noches que se venden como fin de semana.
-        if (in_array($dia->dayOfWeek, [5, 6], true)) {
+        if ($largo === null && in_array($dia->dayOfWeek, [5, 6], true)) {
             $base = $temporada !== null
                 ? ($temporada->precio_fin_semana ?? $temporada->precio_noche)
                 : ($tarifa->precio_fin_semana ?? $tarifa->precio_noche);
@@ -197,9 +242,10 @@ final class Cotizador
     /**
      * @return Collection<int, Impuesto>
      */
-    private static function impuestosAplicables(int $propiedadId, CarbonImmutable $llegada, string $reservadaEn): Collection
+    private static function impuestosAplicables(int $propiedadId, CarbonImmutable $llegada, string $reservadaEn, int $noches): Collection
     {
-        return Impuesto::query()->aplicables($propiedadId, $llegada->format('Y-m-d'), $reservadaEn)->orderBy('orden')->orderBy('nombre')->get();
+        return Impuesto::query()->aplicables($propiedadId, $llegada->format('Y-m-d'), $reservadaEn)->orderBy('orden')->orderBy('nombre')->get()
+            ->reject(fn (Impuesto $impuesto): bool => $impuesto->exentoPara($noches))->values();
     }
 
     /**
@@ -217,7 +263,7 @@ final class Cotizador
             && Canal::query()->where('propiedad_id', $reserva->propiedad_id)->where('nombre', $reserva->origen_texto)->value('cobra_impuestos');
         $reservadaEn = CarbonImmutable::parse($reserva->creado_en ?? now('UTC'))->setTimezone($reserva->propiedad->zona_horaria)->format('Y-m-d');
         $llegada = CarbonImmutable::parse($reserva->llegada->format('Y-m-d'));
-        $impuestos = self::impuestosAplicables($reserva->propiedad_id, $llegada, $reservadaEn);
+        $impuestos = self::impuestosAplicables($reserva->propiedad_id, $llegada, $reservadaEn, $noches);
 
         $sinCargos = $reserva->total - (int) $reserva->cargos()->sum('importe');
         $fijos = 0;

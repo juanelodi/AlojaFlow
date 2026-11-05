@@ -83,6 +83,7 @@ class ImpuestoResource extends RecursoDePropiedad
                 DatePicker::make('vigente_desde')->label(__('caja.impuestos.vigente_desde'))->helperText(__('caja.impuestos.vigencia_ayuda')),
                 DatePicker::make('vigente_hasta')->label(__('caja.impuestos.vigente_hasta'))->afterOrEqual('vigente_desde'),
                 TextInput::make('tope_noches')->label(__('caja.impuestos.tope_noches'))->helperText(__('caja.impuestos.tope_noches_ayuda'))->numeric()->minValue(1)->maxValue(3650),
+                TextInput::make('exento_desde_noches')->label(__('estancias.impuesto.exento'))->helperText(__('estancias.impuesto.exento_ayuda'))->numeric()->integer()->minValue(1)->maxValue(3650),
                 TextInput::make('edad_minima')->label(__('caja.impuestos.edad_minima'))->helperText(__('caja.impuestos.edad_minima_ayuda'))->numeric()->minValue(1)->maxValue(99)
                     ->visible(fn (Get $get): bool => ! $esPorcentaje($get)),
                 Toggle::make('fijar_al_reservar')->label(__('autoridad.tasa.fijar'))->helperText(__('autoridad.tasa.fijar_ayuda')),

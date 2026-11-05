@@ -24,6 +24,7 @@ use Illuminate\Support\Carbon;
  * @property int $propiedad_id
  * @property int $entidad_fiscal_id
  * @property int $serie_id
+ * @property int|null $cuota_reserva_id
  * @property string $serie
  * @property int $numero
  * @property TipoDocumentoFiscal $tipo

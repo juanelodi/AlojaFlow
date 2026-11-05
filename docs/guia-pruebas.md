@@ -55,7 +55,7 @@ copia desde **Sistema → Copias de seguridad** y guárdala fuera del servidor.
 
 **Todavía no trae:**
 - timbrado real de CFDI (falta un PAC), factura global, complementos de pago y notas de crédito;
-- envío a SES.Hospedajes y VeriFactu de España;
+- VeriFactu de España: hay exportación, pero no el registro encadenado;
 - código de confirmación por WhatsApp o SMS;
 - channel manager por API: con los portales se trabaja por iCal.
 

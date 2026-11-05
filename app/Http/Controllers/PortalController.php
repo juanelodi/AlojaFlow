@@ -11,19 +11,23 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Archivos\GestorArchivos;
+use App\Comprobantes\GestorComprobantes;
 use App\Dinero\GestorPoliticas;
 use App\Documentos\GeneradorPdf;
 use App\Enums\EstadoReserva;
+use App\Http\Controllers\Concerns\RecibeComprobante;
 use App\Llegada\GestorLlegadas;
 use App\Models\Foto;
 use App\Models\Reserva;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
+use App\Motor\AjustesMotor;
 use App\Motor\Pasarelas;
 use App\Pagos\CobrosEnLinea;
 use App\Publico\GuiaDigital;
 use App\Publico\MiReserva;
 use App\Publico\PaginaPublica;
+use App\Reservas\Mensualidades;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -34,6 +38,8 @@ use Illuminate\View\View;
  */
 class PortalController extends Controller
 {
+    use RecibeComprobante;
+
     public function __construct(private readonly MiReserva $miReserva, private readonly GuiaDigital $guia)
     {
     }
@@ -76,7 +82,21 @@ class PortalController extends Controller
             'politica' => $cancelada || $aplicable === null ? null : $politicas->textoDe($aplicable),
             'puedeCancelar' => $this->miReserva->puedeCancelarSolo($reserva),
             'aviso' => $request->query('aviso'),
+            'calendario' => $independiente && ! $cancelada ? Mensualidades::de($reserva) : null,
+            'ajustes' => new AjustesMotor($propiedad),
+            'comprobantes' => $reserva->comprobantes()->latest('id')->limit(20)->get(),
         ]);
+    }
+
+    /**
+     * La transferencia que ya hizo (D-097, D-108). Solo donde AlojaFlow lleva los pagos.
+     */
+    public function comprobante(Request $request, string $token, GestorComprobantes $comprobantes): RedirectResponse
+    {
+        $reserva = $this->reservaDe($request, $token);
+        abort_unless($reserva->propiedad->esIndependiente() && (new AjustesMotor($reserva->propiedad))->aceptaComprobantes(), 404);
+
+        return redirect()->to(route('mi-reserva.ver', ['token' => $token, 'idioma' => app()->getLocale(), 'aviso' => $this->recibirComprobante($request, $reserva, $comprobantes)]).'#comprobante');
     }
 
     public function pedir(Request $request, string $token): RedirectResponse

@@ -158,6 +158,12 @@ class Reserva extends ModeloBase
         return $this->hasOne(GrupoHabitacion::class);
     }
 
+    /** @return HasMany<CuotaReserva, $this> */
+    public function cuotas(): HasMany
+    {
+        return $this->hasMany(CuotaReserva::class)->orderBy('vence_en')->orderBy('id');
+    }
+
     /** @return HasMany<ComprobantePago, $this> */
     public function comprobantes(): HasMany
     {

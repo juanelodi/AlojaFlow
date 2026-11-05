@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Grupos;
 
 use App\Models\CuotaGrupo;
+use App\Models\CuotaReserva;
 use App\Models\Grupo;
 use App\Reservas\GestorGrupos;
 
@@ -25,16 +26,28 @@ final class CalendarioPagos
     public static function de(Grupo $grupo): array
     {
         $saldo = app(GestorGrupos::class)->saldo($grupo);
-        // Como texto: vence_en no tiene zona y hoy() sí. Si no, lo que vence hoy saldría atrasado.
-        $hoy = $grupo->propiedad->hoy()->format('Y-m-d');
-        $restante = max(0, $saldo['pagado']);
+        $cuotas = $grupo->cuotas()->orderBy('vence_en')->orderBy('id')->get();
+        $filas = self::repartir($cuotas, $saldo['pagado'], $grupo->propiedad->hoy()->format('Y-m-d'));
+        $suma = (int) $cuotas->sum('importe');
+
+        return ['cuotas' => $filas, 'suma' => $suma, 'total' => $saldo['total'], 'cuadra' => $filas === [] || $suma === $saldo['total'], 'pagado' => $saldo['pagado']];
+    }
+
+    /**
+     * Aplica lo pagado a las primeras en vencer. Con la fecha como texto: vence_en no tiene zona y hoy() sí, y lo que vence hoy saldría atrasado.
+     *
+     * @template T of CuotaGrupo|CuotaReserva
+     *
+     * @param  iterable<T>  $cuotas  en orden de vencimiento
+     * @return list<array{cuota: T, pagado: int, estado: string}>
+     */
+    public static function repartir(iterable $cuotas, int $pagado, string $hoy): array
+    {
+        $restante = max(0, $pagado);
         $filas = [];
-        $suma = 0;
-        foreach ($grupo->cuotas()->orderBy('vence_en')->orderBy('id')->get() as $cuota) {
-            /** @var CuotaGrupo $cuota */
+        foreach ($cuotas as $cuota) {
             $aplicado = min($restante, $cuota->importe);
             $restante -= $aplicado;
-            $suma += $cuota->importe;
             $filas[] = [
                 'cuota' => $cuota,
                 'pagado' => $aplicado,
@@ -47,6 +60,6 @@ final class CalendarioPagos
             ];
         }
 
-        return ['cuotas' => $filas, 'suma' => $suma, 'total' => $saldo['total'], 'cuadra' => $filas === [] || $suma === $saldo['total'], 'pagado' => $saldo['pagado']];
+        return $filas;
     }
 }

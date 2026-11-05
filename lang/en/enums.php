@@ -96,6 +96,8 @@ return [
         'llegada' => 'On the day of arrival',
         'salida' => 'On the day of departure',
         'despues_salida' => 'Days after departure',
+        'antes_cuota' => 'Days before a scheduled payment',
+        'cuota_vencida' => 'Days after a payment is overdue',
     ],
 
     'AccionAutomatizacion' => [

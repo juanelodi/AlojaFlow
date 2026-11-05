@@ -160,6 +160,8 @@ return [
         'llegada' => 'No dia da chegada',
         'salida' => 'No dia da saída',
         'despues_salida' => 'Dias depois da saída',
+        'antes_cuota' => 'Dias antes de um pagamento do calendário',
+        'cuota_vencida' => 'Dias depois de um pagamento vencido',
     ],
     'AccionAutomatizacion' => [
         'crear_tarea' => 'Criar uma tarefa para a equipe',

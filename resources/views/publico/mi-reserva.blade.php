@@ -45,6 +45,12 @@
         </section>
     @endif
 
+    @include('publico.calendario-cobros')
+
+    @if ($propiedad->esIndependiente())
+        @include('publico.comprobante-reserva', ['conCsrf' => true, 'accionComprobante' => route('mi-reserva.comprobante', ['token' => $token, 'idioma' => app()->getLocale()])])
+    @endif
+
     @if ($enlaceLlegada)
         <section class="tarjeta">
             <h2>{{ __('portal.registro') }}</h2>

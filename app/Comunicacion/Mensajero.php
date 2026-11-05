@@ -26,6 +26,7 @@ use App\Limpieza\Omisiones;
 use App\Llegada\GestorLlegadas;
 use App\Models\Automatizacion;
 use App\Models\Aviso;
+use App\Models\CuotaReserva;
 use App\Models\Envio;
 use App\Models\EventoReserva;
 use App\Models\NotaBitacora;
@@ -36,6 +37,7 @@ use App\Models\Webhook;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Publico\MiReserva;
+use App\Reservas\Mensualidades;
 use App\Seguridad\ClienteExterno;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -51,6 +53,8 @@ final class Mensajero
     public const INTENTOS_MAXIMOS = 5;
 
     private const SEGUNDOS_MAXIMOS_ENVIO = 600;
+
+    private const DIAS_MARGEN_CUOTA = 2;
 
     public function __construct(private readonly AjustesCorreo $correo, private readonly ClienteExterno $cliente)
     {
@@ -100,6 +104,11 @@ final class Mensajero
                 continue;
             }
             $hoy = $ahora->startOfDay();
+            if ($automatizacion->disparador->esDeCuota()) {
+                $generados += $this->recordarCuotas($automatizacion, $hoy);
+
+                continue;
+            }
             [$columna, $fecha] = match ($automatizacion->disparador) {
                 DisparadorAutomatizacion::AntesLlegada => ['llegada', $hoy->addDays($automatizacion->dias)],
                 DisparadorAutomatizacion::Llegada => ['llegada', $hoy],
@@ -123,6 +132,47 @@ final class Mensajero
         }
 
         return $generados;
+    }
+
+    /**
+     * Con margen, por si un día no corrieron las tareas: el mensaje sale al siguiente, y una sola vez por pago (D-108). Un pago que ya estaba
+     * vencido cuando se capturó, o cuando se creó la regla, no se reclama: seguro alguien ya lo sabe y puede que falte anotar lo pagado.
+     */
+    private function recordarCuotas(Automatizacion $automatizacion, CarbonImmutable $hoy): int
+    {
+        if (! Modulos::activo(Modulo::EstanciasLargas)) {
+            return 0;
+        }
+        $vencida = $automatizacion->disparador === DisparadorAutomatizacion::CuotaVencida;
+        [$desde, $hasta] = $vencida
+            ? [$hoy->subDays($automatizacion->dias + self::DIAS_MARGEN_CUOTA), $hoy->subDays($automatizacion->dias)]
+            : [$hoy, $hoy->addDays($automatizacion->dias)];
+        $cuotas = CuotaReserva::query()->with(['reserva.propiedad', 'reserva.titular.contactos', 'reserva.unidad'])
+            ->whereBetween('vence_en', [$desde->format('Y-m-d'), $hasta->format('Y-m-d')])
+            ->whereHas('reserva', fn ($q) => $q->where('propiedad_id', $automatizacion->propiedad_id)->where('tipo', TipoReserva::Reserva->value)
+                ->where('estado', '!=', EstadoReserva::Cancelada->value)->whereNull('eliminada_en_principal_en'))
+            ->get();
+
+        $generados = 0;
+        foreach ($cuotas as $cuota) {
+            $reserva = $cuota->reserva;
+            $vence = $cuota->vence_en->format('Y-m-d');
+            if ($vencida && ($this->diaEn($cuota->creado_en, $hoy) > $vence || $this->diaEn($automatizacion->creado_en, $hoy) > $vence)) {
+                continue;
+            }
+            $fila = collect(Mensualidades::de($reserva)['cuotas'])->first(fn (array $f): bool => $f['cuota']->id === $cuota->id);
+            if ($fila !== null && $fila['estado'] !== 'pagada' && $automatizacion->cumpleCondiciones($reserva)
+                && $this->programar($automatizacion, $reserva, $automatizacion->disparador->value.':'.$cuota->id) !== null) {
+                $generados++;
+            }
+        }
+
+        return $generados;
+    }
+
+    private function diaEn(?\Illuminate\Support\Carbon $momento, CarbonImmutable $hoy): string
+    {
+        return $momento === null ? '' : $momento->copy()->setTimezone($hoy->getTimezone())->format('Y-m-d');
     }
 
     /**

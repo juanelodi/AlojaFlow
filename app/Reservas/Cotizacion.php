@@ -15,15 +15,21 @@ namespace App\Reservas;
  */
 final readonly class Cotizacion
 {
+    public const NOCHES_SEMANA = 7;
+
+    public const NOCHES_MES = 28;
+
     /**
      * @param  list<int>  $noches  precio de cada noche
      * @param  int  $estanciaMinima  noches mínimas que pide la tarifa o la temporada de la llegada
+     * @param  string|null  $estanciaLarga  si alguna noche se cobró con el precio por semana o por mes
      */
     public function __construct(
         public string $tarifa,
         public int $total,
         public array $noches,
         public int $estanciaMinima = 1,
+        public ?string $estanciaLarga = null,
     ) {
     }
 

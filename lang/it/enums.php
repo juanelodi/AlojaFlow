@@ -160,6 +160,8 @@ return [
         'llegada' => 'Il giorno dell’arrivo',
         'salida' => 'Il giorno della partenza',
         'despues_salida' => 'Giorni dopo la partenza',
+        'antes_cuota' => 'Giorni prima di un pagamento del calendario',
+        'cuota_vencida' => 'Giorni dopo un pagamento scaduto',
     ],
     'AccionAutomatizacion' => [
         'crear_tarea' => 'Crea un’attività per il team',

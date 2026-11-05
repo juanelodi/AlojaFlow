@@ -20,6 +20,7 @@ use App\Models\Reserva;
 use App\Motor\AjustesMotor;
 use App\Motor\Pasarelas;
 use App\Reservas\GestorReservas;
+use App\Reservas\Mensualidades;
 use App\Reservas\ReservaRechazada;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
@@ -40,11 +41,11 @@ final class CobrosEnLinea
     }
 
     /**
-     * Lo que falta por cobrar para garantizar la reserva.
+     * Lo que falta por cobrar para garantizar la reserva y, con calendario de cobros, lo que toca pagar de él.
      */
     public function porCobrar(Reserva $reserva): int
     {
-        return max(0, min($reserva->pendiente, $reserva->deposito - $reserva->pagado));
+        return max(0, min($reserva->pendiente, max($reserva->deposito - $reserva->pagado, Mensualidades::porPagar($reserva))));
     }
 
     public function iniciar(Reserva $reserva, ProveedorPago $proveedor, string $concepto, string $urlExito, string $urlCancelar, string $urlAviso, ?EnlacePago $enlace = null): string

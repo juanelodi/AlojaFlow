@@ -42,6 +42,7 @@ return [
         'plano' => ['nombre' => 'Plano de la propiedad', 'descripcion' => 'Ver las unidades acomodadas en un dibujo de tu alojamiento.'],
         'llegada' => ['nombre' => 'Llegada en línea', 'descripcion' => 'El huésped llena sus datos y acepta los documentos antes de llegar.'],
         'mensajes' => ['nombre' => 'Mensajes a huéspedes', 'descripcion' => 'Plantillas, envíos por correo y WhatsApp, y mensajes automáticos.'],
+        'estancias_largas' => ['nombre' => 'Estancias largas y mensualidades', 'descripcion' => 'Precio por semana y por mes, calendario de cobros con recordatorios y una factura por cada pago.'],
         'portal' => ['nombre' => 'Mi reserva y guía digital', 'descripcion' => 'Una página para cada huésped, con su reserva y lo que necesita saber, y un código QR en cada unidad.'],
         'bitacora' => ['nombre' => 'Bitácora de turnos', 'descripcion' => 'Lo que un turno le deja dicho al siguiente. Lo importante aparece en Hoy.'],
         'empresas' => ['nombre' => 'Empresas y agencias', 'descripcion' => 'Quién reserva o paga por sus huéspedes, con sus condiciones y su estado de cuenta.'],

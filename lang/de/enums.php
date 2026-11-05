@@ -160,6 +160,8 @@ return [
         'llegada' => 'Am Ankunftstag',
         'salida' => 'Am Abreisetag',
         'despues_salida' => 'Tage nach der Abreise',
+        'antes_cuota' => 'Tage vor einer geplanten Zahlung',
+        'cuota_vencida' => 'Tage nach einer überfälligen Zahlung',
     ],
     'AccionAutomatizacion' => [
         'crear_tarea' => 'Aufgabe für das Team anlegen',

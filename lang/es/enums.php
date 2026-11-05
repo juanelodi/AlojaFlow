@@ -96,6 +96,8 @@ return [
         'llegada' => 'El día de la llegada',
         'salida' => 'El día de la salida',
         'despues_salida' => 'Días después de la salida',
+        'antes_cuota' => 'Días antes de un pago del calendario',
+        'cuota_vencida' => 'Días después de un pago vencido',
     ],
 
     'AccionAutomatizacion' => [

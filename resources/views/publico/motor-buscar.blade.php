@@ -1,5 +1,6 @@
 {{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
 @use('App\Support\Formato')
+@use('App\Enums\ModoTarifa')
 @extends('publico.layout')
 @section('titulo', __('motor.titulo'))
 @section('cabeza')
@@ -63,10 +64,21 @@
                         @if ($oferta->libres <= 2)
                             <span class="gris"> · {{ trans_choice('motor.quedan', $oferta->libres) }}</span>
                         @endif
+                        @if ($conEstanciasLargas && ($oferta->tarifa->precio_semana !== null || $oferta->tarifa->precio_mes !== null))
+                            <p class="gris" style="margin:4px 0 0">
+                                @if ($oferta->tarifa->precio_semana !== null){{ __('estancias.motor.semana', ['precio' => Formato::dinero($oferta->tarifa->precio_semana, $propiedad->moneda)]) }}@endif
+                                @if ($oferta->tarifa->precio_semana !== null && $oferta->tarifa->precio_mes !== null) · @endif
+                                @if ($oferta->tarifa->precio_mes !== null){{ __('estancias.motor.mes', ['precio' => Formato::dinero($oferta->tarifa->precio_mes, $propiedad->moneda)]) }}@endif
+                                @if ($oferta->tarifa->modo === ModoTarifa::PorPersona) {{ __('estancias.motor.por_persona') }}@endif
+                            </p>
+                        @endif
                     </div>
                     <div style="text-align:right">
                         <div class="precio">{{ Formato::dinero($oferta->presupuesto->total(), $propiedad->moneda) }}</div>
                         <div class="gris">{{ trans_choice('ui.comun.n_noches', $noches) }}</div>
+                        @if ($oferta->presupuesto->cotizacion?->estanciaLarga)
+                            <div class="gris">{{ __('estancias.motor.aplicado.'.$oferta->presupuesto->cotizacion->estanciaLarga) }}</div>
+                        @endif
                         @if ($oferta->cumpleEstancia)
                             <a class="boton" style="margin-top:8px" href="{{ route('motor.datos', ['codigo' => $propiedad->codigo, 'tarifa' => $oferta->tarifa->id, 'llegada' => $llegada, 'salida' => $salida, 'personas' => $personas, 'idioma' => app()->getLocale()]) }}">{{ __('motor.reservar') }}</a>
                         @else

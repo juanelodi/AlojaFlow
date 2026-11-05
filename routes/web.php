@@ -79,6 +79,7 @@ Route::prefix('mi-reserva/{token}')->where(['token' => '[0-9a-f]{40}'])->name('m
     Route::get('/confirmacion.pdf', [PortalController::class, 'confirmacion'])->name('pdf');
     Route::post('/pedir', [PortalController::class, 'pedir'])->middleware('throttle:publico-envio')->name('pedir');
     Route::post('/cancelar', [PortalController::class, 'cancelar'])->middleware('throttle:publico-envio')->name('cancelar');
+    Route::post('/comprobante', [PortalController::class, 'comprobante'])->middleware(['throttle:publico-envio', 'throttle:comprobante-envio'])->name('comprobante');
 });
 Route::get('/guia/{token}', [PortalController::class, 'guia'])->where('token', '[0-9a-f]{40}')->middleware([ModuloActivo::class.':portal', 'throttle:publico'])->name('guia.ver');
 Route::get('/fotos/{foto}/{tamano}', [PortalController::class, 'foto'])->whereNumber('foto')->whereIn('tamano', ['grande', 'chica'])->middleware('throttle:600,1')->name('fotos.ver');

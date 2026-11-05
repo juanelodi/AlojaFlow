@@ -16,6 +16,7 @@ use App\Filament\Resources\Reservas\Pages\EditReserva;
 use App\Filament\Resources\Reservas\Pages\ListReservas;
 use App\Filament\Resources\Reservas\Pages\ViewReserva;
 use App\Filament\Resources\Reservas\RelationManagers\ComprobantesRelationManager;
+use App\Filament\Resources\Reservas\RelationManagers\CuotasRelationManager;
 use App\Filament\Resources\Reservas\RelationManagers\EnlacesPagoRelationManager;
 use App\Filament\Resources\Reservas\RelationManagers\HuespedesRelationManager;
 use App\Filament\Resources\Reservas\RelationManagers\NotasRelationManager;
@@ -144,7 +145,7 @@ class ReservaResource extends Resource
 
     public static function getRelations(): array
     {
-        return [PagosRelationManager::class, ComprobantesRelationManager::class, EnlacesPagoRelationManager::class, HuespedesRelationManager::class, NotasRelationManager::class];
+        return [PagosRelationManager::class, CuotasRelationManager::class, ComprobantesRelationManager::class, EnlacesPagoRelationManager::class, HuespedesRelationManager::class, NotasRelationManager::class];
     }
 
     public static function getPages(): array

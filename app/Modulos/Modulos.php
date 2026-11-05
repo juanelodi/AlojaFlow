@@ -14,6 +14,7 @@ use App\Demo\ModoDemo;
 use App\Enums\EstadoEnvio;
 use App\Enums\ModoPropiedad;
 use App\Models\Aviso;
+use App\Models\CuotaReserva;
 use App\Models\Envio;
 use App\Models\FuenteIcal;
 use App\Models\Grupo;
@@ -165,6 +166,7 @@ final class Modulos
             Modulo::Subordinacion => Propiedad::query()->where('modo', ModoPropiedad::Subordinada->value)->count(),
             Modulo::Ical => FuenteIcal::query()->where('activa', true)->count(),
             Modulo::Grupos => Grupo::query()->count(),
+            Modulo::EstanciasLargas => CuotaReserva::query()->count(),
             Modulo::Integraciones => Webhook::query()->where('activo', true)->count(),
             default => 0,
         };
