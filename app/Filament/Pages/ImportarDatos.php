@@ -142,11 +142,7 @@ class ImportarDatos extends Page
 
     public function descargarPlantilla(): StreamedResponse
     {
-        $contenido = Csv::paraExcel(app(ImportadorDatos::class)->plantilla($this->tipo));
-
-        return response()->streamDownload(function () use ($contenido): void {
-            echo $contenido;
-        }, 'importar-'.$this->tipo.'.csv', ['Content-Type' => 'text/csv; charset=UTF-16LE']);
+        return Csv::descargaParaExcel(app(ImportadorDatos::class)->plantilla($this->tipo), 'importar-'.$this->tipo.'.csv');
     }
 
     /**

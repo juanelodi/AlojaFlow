@@ -2,6 +2,18 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## Próxima versión
+
+**Lo que exportas se abre en columnas en cualquier Excel.** Antes dependía del país: lo que salía con comas quedaba en una sola columna en el Excel de España, Francia o Alemania, y lo que salía con punto y coma, en el de México y Estados Unidos.
+
+- **Ahora van así:** informes, indicadores, auditoría, estado de cuenta de una empresa y de un propietario, lista de huéspedes de un grupo y facturas.
+- **Exportar facturas:** la opción «Excel en español» ahora se llama «Para abrir en Excel». El CSV estándar, para otros programas, sigue igual.
+- **No cambian** el libro de facturas ni la declaración de estancias, porque llevan el formato que pide quien los recibe.
+- **Los importes para sumar** (indicadores, facturas y estado de cuenta de un propietario) llevan el separador decimal de su moneda en tu idioma: coma con euros en español, punto con pesos mexicanos.
+- El estado de cuenta de un propietario ya no pierde los acentos al abrirlo en Excel.
+
+**Sin verificar:** no se ha abierto en un Excel de verdad. Si tu Windows usa otro separador decimal que el de la moneda, revisa los importes: pueden salir como texto o, con coma decimal en un Excel de punto decimal, leerse mal.
+
 ## 1.0.29 — 2026-11-05
 
 **Importar de un archivo (Configuración → Importar datos).** Para quien viene de otro sistema y no quiere capturar todo a mano. Con esto termina lo que elegiste del sistema anterior.

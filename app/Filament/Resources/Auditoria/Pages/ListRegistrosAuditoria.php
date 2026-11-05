@@ -21,6 +21,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Icons\Heroicon;
+use Generator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ListRegistrosAuditoria extends ListRecords
@@ -57,27 +58,24 @@ class ListRegistrosAuditoria extends ListRecords
     {
         RegistroAuditoria::anotar('auditoria.exportar', null, ['desde' => $desde, 'hasta' => $hasta]);
 
-        return response()->streamDownload(function () use ($desde, $hasta): void {
-            $salida = fopen('php://output', 'wb');
-            if ($salida === false) {
-                return;
-            }
-            fwrite($salida, "\xEF\xBB\xBF");
-            fputcsv($salida, Csv::fila([__('ui.auditoria.cuando'), __('ui.auditoria.quien'), __('ui.auditoria.accion'), __('ui.auditoria.objeto'), __('ui.auditoria.detalle'), 'IP']));
-            RegistroAuditoria::query()->with('usuario')->whereDate('creado_en', '>=', $desde)->whereDate('creado_en', '<=', $hasta)->orderBy('id')
-                ->chunk(500, function ($filas) use ($salida): void {
-                    foreach ($filas as $fila) {
-                        fputcsv($salida, Csv::fila([
-                            Formato::momento($fila->creado_en),
-                            $fila->usuario->name ?? __('ui.auditoria.sistema'),
-                            $fila->accion,
-                            $fila->modelo_tipo === null ? '' : $fila->modelo_tipo.' #'.$fila->modelo_id,
-                            $fila->cambios === null ? '' : (string) json_encode($fila->cambios, JSON_UNESCAPED_UNICODE),
-                            (string) $fila->ip,
-                        ]));
-                    }
-                });
-            fclose($salida);
-        }, 'auditoria-'.$desde.'-'.$hasta.'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        return Csv::descargaParaExcel($this->filas($desde, $hasta), 'auditoria-'.$desde.'-'.$hasta.'.csv');
+    }
+
+    /**
+     * @return Generator<int, list<mixed>>
+     */
+    private function filas(string $desde, string $hasta): Generator
+    {
+        yield [__('ui.auditoria.cuando'), __('ui.auditoria.quien'), __('ui.auditoria.accion'), __('ui.auditoria.objeto'), __('ui.auditoria.detalle'), 'IP'];
+        foreach (RegistroAuditoria::query()->with('usuario')->whereDate('creado_en', '>=', $desde)->whereDate('creado_en', '<=', $hasta)->orderBy('id')->lazy(500) as $fila) {
+            yield [
+                Formato::momento($fila->creado_en),
+                $fila->usuario->name ?? __('ui.auditoria.sistema'),
+                $fila->accion,
+                $fila->modelo_tipo === null ? '' : $fila->modelo_tipo.' #'.$fila->modelo_id,
+                $fila->cambios === null ? '' : (string) json_encode($fila->cambios, JSON_UNESCAPED_UNICODE),
+                (string) $fila->ip,
+            ];
+        }
     }
 }

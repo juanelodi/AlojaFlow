@@ -1037,7 +1037,8 @@ describe('lista de huéspedes', function (): void {
         $lista = app(ListaHuespedes::class);
 
         $csv = $lista->exportar($grupo);
-        expect($csv)->toStartWith("\xEF\xBB\xBF")->toContain("'=Luis");
+        expect($csv)->toStartWith("\xFF\xFE")
+            ->and(App\Support\Csv::enUtf8($csv))->toContain("'=Luis")->toContain("\t")->not->toContain(';');
 
         $resultado = $lista->importar($grupo, $csv);
         expect($resultado['errores'])->toBe([])
@@ -1070,7 +1071,7 @@ describe('lista de huéspedes', function (): void {
         $a = $grupo->reservas()->orderBy('id')->first();
         $pagina = Livewire::actingAs($this->recepcion)->test(ViewGrupo::class, ['record' => $grupo->getRouteKey()]);
 
-        $pagina->callAction('exportarLista')->assertFileDownloaded();
+        $pagina->callAction('exportarLista')->assertFileDownloaded(null, null, App\Support\Csv::TIPO_EXCEL);
         $pagina->callAction('listaPdf')->assertFileDownloaded();
         $pagina->callAction('importarLista', data: ['texto' => $a->numero.';x;x;x;Luis;;;1;'])->assertHasNoActionErrors();
 

@@ -111,17 +111,6 @@ class Informes extends Page
             return null;
         }
 
-        return response()->streamDownload(function () use ($datos): void {
-            $salida = fopen('php://output', 'w');
-            if ($salida === false) {
-                return;
-            }
-            fwrite($salida, "\xEF\xBB\xBF");
-            fputcsv($salida, $datos['columnas']);
-            foreach ($datos['filas'] as $fila) {
-                fputcsv($salida, Csv::fila($fila));
-            }
-            fclose($salida);
-        }, $this->informe.'-'.$this->desde.'-'.$this->hasta.'.csv', ['Content-Type' => 'text/csv; charset=utf-8']);
+        return Csv::descargaParaExcel([$datos['columnas'], ...$datos['filas']], $this->informe.'-'.$this->desde.'-'.$this->hasta.'.csv');
     }
 }

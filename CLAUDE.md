@@ -312,7 +312,7 @@ npx license-checker --summary             # licencias npm
 - `$this->travel()` no mueve `time()`: en el código que se prueba así, `now()`.
 - Eloquent guarda un `datetime` en la zona que traiga la instancia, sin convertirla: a las columnas en UTC, `->utc()`.
 - Livewire no acepta más de 1 MB por petición y cuenta su snapshot: un texto largo en una propiedad pública viaja dos veces, y al pasarse truena sin explicar nada. Se queda en Alpine y va como argumento (`ImportarDatos`).
-- Un CSV con comas se abre en una sola columna donde Excel separa la lista con «;»: lo que se llena en Excel va con `Csv::paraExcel`. Y al guardar, las fechas quedan como en su país: se leen con `Pais::fechaConMesPrimero`.
+- Un CSV con comas se abre en una sola columna donde Excel separa la lista con «;», y uno con «;», donde la separa con comas: lo que se abre en Excel va con `Csv::descargaParaExcel` (D-128), y lo que se suma, con `Csv::numero`. Y al guardar, las fechas quedan como en su país: se leen con `Pais::fechaConMesPrimero`.
 
 ## Referencias locales (solo lectura)
 

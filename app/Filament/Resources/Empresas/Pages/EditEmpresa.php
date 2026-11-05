@@ -25,6 +25,7 @@ use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Icons\Heroicon;
+use Generator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EditEmpresa extends EditRecord
@@ -54,29 +55,27 @@ class EditEmpresa extends EditRecord
         $empresa = $this->record;
         RegistroAuditoria::anotar('empresa.estado_cuenta', $empresa, [], $empresa->propiedad_id);
 
-        return response()->streamDownload(function () use ($empresa): void {
-            $salida = fopen('php://output', 'wb');
-            if ($salida === false) {
-                return;
-            }
-            fwrite($salida, "\xEF\xBB\xBF");
-            fputcsv($salida, Csv::fila([__('informes.columnas.reserva'), __('ui.comun.huesped'), __('ui.comun.llegada'), __('ui.comun.salida'), __('ui.comun.total'), __('ui.comun.pagado'), __('ui.comun.pendiente')]));
-            Limites::reservasVisibles(Reserva::query()->where('empresa_id', $empresa->id), Acceso::usuarioActual())->with('titular')->where('estado', '!=', EstadoReserva::Cancelada->value)->orderBy('llegada')
-                ->chunk(500, function ($reservas) use ($salida): void {
-                    /** @var Reserva $reserva */
-                    foreach ($reservas as $reserva) {
-                        fputcsv($salida, Csv::fila([
-                            (string) $reserva->numero,
-                            (string) $reserva->titular?->nombreCompleto(),
-                            Formato::fecha($reserva->llegada),
-                            Formato::fecha($reserva->salida),
-                            Dinero::formatear($reserva->total, $reserva->moneda),
-                            Dinero::formatear($reserva->pagado, $reserva->moneda),
-                            Dinero::formatear($reserva->pendiente, $reserva->moneda),
-                        ]));
-                    }
-                });
-            fclose($salida);
-        }, 'estado-de-cuenta-'.$empresa->id.'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        return Csv::descargaParaExcel($this->filasDeEstado($empresa), 'estado-de-cuenta-'.$empresa->id.'.csv');
+    }
+
+    /**
+     * @return Generator<int, list<string>>
+     */
+    private function filasDeEstado(Empresa $empresa): Generator
+    {
+        yield [__('informes.columnas.reserva'), __('ui.comun.huesped'), __('ui.comun.llegada'), __('ui.comun.salida'), __('ui.comun.total'), __('ui.comun.pagado'), __('ui.comun.pendiente')];
+        $reservas = Limites::reservasVisibles(Reserva::query()->where('empresa_id', $empresa->id), Acceso::usuarioActual())->with('titular')->where('estado', '!=', EstadoReserva::Cancelada->value)->orderBy('llegada')->orderBy('id');
+        /** @var Reserva $reserva */
+        foreach ($reservas->lazy(500) as $reserva) {
+            yield [
+                (string) $reserva->numero,
+                (string) $reserva->titular?->nombreCompleto(),
+                Formato::fecha($reserva->llegada),
+                Formato::fecha($reserva->salida),
+                Dinero::formatear($reserva->total, $reserva->moneda),
+                Dinero::formatear($reserva->pagado, $reserva->moneda),
+                Dinero::formatear($reserva->pendiente, $reserva->moneda),
+            ];
+        }
     }
 }

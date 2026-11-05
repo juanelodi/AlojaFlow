@@ -307,7 +307,7 @@ describe('importar precios', function (): void {
             ->assertSee(__('operacion.precios.correcta'))->call('importar')->assertNotified();
         expect(TemporadaTarifa::query()->where('tarifa_id', $this->tarifa->id)->sole()->precio_noche)->toBe(15000);
 
-        Livewire::actingAs($gerente)->test(ImportarPrecios::class)->call('descargarPlantilla')->assertFileDownloaded();
+        Livewire::actingAs($gerente)->test(ImportarPrecios::class)->call('descargarPlantilla')->assertFileDownloaded(null, null, App\Support\Csv::TIPO_EXCEL);
         expect($this->importador->plantilla($this->propiedad)[1][0])->toBe('Doble');
     });
 });

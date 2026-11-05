@@ -29,6 +29,7 @@ use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Reservas\GestorGrupos;
 use App\Reservas\ReservaRechazada;
+use App\Support\Csv;
 use App\Support\Dinero;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
@@ -171,7 +172,7 @@ class ViewGrupo extends ViewRecord
                     ->icon(Heroicon::OutlinedArrowDownTray)
                     ->action(fn (Grupo $record, ListaHuespedes $lista): StreamedResponse => response()->streamDownload(function () use ($record, $lista): void {
                         echo $lista->exportar($record);
-                    }, 'lista-'.$record->codigo.'.csv', ['Content-Type' => 'text/csv; charset=utf-8'])),
+                    }, 'lista-'.$record->codigo.'.csv', ['Content-Type' => Csv::TIPO_EXCEL])),
                 Action::make('importarLista')
                     ->label(__('grupos.lista.importar'))
                     ->icon(Heroicon::OutlinedArrowUpTray)

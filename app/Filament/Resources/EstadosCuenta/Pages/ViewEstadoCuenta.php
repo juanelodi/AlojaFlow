@@ -100,16 +100,7 @@ class ViewEstadoCuenta extends ViewRecord
                 ->label(__('propietarios.estado.descargar_csv'))
                 ->icon(Heroicon::OutlinedTableCells)
                 ->color('gray')
-                ->action(fn (EstadoCuenta $record): StreamedResponse => response()->streamDownload(function () use ($record): void {
-                    $salida = fopen('php://output', 'wb');
-                    if ($salida === false) {
-                        return;
-                    }
-                    foreach (self::filasCsv($record) as $fila) {
-                        fputcsv($salida, Csv::fila($fila));
-                    }
-                    fclose($salida);
-                }, 'estado-'.$record->desde->format('Y-m').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8'])),
+                ->action(fn (EstadoCuenta $record): StreamedResponse => Csv::descargaParaExcel(self::filasCsv($record), 'estado-'.$record->desde->format('Y-m').'.csv')),
         ];
     }
 
@@ -118,7 +109,7 @@ class ViewEstadoCuenta extends ViewRecord
      */
     private static function filasCsv(EstadoCuenta $estado): array
     {
-        $decimal = fn (int $importe): string => Dinero::aDecimal($importe, $estado->moneda);
+        $decimal = fn (int $importe): string => Csv::numero(Dinero::aDecimal($importe, $estado->moneda), $estado->moneda);
         $filas = [[__('informes.columnas.reserva'), __('ui.comun.unidad'), __('ui.comun.llegada'), __('ui.comun.salida'), __('ui.comun.noches'), __('propietarios.estado.ingresos'), __('propietarios.estado.portal'), __('propietarios.estado.comision')]];
         foreach ((array) ($estado->detalle['reservas'] ?? []) as $linea) {
             $filas[] = [$linea['numero'], $linea['unidad'], $linea['llegada'], $linea['salida'], $linea['noches'], $decimal($linea['ingreso']), $decimal($linea['portal']), $decimal($linea['comision'])];

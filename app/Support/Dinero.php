@@ -20,6 +20,9 @@ final class Dinero
     /** @var array<string, int> */
     private static array $decimales = [];
 
+    /** @var array<string, string> */
+    private static array $separadores = [];
+
     public static function decimales(string $moneda): int
     {
         return self::$decimales[$moneda] ??= (function () use ($moneda): int {
@@ -28,6 +31,16 @@ final class Dinero
 
             return $digitos >= 0 ? $digitos : 2;
         })();
+    }
+
+    /**
+     * El que lleva esa moneda en el idioma de quien mira: el mismo con que la pantalla enseña ese dinero.
+     */
+    public static function separadorDecimal(string $moneda): string
+    {
+        $locale = self::locale($moneda);
+
+        return self::$separadores[$locale] ??= (string) (new NumberFormatter($locale, NumberFormatter::DECIMAL))->getSymbol(NumberFormatter::DECIMAL_SEPARATOR_SYMBOL);
     }
 
     /**

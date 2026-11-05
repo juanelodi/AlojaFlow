@@ -104,10 +104,6 @@ class ImportarPrecios extends Page
             return null;
         }
 
-        $contenido = Csv::paraExcel(app(ImportadorPrecios::class)->plantilla($propiedad));
-
-        return response()->streamDownload(function () use ($contenido): void {
-            echo $contenido;
-        }, 'precios-'.$propiedad->codigo.'.csv', ['Content-Type' => 'text/csv; charset=UTF-16LE']);
+        return Csv::descargaParaExcel(app(ImportadorPrecios::class)->plantilla($propiedad), 'precios-'.$propiedad->codigo.'.csv');
     }
 }

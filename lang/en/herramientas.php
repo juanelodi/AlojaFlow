@@ -41,8 +41,8 @@ return [
     ],
     'facturas' => [
         'formato' => 'Format',
-        'excel' => 'Excel with European settings (semicolon, decimal comma)',
-        'csv' => 'Standard CSV (comma, decimal point)',
+        'excel' => 'To open in Excel',
+        'csv' => 'Standard CSV, for other programs (comma, decimal point)',
     ],
     'franja' => [
         'dias' => 'Days to copy',

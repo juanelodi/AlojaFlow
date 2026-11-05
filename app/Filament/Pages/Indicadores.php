@@ -16,6 +16,7 @@ use App\Modulos\Modulo;
 use App\Seguridad\Acceso;
 use App\Servicios\Indicadores as ServicioIndicadores;
 use App\Servicios\Operacion;
+use App\Support\Csv;
 use App\Support\Dinero;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -98,30 +99,21 @@ class Indicadores extends Page
         if ($datos === []) {
             return null;
         }
-        $nombre = 'indicadores-'.$this->desde.'-'.$this->hasta.'.csv';
+        $filas = [array_map(fn (string $c): string => __('ui.indicadores.csv.'.$c), [
+            'propiedad', 'moneda', 'unidades', 'disponibles', 'ocupadas', 'ocupacion', 'ingresos', 'adr', 'revpar', 'reservas', 'estancia_media', 'canceladas',
+        ])];
+        foreach ($datos as $fila) {
+            $moneda = $fila['moneda'];
+            $importe = fn (?int $v): string => $v === null ? '' : Csv::numero(Dinero::aDecimal($v, $moneda), $moneda);
+            $filas[] = [
+                $fila['propiedad']->nombre,
+                $moneda, $fila['unidades'], $fila['disponibles'], $fila['ocupadas'],
+                $fila['ocupacion'] === null ? '' : Csv::numero(number_format($fila['ocupacion'] * 100, 1, '.', ''), $moneda),
+                $importe($fila['ingresos']), $importe($fila['adr']), $importe($fila['revpar']),
+                $fila['reservas'], $fila['estancia_media'] === null ? '' : Csv::numero((string) $fila['estancia_media'], $moneda), $fila['canceladas'],
+            ];
+        }
 
-        return response()->streamDownload(function () use ($datos): void {
-            $salida = fopen('php://output', 'w');
-            if ($salida === false) {
-                return;
-            }
-            fwrite($salida, "\xEF\xBB\xBF");
-            fputcsv($salida, array_map(fn (string $c): string => __('ui.indicadores.csv.'.$c), [
-                'propiedad', 'moneda', 'unidades', 'disponibles', 'ocupadas', 'ocupacion', 'ingresos', 'adr', 'revpar', 'reservas', 'estancia_media', 'canceladas',
-            ]), ';');
-            foreach ($datos as $fila) {
-                $decimales = Dinero::decimales($fila['moneda']);
-                $importe = fn (?int $v): string => $v === null ? '' : number_format($v / (10 ** $decimales), $decimales, '.', '');
-                fputcsv($salida, [
-                    // Sin fórmulas: una celda que empieza por = + - @ se marca como texto.
-                    preg_replace('/^([=+\-@])/', "'$1", $fila['propiedad']->nombre),
-                    $fila['moneda'], $fila['unidades'], $fila['disponibles'], $fila['ocupadas'],
-                    $fila['ocupacion'] === null ? '' : number_format($fila['ocupacion'] * 100, 1, '.', ''),
-                    $importe($fila['ingresos']), $importe($fila['adr']), $importe($fila['revpar']),
-                    $fila['reservas'], $fila['estancia_media'] ?? '', $fila['canceladas'],
-                ], ';');
-            }
-            fclose($salida);
-        }, $nombre, ['Content-Type' => 'text/csv; charset=UTF-8']);
+        return Csv::descargaParaExcel($filas, 'indicadores-'.$this->desde.'-'.$this->hasta.'.csv');
     }
 }

@@ -204,7 +204,7 @@ describe('empresas y agencias', function (): void {
         expect(EmpresaResource::canDelete($empresa))->toBeFalse();
 
         $this->get(EmpresaResource::getUrl('index'))->assertOk()->assertSee('ACME')->assertSee('1,000.00');
-        Livewire::actingAs($this->recepcion)->test(EditEmpresa::class, ['record' => $empresa->id])->callAction('estadoCuenta')->assertFileDownloaded();
+        Livewire::actingAs($this->recepcion)->test(EditEmpresa::class, ['record' => $empresa->id])->callAction('estadoCuenta')->assertFileDownloaded(null, null, App\Support\Csv::TIPO_EXCEL);
     });
 
     it('apagada, no abre', function (): void {

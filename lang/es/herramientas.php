@@ -41,8 +41,8 @@ return [
     ],
     'facturas' => [
         'formato' => 'Formato',
-        'excel' => 'Excel en español (punto y coma, coma decimal)',
-        'csv' => 'CSV estándar (coma, punto decimal)',
+        'excel' => 'Para abrir en Excel',
+        'csv' => 'CSV estándar, para otros programas (coma, punto decimal)',
     ],
     'franja' => [
         'dias' => 'Días en que se copia',

@@ -115,51 +115,58 @@ class ListFacturas extends ListRecords
     }
 
     /**
-     * Con marca de orden de bytes para que Excel respete los acentos. El Excel en español separa con punto y coma y espera coma decimal. Pagado y
-     * pendiente son los de las reservas de la factura, no los del documento: pueden no coincidir.
+     * Para abrir en Excel, o un CSV estándar para otro programa, con coma y punto decimal. Pagado y pendiente son los de las reservas de la factura,
+     * no los del documento: pueden no coincidir.
      */
     private function csv(string $desde, string $hasta, string $formato = 'excel'): StreamedResponse
     {
-        $separador = $formato === 'excel' ? ';' : ',';
-        $importe = fn (int $centavos, string $moneda): string => $formato === 'excel'
-            ? str_replace('.', ',', Dinero::aDecimal($centavos, $moneda))
+        $paraExcel = $formato === 'excel';
+        $importe = fn (int $centavos, string $moneda): string => $paraExcel
+            ? Csv::numero(Dinero::aDecimal($centavos, $moneda), $moneda)
             : Dinero::aDecimal($centavos, $moneda);
-
         $facturas = Factura::query()->with('reservas')->whereIn('propiedad_id', FacturaResource::propiedadesGestionables())
             ->whereDate('emitida_en', '>=', $desde)->whereDate('emitida_en', '<=', $hasta)->orderBy('emitida_en')->get();
 
-        return response()->streamDownload(function () use ($facturas, $separador, $importe): void {
+        $campos = ['serie', 'folio', 'fecha', 'identificador', 'nombre', 'correo', 'codigo_postal', 'llegada', 'salida', 'subtotal', 'impuestos', 'total', 'pagado', 'pendiente', 'moneda', 'estado', 'uuid', 'reservas'];
+        $filas = [array_map(fn (string $c): string => __('dinero.contador.'.$c), $campos)];
+        foreach ($facturas as $factura) {
+            /** @var Factura $factura */
+            $filas[] = [
+                $factura->serie,
+                $factura->numero,
+                $factura->emitida_en->format('Y-m-d H:i:s'),
+                $factura->receptor['identificador_fiscal'] ?? '',
+                $factura->receptor['nombre'] ?? '',
+                $factura->receptor['correo'] ?? '',
+                $factura->receptor['codigo_postal'] ?? '',
+                $factura->reservas->min('llegada')?->format('Y-m-d'),
+                $factura->reservas->max('salida')?->format('Y-m-d'),
+                $importe($factura->subtotal, $factura->moneda),
+                $importe($factura->impuestos, $factura->moneda),
+                $importe($factura->total, $factura->moneda),
+                $importe((int) $factura->reservas->sum('pagado'), $factura->moneda),
+                $importe((int) $factura->reservas->sum('pendiente'), $factura->moneda),
+                $factura->moneda,
+                $factura->estado->etiqueta(),
+                $factura->uuid_fiscal,
+                $factura->reservas->pluck('numero')->implode(' '),
+            ];
+        }
+        $nombre = 'facturas-'.$desde.'-'.$hasta.'.csv';
+        if ($paraExcel) {
+            return Csv::descargaParaExcel($filas, $nombre);
+        }
+
+        return response()->streamDownload(function () use ($filas): void {
             $salida = fopen('php://output', 'w');
             if ($salida === false) {
                 return;
             }
             fwrite($salida, "\xEF\xBB\xBF");
-            $campos = ['serie', 'folio', 'fecha', 'identificador', 'nombre', 'correo', 'codigo_postal', 'llegada', 'salida', 'subtotal', 'impuestos', 'total', 'pagado', 'pendiente', 'moneda', 'estado', 'uuid', 'reservas'];
-            fputcsv($salida, array_map(fn (string $c): string => __('dinero.contador.'.$c), $campos), $separador);
-            foreach ($facturas as $factura) {
-                /** @var Factura $factura */
-                fputcsv($salida, Csv::fila([
-                    $factura->serie,
-                    $factura->numero,
-                    $factura->emitida_en->format('Y-m-d H:i:s'),
-                    $factura->receptor['identificador_fiscal'] ?? '',
-                    $factura->receptor['nombre'] ?? '',
-                    $factura->receptor['correo'] ?? '',
-                    $factura->receptor['codigo_postal'] ?? '',
-                    $factura->reservas->min('llegada')?->format('Y-m-d'),
-                    $factura->reservas->max('salida')?->format('Y-m-d'),
-                    $importe($factura->subtotal, $factura->moneda),
-                    $importe($factura->impuestos, $factura->moneda),
-                    $importe($factura->total, $factura->moneda),
-                    $importe((int) $factura->reservas->sum('pagado'), $factura->moneda),
-                    $importe((int) $factura->reservas->sum('pendiente'), $factura->moneda),
-                    $factura->moneda,
-                    $factura->estado->etiqueta(),
-                    $factura->uuid_fiscal,
-                    $factura->reservas->pluck('numero')->implode(' '),
-                ]), $separador);
+            foreach ($filas as $fila) {
+                fputcsv($salida, Csv::fila($fila));
             }
             fclose($salida);
-        }, 'facturas-'.$desde.'-'.$hasta.'.csv', ['Content-Type' => 'text/csv; charset=utf-8']);
+        }, $nombre, ['Content-Type' => 'text/csv; charset=utf-8']);
     }
 }

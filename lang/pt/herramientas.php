@@ -41,8 +41,8 @@ return [
     ],
     'facturas' => [
         'formato' => 'Formato',
-        'excel' => 'Excel com definições europeias (ponto e vírgula, vírgula decimal)',
-        'csv' => 'CSV padrão (vírgula, ponto decimal)',
+        'excel' => 'Para abrir no Excel',
+        'csv' => 'CSV padrão, para outros programas (vírgula, ponto decimal)',
     ],
     'franja' => [
         'dias' => 'Dias de cópia',

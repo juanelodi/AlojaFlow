@@ -266,19 +266,23 @@ describe('tipo de cliente en una independiente', function (): void {
 });
 
 describe('exportar facturas', function (): void {
-    it('el Excel en español lleva punto y coma, coma decimal y las columnas nuevas', function (): void {
+    it('para Excel va en columnas, con el decimal de su moneda y las columnas nuevas', function (): void {
         $factura = crearFacturaDePrueba($this);
-
-        $respuesta = Livewire::actingAs($this->admin)->test(ListFacturas::class)
+        $exportar = fn () => Livewire::actingAs($this->admin)->test(ListFacturas::class)
             ->callAction('exportar', data: ['desde' => now()->startOfYear()->format('Y-m-d'), 'hasta' => now()->endOfYear()->format('Y-m-d'), 'formato' => 'excel'])
-            ->assertHasNoActionErrors();
+            ->assertHasNoActionErrors()
+            ->assertFileDownloaded(null, null, App\Support\Csv::TIPO_EXCEL);
+        $texto = fn ($respuesta): string => App\Support\Csv::enUtf8((string) base64_decode((string) ($respuesta->effects['download']['content'] ?? ''), true));
 
-        $contenido = base64_decode((string) ($respuesta->effects['download']['content'] ?? ''), true);
-        expect($contenido)->toStartWith("\xEF\xBB\xBF")
-            ->toContain('Correo;')
-            ->toContain('1000,00')
+        expect($texto($exportar()))
+            ->toContain("Correo\t")
+            ->toContain('1000.00')
             ->toContain('ana@example.com')
-            ->not->toContain('1000.00');
+            ->not->toContain('1000,00');
+
+        App\Models\Factura::query()->whereKey($factura->id)->update(['moneda' => 'EUR']);
+
+        expect($texto($exportar()))->toContain('1000,00')->not->toContain('1000.00');
     });
 
     it('el CSV estándar lleva coma y punto decimal', function (): void {
@@ -289,7 +293,7 @@ describe('exportar facturas', function (): void {
             ->assertHasNoActionErrors();
 
         $contenido = base64_decode((string) ($respuesta->effects['download']['content'] ?? ''), true);
-        expect($contenido)->toContain('1000.00')->not->toContain('1000,00');
+        expect($contenido)->toStartWith("\xEF\xBB\xBF")->toContain('Correo,')->toContain('1000.00')->not->toContain('1000,00');
     });
 });
 

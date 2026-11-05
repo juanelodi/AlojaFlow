@@ -33,18 +33,13 @@ final class ListaHuespedes
     }
 
     /**
-     * @return string con marca de orden de bytes y punto y coma, como lo abre Excel en español
+     * Para abrirla en Excel, llenarla y pegarla de vuelta.
      */
     public function exportar(Grupo $grupo): string
     {
-        $salida = fopen('php://temp', 'r+');
-        if ($salida === false) {
-            return '';
-        }
-        fwrite($salida, "\xEF\xBB\xBF");
-        fputcsv($salida, array_map(fn (string $c): string => __('grupos.lista.'.$c), self::COLUMNAS), ';');
+        $filas = [array_map(fn (string $c): string => __('grupos.lista.'.$c), self::COLUMNAS)];
         foreach ($this->reservas($grupo) as $reserva) {
-            fputcsv($salida, Csv::fila([
+            $filas[] = [
                 $reserva->numero,
                 $reserva->unidad->nombre,
                 $reserva->llegada->format('Y-m-d'),
@@ -54,13 +49,10 @@ final class ListaHuespedes
                 $reserva->habitacionGrupo?->correo,
                 $reserva->personas,
                 $reserva->habitacionGrupo?->acompanantes,
-            ]), ';');
+            ];
         }
-        rewind($salida);
-        $contenido = (string) stream_get_contents($salida);
-        fclose($salida);
 
-        return $contenido;
+        return Csv::paraExcel($filas);
     }
 
     /**

@@ -10,15 +10,23 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use Generator;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
 /**
  * Filas para exportar a CSV. Un huésped escribe su nombre en una página pública: si empieza con «=»,
  * Excel lo ejecutaría como fórmula al abrir el archivo el contador.
  */
 final class Csv
 {
+    /** Lo que dice ser una descarga para Excel. */
+    public const TIPO_EXCEL = 'text/csv; charset=UTF-16LE';
+
+    private const MARCA_UTF16 = "\xFF\xFE";
+
     public static function enUtf8(string $texto): string
     {
-        if (str_starts_with($texto, "\xFF\xFE")) {
+        if (str_starts_with($texto, self::MARCA_UTF16)) {
             return (string) mb_convert_encoding(substr($texto, 2), 'UTF-8', 'UTF-16LE');
         }
         $texto = (string) preg_replace('/^\xEF\xBB\xBF/', '', $texto);
@@ -103,25 +111,57 @@ final class Csv
     }
 
     /**
-     * Un archivo que Excel abre en columnas en cualquier país: con comas, donde la lista se separa con «;» saldría todo en una sola.
-     * Con tabuladores y en UTF-16 no depende de eso.
+     * Un archivo que Excel abre en columnas en cualquier país: con comas, donde la lista se separa con «;» saldría todo en una sola, y con «;», donde
+     * se separa con comas. Con tabuladores y en UTF-16 no depende de eso (D-128).
      *
-     * @param  array<int, array<int, mixed>>  $filas
+     * @param  iterable<array<int, mixed>>  $filas
      */
-    public static function paraExcel(array $filas): string
+    public static function paraExcel(iterable $filas): string
+    {
+        return self::MARCA_UTF16.implode('', iterator_to_array(self::lineasParaExcel($filas), false));
+    }
+
+    /**
+     * Lo que puede ser mucho llega como generador, para no cargar todos los modelos de una vez.
+     *
+     * @param  iterable<array<int, mixed>>  $filas
+     */
+    public static function descargaParaExcel(iterable $filas, string $nombre): StreamedResponse
+    {
+        return response()->streamDownload(function () use ($filas): void {
+            echo self::MARCA_UTF16;
+            foreach (self::lineasParaExcel($filas) as $linea) {
+                echo $linea;
+            }
+        }, $nombre, ['Content-Type' => self::TIPO_EXCEL]);
+    }
+
+    /**
+     * Un número con punto decimal, para sumarlo en Excel. Excel lo lee con el separador de su país, y 1000.50 no es un número en el de España.
+     */
+    public static function numero(string $decimal, string $moneda): string
+    {
+        return str_replace('.', Dinero::separadorDecimal($moneda), $decimal);
+    }
+
+    /**
+     * @param  iterable<array<int, mixed>>  $filas
+     * @return Generator<int, string>
+     */
+    private static function lineasParaExcel(iterable $filas): Generator
     {
         $flujo = fopen('php://memory', 'r+b');
         if ($flujo === false) {
-            return '';
+            return;
         }
         foreach ($filas as $fila) {
+            rewind($flujo);
+            ftruncate($flujo, 0);
             fputcsv($flujo, self::fila($fila), "\t", '"', '', "\r\n");
+            rewind($flujo);
+            yield (string) mb_convert_encoding((string) stream_get_contents($flujo), 'UTF-16LE', 'UTF-8');
         }
-        rewind($flujo);
-        $texto = (string) stream_get_contents($flujo);
         fclose($flujo);
-
-        return "\xFF\xFE".(string) mb_convert_encoding($texto, 'UTF-16LE', 'UTF-8');
     }
 
     /**
@@ -132,7 +172,8 @@ final class Csv
     {
         return array_map(function (mixed $celda): string {
             $texto = (string) $celda;
-            if ($texto !== '' && ! is_numeric($texto) && in_array($texto[0], ['=', '+', '-', '@', "\t", "\r"], true)) {
+            // Un importe negativo con coma decimal es un número, no una fórmula.
+            if ($texto !== '' && ! is_numeric(str_replace(',', '.', $texto)) && in_array($texto[0], ['=', '+', '-', '@', "\t", "\r"], true)) {
                 return "'".$texto;
             }
 

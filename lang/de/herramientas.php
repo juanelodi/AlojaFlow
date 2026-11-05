@@ -41,8 +41,8 @@ return [
     ],
     'facturas' => [
         'formato' => 'Format',
-        'excel' => 'Excel mit europäischen Einstellungen (Semikolon, Dezimalkomma)',
-        'csv' => 'Standard-CSV (Komma, Dezimalpunkt)',
+        'excel' => 'Zum Öffnen in Excel',
+        'csv' => 'Standard-CSV für andere Programme (Komma, Dezimalpunkt)',
     ],
     'franja' => [
         'dias' => 'Tage zum Kopieren',

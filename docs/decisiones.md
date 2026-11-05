@@ -720,6 +720,13 @@ Solo CSV, sin leer Excel: una librería para eso pesa mucho en un hosting compar
 **El texto no es una propiedad de Livewire.** Livewire no acepta más de 1 MB por petición (`payload.max_size`) y cuenta su snapshot: en una propiedad el texto viajaría dos veces, y al pasarse da un error que no dice nada. Se queda en el navegador y va una vez, como argumento. Por eso el límite es de 500 KB y 1000 filas, que sobra. Importar precios sí lleva el texto y sus filas en cada petición: bajó a 150 KB.
 
 **Excel.** Las plantillas van en UTF-16 con tabuladores (`Csv::paraExcel`): con comas, donde la lista se separa con «;» todo saldría en una columna. Y al guardar, Excel escribe las fechas como en su país, así que `Pais::fechaConMesPrimero` dice cómo leer 03/04/2027 según la propiedad. Como fecha ambigua no se puede detectar, por eso se muestra lo entendido.
+### D-128 · 2026-11-05 · Lo que se exporta se abre en columnas en cualquier Excel
+La 1.0.29 arregló las plantillas de importar, pero lo demás seguía dependiendo del país: con comas todo salía en una columna en España, y con punto y coma, en México. Lo que es para abrir en Excel pasa a UTF-16 con tabuladores (`Csv::descargaParaExcel`), que no depende de eso. Se quedan como están el CSV estándar de facturas, el libro de facturas (D-103) y la declaración de estancias: los lee otro programa, y llevan el formato que él pide. Por lo mismo sale la opción «Excel en español» de exportar facturas, que además obligaba a saber cómo tiene configurado su Excel quien la elige.
+
+**Decimales.** Excel lee los números con el separador de su Windows, que desde aquí no se sabe. Lo más cercano es `Dinero::separadorDecimal`, el del idioma y la moneda: el mismo con que la pantalla enseña ese dinero. Solo se aplica a lo que se suma (`Csv::numero`); los informes y el estado de cuenta de una empresa ya traían texto con su moneda. Si no coincide, 1000.50 queda como texto en un Excel de coma decimal, y 1000,50 puede leerse como 100050 en uno de punto decimal. Se acepta y se avisa en `CAMBIOS.md`: quien tenga ese caso cuenta con el CSV estándar en facturas, y pedir el separador en cada descarga estorbaría a todos los demás.
+
+UTF-16 ocupa el doble, y Livewire arma la descarga completa en memoria. Con lo que maneja un alojamiento pequeño no importa; una auditoría enorme se puede pedir por tramos de fechas.
+
 ---
 
 ## Pendientes

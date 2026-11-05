@@ -341,8 +341,10 @@ describe('estados de cuenta', function (): void {
 
         Livewire::actingAs($this->gerente)->test(ViewEstadoCuenta::class, ['record' => $estado->id])
             ->callAction('pdf')->assertFileDownloaded('estado-2027-03.pdf');
-        Livewire::actingAs($this->gerente)->test(ViewEstadoCuenta::class, ['record' => $estado->id])
-            ->callAction('csv')->assertFileDownloaded('estado-2027-03.csv');
+        $csv = Livewire::actingAs($this->gerente)->test(ViewEstadoCuenta::class, ['record' => $estado->id])
+            ->callAction('csv')->assertFileDownloaded('estado-2027-03.csv', null, App\Support\Csv::TIPO_EXCEL);
+        expect(App\Support\Csv::enUtf8((string) base64_decode((string) $csv->effects['download']['content'], true)))
+            ->toContain("\t")->toContain(__('propietarios.estado.neto'))->not->toContain("'-");
     });
 
     it('un recepcionista no los ve', function (): void {
