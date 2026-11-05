@@ -12,12 +12,21 @@ namespace App\Providers;
 
 use App\Demo\ModoDemo;
 use App\Filament\RecursosDelPanel;
+use App\Models\User;
+use App\Seguridad\AuditoriaModelos;
+use App\Seguridad\Dispositivos;
 use App\Seguridad\MemoriaAcceso;
 use App\Support\ClaveCliente;
 use Filament\Support\Assets\AssetManager;
 use Filament\Tables\Table;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
+use Illuminate\Auth\SessionGuard;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -40,6 +49,25 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->terminating(fn () => $this->app->make(MemoriaAcceso::class)->vaciar());
+
+        AuditoriaModelos::registrar();
+
+        // «Mantener la sesión» usa dispositivos propios (D-076), en lugar del token único de Laravel, que no caduca.
+        Event::listen(Login::class, function (Login $evento): void {
+            if ($evento->remember && $evento->user instanceof User) {
+                $guard = Auth::guard($evento->guard);
+                if ($guard instanceof SessionGuard) {
+                    Cookie::unqueue($guard->getRecallerName());
+                }
+                if (! ModoDemo::activo()) {
+                    $this->app->make(Dispositivos::class)->recordar($evento->user, request()->userAgent(), request()->ip());
+                }
+            }
+        });
+        Event::listen(Logout::class, function (): void {
+            $cookie = request()->cookie(Dispositivos::COOKIE);
+            $this->app->make(Dispositivos::class)->olvidarCookie(is_string($cookie) ? $cookie : null);
+        });
 
         // Lo mismo que pide el instalador, en el perfil y al recuperar la contraseña.
         Password::defaults(fn (): Password => Password::min(12));

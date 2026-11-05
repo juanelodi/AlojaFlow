@@ -34,6 +34,7 @@ use App\Paises\Paises;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
 use App\Seguridad\Acceso;
+use App\Seguridad\Limites;
 use App\Support\Formato;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
@@ -330,7 +331,7 @@ final class AccionesReserva
             ->color('danger')
             ->requiresConfirmation()
             ->modalDescription(fn (Reserva $record): string => trim(__('ui.reservas.cancelar_ayuda').' '.app(GestorPoliticas::class)->resumenCancelacion($record)))
-            ->visible(fn (Reserva $record): bool => self::gestionable($record) && $record->estado !== EstadoReserva::Cancelada && ! $record->estaEnCasa())
+            ->visible(fn (Reserva $record): bool => self::gestionable($record) && $record->estado !== EstadoReserva::Cancelada && ! $record->estaEnCasa() && Limites::puedeCancelar(Acceso::usuarioActual(), $record))
             ->action(fn (Reserva $record) => self::ejecutar($record, fn (GestorReservas $g) => $g->cancelar($record), __('ui.reservas.cancelada_ok')));
     }
 
@@ -341,7 +342,7 @@ final class AccionesReserva
             ->icon(Heroicon::OutlinedArrowPath)
             ->color('warning')
             ->requiresConfirmation()
-            ->visible(fn (Reserva $record): bool => self::gestionable($record) && $record->estado === EstadoReserva::Cancelada)
+            ->visible(fn (Reserva $record): bool => self::gestionable($record) && $record->estado === EstadoReserva::Cancelada && Limites::puedeModificar(Acceso::usuarioActual(), $record))
             ->action(fn (Reserva $record) => self::ejecutar($record, fn (GestorReservas $g) => $g->reactivar($record), __('ui.reservas.reactivada_ok')));
     }
 

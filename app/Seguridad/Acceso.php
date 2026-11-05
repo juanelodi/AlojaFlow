@@ -11,10 +11,12 @@ declare(strict_types=1);
 namespace App\Seguridad;
 
 use App\Enums\ModoPropiedad;
+use App\Models\AccesoUsuario;
 use App\Models\Propiedad;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -87,7 +89,7 @@ final class Acceso
             return Propiedad::query()->where('activa', true)->orderBy('nombre')->pluck('id')->map(fn (mixed $id): int => (int) $id)->values()->all();
         }
 
-        return DB::table('model_has_roles as mr')
+        $porRol = DB::table('model_has_roles as mr')
             ->join('role_has_permissions as rp', 'rp.role_id', '=', 'mr.role_id')
             ->join('permissions as p', 'p.id', '=', 'rp.permission_id')
             ->join('propiedades as pr', 'pr.id', '=', 'mr.propiedad_id')
@@ -101,6 +103,40 @@ final class Acceso
             ->map(fn (object $fila): int => (int) $fila->propiedad_id)
             ->values()
             ->all();
+
+        return self::conAjustes($usuario, $permiso, $porRol);
+    }
+
+    /**
+     * Encima del rol, lo que se le ajustó a esa persona en cada propiedad. Solo donde tiene un rol: sin él no tiene acceso a esa propiedad.
+     *
+     * @param  list<int>  $porRol
+     * @return list<int>
+     */
+    private static function conAjustes(User $usuario, string $permiso, array $porRol): array
+    {
+        $ajustes = self::ajustesDe($usuario);
+        if ($ajustes === []) {
+            return $porRol;
+        }
+        $ids = $porRol;
+        foreach ($ajustes as $propiedadId => $ajuste) {
+            if (in_array($permiso, (array) $ajuste->permisos_quitados, true)) {
+                $ids = array_values(array_diff($ids, [$propiedadId]));
+            } elseif (in_array($permiso, (array) $ajuste->permisos_agregados, true) && ! in_array($propiedadId, $ids, true)) {
+                $ids[] = $propiedadId;
+            }
+        }
+
+        return Propiedad::query()->whereIn('id', $ids)->where('activa', true)->orderBy('nombre')->pluck('id')->map(fn (mixed $id): int => (int) $id)->values()->all();
+    }
+
+    /**
+     * @return array<int, AccesoUsuario> por propiedad
+     */
+    public static function ajustesDe(User $usuario): array
+    {
+        return app(MemoriaAcceso::class)->recordar('ajustes:'.$usuario->id, fn (): array => AccesoUsuario::query()->where('user_id', $usuario->id)->get()->keyBy('propiedad_id')->all());
     }
 
     /**
@@ -177,11 +213,12 @@ final class Acceso
     /**
      * Roles del usuario por propiedad, para el formulario de usuarios.
      *
-     * @return list<array{propiedad_id: int, rol: string}>
+     * @return list<array<string, mixed>>
      */
     public static function rolesDe(User $usuario): array
     {
-        return DB::table('model_has_roles as mr')
+        $ajustes = AccesoUsuario::query()->where('user_id', $usuario->id)->get()->keyBy('propiedad_id');
+        $filas = DB::table('model_has_roles as mr')
             ->join('roles as r', 'r.id', '=', 'mr.role_id')
             ->where('mr.model_type', $usuario->getMorphClass())
             ->where('mr.model_id', $usuario->id)
@@ -191,12 +228,26 @@ final class Acceso
             ->map(fn (object $fila): array => ['propiedad_id' => (int) $fila->propiedad_id, 'rol' => (string) $fila->name])
             ->values()
             ->all();
+
+        return array_map(function (array $fila) use ($ajustes): array {
+            /** @var AccesoUsuario|null $ajuste */
+            $ajuste = $ajustes->get($fila['propiedad_id']);
+
+            return $fila + [
+                'agregados' => (array) $ajuste?->permisos_agregados,
+                'quitados' => (array) $ajuste?->permisos_quitados,
+                'solo_propias' => (bool) $ajuste?->solo_propias,
+                'sin_iniciadas' => (bool) $ajuste?->sin_iniciadas,
+                'horas_modificar' => $ajuste?->horas_modificar,
+                'horas_cancelar' => $ajuste?->horas_cancelar,
+            ];
+        }, $filas);
     }
 
     /**
-     * Sustituye los roles del usuario: una fila por propiedad.
+     * Sustituye los roles del usuario y sus ajustes: una fila por propiedad.
      *
-     * @param  list<array{propiedad_id: int|string, rol: string}>  $filas
+     * @param  list<array<string, mixed>>  $filas
      */
     public static function asignarRoles(User $usuario, array $filas): void
     {
@@ -216,22 +267,79 @@ final class Acceso
                     'model_id' => $usuario->id,
                     'propiedad_id' => $propiedadId,
                 ]);
+                self::guardarAjuste($usuario, $propiedadId, $fila);
             }
+            AccesoUsuario::query()->where('user_id', $usuario->id)->whereNotIn('propiedad_id', array_keys($vistas))->delete();
         });
         app(PermissionRegistrar::class)->forgetCachedPermissions();
         self::olvidar();
     }
 
     /**
-     * @return array<string, string> rol => etiqueta
+     * Sin nada que ajustar no queda fila: lo normal es que cada quien tenga lo de su rol y ya.
+     *
+     * @param  array<string, mixed>  $fila
+     */
+    private static function guardarAjuste(User $usuario, int $propiedadId, array $fila): void
+    {
+        $horas = fn (string $campo): ?int => is_numeric($fila[$campo] ?? null) && (int) $fila[$campo] > 0 ? min(65535, (int) $fila[$campo]) : null;
+        $valores = [
+            'permisos_agregados' => array_values(array_intersect((array) ($fila['agregados'] ?? []), self::PERMISOS)) ?: null,
+            'permisos_quitados' => array_values(array_intersect((array) ($fila['quitados'] ?? []), self::PERMISOS)) ?: null,
+            'solo_propias' => (bool) ($fila['solo_propias'] ?? false),
+            'sin_iniciadas' => (bool) ($fila['sin_iniciadas'] ?? false),
+            'horas_modificar' => $horas('horas_modificar'),
+            'horas_cancelar' => $horas('horas_cancelar'),
+        ];
+        if (array_filter($valores) === []) {
+            AccesoUsuario::query()->where('user_id', $usuario->id)->where('propiedad_id', $propiedadId)->delete();
+
+            return;
+        }
+        AccesoUsuario::query()->updateOrCreate(['user_id' => $usuario->id, 'propiedad_id' => $propiedadId], $valores);
+    }
+
+    /**
+     * @return array<string, string> rol => etiqueta, los de fábrica primero
      */
     public static function opcionesRol(): array
     {
         $opciones = [];
-        foreach (array_keys(self::ROLES) as $rol) {
-            $opciones[$rol] = __('ui.roles.'.$rol);
+        foreach (Role::query()->whereNull('propiedad_id')->orderBy('id')->pluck('name') as $rol) {
+            $opciones[(string) $rol] = self::etiquetaRol((string) $rol);
         }
 
         return $opciones;
+    }
+
+    public static function etiquetaRol(string $rol): string
+    {
+        return array_key_exists($rol, self::ROLES) ? __('ui.roles.'.$rol) : $rol;
+    }
+
+    /**
+     * @return array<string, string> permiso => qué deja hacer
+     */
+    public static function opcionesPermiso(): array
+    {
+        $opciones = [];
+        foreach (self::PERMISOS as $permiso) {
+            $opciones[$permiso] = __('permisos.nombres.'.$permiso);
+        }
+
+        return $opciones;
+    }
+
+    /**
+     * @param  list<string>  $permisos
+     */
+    public static function guardarPermisosDeRol(Role $rol, array $permisos): void
+    {
+        foreach ($permisos as $permiso) {
+            Permission::findOrCreate($permiso, 'web');
+        }
+        $rol->syncPermissions($permisos);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        self::olvidar();
     }
 }

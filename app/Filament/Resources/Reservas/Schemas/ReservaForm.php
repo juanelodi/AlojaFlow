@@ -27,6 +27,7 @@ use App\Reservas\Cotizador;
 use App\Reservas\Cupones;
 use App\Reservas\Presupuesto;
 use App\Seguridad\Acceso;
+use App\Seguridad\Limites;
 use App\Servicios\Disponibilidad;
 use App\Support\Contactos;
 use App\Support\Dinero;
@@ -459,7 +460,7 @@ class ReservaForm
     {
         $texto = '%'.trim($busqueda).'%';
 
-        return Huesped::query()->where('propiedad_id', $propiedadId)
+        return Limites::huespedesVisibles(Huesped::query(), Acceso::usuarioActual())->where('propiedad_id', $propiedadId)
             ->where(fn (Builder $q): Builder => $q->where('nombre', 'like', $texto)->orWhere('apellido1', 'like', $texto)->orWhere('apellido2', 'like', $texto)
                 ->orWhereHas('contactos', fn (Builder $c): Builder => $c->where('valor_normalizado', 'like', mb_strtolower($texto))))
             ->orderBy('apellido1')->orderBy('nombre')->limit(30)->get()

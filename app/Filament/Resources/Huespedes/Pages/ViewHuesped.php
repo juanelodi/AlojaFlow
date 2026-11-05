@@ -15,6 +15,7 @@ use App\Models\Huesped;
 use App\Privacidad\GestorPrivacidad;
 use App\Reservas\FusionHuespedes;
 use App\Seguridad\Acceso;
+use App\Seguridad\Limites;
 use Filament\Actions\Action;
 use Filament\Actions\Action as NotificationAction;
 use Filament\Actions\EditAction;
@@ -62,7 +63,8 @@ class ViewHuesped extends ViewRecord
                 ->label(__('ui.huespedes.fusionar'))
                 ->icon(Heroicon::OutlinedArrowsPointingIn)
                 ->color('gray')
-                ->visible(fn (Huesped $record): bool => HuespedResource::canEdit($record))
+                // Fusionar junta dos fichas: quien solo ve las suyas no puede elegir la otra.
+                ->visible(fn (Huesped $record): bool => HuespedResource::canEdit($record) && ! in_array($record->propiedad_id, Limites::propiedadesSoloPropias(Acceso::usuarioActual()), true))
                 ->modalDescription(__('ui.huespedes.fusionar_ayuda'))
                 ->schema([
                     Select::make('otra')->label(__('ui.huespedes.fusionar_otra'))->required()->searchable()->native(false)

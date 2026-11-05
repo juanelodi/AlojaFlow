@@ -41,6 +41,7 @@ use Illuminate\Support\Carbon;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, CampoHuesped> $campos
  * @property string|null $documento_numero
  * @property string|null $notas
+ * @property int|null $creado_por
  * @property Carbon|null $eliminado_en_principal_en
  * @property OrigenFila $origen
  * @property bool $sincronizada
@@ -72,6 +73,12 @@ class Huesped extends ModeloBase
 
     protected static function booted(): void
     {
+        static::creating(function (self $huesped): void {
+            if (! $huesped->sincronizada) {
+                $huesped->creado_por ??= auth()->id();
+            }
+        });
+
         // El número va cifrado; su HMAC permite buscarlo por coincidencia exacta (D-022).
         static::saving(function (self $huesped): void {
             if ($huesped->isDirty('documento_numero')) {

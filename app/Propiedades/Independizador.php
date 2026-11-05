@@ -20,6 +20,7 @@ use App\Models\Principal;
 use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
 use App\Seguridad\Acceso;
+use App\Seguridad\AuditoriaModelos;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
@@ -76,7 +77,7 @@ final class Independizador
         $this->copias->crear('antes-de-independizar');
 
         try {
-            return DB::transaction(fn (): int => $this->convertir($propiedad, $principal));
+            return AuditoriaModelos::sinAnotar(fn (): int => DB::transaction(fn (): int => $this->convertir($propiedad, $principal)));
         } catch (QueryException $e) {
             if ((int) ($e->errorInfo[1] ?? 0) === 1062) { // entró una reserva doble entre la revisión y aquí
                 $this->comprobarChoques($propiedad);

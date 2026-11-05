@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 use App\Http\Middleware\CabecerasSeguridad;
 use App\Http\Middleware\ProgramadorPorVisitas;
+use App\Http\Middleware\RecordarDispositivo;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -37,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->preventRequestsDuringMaintenance(except: ['actualizaciones/*/aplicar', 'actualizaciones/*/finalizar']);
         $middleware->encryptCookies(except: ['laravel_maintenance']);
         $middleware->append(ProgramadorPorVisitas::class);
+        $middleware->web(append: [RecordarDispositivo::class]);
         // El motor de reservas no da permisos por sesión y debe funcionar dentro de un iframe; los
         // avisos de pago llegan de la pasarela y se comprueban con su firma.
         $middleware->validateCsrfTokens(except: ['reservar/*', 'avisos-pago/*']);

@@ -50,6 +50,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $entrada_registrada_en
  * @property Carbon|null $salida_registrada_en
  * @property string|null $comentario
+ * @property int|null $creada_por
  * @property int $version
  * @property int|null $grupo_id
  * @property int|null $cupon_id
@@ -73,6 +74,16 @@ class Reserva extends ModeloBase
     protected $table = 'reservas';
 
     protected $guarded = ['id', 'noches', 'pendiente'];
+
+    protected static function booted(): void
+    {
+        // Lo necesita el límite «solo sus propias reservas» (D-075). Las de la principal o del motor no son de nadie.
+        static::creating(function (self $reserva): void {
+            if (! $reserva->sincronizada) {
+                $reserva->creada_por ??= auth()->id();
+            }
+        });
+    }
 
     protected function casts(): array
     {

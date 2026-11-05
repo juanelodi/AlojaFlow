@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Demo\ModoDemo;
+use App\Seguridad\Dispositivos;
 use Filament\Auth\Pages\Login;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
@@ -27,6 +28,11 @@ class IniciarSesion extends Login
         if (ModoDemo::activo()) {
             $this->form->fill(['email' => ModoDemo::CORREO, 'password' => ModoDemo::CONTRASENA]);
         }
+    }
+
+    protected function getRememberFormComponent(): Component
+    {
+        return parent::getRememberFormComponent()->visible(Dispositivos::diasRecordar() > 0);
     }
 
     /**

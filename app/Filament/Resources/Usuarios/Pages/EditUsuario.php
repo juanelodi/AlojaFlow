@@ -21,7 +21,7 @@ class EditUsuario extends EditRecord
 {
     protected static string $resource = UsuarioResource::class;
 
-    /** @var list<array{propiedad_id: int|string, rol: string}> */
+    /** @var list<array<string, mixed>> */
     private array $accesos = [];
 
     protected function getHeaderActions(): array

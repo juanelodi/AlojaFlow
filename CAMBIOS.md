@@ -2,6 +2,26 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.14 — 2026-11-05
+
+**Permisos a la medida de cada persona, roles que puedes cambiar y control de dónde está abierta cada cuenta.**
+
+**Nadie pierde nada al actualizar:** cada quien sigue pudiendo lo mismo hasta que le pongas un ajuste.
+
+**Lo que hay**
+- **Roles,** en Configuración: cambia lo que puede cada rol de fábrica o crea los tuyos. Un rol en uso o de fábrica no se borra.
+- **Ajustes por persona,** en Usuarios, dentro de cada propiedad y plegados: permisos de más o de menos, y estos límites:
+  - *Solo sus propias reservas y huéspedes.* También en Hoy y en los buscadores. En el calendario ve qué está ocupado, sin nombres. Las reservas de antes de esta versión no tienen autor, así que no las verá.
+  - *No cambiar reservas ya iniciadas.*
+  - *Horas para cambiar o para cancelar,* contadas desde que se creó la reserva.
+  - Registrar la entrada, la salida y los pagos no cuenta como cambiar. El administrador no tiene límites.
+- **Sesiones y dispositivos,** en el menú de tu cuenta: dónde está abierta, con opción de cerrar, olvidar o «Cerrar mis demás sesiones y dispositivos». Cada quien ve lo suyo y el administrador, lo de todos.
+- **«Recordarme» más seguro:** caduca (30 días, o los que elijas; con 0 se apaga) y la cookie cambia en cada uso. Una cookie copiada deja de servir, y cambiar la contraseña olvida todos los dispositivos. Quienes ya tenían sesión recordada siguen dentro hasta que salgan.
+- **Quitar la verificación en dos pasos a otro usuario,** si perdió su teléfono: solo el super administrador, con su contraseña, y queda anotado.
+- **Auditoría completa:** lo que cambia el equipo queda con su antes y después. Se exporta a CSV y eliges cuánto se guarda; lo normal es un año. De huéspedes, empresas y grupos solo queda qué campo cambió, sin el dato.
+
+**Sin verificar:** en un hosting real con https. La rotación de la cookie se probó en este equipo, con un solo navegador.
+
 ## 1.0.13 — 2026-11-05
 
 **Vuelve el aviso de entradas y salidas, y ya puedes omitir clientes eligiendo dónde.**

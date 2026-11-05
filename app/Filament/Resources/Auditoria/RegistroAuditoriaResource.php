@@ -91,10 +91,11 @@ class RegistroAuditoriaResource extends Resource
             ->columns([
                 TextColumn::make('creado_en')->label(__('ui.auditoria.cuando'))->sortable()
                     ->formatStateUsing(fn (RegistroAuditoria $record): string => Formato::momento($record->creado_en)),
-                TextColumn::make('usuario.name')->label(__('ui.auditoria.quien'))->placeholder(__('ui.auditoria.sistema')),
+                TextColumn::make('usuario.name')->label(__('ui.auditoria.quien'))->placeholder(__('ui.auditoria.sistema'))->searchable(),
                 TextColumn::make('accion')->label(__('ui.auditoria.accion'))->searchable()->badge()->color('gray'),
                 TextColumn::make('modelo')->label(__('ui.auditoria.objeto'))
                     ->state(fn (RegistroAuditoria $record): ?string => $record->modelo_tipo === null ? null : $record->modelo_tipo.' #'.$record->modelo_id)
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where('modelo_tipo', 'like', '%'.$search.'%'))
                     ->placeholder('—'),
                 TextColumn::make('cambios')->label(__('ui.auditoria.detalle'))->limit(90)->wrap()->placeholder('—')
                     ->state(fn (RegistroAuditoria $record): ?string => $record->cambios === null ? null : (string) json_encode($record->cambios, JSON_UNESCAPED_UNICODE)),

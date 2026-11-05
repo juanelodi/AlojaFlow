@@ -550,6 +550,23 @@ dos veces. **En informes no cuentan sus noches ni ingresos, pero los cobros y la
 limpieza se siguen generando: alguien tiene que limpiar. **Listas de comprobación:** una por tipo de tarea, y cada tarea guarda su copia. **Mantenimiento recurrente:** genera su tarea una semana antes, y si
 la fecha ya pasó no acumula las atrasadas. WhatsApp usa el prefijo del país de la propiedad si el teléfono no lo trae.
 
+### D-075 · 2026-11-05 · Permisos por usuario, límites y roles editables
+Encima del rol, cada usuario puede tener por propiedad permisos de más o de menos y límites, en `accesos_usuario`. Sin fila, tiene lo de su rol: nadie cambia al actualizar. **Solo donde ya tiene un rol:** los ajustes no abren una
+propiedad a quien no tiene acceso a ella. Se mantiene D-055: quien administra lo ve todo y no tiene límites. **Registrar entrada y salida y cobrar no cuentan como modificar:** es el trabajo de recepción, y frenarlo pararía el mostrador. Las horas
+se cuentan desde que se creó la reserva, no desde la llegada: es lo que evita que alguien cambie una venta días después. **«Solo sus propias» no esconde el calendario,** porque ocultar la ocupación llevaría a vender dos veces la misma unidad: ahí ve la barra sin nombre ni enlace. Las
+reservas anteriores no tienen autor y no se inventa: quedan fuera para quien tenga ese límite. **Los roles de fábrica se pueden editar, no renombrar ni borrar:** su etiqueta se traduce y el sembrado los necesita. El sembrado solo corre al instalar, así que una
+actualización no pisa lo editado; si una versión futura añade un permiso, lo reparte su migración, y puede sumarlo a un rol retocado.
+
+### D-076 · 2026-11-05 · Dispositivos recordados en lugar del «recordarme» de Laravel
+El de Laravel es un solo token por usuario, en todos sus equipos, que dura 400 días y no se puede revocar uno por uno. Cada dispositivo guarda ahora un selector y la huella de un validador, y la cookie cambia en cada uso. La cookie anterior vale 2 minutos,
+porque al restaurar el navegador llegan varias pestañas juntas; después anula el dispositivo, porque pudo copiarse. Lógica de la 1.2.3, reescrita. **Al salir se olvida el dispositivo.** Cambiar la contraseña o desactivar al usuario los olvida todos. **Las cookies viejas de Laravel
+siguen valiendo** hasta que esa persona salga: invalidarlas sacaría a todo el equipo al actualizar. **Un dispositivo recordado no pide el segundo paso,** igual que antes. Quitar la verificación a otro es solo del super administrador, con su contraseña, y nunca a sí mismo: ahí manda el perfil.
+
+### D-077 · 2026-11-05 · Auditoría de cambios con antes y después
+Además de las acciones con nombre, un oyente anota lo que hace una persona con sesión sobre una lista cerrada de modelos. **No se anota sin sesión** (tareas, huéspedes, motor), ni la sincronización, ni la demostración: el registro responde a «quién del equipo cambió esto», y anotar lo demás lo
+llenaría de ruido. **Lo personal no se copia:** de huéspedes, contactos, datos fiscales, facturas y grupos solo queda el nombre del campo, y lo mismo para lo cifrado, nombres, correos y notas de cualquier modelo. Copiar esos valores haría del registro otra base de datos personales, sin
+anonimizar y guardada un año: el derecho al olvido dejaría de cumplirse. A cambio, no se puede ver qué decía un dato personal antes. El plazo es editable, con 30 días de mínimo.
+
 ---
 
 ## Pendientes

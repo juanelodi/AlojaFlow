@@ -4,7 +4,7 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-05): versión de prueba 1.0.13**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-05): versión de prueba 1.0.14**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
   D-029) y D-036 se revisan con el usuario. En curso: el plan de [docs/plan-paridad.md](docs/plan-paridad.md), hasta la 1.0.24.
@@ -219,7 +219,8 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   dice a qué módulo pertenece con `modulo()`; las rutas públicas, con el middleware `ModuloActivo`.
 - `app/Seguridad/Acceso.php` — permisos por propiedad (roles de spatie con equipo =
   propiedad); el administrador ve todo, y `Acceso::esSuper` es quien instaló (D-070). Lo que manda un formulario como propiedad pasa por
-  `Acceso::propiedadElegida`, y al guardar, `RecursoDePropiedad::comprobarReferencias`.
+  `Acceso::propiedadElegida`, y al guardar, `RecursoDePropiedad::comprobarReferencias`. `Limites`, lo que se le limita a cada quien (D-075);
+  `Dispositivos`, «recordarme» (D-076); `AuditoriaModelos`, antes y después de lo que cambia el equipo (D-077).
 - `app/Http/Middleware/` — `CabecerasSeguridad` (D-057), `MismoOrigen` (motor sin CSRF) y `UsuarioActivo`
   (rutas con sesión fuera del panel).
 - `app/Servicios/` — consultas de las pantallas operativas (Operacion, Calendario,

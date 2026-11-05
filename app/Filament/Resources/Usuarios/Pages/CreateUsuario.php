@@ -20,7 +20,7 @@ class CreateUsuario extends CreateRecord
 {
     protected static string $resource = UsuarioResource::class;
 
-    /** @var list<array{propiedad_id: int|string, rol: string}> */
+    /** @var list<array<string, mixed>> */
     private array $accesos = [];
 
     /**

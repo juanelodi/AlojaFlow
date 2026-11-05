@@ -43,6 +43,7 @@ use App\Models\Unidad;
 use App\Propiedades\BorradorPropiedad;
 use App\Reservas\Cotizador;
 use App\Reservas\GestorReservas;
+use App\Seguridad\AuditoriaModelos;
 use App\Support\Contactos;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
@@ -106,7 +107,7 @@ final class GeneradorDemo
         }
         $this->azar = new Randomizer(new Mt19937(2026));
 
-        $propiedad = DB::transaction(function (): Propiedad {
+        $propiedad = AuditoriaModelos::sinAnotar(fn (): Propiedad => DB::transaction(function (): Propiedad {
             $propiedad = Propiedad::query()->create([
                 'nombre' => __('ui.demo.nombre_propiedad'),
                 'codigo' => $this->codigoLibre(),
@@ -130,7 +131,7 @@ final class GeneradorDemo
             }
 
             return $propiedad;
-        });
+        }));
         RegistroAuditoria::anotar('demo.crear', $propiedad, [], $propiedad->id);
 
         return $propiedad;

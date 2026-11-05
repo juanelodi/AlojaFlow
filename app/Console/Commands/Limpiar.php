@@ -14,6 +14,7 @@ use App\Actualizacion\Actualizador;
 use App\Archivos\GestorArchivos;
 use App\Enums\EstadoEnvio;
 use App\Models\Actualizacion;
+use App\Models\DispositivoRecordado;
 use App\Models\EjecucionSincronizacion;
 use App\Models\Envio;
 use App\Models\Principal;
@@ -47,7 +48,8 @@ class Limpiar extends Command
 
         // El texto de los mensajes lleva datos personales: el historial se queda, el cuerpo no (§8).
         Envio::query()->whereNotNull('cuerpo')->where('creado_en', '<', now()->subDays(90))->whereNotIn('estado', [EstadoEnvio::Pendiente->value])->update(['cuerpo' => null]);
-        RegistroAuditoria::query()->where('creado_en', '<', now()->subDays((int) config('alojaflow.dias_conservar_auditoria')))->delete();
+        RegistroAuditoria::query()->where('creado_en', '<', now()->subDays(RegistroAuditoria::diasConservar()))->delete();
+        DispositivoRecordado::query()->where('expira_en', '<', now('UTC'))->delete();
 
         $disco = Storage::disk('local');
         foreach ($disco->files(GestorArchivos::CARPETA_SUBIDAS) as $temporal) {

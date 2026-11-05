@@ -14,6 +14,8 @@ use App\Enums\TipoReserva;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Huesped;
 use App\Models\Reserva;
+use App\Seguridad\Acceso;
+use App\Seguridad\Limites;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -63,7 +65,7 @@ class HuespedesRelationManager extends RelationManager
                     ->visible(fn (): bool => $this->puedeEscribir())
                     ->schema([
                         Select::make('huesped_id')->label(__('ui.comun.huesped'))->helperText(__('ui.huespedes.acompanante_ayuda'))->searchable()->native(false)
-                            ->getSearchResultsUsing(fn (string $search): array => Huesped::query()->where('propiedad_id', $this->reserva()->propiedad_id)
+                            ->getSearchResultsUsing(fn (string $search): array => Limites::huespedesVisibles(Huesped::query(), Acceso::usuarioActual())->where('propiedad_id', $this->reserva()->propiedad_id)
                                 ->where(fn (Builder $q): Builder => $q->where('nombre', 'like', '%'.$search.'%')->orWhere('apellido1', 'like', '%'.$search.'%'))
                                 ->limit(30)->get()->mapWithKeys(fn (Huesped $h): array => [$h->id => $h->nombreCompleto()])->all())
                             ->getOptionLabelUsing(fn (mixed $value): ?string => Huesped::query()->where('propiedad_id', $this->reserva()->propiedad_id)->find((int) $value)?->nombreCompleto()),

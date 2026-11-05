@@ -19,6 +19,8 @@ use App\Filament\Resources\Huespedes\Schemas\HuespedInfolist;
 use App\Filament\Resources\Huespedes\Tables\HuespedesTable;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Huesped;
+use App\Seguridad\Acceso;
+use App\Seguridad\Limites;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -68,7 +70,7 @@ class HuespedResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->whereIn('propiedad_id', ReservaResource::propiedadesPermitidas());
+        return Limites::huespedesVisibles(parent::getEloquentQuery()->whereIn('propiedad_id', ReservaResource::propiedadesPermitidas()), Acceso::usuarioActual());
     }
 
     public static function canViewAny(): bool

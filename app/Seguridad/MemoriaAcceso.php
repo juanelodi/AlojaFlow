@@ -20,8 +20,10 @@ final class MemoriaAcceso
     private array $valores = [];
 
     /**
-     * @param  callable(): list<int>  $calcular
-     * @return list<int>
+     * @template T of array
+     *
+     * @param  callable(): T  $calcular
+     * @return T
      */
     public function recordar(string $clave, callable $calcular): array
     {

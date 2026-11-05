@@ -14,6 +14,7 @@ use App\Models\Propiedad;
 use App\Models\User;
 use App\Seguridad\Acceso;
 use App\Support\Formato;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -56,6 +57,14 @@ class UsuarioForm
                                 ->options(fn (): array => Propiedad::query()->orderBy('nombre')->pluck('nombre', 'id')->all())
                                 ->distinct()->disableOptionsWhenSelectedInSiblingRepeaterItems(),
                             Select::make('rol')->label(__('ui.usuarios.rol'))->options(Acceso::opcionesRol())->required()->native(false),
+                            Section::make(__('permisos.usuario.ajustes'))->description(__('permisos.usuario.ajustes_ayuda'))->columnSpanFull()->collapsed()->columns(['default' => 1, 'md' => 2])->schema([
+                                CheckboxList::make('agregados')->label(__('permisos.usuario.agregados'))->options(Acceso::opcionesPermiso()),
+                                CheckboxList::make('quitados')->label(__('permisos.usuario.quitados'))->options(Acceso::opcionesPermiso()),
+                                Toggle::make('solo_propias')->label(__('permisos.usuario.solo_propias'))->helperText(__('permisos.usuario.solo_propias_ayuda'))->columnSpanFull(),
+                                Toggle::make('sin_iniciadas')->label(__('permisos.usuario.sin_iniciadas'))->helperText(__('permisos.usuario.sin_iniciadas_ayuda'))->columnSpanFull(),
+                                TextInput::make('horas_modificar')->label(__('permisos.usuario.horas_modificar'))->helperText(__('permisos.usuario.horas_ayuda'))->numeric()->minValue(1)->maxValue(65535),
+                                TextInput::make('horas_cancelar')->label(__('permisos.usuario.horas_cancelar'))->helperText(__('permisos.usuario.horas_ayuda'))->numeric()->minValue(1)->maxValue(65535),
+                            ]),
                         ])
                         ->columns(2)
                         ->defaultItems(0)

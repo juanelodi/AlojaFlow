@@ -23,6 +23,7 @@ use App\Filament\Resources\Reservas\Schemas\ReservaInfolist;
 use App\Filament\Resources\Reservas\Tables\ReservasTable;
 use App\Models\Reserva;
 use App\Seguridad\Acceso;
+use App\Seguridad\Limites;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -77,7 +78,7 @@ class ReservaResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->whereIn('propiedad_id', self::propiedadesPermitidas());
+        return Limites::reservasVisibles(parent::getEloquentQuery()->whereIn('propiedad_id', self::propiedadesPermitidas()), Acceso::usuarioActual());
     }
 
     public static function canViewAny(): bool
@@ -87,7 +88,7 @@ class ReservaResource extends Resource
 
     public static function canView(Model $record): bool
     {
-        return $record instanceof Reserva && in_array($record->propiedad_id, self::propiedadesPermitidas(), true);
+        return $record instanceof Reserva && in_array($record->propiedad_id, self::propiedadesPermitidas(), true) && Limites::puedeVer(Acceso::usuarioActual(), $record);
     }
 
     /**
@@ -108,7 +109,7 @@ class ReservaResource extends Resource
     public static function canEdit(Model $record): bool
     {
         return $record instanceof Reserva && ! $record->sincronizada && $record->estado !== EstadoReserva::Cancelada
-            && in_array($record->propiedad_id, self::propiedadesGestionables(), true);
+            && in_array($record->propiedad_id, self::propiedadesGestionables(), true) && Limites::puedeModificar(Acceso::usuarioActual(), $record);
     }
 
     /**

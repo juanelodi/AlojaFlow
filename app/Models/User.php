@@ -63,6 +63,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
                 return;
             }
             DB::table('sessions')->where('user_id', $usuario->id)->where('id', '!=', session()->getId())->delete();
+            DispositivoRecordado::query()->where('user_id', $usuario->id)->delete();
             // Sin eventos: esto no es otro cambio del usuario.
             User::query()->whereKey($usuario->id)->toBase()->update(['remember_token' => null]);
         });

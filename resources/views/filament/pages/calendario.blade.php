@@ -130,10 +130,11 @@
                         @endforeach
                         @foreach ($fila['barras'] as $barra)
                             @php($reserva = $barra['reserva'])
-                            @php($texto = $reserva->tipo === \App\Enums\TipoReserva::Bloqueo ? ($reserva->origen_texto ?? __('ui.calendario.bloqueo')) : ($reserva->titular?->nombreCompleto() ?? $reserva->numero))
+                            @php($ajena = ! \App\Seguridad\Limites::puedeVer(\App\Seguridad\Acceso::usuarioActual(), $reserva))
+                            @php($texto = $ajena ? __('permisos.limites.ocupada') : ($reserva->tipo === \App\Enums\TipoReserva::Bloqueo ? ($reserva->origen_texto ?? __('ui.calendario.bloqueo')) : ($reserva->titular?->nombreCompleto() ?? $reserva->numero)))
                             {{-- Sin permiso de datos, la barra no lleva a la ficha: un enlace sin destino no se puede seguir. --}}
-                            <a @if (\App\Seguridad\Acceso::puede(\App\Seguridad\Acceso::usuarioActual(), \App\Seguridad\Acceso::DATOS, $reserva->propiedad_id)) href="{{ \App\Filament\Resources\Reservas\ReservaResource::getUrl('view', ['record' => $reserva]) }}" @endif
-                               @if (! $reserva->sincronizada && $gestionable && $reserva->salida_registrada_en === null)
+                            <a @if (! $ajena && \App\Seguridad\Acceso::puede(\App\Seguridad\Acceso::usuarioActual(), \App\Seguridad\Acceso::DATOS, $reserva->propiedad_id)) href="{{ \App\Filament\Resources\Reservas\ReservaResource::getUrl('view', ['record' => $reserva]) }}" @endif
+                               @if (! $ajena && ! $reserva->sincronizada && $gestionable && $reserva->salida_registrada_en === null)
                                    draggable="true"
                                    data-reserva="{{ $reserva->id }}"
                                @endif

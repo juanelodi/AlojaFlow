@@ -16,6 +16,7 @@ use App\Models\Reserva;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
 use App\Seguridad\Acceso;
+use App\Seguridad\Limites;
 use App\Servicios\Calendario as ServicioCalendario;
 use App\Servicios\Operacion;
 use BackedEnum;
@@ -115,6 +116,11 @@ class Calendario extends Page
     public function moverReserva(int $reservaId, int $unidadId, string $llegada): void
     {
         $reserva = Reserva::query()->whereIn('propiedad_id', $this->propiedadesGestionables())->where('sincronizada', false)->findOrFail($reservaId);
+        if (! Limites::puedeModificar(Acceso::usuarioActual(), $reserva)) {
+            Notification::make()->danger()->title(__('permisos.limites.no_modificar'))->send();
+
+            return;
+        }
         try {
             app(GestorReservas::class)->mover($reserva, $unidadId, CarbonImmutable::createFromFormat('!Y-m-d', $llegada) ?: throw new ReservaRechazada(__('ui.reservas.error_fechas')));
             Notification::make()->success()->title(__('ui.calendario.movida'))->send();

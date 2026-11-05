@@ -15,6 +15,8 @@ use App\Enums\TipoReserva;
 use App\Models\Aviso;
 use App\Models\Propiedad;
 use App\Models\Reserva;
+use App\Seguridad\Acceso;
+use App\Seguridad\Limites;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -32,11 +34,11 @@ final class Operacion
      */
     public static function reservas(array $propiedades): Builder
     {
-        return Reserva::query()
+        return Limites::reservasVisibles(Reserva::query()
             ->vigentes()
             ->where('tipo', TipoReserva::Reserva->value)
             ->whereIn('propiedad_id', $propiedades)
-            ->with(['unidad', 'titular.contactos', 'propiedad', 'principal']);
+            ->with(['unidad', 'titular.contactos', 'propiedad', 'principal']), Acceso::usuarioActual());
     }
 
     /**

@@ -16,6 +16,7 @@ use App\Models\Reserva;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
 use App\Seguridad\Acceso;
+use App\Seguridad\Limites;
 use App\Servicios\Operacion;
 use BackedEnum;
 use Carbon\CarbonImmutable;
@@ -114,7 +115,7 @@ class Hoy extends Page
      */
     private function cambiar(int $reservaId, callable $accion, string $mensaje): void
     {
-        $reserva = Reserva::query()->whereIn('propiedad_id', ReservaResource::propiedadesGestionables())->findOrFail($reservaId);
+        $reserva = Limites::reservasVisibles(Reserva::query()->whereIn('propiedad_id', ReservaResource::propiedadesGestionables()), Acceso::usuarioActual())->findOrFail($reservaId);
         try {
             $accion(app(GestorReservas::class), $reserva);
             Notification::make()->success()->title($mensaje)->send();

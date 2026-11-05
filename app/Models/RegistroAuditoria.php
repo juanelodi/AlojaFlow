@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Demo\ModoDemo;
+use App\Support\Ajustes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -35,6 +36,8 @@ class RegistroAuditoria extends ModeloBase
 
     public const UPDATED_AT = null;
 
+    public const AJUSTE_DIAS = 'auditoria.dias';
+
     protected $guarded = ['id'];
 
     protected function casts(): array
@@ -43,6 +46,13 @@ class RegistroAuditoria extends ModeloBase
             'cambios' => 'array',
             'creado_en' => 'datetime',
         ];
+    }
+
+    public static function diasConservar(): int
+    {
+        $dias = Ajustes::obtener(self::AJUSTE_DIAS);
+
+        return is_numeric($dias) ? max(30, (int) $dias) : (int) config('alojaflow.dias_conservar_auditoria');
     }
 
     /** @return BelongsTo<User, $this> */

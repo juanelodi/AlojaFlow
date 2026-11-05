@@ -21,6 +21,7 @@ use App\Models\Unidad;
 use App\Modulos\Modulo;
 use App\Reservas\GestorGrupos;
 use App\Seguridad\Acceso;
+use App\Seguridad\Limites;
 use App\Support\Formato;
 use BackedEnum;
 use Filament\Actions\ViewAction;
@@ -100,7 +101,7 @@ class GrupoResource extends RecursoDePropiedad
                 self::campoPropiedad(),
                 TextInput::make('nombre')->label(__('ui.grupos.nombre'))->helperText(__('ui.grupos.nombre_ayuda'))->required()->maxLength(150),
                 Select::make('coordinador_id')->label(__('ui.grupos.coordinador'))->required()->native(false)->searchable()
-                    ->getSearchResultsUsing(fn (string $search, Get $get): array => Huesped::query()->where('propiedad_id', self::propiedadDe($get))
+                    ->getSearchResultsUsing(fn (string $search, Get $get): array => Limites::huespedesVisibles(Huesped::query(), Acceso::usuarioActual())->where('propiedad_id', self::propiedadDe($get))
                         ->where(fn (Builder $q): Builder => $q->where('nombre', 'like', '%'.$search.'%')->orWhere('apellido1', 'like', '%'.$search.'%'))
                         ->limit(30)->get()->mapWithKeys(fn (Huesped $h): array => [$h->id => $h->nombreCompleto()])->all())
                     ->getOptionLabelUsing(fn (mixed $value, Get $get): ?string => Huesped::query()->where('propiedad_id', self::propiedadDe($get))->find((int) $value)?->nombreCompleto()),

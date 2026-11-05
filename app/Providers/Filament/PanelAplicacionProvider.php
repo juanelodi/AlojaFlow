@@ -17,8 +17,11 @@ use App\Filament\Pages\Actualizaciones;
 use App\Filament\Pages\EditarPerfil;
 use App\Filament\Pages\IniciarSesion;
 use App\Filament\Pages\PedirRecuperacion;
+use App\Filament\Pages\SesionesDispositivos;
 use App\Http\Middleware\AplicarIdioma;
+use App\Http\Middleware\RecordarDispositivo;
 use App\Seguridad\Acceso;
+use Filament\Actions\Action;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -30,6 +33,7 @@ use Filament\PanelProvider;
 use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Contracts\View\View;
@@ -112,6 +116,10 @@ class PanelAplicacionProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->sidebarCollapsibleOnDesktop()
+            ->userMenuItems([
+                Action::make('sesiones')->label(fn (): string => __('permisos.sesiones.titulo'))->icon(Heroicon::OutlinedComputerDesktop)
+                    ->url(fn (): string => SesionesDispositivos::getUrl())->visible(fn (): bool => SesionesDispositivos::canAccess()),
+            ])
             ->renderHook(PanelsRenderHook::BODY_START, fn (): View|string => ModoDemo::activo() ? view('componentes.banner-demo') : '')
             ->renderHook(PanelsRenderHook::FOOTER, fn () => view('componentes.pie'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn (): View|string => self::avisoActualizacionSinTerminar())
@@ -119,6 +127,7 @@ class PanelAplicacionProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
+                RecordarDispositivo::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 PreventRequestForgery::class,
