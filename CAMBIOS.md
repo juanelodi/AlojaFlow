@@ -11,6 +11,11 @@ Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, 
 - **El permiso «Datos fiscales, facturas y exportaciones»** ahora se llama «Estados de cuenta y calendario de cobros». El rol de contador lo conserva.
 - **Una propiedad con documentos emitidos** ya se puede borrar, y un pago del calendario ya se puede cambiar o quitar, porque ya no hay factura de por medio.
 
+**La auditoría y la demo, en tu idioma.**
+
+- **Auditoría:** la acción, sobre qué fue y el detalle ya no salen como códigos internos en español: se leen en tu idioma, en la pantalla y en lo exportado, y el buscador encuentra lo que se lee. Una columna poco común sale con su nombre técnico.
+- **Demo:** nace en el idioma de quien la crea, con sus tarifas, cargos, huéspedes, plantillas y documentos. Una demo que ya exista no cambia: quítala y créala de nuevo para verla así.
+
 **Antes de actualizar:** si en tu instalación emitiste facturas o recibos desde la pantalla de Facturas, descárgalos primero. La actualización los borra, con sus XML y PDF, y solo quedan en la copia de la base que hace antes de empezar. Los recibos de cada pago no cambian: se generan al pedirlos.
 
 ## 1.0.30 — 2026-11-05

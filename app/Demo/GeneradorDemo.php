@@ -54,6 +54,7 @@ use App\Support\Contactos;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use LogicException;
 use Random\Engine\Mt19937;
 use Random\Randomizer;
@@ -75,24 +76,7 @@ final class GeneradorDemo
 
     private const NOMBRES = ['Ana', 'Luis', 'Carmen', 'Jorge', 'Elena', 'Marco', 'Lucía', 'Diego', 'Sofía', 'Andrés', 'Paula', 'Tomás', 'Julia', 'Raúl', 'Inés', 'Emma', 'Noah', 'Grace', 'Oliver', 'Claire'];
 
-    private const APELLIDOS = ['Ejemplo', 'Prueba', 'Muestra', 'Ficticio', 'Modelo', 'Ensayo', 'Sample', 'Tester', 'Demo', 'Simulado', 'Figurado', 'Supuesto'];
-
-    private const PAISES = [['México', '+52 55 5550', 'es'], ['Estados Unidos', '+1 202 555', 'en'], ['Canadá', '+1 613 555', 'en'], ['España', '+34 600 000', 'es']];
-
-    private const COMENTARIOS = ['Piden cuna', 'Aniversario de bodas', 'Llegan tarde, después de las 22:00', 'Piso alto, si es posible', 'Viajan con mascota pequeña', 'Alergia a las plumas'];
-
-    private const MOTIVOS_BLOQUEO = ['Mantenimiento', 'Pintura', 'Uso del propietario'];
-
-    /**
-     * Precio base en pesos y unidades de cada tarifa: nombre, capacidad, piso y edificio.
-     */
-    private const CATALOGO = [
-        'Doble' => [1200, [['101', 2, '1', 'Hotel'], ['102', 2, '1', 'Hotel'], ['103', 2, '1', 'Hotel'], ['104', 2, '1', 'Hotel']]],
-        'King' => [1500, [['105', 2, '1', 'Hotel'], ['106', 2, '1', 'Hotel']]],
-        'Familiar' => [1900, [['201', 4, '2', 'Hotel'], ['202', 4, '2', 'Hotel'], ['203', 4, '2', 'Hotel']]],
-        'Suite' => [2400, [['Suite 301', 3, '3', 'Hotel']]],
-        'Cabaña' => [2800, [['Cabaña A', 5, null, 'Jardín'], ['Cabaña B', 5, null, 'Jardín']]],
-    ];
+    private const PAISES = [['pais_mexico', '+52 55 5550', 'es'], ['pais_estados_unidos', '+1 202 555', 'en'], ['pais_canada', '+1 613 555', 'en'], ['pais_espana', '+34 600 000', 'es']];
 
     private GestorReservas $gestor;
 
@@ -125,7 +109,7 @@ final class GeneradorDemo
                 'pais' => 'MX',
                 'zona_horaria' => 'America/Mexico_City',
                 'moneda' => 'MXN',
-                'idioma' => 'es',
+                'idioma' => $this->idioma(),
                 'activa' => true,
                 'es_demo' => true,
                 'ajustes' => ['motor' => ['activo' => true, 'calendario_publico' => true, 'anticipo_porcentaje' => 30, 'instrucciones' => __('ui.demo.instrucciones_pago')]],
@@ -171,6 +155,43 @@ final class GeneradorDemo
     }
 
     /**
+     * La propiedad nace en el idioma de quien la crea, y con sus plantillas y documentos en ese idioma.
+     */
+    private function idioma(): string
+    {
+        $idioma = app()->getLocale();
+
+        return in_array($idioma, (array) config('alojaflow.idiomas'), true) ? $idioma : 'es';
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function lista(string $clave): array
+    {
+        return array_values((array) __('ui.demo.'.$clave));
+    }
+
+    /**
+     * Precio base en pesos y unidades de cada tarifa: nombre, capacidad, piso y edificio.
+     *
+     * @return array<string, array{0: int, 1: list<array{0: string, 1: int, 2: string|null, 3: string}>}>
+     */
+    private function catalogo(): array
+    {
+        $cabana = (string) __('ui.demo.cabana');
+        $jardin = (string) __('ui.demo.jardin');
+
+        return [
+            (string) __('ui.demo.tarifa_doble') => [1200, [['101', 2, '1', 'Hotel'], ['102', 2, '1', 'Hotel'], ['103', 2, '1', 'Hotel'], ['104', 2, '1', 'Hotel']]],
+            'King' => [1500, [['105', 2, '1', 'Hotel'], ['106', 2, '1', 'Hotel']]],
+            (string) __('ui.demo.tarifa_familiar') => [1900, [['201', 4, '2', 'Hotel'], ['202', 4, '2', 'Hotel'], ['203', 4, '2', 'Hotel']]],
+            'Suite' => [2400, [['Suite 301', 3, '3', 'Hotel']]],
+            $cabana => [2800, [[$cabana.' A', 5, null, $jardin], [$cabana.' B', 5, null, $jardin]]],
+        ];
+    }
+
+    /**
      * @return list<Unidad>
      */
     private function crearCatalogo(Propiedad $propiedad): array
@@ -178,7 +199,7 @@ final class GeneradorDemo
         $anio = (int) $propiedad->hoy()->format('Y');
         $unidades = [];
         $orden = 0;
-        foreach (self::CATALOGO as $nombre => [$pesos, $filas]) {
+        foreach ($this->catalogo() as $nombre => [$pesos, $filas]) {
             $tarifa = Tarifa::query()->create([
                 'propiedad_id' => $propiedad->id, 'nombre' => $nombre, 'modo' => ModoTarifa::PorNoche, 'precio_noche' => $pesos * 100, 'activa' => true,
                 'personas_incluidas' => 2, 'precio_persona_extra' => 25000, 'precio_fin_semana' => $this->conAumento($pesos, 15),
@@ -220,7 +241,7 @@ final class GeneradorDemo
      */
     private function crearTarifasDeLaDoble(Propiedad $propiedad): void
     {
-        $doble = Tarifa::query()->where('propiedad_id', $propiedad->id)->where('nombre', 'Doble')->firstOrFail();
+        $doble = Tarifa::query()->where('propiedad_id', $propiedad->id)->where('nombre', __('ui.demo.tarifa_doble'))->firstOrFail();
         $politica = Politica::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.politica_no_reembolsable'), 'no_reembolsable' => true, 'no_show_porcentaje' => 100, 'deposito_porcentaje' => 100, 'deposito_plazo_dias' => 0]);
         $comunes = ['propiedad_id' => $propiedad->id, 'tarifa_base_id' => $doble->id, 'modo' => $doble->modo, 'precio_noche' => 0, 'personas_incluidas' => $doble->personas_incluidas, 'activa' => true];
         $tarifas = [
@@ -244,27 +265,27 @@ final class GeneradorDemo
 
     private function crearCatalogosExtra(Propiedad $propiedad): void
     {
-        Impuesto::query()->create(['propiedad_id' => $propiedad->id, 'codigo' => 'IVA', 'nombre' => 'IVA', 'base' => BaseCargo::PorcentajeAlojamiento, 'tasa' => 16, 'incluido_en_precio' => true, 'orden' => 1]);
-        Impuesto::query()->create(['propiedad_id' => $propiedad->id, 'codigo' => 'ISH', 'nombre' => 'Impuesto sobre hospedaje', 'base' => BaseCargo::PorcentajeAlojamiento, 'tasa' => 3, 'incluido_en_precio' => true, 'orden' => 2]);
-        ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Cama extra', 'base' => BaseCargo::PorNoche, 'importe' => 30000, 'obligatorio' => true, 'por_cama_extra' => true, 'orden' => 1]);
+        Impuesto::query()->create(['propiedad_id' => $propiedad->id, 'codigo' => 'IVA', 'nombre' => __('ui.demo.iva'), 'base' => BaseCargo::PorcentajeAlojamiento, 'tasa' => 16, 'incluido_en_precio' => true, 'orden' => 1]);
+        Impuesto::query()->create(['propiedad_id' => $propiedad->id, 'codigo' => 'ISH', 'nombre' => __('ui.demo.impuesto_hospedaje'), 'base' => BaseCargo::PorcentajeAlojamiento, 'tasa' => 3, 'incluido_en_precio' => true, 'orden' => 2]);
+        ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.cargo_cama_extra'), 'base' => BaseCargo::PorNoche, 'importe' => 30000, 'obligatorio' => true, 'por_cama_extra' => true, 'orden' => 1]);
         Unidad::query()->where('propiedad_id', $propiedad->id)->whereIn('codigo', ['103', '104'])->update(['camas_extra' => 1]);
-        ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Desayuno', 'base' => BaseCargo::PorPersonaNoche, 'importe' => 15000, 'orden' => 2]);
-        ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Traslado al aeropuerto', 'base' => BaseCargo::PorEstancia, 'importe' => 45000, 'orden' => 3]);
+        ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.cargo_desayuno'), 'base' => BaseCargo::PorPersonaNoche, 'importe' => 15000, 'orden' => 2]);
+        ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.cargo_traslado'), 'base' => BaseCargo::PorEstancia, 'importe' => 45000, 'orden' => 3]);
         ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.kayak'), 'base' => BaseCargo::PorNoche, 'importe' => 25000, 'cupo_diario' => 3, 'orden' => 4]);
         ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.limpieza_media'), 'base' => BaseCargo::PorNoche, 'importe' => 20000, 'cada_noches' => 3, 'noches_minimas' => 3, 'orden' => 5]);
         (new AjustesCamping($propiedad))->guardarTarifas(['luz' => '3.50', 'agua' => '25', 'gas' => '14']);
-        foreach (['Directo' => null, 'Booking' => 15, 'Airbnb' => 3, 'Teléfono' => null] as $nombre => $comision) {
+        foreach ([__('ui.demo.canal_directo') => null, 'Booking' => 15, 'Airbnb' => 3, __('ui.demo.canal_telefono') => null] as $nombre => $comision) {
             Canal::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => $nombre, 'comision_porcentaje' => $comision]);
         }
         Caja::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.caja')]);
         Politica::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.politica'), 'dias_cancelacion_gratuita' => 3, 'penalizacion_porcentaje' => 50, 'no_show_porcentaje' => 100, 'deposito_porcentaje' => 30, 'deposito_plazo_dias' => 2, 'predeterminada' => true]);
-        Cupon::query()->create(['propiedad_id' => $propiedad->id, 'codigo' => 'BIENVENIDA10', 'descripcion' => __('ui.demo.cupon'), 'tipo' => TipoCupon::Porcentaje, 'porcentaje' => 10]);
+        Cupon::query()->create(['propiedad_id' => $propiedad->id, 'codigo' => __('ui.demo.cupon_codigo'), 'descripcion' => __('ui.demo.cupon'), 'tipo' => TipoCupon::Porcentaje, 'porcentaje' => 10]);
 
         $hoy = $propiedad->hoy();
-        foreach ([['Luz', 'Servicios', 185000, 12], ['Agua', 'Servicios', 62000, 9], ['Artículos de limpieza', 'Limpieza', 48000, 5], ['Reparación de aire acondicionado', 'Mantenimiento', 120000, 2]] as [$concepto, $categoria, $importe, $dias]) {
+        foreach ([['gasto_luz', 'categoria_servicios', 185000, 12], ['gasto_agua', 'categoria_servicios', 62000, 9], ['gasto_limpieza', 'categoria_limpieza', 48000, 5], ['gasto_aire', 'categoria_mantenimiento', 120000, 2]] as [$concepto, $categoria, $importe, $dias]) {
             Movimiento::query()->create([
-                'propiedad_id' => $propiedad->id, 'fecha' => $hoy->subDays($dias), 'tipo' => TipoMovimiento::Gasto, 'categoria' => $categoria,
-                'concepto' => $concepto, 'metodo' => MetodoPago::Transferencia, 'importe' => $importe, 'moneda' => $propiedad->moneda,
+                'propiedad_id' => $propiedad->id, 'fecha' => $hoy->subDays($dias), 'tipo' => TipoMovimiento::Gasto, 'categoria' => __('ui.demo.'.$categoria),
+                'concepto' => __('ui.demo.'.$concepto), 'metodo' => MetodoPago::Transferencia, 'importe' => $importe, 'moneda' => $propiedad->moneda,
             ]);
         }
     }
@@ -282,11 +303,13 @@ final class GeneradorDemo
      */
     private function crearHuespedes(Propiedad $propiedad): array
     {
+        $apellidos = $this->lista('apellidos');
         $ids = [];
         for ($i = 1; $i <= self::CANTIDAD_HUESPEDES; $i++) {
             $nombre = self::NOMBRES[$this->azar->getInt(0, count(self::NOMBRES) - 1)];
-            $apellido = self::APELLIDOS[$this->azar->getInt(0, count(self::APELLIDOS) - 1)];
-            [$pais, $prefijo, $idioma] = self::PAISES[$this->azar->getInt(0, count(self::PAISES) - 1)];
+            $apellido = $apellidos[$this->azar->getInt(0, count($apellidos) - 1)];
+            [$clavePais, $prefijo, $idioma] = self::PAISES[$this->azar->getInt(0, count(self::PAISES) - 1)];
+            $pais = __('ui.demo.'.$clavePais);
             $huesped = Huesped::query()->create([
                 'propiedad_id' => $propiedad->id,
                 'nombre' => $nombre,
@@ -298,7 +321,7 @@ final class GeneradorDemo
                 'documento_numero' => 'DEMO'.str_pad((string) $i, 6, '0', STR_PAD_LEFT),
             ]);
             $telefono = $prefijo.' '.str_pad((string) (100 + $i), 4, '0', STR_PAD_LEFT);
-            $correo = mb_strtolower(strtr($nombre.'.'.$apellido, ['á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ñ' => 'n'])).'.'.$i.'@example.com';
+            $correo = mb_strtolower(Str::ascii($nombre.'.'.$apellido)).'.'.$i.'@example.com';
             $huesped->contactos()->createMany([
                 ['tipo' => TipoContacto::Telefono, 'valor' => $telefono, 'valor_normalizado' => Contactos::normalizar('telefono', $telefono), 'orden' => 0],
                 ['tipo' => TipoContacto::Correo, 'valor' => $correo, 'valor_normalizado' => Contactos::normalizar('correo', $correo), 'orden' => 1],
@@ -348,11 +371,11 @@ final class GeneradorDemo
      */
     private function crearPropietario(Propiedad $propiedad): void
     {
-        $dueno = Propietario::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.propietario'), 'correo' => 'dueno@example.com', 'comision_porcentaje' => 20, 'cargo_fijo' => 50000]);
-        Unidad::query()->where('propiedad_id', $propiedad->id)->where('edificio', 'Jardín')->update(['propietario_id' => $dueno->id]);
+        $dueno = Propietario::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.propietario'), 'correo' => 'owner@example.com', 'comision_porcentaje' => 20, 'cargo_fijo' => 50000]);
+        Unidad::query()->where('propiedad_id', $propiedad->id)->where('edificio', __('ui.demo.jardin'))->update(['propietario_id' => $dueno->id]);
         $hoy = $propiedad->hoy();
         $mesPasado = $hoy->startOfMonth()->subDay();
-        Movimiento::query()->create(['propiedad_id' => $propiedad->id, 'propietario_id' => $dueno->id, 'fecha' => $mesPasado, 'tipo' => TipoMovimiento::Gasto, 'categoria' => 'Mantenimiento', 'concepto' => __('ui.demo.gasto_dueno'), 'metodo' => MetodoPago::Transferencia, 'importe' => 120000, 'moneda' => $propiedad->moneda]);
+        Movimiento::query()->create(['propiedad_id' => $propiedad->id, 'propietario_id' => $dueno->id, 'fecha' => $mesPasado, 'tipo' => TipoMovimiento::Gasto, 'categoria' => __('ui.demo.categoria_mantenimiento'), 'concepto' => __('ui.demo.gasto_dueno'), 'metodo' => MetodoPago::Transferencia, 'importe' => 120000, 'moneda' => $propiedad->moneda]);
         app(GestorEstados::class)->generar($dueno, $mesPasado);
     }
 
@@ -372,7 +395,7 @@ final class GeneradorDemo
             'personas' => 2,
             'estado' => EstadoReserva::Confirmada->value,
             'total' => Cotizador::cotizar($unidad, $llegada, $salida, 2)->total ?? 0,
-            'origen_texto' => 'Directo',
+            'origen_texto' => __('ui.demo.canal_directo'),
             'comentario' => __('ui.demo.estancia_larga'),
         ]);
         $reserva->entrada_registrada_en = Carbon::parse($llegada->format('Y-m-d').' 15:00:00', $reserva->propiedad->zona_horaria)->utc();
@@ -390,7 +413,7 @@ final class GeneradorDemo
         if (! $ancla && $this->azar->getInt(1, 100) <= 4) {
             $this->gestor->crear($propiedad, [
                 'tipo' => TipoReserva::Bloqueo->value, 'unidad_id' => $unidad->id, 'llegada' => $llegada->format('Y-m-d'), 'salida' => $salida->format('Y-m-d'),
-                'origen_texto' => self::MOTIVOS_BLOQUEO[$this->azar->getInt(0, count(self::MOTIVOS_BLOQUEO) - 1)],
+                'origen_texto' => $this->lista('motivos_bloqueo')[$this->azar->getInt(0, 2)],
             ]);
 
             return;
@@ -413,7 +436,7 @@ final class GeneradorDemo
             'deposito' => (int) round($total * 0.3),
             'comision' => (int) round($total * $porcentajeComision / 100),
             'origen_texto' => $origen,
-            'comentario' => $this->azar->getInt(1, 100) <= 15 ? self::COMENTARIOS[$this->azar->getInt(0, count(self::COMENTARIOS) - 1)] : null,
+            'comentario' => $this->azar->getInt(1, 100) <= 15 ? $this->lista('comentarios')[$this->azar->getInt(0, 5)] : null,
         ]);
 
         if (! $ancla && $this->azar->getInt(1, 100) <= 8) {
@@ -466,10 +489,10 @@ final class GeneradorDemo
         $tirada = $this->azar->getInt(1, 100);
 
         return match (true) {
-            $tirada <= 40 => ['Directo', 0],
+            $tirada <= 40 => [(string) __('ui.demo.canal_directo'), 0],
             $tirada <= 70 => ['Booking', 15],
             $tirada <= 90 => ['Airbnb', 3],
-            default => ['Teléfono', 0],
+            default => [(string) __('ui.demo.canal_telefono'), 0],
         };
     }
 }

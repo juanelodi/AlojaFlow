@@ -747,6 +747,13 @@ El usuario dio su contenedor de Google Tag Manager. Se carga desde el archivo de
 
 El usuario sentía que la portada se trababa al bajar. Con la tarjeta de video de este equipo no se perdían cuadros, así que se quitó lo que podía sentirse así: lo que se movía a otra velocidad que el scroll, los textos fijos, el desenfoque de la cabecera y la ola que se volvía a pintar. Si una animación depende del scroll, cada golpe de rueda se ve como un tirón, aunque vaya a 60 cuadros.
 
+### D-133 · 2026-11-05 · La auditoría y la demo en cada idioma
+Al sacar las capturas en inglés de la wiki se vio que dos pantallas seguían en español con el sistema en inglés. Regla 7.
+
+**Auditoría:** se siguen guardando códigos (`reserva.crear`, `Reserva`, nombres de columna), y se traducen al leerlos (`EtiquetasAuditoria`). Así el registro no depende del idioma de quien hizo el cambio, y sirve para quien lo revisa después en otro. Una acción sin nombre propio se lee por su verbo, porque al lado ya dice sobre qué fue. Del detalle se traducen las claves que el programa escribe y las columnas más comunes; hay 280 columnas auditables, y traducirlas todas a seis idiomas para una pantalla técnica no vale la pena: las demás salen con su nombre, sin guiones bajos.
+
+**Demo:** nace en el idioma de quien la crea, también sus plantillas y documentos. Sigue siendo un hotel en México con sus impuestos, porque es lo que está probado. El español no cambia.
+
 ---
 
 ## Pendientes

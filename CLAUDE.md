@@ -230,7 +230,7 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 - `app/Seguridad/Acceso.php` — permisos por propiedad (roles de spatie con equipo =
   propiedad); el administrador ve todo, y `Acceso::esSuper` es quien instaló (D-070). Lo que manda un formulario como propiedad pasa por
   `Acceso::propiedadElegida`, y al guardar, `RecursoDePropiedad::comprobarReferencias`. `Limites`, lo que se le limita a cada quien (D-075);
-  `Dispositivos`, «recordarme» (D-076); `AuditoriaModelos`, antes y después de lo que cambia el equipo (D-077).
+  `Dispositivos`, «recordarme» (D-076); `AuditoriaModelos`, antes y después de lo que cambia el equipo (D-077); `EtiquetasAuditoria`, cómo se lee en cada idioma (D-133).
 - `app/Http/Middleware/` — `CabecerasSeguridad` (D-057), `MismoOrigen` (motor sin CSRF) y `UsuarioActivo`
   (rutas con sesión fuera del panel).
 - `app/Servicios/` — consultas de las pantallas operativas (Operacion, Calendario,
