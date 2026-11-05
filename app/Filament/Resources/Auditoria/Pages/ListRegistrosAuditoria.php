@@ -12,6 +12,7 @@ namespace App\Filament\Resources\Auditoria\Pages;
 
 use App\Filament\Resources\Auditoria\RegistroAuditoriaResource;
 use App\Models\RegistroAuditoria;
+use App\Seguridad\EtiquetasAuditoria;
 use App\Support\Ajustes;
 use App\Support\Csv;
 use App\Support\Formato;
@@ -71,9 +72,9 @@ class ListRegistrosAuditoria extends ListRecords
             yield [
                 Formato::momento($fila->creado_en),
                 $fila->usuario->name ?? __('ui.auditoria.sistema'),
-                $fila->accion,
-                $fila->modelo_tipo === null ? '' : $fila->modelo_tipo.' #'.$fila->modelo_id,
-                $fila->cambios === null ? '' : (string) json_encode($fila->cambios, JSON_UNESCAPED_UNICODE),
+                EtiquetasAuditoria::accion($fila->accion),
+                (string) EtiquetasAuditoria::objeto($fila->modelo_tipo, $fila->modelo_id),
+                (string) EtiquetasAuditoria::detalle($fila->cambios),
                 (string) $fila->ip,
             ];
         }

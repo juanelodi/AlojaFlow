@@ -133,7 +133,7 @@ final class AuditoriaModelos
                 continue;
             }
             $diferencias[$campo] = $soloCampos || in_array($campo, self::SIN_VALOR, true) || str_starts_with((string) ($modelo->getCasts()[$campo] ?? ''), 'encrypted')
-                ? 'cambió'
+                ? EtiquetasAuditoria::CAMBIO
                 : ['antes' => self::recortar($modelo->getRawOriginal($campo)), 'despues' => self::recortar($modelo->getAttributes()[$campo] ?? null)];
         }
 
