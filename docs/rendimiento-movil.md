@@ -52,7 +52,7 @@ baja, de 1521 a 773 ms.
 ## Cómo se midió
 
 - La rama y una copia de `main`, cada una en el Apache de Wamp (`desarrollo/apache-prueba/`), con el mismo PHP y la misma base
-  privada, en producción y con las cachés de arranque, con el dominio apuntando a `public/` como en DreamHost.
+  privada, en producción y con las cachés de arranque, con el dominio apuntando a `public/`, como en un hosting compartido.
 - La demo: 12 unidades y 301 reservas. Para el hotel grande se le añadieron 28 unidades y 167 reservas. Un cron simulado apaga las
   tareas por visita, para que no metan ruido.
 - Lighthouse 13.6, perfil móvil (`desarrollo/rendimiento/medir.mjs`). **Simulado** mide en un equipo rápido y calcula lo que tardaría.
@@ -60,7 +60,7 @@ baja, de 1521 a 773 ms.
 - `desarrollo/rendimiento/visita-repetida.mjs` aplica esos mismos límites y carga cada pantalla dos veces.
 - También se construyó el paquete con el `Empaquetador` y se instaló con `probar-instalador.php`.
 
-**Lo que no se midió:** DreamHost ni un teléfono real. Allí el servidor tarda más en responder que aquí (0.15 s en este equipo) y esa
+**Lo que no se midió:** un hosting real ni un teléfono real. En un hosting, el servidor tarda más en responder que aquí (0.15 s en este equipo) y esa
 diferencia se suma a todas las cifras.
 
 **Por qué no basta el simulado.** En el calendario salen 3.1 s en tres de cinco pasadas y 1.5 s en las otras dos, con la misma página.
@@ -217,7 +217,7 @@ acepta, como casi cualquier sitio que comprime.
 Sin iniciar sesión, cambiando el dominio. Tiene que decir `content-encoding: gzip` (o `br`) y el `cache-control` con `immutable`:
 
 ```bash
-curl -sI -H "Accept-Encoding: gzip" "https://app.alojaflow.com/css/filament/filament/app.css?v=1" | grep -iE "content-encoding|cache-control"
+curl -sI -H "Accept-Encoding: gzip" "https://tu-dominio.com/css/filament/filament/app.css?v=1" | grep -iE "content-encoding|cache-control"
 ```
 
 Si no sale `content-encoding`, ese hosting no tiene `mod_deflate` para este sitio y hay que pedírselo. Un servidor nginx no lee

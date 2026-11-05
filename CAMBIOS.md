@@ -48,7 +48,7 @@ Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, 
 
 **Demostración:** dos dobles con cama extra, y el calendario público prendido.
 
-**Sin verificar:** arrastrar solo se probó con ratón. En un teléfono se siguen cambiando desde la reserva.
+**Sin verificar:** arrastrar solo se probó simulado en el navegador, no con un ratón de verdad. En un teléfono se siguen cambiando desde la reserva.
 
 ## 1.0.27 — 2026-11-05
 
@@ -480,7 +480,7 @@ Nunca escribe en la principal, y las reservas se cambian allá.
   termina un administrador.
 
 **Lo que se comprobó:** en este equipo, con el Apache de Wamp: instalar con el instalador chico contra un servidor local con rangos, las preguntas, subir
-29 MB por partes y actualizar una instalación 1.0.10 real a esta. **Sin verificar:** no se ha probado en DreamHost ni en otro hosting real. Lo que dice la guía
+29 MB por partes y actualizar una instalación 1.0.10 real a esta. **Sin verificar:** no se ha probado en un hosting real. Lo que dice la guía
 de la base de datos sobre cada panel se escribió de memoria, sin entrar a cada uno.
 
 ## 1.0.10 — 2026-11-04
@@ -521,7 +521,7 @@ curl -sI -H "Accept-Encoding: gzip" "https://tu-dominio/css/filament/filament/ap
 - El código fuente descargable incluye `public/.htaccess`.
 - Las pruebas ya no tocan los archivos, las copias ni las actualizaciones del equipo donde corren.
 
-**Sin verificar:** no se ha medido en DreamHost ni en un teléfono real.
+**Sin verificar:** no se ha medido en un hosting real ni en un teléfono real.
 
 ## 1.0.8 — 2026-11-04
 

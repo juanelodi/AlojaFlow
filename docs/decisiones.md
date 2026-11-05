@@ -269,7 +269,7 @@ spatie lo necesita. Sustituye a la dependencia prevista en CLAUDE.md.
 
 ### D-039 · 2026-11-04 · Las tareas programadas también corren sin cron
 Si el cron no ha dado señales en 30 minutos, las tareas corren al terminar de atender una visita.
-**Por qué:** hay hostings sin cron o con mínimos de 10 minutos (DreamHost), y el usuario quiere que
+**Por qué:** hay hostings sin cron o con mínimos de 10 minutos, y el usuario quiere que
 instalar sea lo más simple posible: el cron pasa a ser una mejora, no un requisito.
 
 ### D-040 · 2026-11-04 · Instalador de un solo archivo
@@ -395,7 +395,7 @@ sigue siendo versión de prueba. **Por qué:** lo pidió el usuario.
 ### D-053 · 2026-11-04 · Auditoría de noviembre: qué se corrigió y cómo se revisó
 Revisión completa de seguridad, rendimiento, accesibilidad, diseño y buenas prácticas, con el resultado en
 `docs/auditoria-2026-11.md`. El usuario pidió corregirlo todo y publicar la 1.0.8. Los ataques se hicieron contra una
-copia local; en línea solo una revisión suave de `app.alojaflow.com`.
+copia local; en línea solo una revisión suave del servidor de prueba.
 
 ### D-054 · 2026-11-04 · Reservas sin pago que nadie revisa: caducan a las 48 horas
 Una reserva del motor sin pago en línea y sin confirmar retenía sus noches para siempre: cualquiera podía llenar un
@@ -438,7 +438,7 @@ lo demás. La migración vacía la tabla; la siguiente sincronización la llena 
 ### D-060 · 2026-11-04 · Registros por día y cachés de arranque
 Un `laravel.log` único crecía hasta agotar la cuota del hosting: ahora hay uno por día y se conservan 14. La
 configuración, las rutas, los eventos y los componentes se dejan en caché al instalar, actualizar y restaurar, porque
-armarlos en cada visita era lo que más tardaba (1.3 a 1.9 s en DreamHost). Quien edita `.env` a mano no tiene que saber de
+armarlos en cada visita era lo que más tardaba (1.3 a 1.9 s en el servidor de prueba). Quien edita `.env` a mano no tiene que saber de
 cachés: `bootstrap/app.php` descarta la configuración guardada si `.env` es más nuevo.
 
 ### D-061 · 2026-11-04 · El menú, por tareas
@@ -485,7 +485,7 @@ pantallas de menos de 64rem, el contenido se ve sin esperar a Alpine. Livewire s
 nada en el hosting, y todo lo del `.htaccess` se ignora si falta el módulo. **Los formularios siguen esperando a Alpine:** sin
 JavaScript sus campos salen vacíos y lo que se escriba se perdería. **Riesgos que quedan:** comprimir HTML con un token abre en teoría
 la puerta a BREACH, pero hace falta espiar el tráfico y forzar miles de peticiones con la sesión de la víctima; la fuente hace un
-pequeño salto al llegar la primera vez; y no se ha comprobado en DreamHost si `mod_deflate` está disponible. Cifras, lo que se
+pequeño salto al llegar la primera vez; y no se ha comprobado en el servidor de prueba si `mod_deflate` está disponible. Cifras, lo que se
 descartó y cómo comprobarlo, en `docs/rendimiento-movil.md`.
 
 ### D-068 · 2026-11-04 · Sin modo SPA en el panel
@@ -726,6 +726,9 @@ La 1.0.29 arregló las plantillas de importar, pero lo demás seguía dependiend
 **Decimales.** Excel lee los números con el separador de su Windows, que desde aquí no se sabe. Lo más cercano es `Dinero::separadorDecimal`, el del idioma y la moneda: el mismo con que la pantalla enseña ese dinero. Solo se aplica a lo que se suma (`Csv::numero`); los informes y el estado de cuenta de una empresa ya traían texto con su moneda. Si no coincide, 1000.50 queda como texto en un Excel de coma decimal, y 1000,50 puede leerse como 100050 en uno de punto decimal. Se acepta y se avisa en `CAMBIOS.md`: quien tenga ese caso cuenta con el CSV estándar en facturas, y pedir el separador en cada descarga estorbaría a todos los demás.
 
 UTF-16 ocupa el doble, y Livewire arma la descarga completa en memoria. Con lo que maneja un alojamiento pequeño no importa; una auditoría enorme se puede pedir por tramos de fechas.
+
+### D-129 · 2026-11-05 · Los documentos no nombran el servidor de prueba
+El repositorio es público: lo que dice dónde está la instalación de prueba y con qué hosting se cambió por «el servidor de prueba» o «un hosting real». Sigue en el historial y en los paquetes ya publicados, y no hay usuarios, contraseñas ni nombres de base. La guía del instalador sí nombra hostings, porque es para quien use cada uno, y no dice cuál usa este proyecto.
 
 ---
 

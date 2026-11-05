@@ -15,7 +15,7 @@ tiene su prueba. Las decisiones están en `docs/decisiones.md`, de D-053 a D-065
 - **Rendimiento:** consultas y tiempos por pantalla con una demo de 1341 reservas, y Lighthouse.
 - **Pruebas:** 411 en verde, con 85 % de las líneas cubiertas (Xdebug). Cada corrección de seguridad tiene su prueba.
 - **Revisión de código** de todo el cambio: encontró diez puntos más, ya corregidos.
-- **En línea:** solo `app.alojaflow.com`, sin entrar al panel y sin ataques: cabeceras, certificado y archivos expuestos.
+- **En línea:** solo el servidor de prueba, sin entrar al panel y sin ataques: cabeceras, certificado y archivos expuestos.
   `alojaflow.com` quedó fuera del alcance.
 - **Sin tocar:** las copias reales con datos personales (regla 12).
 
