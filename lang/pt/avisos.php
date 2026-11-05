@@ -20,4 +20,5 @@ return [
     'pago_sin_lugar' => 'Foi recebido um pagamento online da reserva :reserva, mas as suas noites já tinham sido vendidas. Resolva-o com o hóspede.',
     'motor_saturado' => 'Chegaram demasiadas reservas online numa hora e o formulário foi parado durante uma hora. Verifique em Reservas se são reais; as que não forem confirmadas são canceladas automaticamente.',
     'copia_no_borrada' => 'Não foi possível apagar a cópia na instalação principal; fica na sua pasta dati/. Verifique as permissões dessa pasta.',
+    'registro_por_vencer' => 'Um número de registo ou licença desta propriedade expira em menos de 30 dias, ou já expirou. Renove-o e atualize a data em Registos turísticos.',
 ];

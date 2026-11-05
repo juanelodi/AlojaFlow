@@ -120,6 +120,7 @@ class PanelAplicacionProvider extends PanelProvider
                 Action::make('sesiones')->label(fn (): string => __('permisos.sesiones.titulo'))->icon(Heroicon::OutlinedComputerDesktop)
                     ->url(fn (): string => SesionesDispositivos::getUrl())->visible(fn (): bool => SesionesDispositivos::canAccess()),
             ])
+            ->renderHook(PanelsRenderHook::HEAD_END, fn (): View => view('componentes.cabeza-panel'))
             ->renderHook(PanelsRenderHook::BODY_START, fn (): View|string => ModoDemo::activo() ? view('componentes.banner-demo') : '')
             ->renderHook(PanelsRenderHook::FOOTER, fn () => view('componentes.pie'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn (): View|string => self::avisoActualizacionSinTerminar())

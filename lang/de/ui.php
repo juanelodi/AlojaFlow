@@ -15,6 +15,8 @@ return [
         'no_permitido_texto' => 'Wenn Sie Zugriff haben sollten, bitten Sie die Person, die das System verwaltet, darum.',
         'no_encontrada_titulo' => 'Wir finden diese Seite nicht',
         'no_encontrada_texto' => 'Der Link ist vielleicht falsch geschrieben, oder die Seite gibt es nicht mehr.',
+        'esquema_titulo' => 'Die Datenbank konnte nicht aktualisiert werden',
+        'esquema_texto' => 'Die Dateien gehören bereits zu einer neuen Version, aber die Datenbank konnte nicht aktualisiert werden. Prüfen Sie das Fehlerprotokoll oder laden Sie die vorherige Version erneut hoch.',
         'caducada_titulo' => 'Die Seite ist abgelaufen',
         'caducada_texto' => 'Es ist zu viel Zeit ohne Aktivität vergangen. Gehen Sie zurück, laden Sie neu und versuchen Sie es noch einmal.',
         'demasiadas_titulo' => 'Zu viele Anfragen',

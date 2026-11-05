@@ -98,6 +98,7 @@ return [
         'sin_entidad' => 'Add tax details in Settings to be able to invoice.',
     ],
     'contador' => [
+        'correo' => 'Email', 'codigo_postal' => 'Postal code', 'llegada' => 'Arrival', 'salida' => 'Departure', 'pagado' => 'Paid', 'pendiente' => 'Outstanding',
         'serie' => 'Series', 'folio' => 'Number', 'fecha' => 'Date', 'identificador' => 'Tax ID', 'nombre' => 'Name', 'subtotal' => 'Subtotal', 'impuestos' => 'Taxes', 'total' => 'Total', 'moneda' => 'Currency', 'estado' => 'Status', 'uuid' => 'UUID', 'reservas' => 'Bookings',
     ],
 ];

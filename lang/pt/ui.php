@@ -15,6 +15,8 @@ return [
         'no_permitido_texto' => 'Se acha que devia ter acesso, peça-o a quem administra o sistema.',
         'no_encontrada_titulo' => 'Não encontramos esta página',
         'no_encontrada_texto' => 'A ligação pode estar mal escrita ou a página pode já não existir.',
+        'esquema_titulo' => 'Não foi possível atualizar a base de dados',
+        'esquema_texto' => 'Os ficheiros já são de uma versão nova, mas a base de dados não pôde ser atualizada. Consulte o registo de erros ou volte a carregar a versão anterior.',
         'caducada_titulo' => 'A página expirou',
         'caducada_texto' => 'Passou demasiado tempo sem atividade. Volte atrás, recarregue e tente de novo.',
         'demasiadas_titulo' => 'Demasiados pedidos',

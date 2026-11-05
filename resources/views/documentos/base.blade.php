@@ -42,5 +42,8 @@
         </tr>
     </table>
     @yield('contenido')
+    <div class="gris" style="margin-top: 16px">
+        @include('componentes.registro-turistico', ['registros' => \App\Propiedades\RegistrosTuristicos::visibles($propiedad, $reserva)])
+    </div>
 </body>
 </html>

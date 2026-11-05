@@ -64,7 +64,10 @@ footer a{color:inherit}
         <p class="mensaje error" role="alert">{{ __('motor.error.'.request()->query('aviso')) }}</p>
     @endif
     @yield('contenido')
-    <footer>{{ __('motor.pie') }} · <a href="{{ route('codigo-fuente') }}">{{ __('ui.pie.codigo_fuente') }}</a></footer>
+    <footer>
+        @include('componentes.registro-turistico', ['registros' => \App\Propiedades\RegistrosTuristicos::visibles($propiedad)])
+        {{ __('motor.pie') }} · <a href="{{ route('codigo-fuente') }}">{{ __('ui.pie.codigo_fuente') }}</a>
+    </footer>
 </main>
 </body>
 </html>

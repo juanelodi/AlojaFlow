@@ -20,4 +20,5 @@ return [
     'pago_sin_lugar' => 'È stato ricevuto un pagamento online della prenotazione :reserva, ma le sue notti erano già state vendute. Risolvi con l’ospite.',
     'motor_saturado' => 'Sono arrivate troppe prenotazioni online in un’ora e il modulo è stato fermato per un’ora. Controlla in Prenotazioni se sono reali; quelle non confermate si annullano da sole.',
     'copia_no_borrada' => 'Non è stato possibile eliminare la copia nell’installazione principale; resta nella sua cartella dati/. Controlla i permessi di quella cartella.',
+    'registro_por_vencer' => 'Un numero di registrazione o licenza di questa struttura scade tra meno di 30 giorni, o è già scaduto. Rinnovalo e aggiorna la data in Registrazioni turistiche.',
 ];

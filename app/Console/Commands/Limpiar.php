@@ -21,6 +21,7 @@ use App\Models\NotaBitacora;
 use App\Models\Principal;
 use App\Models\RegistroAuditoria;
 use App\Privacidad\GestorPrivacidad;
+use App\Propiedades\RegistrosTuristicos;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -43,6 +44,8 @@ class Limpiar extends Command
             ->delete();
 
         $this->info(__('consola.ejecuciones_borradas', ['cuantas' => $borradas]));
+
+        RegistrosTuristicos::revisarTodas();
 
         $vencidos = $privacidad->aplicarPlazos();
         $this->info(__('consola.plazos', ['detalle' => (string) json_encode($vencidos)]));

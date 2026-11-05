@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Instalacion;
 
+use App\Actualizacion\EsquemaAlDia;
 use App\Demo\GeneradorDemo;
 use App\Models\User;
 use App\Programador\TareasPorVisita;
@@ -80,6 +81,7 @@ class Instalador
             'version' => config('alojaflow.version'),
             'instalado_en' => now('UTC')->toIso8601String(),
         ]));
+        app(EsquemaAlDia::class)->marcarAlDia();
         CachesArranque::rehacer();
 
         $super = User::query()->where('es_superadministrador', true)->where('activo', true)->orderBy('id')->first();

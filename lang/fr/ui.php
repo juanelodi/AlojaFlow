@@ -15,6 +15,8 @@ return [
         'no_permitido_texto' => 'Si vous pensez devoir y accéder, demandez l’accès à la personne qui administre le système.',
         'no_encontrada_titulo' => 'Nous ne trouvons pas cette page',
         'no_encontrada_texto' => 'Le lien est peut-être mal écrit ou la page n’existe plus.',
+        'esquema_titulo' => 'La base de données n’a pas pu être mise à jour',
+        'esquema_texto' => 'Les fichiers sont déjà ceux d’une nouvelle version, mais la base de données n’a pas pu être mise à jour. Consultez le journal des erreurs ou réinstallez la version précédente.',
         'caducada_titulo' => 'La page a expiré',
         'caducada_texto' => 'Trop de temps s’est écoulé sans activité. Revenez en arrière, rechargez et réessayez.',
         'demasiadas_titulo' => 'Trop de demandes',

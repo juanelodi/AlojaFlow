@@ -98,6 +98,7 @@ return [
         'sin_entidad' => 'Ajoutez les données fiscales dans Configuration pour pouvoir facturer.',
     ],
     'contador' => [
+        'correo' => 'E-mail', 'codigo_postal' => 'Code postal', 'llegada' => 'Arrivée', 'salida' => 'Départ', 'pagado' => 'Payé', 'pendiente' => 'Restant dû',
         'serie' => 'Série',
         'folio' => 'Numéro',
         'fecha' => 'Date',

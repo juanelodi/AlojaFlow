@@ -98,6 +98,7 @@ return [
         'sin_entidad' => 'Da de alta los datos fiscales en Configuración para poder facturar.',
     ],
     'contador' => [
+        'correo' => 'Correo', 'codigo_postal' => 'Código postal', 'llegada' => 'Llegada', 'salida' => 'Salida', 'pagado' => 'Pagado', 'pendiente' => 'Pendiente',
         'serie' => 'Serie', 'folio' => 'Folio', 'fecha' => 'Fecha', 'identificador' => 'RFC', 'nombre' => 'Nombre', 'subtotal' => 'Subtotal', 'impuestos' => 'Impuestos', 'total' => 'Total', 'moneda' => 'Moneda', 'estado' => 'Estado', 'uuid' => 'UUID', 'reservas' => 'Reservas',
     ],
 ];

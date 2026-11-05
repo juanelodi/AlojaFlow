@@ -9,6 +9,7 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\CabecerasSeguridad;
+use App\Http\Middleware\EsquemaActualizado;
 use App\Http\Middleware\ProgramadorPorVisitas;
 use App\Http\Middleware\RecordarDispositivo;
 use Illuminate\Foundation\Application;
@@ -37,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // storage/framework/maintenance.php antes de arrancar Laravel (y ya va firmada).
         $middleware->preventRequestsDuringMaintenance(except: ['actualizaciones/*/aplicar', 'actualizaciones/*/finalizar']);
         $middleware->encryptCookies(except: ['laravel_maintenance']);
+        $middleware->append(EsquemaActualizado::class);
         $middleware->append(ProgramadorPorVisitas::class);
         $middleware->web(append: [RecordarDispositivo::class]);
         // El motor de reservas no da permisos por sesión y debe funcionar dentro de un iframe; los

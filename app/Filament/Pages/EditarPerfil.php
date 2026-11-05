@@ -11,9 +11,12 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Demo\ModoDemo;
+use App\Support\ColoresEstado;
 use App\Support\Formato;
 use Filament\Auth\Pages\EditProfile;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 /**
@@ -44,6 +47,9 @@ class EditarPerfil extends EditProfile
             $this->getNameFormComponent(),
             $this->getEmailFormComponent(),
             ...$preferencias,
+            Section::make(__('herramientas.colores.titulo'))->description(__('herramientas.colores.ayuda'))->collapsed()->columns(['default' => 1, 'md' => 2])->schema(
+                array_map(fn (string $estado): ColorPicker => ColorPicker::make('colores_estado.'.$estado)->label(__('ui.calendario.'.$estado))->regex('/^#[0-9a-fA-F]{6}$/'), array_keys(ColoresEstado::ESTADOS)),
+            ),
             $this->getPasswordFormComponent(),
             $this->getPasswordConfirmationFormComponent(),
             $this->getCurrentPasswordFormComponent(),

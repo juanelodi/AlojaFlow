@@ -51,6 +51,7 @@ use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -103,19 +104,28 @@ final class AccionesReserva
             ->color('gray')
             ->visible(fn (Reserva $record): bool => Modulos::activo(Modulo::Facturacion) && $record->tipo === TipoReserva::Reserva && $record->estado !== EstadoReserva::Cancelada && Acceso::puede(Acceso::usuarioActual(), Acceso::FACTURACION, $record->propiedad_id))
             ->fillForm(function (Reserva $record): array {
-                $guardado = ReceptorFiscal::query()->where('propiedad_id', $record->propiedad_id)->where('huesped_id', $record->titular_id)->latest('id')->first();
+                // D-081: la factura de una reserva de empresa se le propone a ella, con lo que ya se le haya facturado antes. Nunca con el régimen o el
+                // código postal del huésped: un dato de cada quien daría una factura inválida.
+                $empresa = $record->empresa;
+                $guardado = ReceptorFiscal::query()->where('propiedad_id', $record->propiedad_id)
+                    ->when(
+                        $empresa !== null,
+                        fn (Builder $query): Builder => $query->where('identificador_fiscal', mb_strtoupper((string) $empresa?->identificador_fiscal)),
+                        fn (Builder $query): Builder => $query->where('huesped_id', $record->titular_id),
+                    )
+                    ->latest('id')->first();
 
                 $primeraSerie = SerieFacturacion::query()->where('activa', true)->whereHas('entidad', fn ($q) => $q->where('propiedad_id', $record->propiedad_id))->value('id');
 
                 return [
                     'serie_id' => $primeraSerie,
                     'metodo_pago' => 'PUE',
-                    'identificador_fiscal' => $guardado->identificador_fiscal ?? ($record->titular->id_fiscal_empresa ?? $record->titular->id_fiscal_personal ?? null),
-                    'nombre' => $guardado->nombre ?? $record->titular?->nombreCompleto(),
+                    'identificador_fiscal' => $empresa !== null ? $empresa->identificador_fiscal : ($guardado->identificador_fiscal ?? ($record->titular->id_fiscal_empresa ?? $record->titular->id_fiscal_personal ?? null)),
+                    'nombre' => $empresa !== null ? $empresa->nombre : ($guardado->nombre ?? $record->titular?->nombreCompleto()),
                     'regimen_fiscal' => $guardado->regimen_fiscal ?? null,
                     'codigo_postal' => $guardado->codigo_postal ?? null,
                     'uso' => $guardado->uso ?? null,
-                    'correo' => $guardado->correo ?? Mensajero::correoDe($record),
+                    'correo' => $empresa !== null ? ($empresa->correo ?? $guardado->correo ?? null) : ($guardado->correo ?? Mensajero::correoDe($record)),
                 ];
             })
             ->schema(function (Reserva $record): array {

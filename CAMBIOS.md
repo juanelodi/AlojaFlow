@@ -2,6 +2,25 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.17 — 2026-11-05
+
+**Herramientas para ordenar los datos: fichas duplicadas, anonimizar por antigüedad, exportar facturas, regiones y número de registro. Y la base que se actualiza sola si subes una versión a mano.**
+
+**Lo que hay**
+- **Fichas duplicadas** (Reservas): fichas que pueden ser la misma persona, por nombre sin acentos, correo, teléfono o documento. Eliges con cuál te quedas y las demás se juntan ahí. No se puede deshacer, y la pantalla lo dice antes.
+- **Anonimizar por antigüedad:** quienes llevan N años sin venir (5 por omisión), ni de titular ni de acompañante, y sin nada reservado a futuro. Se ve a quién alcanza antes de hacerlo, y pide tu contraseña. Es para quien administra.
+- **Tipo de cliente en propiedades independientes:** en la ficha del huésped escribes datos como «Tipo: VIP», y si coinciden con Colores de clientes, sus reservas se marcan en el calendario.
+- **Exportar facturas:** ahora con correo, código postal, llegada, salida, pagado y pendiente, y en dos formatos: Excel en español (punto y coma y coma decimal) o CSV estándar. Pagado y pendiente son los de las reservas, y pueden no coincidir con el documento.
+- **Facturar a la empresa de la reserva:** si la reserva es de una empresa, la factura propone sus datos.
+- **Días y franja de sincronización:** en la principal puedes elegir qué días y a qué horas se copia, en la hora de la propiedad, también de noche (de 22:00 a 06:00). Copiar a mano no tiene ese límite.
+- **Estado o región de la propiedad:** de una lista con códigos ISO en México, Estados Unidos, Canadá, España, Francia, Italia, Alemania y Portugal; los demás países la escriben. Con ella, el catálogo de impuestos de hospedaje ya propone el tuyo. Y en el domicilio del huésped la lista sugiere los estados de su país.
+- **Número de registro o licencia** (Registros turísticos), de la propiedad o de una unidad, con vigencia. Se enseña en las páginas públicas y en los documentos, y avisa 30 días antes de vencer. También responsable y autoridad para quejas, que algunos países piden tener a la vista.
+- **Si subes una versión a mano** (por FTP, sin usar Actualizaciones), al abrir la primera página se hace una copia, se pone al día la base y se sigue. Un formulario que iba a medio camino te lleva al inicio, porque no se procesó. Si no se puede, sale una página que lo explica.
+- **Instalable en el teléfono:** «Agregar a la pantalla de inicio» la abre como aplicación, con su icono. Necesita conexión: no guarda datos para sin conexión, porque datos viejos en una recepción son peores que no abrir.
+- **Tema:** al imprimir, siempre claro. Cada usuario puede elegir los colores de los estados del calendario en su perfil, y la letra se ajusta sola para que se lea. La barra de guardar queda fija al crear y editar una reserva.
+
+**Sin verificar:** nada de esto se probó en un hosting real; subir a mano se probó en una instalación de este equipo. Instalar en el teléfono se revisó por el manifiesto y los iconos, no en un teléfono de verdad. Las regiones de Europa son solo esos cuatro países, y si necesitas otro, se escribe.
+
 ## 1.0.16 — 2026-11-05
 
 **Lo que se usa todos los días: Hoy y el cierre más completos, mensajes por periodo, depósitos, bloqueos, restricciones, enlaces de pago, automatizaciones que deciden y encuesta a los huéspedes.**

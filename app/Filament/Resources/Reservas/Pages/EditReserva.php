@@ -21,6 +21,8 @@ use Illuminate\Validation\ValidationException;
 
 class EditReserva extends EditRecord
 {
+    public static bool $formActionsAreSticky = true;
+
     protected static string $resource = ReservaResource::class;
 
     /**

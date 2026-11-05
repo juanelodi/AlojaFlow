@@ -20,4 +20,5 @@ return [
     'pago_sin_lugar' => 'An online payment was received for booking :reserva, but its nights had already been sold. Resolve it with the guest.',
     'motor_saturado' => 'Too many online bookings arrived in one hour and the form was stopped for an hour. Check in Bookings whether they are real; those not confirmed are cancelled automatically.',
     'copia_no_borrada' => 'The backup could not be deleted from the main installation; it remains in its dati/ folder. Check that folder’s permissions.',
+    'registro_por_vencer' => 'A registration or licence number of this property expires in less than 30 days, or has already expired. Renew it and update the date under Tourism registrations.',
 ];

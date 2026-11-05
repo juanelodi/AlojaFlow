@@ -597,6 +597,24 @@ Saldo, canal, datos de llegada y documentos aceptados, además del estado. Puede
 ### D-087 · 2026-11-05 · Encuesta a los huéspedes
 En una tabla propia y con un módulo aparte, porque mucha gente no la va a querer. **A todos se les ofrece la página pública de reseñas, contesten lo que contesten:** mandar solo a los contentos falsea las reseñas y los portales lo prohíben. La automatización que se prepara queda apagada: un correo a todos los huéspedes es una decisión de quien la va a usar. El comentario puede llevar datos personales: entra en la exportación y se borra al anonimizar.
 
+### D-088 · 2026-11-05 · Duplicados y anonimizar por antigüedad
+**El detector solo propone:** dos personas pueden llamarse igual, y fusionar no se deshace. Una sola palabra no cuenta como nombre, y no entran las fichas de una principal, que se fusionan allá. Tampoco quien solo ve lo suyo: fusionar junta fichas ajenas. **Anonimizar por antigüedad pide contraseña y el permiso de ajustes, no el de huéspedes:** uno por uno basta una palabra, pero aquí un descuido borra a cientos. Va por tandas de 200 para no pasar del tiempo de una petición. La ficha también tiene que ser vieja: alguien que dejó sus datos ayer no lleva años sin venir. El tipo de cliente de la 1.2.x se configuraba en un archivo del servidor; aquí se escribe en la ficha, con lo que ya existe en `campos_huesped` y `colores_tipo_cliente`.
+
+### D-089 · 2026-11-05 · La base se pone al día sola
+Si alguien sube los archivos a mano, la primera petición lo arregla (`EsquemaAlDia` y su middleware). **La marca es una versión en un archivo** para no tocar la base en cada petición, y la versión nueva se lee de `config/alojaflow.php` como texto, porque en producción la configuración está en caché y seguiría diciendo la anterior. **Por eso primero se quitan las cachés y se redirige:** esa petición arrancó con las rutas viejas, y migrar y atender se hace en la siguiente, que arranca limpia. Con un candado, la otra petición espera. **Un fallo no se repite en cada visita:** la copia se hace una vez y la migración se reintenta a lo mucho cada minuto, porque si no, la copia llenaría el disco. La copia previa no es requisito: los archivos ya están arriba y sin migrar la aplicación no abre. El instalador y el actualizador dejan la marca al terminar.
+
+### D-090 · 2026-11-05 · Instalable sin service worker, y colores por usuario
+`manifest.webmanifest` e iconos, sin service worker: datos viejos en una recepción son peores que no abrir, y sin conexión no hay nada útil que hacer con una reserva. Las direcciones del manifiesto son relativas porque la aplicación puede vivir en una subcarpeta. **Los colores de los estados son del usuario, no de la propiedad,** porque son una preferencia de quien mira. Solo pasan colores `#rrggbb` (van dentro de un `<style>`), y la letra se calcula por contraste: nadie tiene que saber de accesibilidad para elegir uno.
+
+### D-091 · 2026-11-05 · Número de registro turístico
+Tabla propia y no un campo, porque hay registros por propiedad y por unidad, y el mismo alojamiento puede tener varios. Vale también en una subordinada: el registro no depende de quién lleve las reservas. En las páginas públicas se enseñan todos; en un documento, los de la propiedad y los de la unidad de esa reserva. `alojaflow:limpiar` revisa cada noche y guardar revisa al momento, para que renovar quite el aviso sin esperar. No se valida el formato del número: cambia por país y estado, y un rechazo equivocado impediría cumplir la ley. **`funciones-nuevas.md` también lo pedía en las exportaciones:** un CSV no tiene dónde llevar un pie, así que irá en cada archivo oficial que lo pida (España, en la 1.0.20).
+
+### D-092 · 2026-11-05 · Regiones con código ISO
+`CatalogoRegiones` con ISO 3166-2 de México, Estados Unidos, Canadá, España, Francia, Italia, Alemania y Portugal. Son nombres propios y no se traducen. No se hacen todos los países de Europa de memoria: uno mal escrito es peor que escribirlo a mano, y por eso `propiedades.subdivision` crece a 100 caracteres. Cambiar de país borra la región, y en el domicilio del huésped es solo una sugerencia, porque ahí escribe lo que dice su identificación.
+
+### D-093 · 2026-11-05 · Días y franja de sincronización
+En la hora de la propiedad, no en la del servidor. **Una franja que cruza la medianoche es del día en que empieza:** la de 22:00 a 06:00 del lunes sigue el martes hasta las 6, porque así se lee en el formulario. Marcar todos los días o ninguno es lo mismo, sin límite: nadie quiere una principal que no se copie nunca. Copiar a mano no pasa por aquí.
+
 ---
 
 ## Pendientes

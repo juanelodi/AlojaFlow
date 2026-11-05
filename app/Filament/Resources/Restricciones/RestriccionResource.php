@@ -18,7 +18,6 @@ use App\Models\Restriccion;
 use App\Models\Unidad;
 use App\Support\Formato;
 use BackedEnum;
-use Carbon\CarbonImmutable;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
@@ -62,19 +61,6 @@ class RestriccionResource extends RecursoDePropiedad
         return ['unidad_id' => Unidad::class];
     }
 
-    /**
-     * @return array<int, string> del lunes (1) al domingo (7)
-     */
-    private static function dias(): array
-    {
-        $dias = [];
-        for ($i = 1; $i <= 7; $i++) {
-            $dias[$i] = (string) CarbonImmutable::create(2024, 1, $i)?->locale(app()->getLocale())->isoFormat('dddd');
-        }
-
-        return $dias;
-    }
-
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -88,8 +74,8 @@ class RestriccionResource extends RecursoDePropiedad
                 Toggle::make('cerrado_llegada')->label(__('operacion.restricciones.cerrado_llegada')),
                 Toggle::make('cerrado_salida')->label(__('operacion.restricciones.cerrado_salida')),
                 CheckboxList::make('dias_llegada')->label(__('operacion.restricciones.dias_llegada'))->helperText(__('operacion.restricciones.dias_llegada_ayuda'))->columnSpanFull()->columns(['default' => 2, 'md' => 4])
-                    ->options(fn (): array => self::dias())
-                    ->formatStateUsing(fn (mixed $state): array => array_values(array_filter(array_keys(self::dias()), fn (int $dia): bool => ((int) $state & (1 << ($dia - 1))) !== 0)))
+                    ->options(fn (): array => Formato::diasDeLaSemana())
+                    ->formatStateUsing(fn (mixed $state): array => array_values(array_filter(array_keys(Formato::diasDeLaSemana()), fn (int $dia): bool => ((int) $state & (1 << ($dia - 1))) !== 0)))
                     ->dehydrateStateUsing(fn (mixed $state): ?int => array_reduce((array) $state, fn (int $mascara, mixed $dia): int => $mascara | (1 << ((int) $dia - 1)), 0) ?: null),
                 TextInput::make('estancia_maxima')->label(__('operacion.restricciones.estancia_maxima'))->numeric()->minValue(1)->maxValue(3650),
                 TextInput::make('anticipacion_maxima')->label(__('operacion.restricciones.anticipacion_maxima'))->helperText(__('operacion.restricciones.anticipacion_maxima_ayuda'))->numeric()->minValue(0)->maxValue(3650),

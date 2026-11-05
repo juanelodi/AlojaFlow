@@ -21,6 +21,8 @@ use Illuminate\Validation\ValidationException;
 
 class CreateReserva extends CreateRecord
 {
+    public static bool $formActionsAreSticky = true;
+
     protected static string $resource = ReservaResource::class;
 
     protected static bool $canCreateAnother = false;

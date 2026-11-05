@@ -32,6 +32,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $email
  * @property string $idioma
  * @property string|null $zona_horaria
+ * @property array<string, string|null>|null $colores_estado
  * @property bool $activo
  * @property bool $es_administrador
  * @property bool $es_superadministrador
@@ -39,7 +40,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property array<string>|null $app_authentication_recovery_codes
  * @property \Illuminate\Support\Carbon|null $ultimo_acceso_en
  */
-#[Fillable(['name', 'email', 'password', 'idioma', 'zona_horaria', 'activo', 'es_administrador', 'es_superadministrador'])]
+#[Fillable(['name', 'email', 'password', 'idioma', 'zona_horaria', 'colores_estado', 'activo', 'es_administrador', 'es_superadministrador'])]
 #[Hidden(['password', 'remember_token', 'app_authentication_secret', 'app_authentication_recovery_codes'])]
 class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery
 {
@@ -82,6 +83,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'activo' => 'boolean',
             'es_administrador' => 'boolean',
             'es_superadministrador' => 'boolean',
+            'colores_estado' => 'array',
             'ultimo_acceso_en' => 'datetime',
         ];
     }

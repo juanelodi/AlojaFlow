@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use DateTimeZone;
 
@@ -51,6 +52,19 @@ final class Formato
     public static function fecha(?CarbonInterface $fecha, string $formato = 'll'): string
     {
         return $fecha === null ? '—' : $fecha->locale(app()->getLocale())->isoFormat($formato);
+    }
+
+    /**
+     * @return array<int, string> del lunes (1) al domingo (7), en el idioma de quien mira
+     */
+    public static function diasDeLaSemana(): array
+    {
+        $dias = [];
+        for ($i = 1; $i <= 7; $i++) {
+            $dias[$i] = (string) CarbonImmutable::create(2024, 1, $i)?->locale(app()->getLocale())->isoFormat('dddd');
+        }
+
+        return $dias;
     }
 
     public static function fechaCorta(?CarbonInterface $fecha): string

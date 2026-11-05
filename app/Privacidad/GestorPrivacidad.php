@@ -24,6 +24,7 @@ use App\Models\RegistroAuditoria;
 use App\Models\RegistroLlegada;
 use App\Models\Reserva;
 use App\Models\SolicitudPrivacidad;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -91,6 +92,26 @@ final class GestorPrivacidad
         RegistroAuditoria::anotar('privacidad.exportar', $huesped, [], $huesped->propiedad_id);
 
         return $archivo;
+    }
+
+    /**
+     * Quienes llevan N años sin venir (D-088): ni como titular ni como acompañante, y sin nada reservado a futuro. La ficha también tiene que ser
+     * vieja: alguien que dejó sus datos ayer no lleva años sin venir. Las de la principal y las ya anonimizadas no salen.
+     *
+     * @param  list<int>  $propiedades
+     * @return Builder<Huesped>
+     */
+    public function sinEstanciasDesde(array $propiedades, int $anios): Builder
+    {
+        $limite = now()->subYears($anios);
+
+        return Huesped::query()
+            ->whereIn('propiedad_id', $propiedades)
+            ->where('sincronizada', false)
+            ->where('creado_en', '<', $limite)
+            ->whereDoesntHave('solicitudesPrivacidad', fn (Builder $query): Builder => $query->where('tipo', TipoSolicitudPrivacidad::Anonimizacion))
+            ->whereDoesntHave('reservasComoTitular', fn (Builder $query): Builder => $query->whereDate('salida', '>=', $limite))
+            ->whereDoesntHave('reservasComoAcompanante', fn (Builder $query): Builder => $query->whereDate('salida', '>=', $limite));
     }
 
     /**

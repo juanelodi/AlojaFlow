@@ -20,4 +20,5 @@ return [
     'pago_sin_lugar' => 'Un paiement en ligne a été reçu pour la réservation :reserva, mais ses nuits avaient déjà été vendues. Réglez cela avec le client.',
     'motor_saturado' => 'Trop de réservations en ligne sont arrivées en une heure et le formulaire a été arrêté pendant une heure. Vérifiez dans Réservations si elles sont réelles ; celles qui ne sont pas confirmées s’annulent toutes seules.',
     'copia_no_borrada' => 'La copie n’a pas pu être supprimée sur l’installation principale ; elle reste dans son dossier dati/. Vérifiez les droits de ce dossier.',
+    'registro_por_vencer' => 'Un numéro d’enregistrement ou de licence de cet établissement expire dans moins de 30 jours, ou a déjà expiré. Renouvelez-le et mettez à jour la date dans Enregistrements touristiques.',
 ];

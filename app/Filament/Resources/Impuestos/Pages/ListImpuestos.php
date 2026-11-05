@@ -14,6 +14,7 @@ use App\Enums\BaseCargo;
 use App\Filament\Resources\Impuestos\ImpuestoResource;
 use App\Models\Impuesto;
 use App\Models\Propiedad;
+use App\Paises\CatalogoRegiones;
 use App\Paises\Paises;
 use App\Paises\SugerenciaImpuesto;
 use App\Seguridad\Acceso;
@@ -46,9 +47,11 @@ class ListImpuestos extends ListRecords
                         ->default(fn (): ?int => count($this->propiedadesConCatalogo()) === 1 ? (int) array_key_first($this->propiedadesConCatalogo()) : null)
                         ->visible(fn (): bool => count($this->propiedadesConCatalogo()) > 1),
                     Select::make('region')->label(__('caja.impuestos.catalogo_region'))->required()->native(false)->searchable()->live()
+                        ->default(fn (Get $get): ?string => $this->regionDe($get('propiedad_id')))
                         ->options(fn (Get $get): array => array_map(fn (SugerenciaImpuesto $s): string => $s->region, $this->sugerencias($get('propiedad_id'))))
                         ->afterStateUpdated(fn (mixed $state, Get $get, Set $set) => $set('tasa', $this->sugerencias($get('propiedad_id'))[(string) $state]->tasa ?? null)),
                     TextInput::make('tasa')->label(__('ui.impuestos.tasa'))->required()->numeric()->minValue(0)->maxValue(100)->step('any')->suffix('%')
+                        ->default(fn (Get $get): ?float => $this->sugerencias($get('propiedad_id'))[(string) $this->regionDe($get('propiedad_id'))]->tasa ?? null)
                         ->helperText(fn (Get $get): ?string => $this->explicacion($this->sugerencias($get('propiedad_id'))[(string) $get('region')] ?? null)),
                 ])
                 ->action(function (array $data): void {
@@ -103,6 +106,16 @@ class ListImpuestos extends ListRecords
         }
 
         return $lista;
+    }
+
+    /**
+     * La región de la propiedad, si está en el catálogo (D-092).
+     */
+    private function regionDe(mixed $propiedadId): ?string
+    {
+        $region = CatalogoRegiones::nombre(Propiedad::query()->whereKey($this->propiedadElegida($propiedadId))->value('subdivision'));
+
+        return isset($this->sugerencias($propiedadId)[(string) $region]) ? $region : null;
     }
 
     private function explicacion(?SugerenciaImpuesto $sugerencia): ?string

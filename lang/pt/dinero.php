@@ -98,6 +98,7 @@ return [
         'sin_entidad' => 'Registe os dados fiscais em Configuração para poder faturar.',
     ],
     'contador' => [
+        'correo' => 'E-mail', 'codigo_postal' => 'Código postal', 'llegada' => 'Chegada', 'salida' => 'Saída', 'pagado' => 'Pago', 'pendiente' => 'Pendente',
         'serie' => 'Série',
         'folio' => 'Número',
         'fecha' => 'Data',

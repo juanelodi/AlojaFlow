@@ -43,8 +43,6 @@ class Actualizador
     private const SEGUNDOS_CANDADO = 1800;
 
     /** Cachés de arranque que pueden nombrar clases o rutas de la versión anterior. */
-    private const CACHES_ARRANQUE = ['packages.php', 'services.php', 'config.php', 'routes-v7.php', 'events.php'];
-
     public function __construct(
         private readonly Revisor $revisor,
         private readonly Aplicador $aplicador,
@@ -356,6 +354,7 @@ class Actualizador
         }
 
         CachesArranque::rehacer();
+        app(EsquemaAlDia::class)->marcarAlDia();
         $actualizacion->update(['estado' => EstadoActualizacion::Completada, 'terminada_en' => now()]);
         RegistroAuditoria::anotar('actualizacion.completada', $actualizacion, ['version' => $actualizacion->version_nueva]);
     }
@@ -409,17 +408,9 @@ class Actualizador
         }
     }
 
-    /**
-     * Sin bootstrap/cache/*.php el siguiente arranque los rehace con el código que haya.
-     */
     private function limpiarCachesDeArranque(): void
     {
-        foreach (self::CACHES_ARRANQUE as $archivo) {
-            @unlink($this->raiz().'/bootstrap/cache/'.$archivo);
-        }
-        // Componentes e iconos de la versión anterior: el código nuevo no debe arrancar con ellos.
-        File::deleteDirectory($this->raiz().'/bootstrap/cache/filament');
-        @unlink($this->raiz().'/bootstrap/cache/blade-icons.php');
+        CachesArranque::quitar($this->raiz());
     }
 
     private function guardarFirma(string $zipRuta, Revision $revision, string $carpeta): void

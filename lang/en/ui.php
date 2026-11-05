@@ -15,6 +15,8 @@ return [
         'no_permitido_texto' => 'If you think you should have access, ask whoever manages the system.',
         'no_encontrada_titulo' => 'We can’t find this page',
         'no_encontrada_texto' => 'The link may be misspelled or the page may no longer exist.',
+        'esquema_titulo' => 'The database could not be updated',
+        'esquema_texto' => 'The files already belong to a new version, but the database could not be brought up to date. Check the error log or upload the previous version again.',
         'caducada_titulo' => 'The page expired',
         'caducada_texto' => 'Too much time passed without activity. Go back, reload and try again.',
         'demasiadas_titulo' => 'Too many requests',

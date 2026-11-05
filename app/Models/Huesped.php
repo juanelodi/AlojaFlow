@@ -14,6 +14,7 @@ use App\Enums\OrigenFila;
 use App\Models\Concerns\ProtegidaPorSincronizacion;
 use App\Support\Huellas;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
@@ -110,6 +111,18 @@ class Huesped extends ModeloBase
     public function reservasComoTitular(): HasMany
     {
         return $this->hasMany(Reserva::class, 'titular_id');
+    }
+
+    /** @return BelongsToMany<Reserva, $this> */
+    public function reservasComoAcompanante(): BelongsToMany
+    {
+        return $this->belongsToMany(Reserva::class, 'reservas_huespedes');
+    }
+
+    /** @return HasMany<SolicitudPrivacidad, $this> */
+    public function solicitudesPrivacidad(): HasMany
+    {
+        return $this->hasMany(SolicitudPrivacidad::class);
     }
 
     public function nombreCompleto(): string

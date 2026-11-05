@@ -98,6 +98,7 @@ return [
         'sin_entidad' => 'Legen Sie die Steuerdaten unter Konfiguration an, um Rechnungen stellen zu können.',
     ],
     'contador' => [
+        'correo' => 'E-Mail', 'codigo_postal' => 'Postleitzahl', 'llegada' => 'Anreise', 'salida' => 'Abreise', 'pagado' => 'Bezahlt', 'pendiente' => 'Offen',
         'serie' => 'Serie',
         'folio' => 'Nummer',
         'fecha' => 'Datum',

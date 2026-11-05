@@ -32,6 +32,11 @@
 # Lo que hay de aquí para abajo solo acelera la carga en un teléfono con mala red (docs/rendimiento-movil.md). Sin alguno de
 # estos módulos, su parte se ignora y todo funciona igual. Aquí solo van directivas que un .htaccess admite con «FileInfo», la
 # misma autorización que necesita RewriteEngine: una que no se admita daría error 500 en todo el sitio.
+# El teléfono no instala la aplicación si el manifiesto viene con otro tipo.
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest
+</IfModule>
+
 <IfModule mod_filter.c>
     # La primera que el navegador acepte: el segundo filtro deja pasar lo que ya viene comprimido.
     <IfModule mod_brotli.c>

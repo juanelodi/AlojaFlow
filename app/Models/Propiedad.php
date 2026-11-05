@@ -40,7 +40,7 @@ class Propiedad extends ModeloBase
     protected $table = 'propiedades';
 
     protected $fillable = [
-        'nombre', 'codigo', 'color', 'modo', 'paquete_pais', 'pais', 'subdivision',
+        'nombre', 'codigo', 'color', 'modo', 'paquete_pais', 'pais', 'subdivision', 'responsable', 'autoridad_quejas',
         'zona_horaria', 'moneda', 'idioma', 'domicilio', 'telefono', 'correo', 'ajustes', 'activa', 'es_demo',
     ];
 

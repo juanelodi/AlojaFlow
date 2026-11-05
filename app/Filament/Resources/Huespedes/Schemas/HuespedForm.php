@@ -12,7 +12,10 @@ namespace App\Filament\Resources\Huespedes\Schemas;
 
 use App\Enums\TipoContacto;
 use App\Filament\Resources\Reservas\ReservaResource;
+use App\Models\ColorTipoCliente;
 use App\Models\Propiedad;
+use App\Paises\CatalogoPaises;
+use App\Paises\CatalogoRegiones;
 use App\Support\Contactos;
 use App\Support\Formato;
 use Filament\Forms\Components\DatePicker;
@@ -23,12 +26,31 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Ficha de un huésped de una propiedad independiente.
  */
 class HuespedForm
 {
+    /**
+     * Lo escrito en la ficha; si no dice, se supone el de la propiedad.
+     */
+    private static function paisDelDomicilio(Get $get): ?string
+    {
+        $escrito = trim((string) $get('domicilio_pais_texto'));
+
+        return $escrito !== '' ? CatalogoPaises::codigoDe($escrito) : Propiedad::query()->whereKey((int) $get('propiedad_id'))->value('pais');
+    }
+
+    /**
+     * @return Collection<int, ColorTipoCliente>
+     */
+    private static function tiposDeCliente(mixed $propiedadId): Collection
+    {
+        return ColorTipoCliente::query()->where('propiedad_id', (int) $propiedadId)->orderBy('campo')->orderBy('valor')->get();
+    }
+
     public static function configure(Schema $schema): Schema
     {
         $normalizar = function (array $data): array {
@@ -93,8 +115,22 @@ class HuespedForm
                     TextInput::make('domicilio_numero')->label(__('ui.huespedes.numero'))->maxLength(30),
                     TextInput::make('domicilio_codigo_postal')->label(__('ui.huespedes.codigo_postal'))->maxLength(30),
                     TextInput::make('domicilio_ciudad')->label(__('ui.huespedes.ciudad'))->maxLength(100),
-                    TextInput::make('domicilio_region')->label(__('ui.huespedes.region'))->maxLength(100),
-                    TextInput::make('domicilio_pais_texto')->label(__('ui.huespedes.pais'))->maxLength(100),
+                    TextInput::make('domicilio_region')->label(__('ui.huespedes.region'))->maxLength(100)
+                        ->datalist(fn (Get $get): array => array_values(CatalogoRegiones::de(self::paisDelDomicilio($get)))),
+                    TextInput::make('domicilio_pais_texto')->label(__('ui.huespedes.pais'))->maxLength(100)->live(onBlur: true),
+                ]),
+            // Lo que colorea el calendario (D-088); en una subordinada viene de la principal.
+            Section::make(__('herramientas.tipo_cliente.titulo'))->description(__('herramientas.tipo_cliente.ayuda'))->columnSpanFull()
+                ->collapsible()
+                ->schema([
+                    Repeater::make('campos')->label(__('herramientas.tipo_cliente.titulo'))->hiddenLabel()->relationship()
+                        ->defaultItems(0)->columns(['default' => 1, 'md' => 2])->addActionLabel(__('herramientas.tipo_cliente.agregar'))
+                        ->schema([
+                            TextInput::make('campo')->label(__('plano.colores.campo'))->required()->maxLength(100)->live(onBlur: true)
+                                ->datalist(fn (Get $get): array => self::tiposDeCliente($get('../../propiedad_id'))->pluck('campo')->unique()->values()->all()),
+                            TextInput::make('valor')->label(__('plano.colores.valor'))->required()->maxLength(255)
+                                ->datalist(fn (Get $get): array => self::tiposDeCliente($get('../../propiedad_id'))->where('campo', $get('campo'))->pluck('valor')->unique()->values()->all()),
+                        ]),
                 ]),
             Section::make(__('ui.huespedes.notas'))->columnSpanFull()
                 ->collapsible()

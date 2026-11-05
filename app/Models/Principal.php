@@ -31,6 +31,9 @@ use Illuminate\Support\Carbon;
  * @property MetodoPeticion $metodo
  * @property bool $compresion
  * @property int $frecuencia_minutos
+ * @property int|null $dias_semana
+ * @property string|null $franja_desde
+ * @property string|null $franja_hasta
  * @property bool $permitir_red_local
  * @property int|null $anio_consulta
  * @property EstadoPrincipal $estado
@@ -55,7 +58,7 @@ class Principal extends ModeloBase
 
     protected $fillable = [
         'tipo', 'url_base', 'usuario', 'contrasena', 'metodo', 'compresion', 'frecuencia_minutos',
-        'permitir_red_local',
+        'permitir_red_local', 'dias_semana', 'franja_desde', 'franja_hasta',
     ];
 
     // Las credenciales nunca salen en arreglos, JSON ni registros (regla 13).
@@ -70,6 +73,7 @@ class Principal extends ModeloBase
             'metodo' => MetodoPeticion::class,
             'compresion' => 'boolean',
             'permitir_red_local' => 'boolean',
+            'dias_semana' => 'integer',
             'estado' => EstadoPrincipal::class,
             'pausada_hasta' => 'datetime',
             'proxima_en' => 'datetime',
@@ -133,7 +137,33 @@ class Principal extends ModeloBase
 
     public function toca(Carbon $ahora): bool
     {
-        return ! $this->estaPausada() && ($this->proxima_en === null || $this->proxima_en->lessThanOrEqualTo($ahora));
+        return ! $this->estaPausada() && ($this->proxima_en === null || $this->proxima_en->lessThanOrEqualTo($ahora)) && $this->dentroDelHorario($ahora);
+    }
+
+    /**
+     * Días y franja en la hora de la propiedad (D-093). Una franja que cruza la medianoche es del día en que empieza: la de 22:00 a 06:00 del lunes
+     * sigue el martes hasta las 6. Sincronizar a mano no pasa por aquí.
+     */
+    public function dentroDelHorario(Carbon $ahora): bool
+    {
+        $local = $ahora->copy()->setTimezone($this->propiedad->zona_horaria);
+        $dia = $local;
+        if ($this->franja_desde !== null && $this->franja_hasta !== null) {
+            $hora = $local->format('H:i');
+            $desde = substr($this->franja_desde, 0, 5);
+            $hasta = substr($this->franja_hasta, 0, 5);
+            if ($desde < $hasta && ($hora < $desde || $hora >= $hasta)) {
+                return false;
+            }
+            if ($desde > $hasta) {
+                if ($hora < $desde && $hora >= $hasta) {
+                    return false;
+                }
+                $dia = $hora < $hasta ? $local->copy()->subDay() : $local;
+            }
+        }
+
+        return $this->dias_semana === null || ($this->dias_semana & (1 << ($dia->dayOfWeekIso - 1))) !== 0;
     }
 
     /**

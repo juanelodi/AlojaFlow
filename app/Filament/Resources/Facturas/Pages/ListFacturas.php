@@ -16,6 +16,7 @@ use App\Support\Csv;
 use App\Support\Dinero;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Icons\Heroicon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -34,27 +35,35 @@ class ListFacturas extends ListRecords
                 ->schema([
                     DatePicker::make('desde')->label(__('dinero.facturas.desde'))->required()->default(now()->startOfMonth()),
                     DatePicker::make('hasta')->label(__('dinero.facturas.hasta'))->required()->default(now()->endOfMonth())->afterOrEqual('desde'),
+                    Select::make('formato')->label(__('herramientas.facturas.formato'))->required()->native(false)->default('excel')
+                        ->options(['excel' => __('herramientas.facturas.excel'), 'csv' => __('herramientas.facturas.csv')]),
                 ])
-                ->action(fn (array $data): StreamedResponse => $this->csv((string) $data['desde'], (string) $data['hasta'])),
+                ->action(fn (array $data): StreamedResponse => $this->csv((string) $data['desde'], (string) $data['hasta'], (string) $data['formato'])),
         ];
     }
 
     /**
-     * Para abrir en Excel: con marca de orden de bytes para que respete los acentos.
+     * Con marca de orden de bytes para que Excel respete los acentos. El Excel en español separa con punto y coma y espera coma decimal. Pagado y
+     * pendiente son los de las reservas de la factura, no los del documento: pueden no coincidir.
      */
-    private function csv(string $desde, string $hasta): StreamedResponse
+    private function csv(string $desde, string $hasta, string $formato = 'excel'): StreamedResponse
     {
+        $separador = $formato === 'excel' ? ';' : ',';
+        $importe = fn (int $centavos, string $moneda): string => $formato === 'excel'
+            ? str_replace('.', ',', Dinero::aDecimal($centavos, $moneda))
+            : Dinero::aDecimal($centavos, $moneda);
+
         $facturas = Factura::query()->with('reservas')->whereIn('propiedad_id', FacturaResource::propiedadesGestionables())
             ->whereDate('emitida_en', '>=', $desde)->whereDate('emitida_en', '<=', $hasta)->orderBy('emitida_en')->get();
 
-        return response()->streamDownload(function () use ($facturas): void {
+        return response()->streamDownload(function () use ($facturas, $separador, $importe): void {
             $salida = fopen('php://output', 'w');
             if ($salida === false) {
                 return;
             }
             fwrite($salida, "\xEF\xBB\xBF");
-            $campos = ['serie', 'folio', 'fecha', 'identificador', 'nombre', 'subtotal', 'impuestos', 'total', 'moneda', 'estado', 'uuid', 'reservas'];
-            fputcsv($salida, array_map(fn (string $c): string => __('dinero.contador.'.$c), $campos));
+            $campos = ['serie', 'folio', 'fecha', 'identificador', 'nombre', 'correo', 'codigo_postal', 'llegada', 'salida', 'subtotal', 'impuestos', 'total', 'pagado', 'pendiente', 'moneda', 'estado', 'uuid', 'reservas'];
+            fputcsv($salida, array_map(fn (string $c): string => __('dinero.contador.'.$c), $campos), $separador);
             foreach ($facturas as $factura) {
                 /** @var Factura $factura */
                 fputcsv($salida, Csv::fila([
@@ -63,14 +72,20 @@ class ListFacturas extends ListRecords
                     $factura->emitida_en->format('Y-m-d H:i:s'),
                     $factura->receptor['identificador_fiscal'] ?? '',
                     $factura->receptor['nombre'] ?? '',
-                    Dinero::aDecimal($factura->subtotal, $factura->moneda),
-                    Dinero::aDecimal($factura->impuestos, $factura->moneda),
-                    Dinero::aDecimal($factura->total, $factura->moneda),
+                    $factura->receptor['correo'] ?? '',
+                    $factura->receptor['codigo_postal'] ?? '',
+                    $factura->reservas->min('llegada')?->format('Y-m-d'),
+                    $factura->reservas->max('salida')?->format('Y-m-d'),
+                    $importe($factura->subtotal, $factura->moneda),
+                    $importe($factura->impuestos, $factura->moneda),
+                    $importe($factura->total, $factura->moneda),
+                    $importe((int) $factura->reservas->sum('pagado'), $factura->moneda),
+                    $importe((int) $factura->reservas->sum('pendiente'), $factura->moneda),
                     $factura->moneda,
                     $factura->estado->etiqueta(),
                     $factura->uuid_fiscal,
                     $factura->reservas->pluck('numero')->implode(' '),
-                ]));
+                ]), $separador);
             }
             fclose($salida);
         }, 'facturas-'.$desde.'-'.$hasta.'.csv', ['Content-Type' => 'text/csv; charset=utf-8']);

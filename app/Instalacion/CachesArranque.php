@@ -14,6 +14,7 @@ use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -25,6 +26,8 @@ use Throwable;
 final class CachesArranque
 {
     private const COMANDOS = ['config:cache', 'route:cache', 'event:cache', 'filament:optimize'];
+
+    private const ARCHIVOS = ['packages.php', 'services.php', 'config.php', 'routes-v7.php', 'events.php'];
 
     public static function rehacer(): void
     {
@@ -41,6 +44,19 @@ final class CachesArranque
                 }
             }
         });
+    }
+
+    /**
+     * Sin bootstrap/cache/*.php el siguiente arranque los rehace con el código que haya.
+     */
+    public static function quitar(string $raiz): void
+    {
+        foreach (self::ARCHIVOS as $archivo) {
+            @unlink($raiz.'/bootstrap/cache/'.$archivo);
+        }
+        // Componentes e iconos de la versión anterior: el código nuevo no debe arrancar con ellos.
+        File::deleteDirectory($raiz.'/bootstrap/cache/filament');
+        @unlink($raiz.'/bootstrap/cache/blade-icons.php');
     }
 
     /**
