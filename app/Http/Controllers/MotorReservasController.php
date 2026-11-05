@@ -363,7 +363,7 @@ class MotorReservasController extends Controller
             'tarifa' => $tarifa,
             'filtro' => $filtro,
             'lugar' => $lugar,
-            'cupos' => $this->motor->cupos($cargos = $this->motor->cargosOpcionales($propiedad), $llegada, $salida),
+            'cupos' => $this->motor->cupos($cargos = $this->motor->cargosOpcionales($propiedad, $lugar ?? $oferta->unidad, $tarifa->id, $llegada, $salida), $llegada, $salida),
             'unidadLargo' => AtributosLugar::unidadLargo($propiedad),
             'llegada' => $llegada,
             'salida' => $salida,

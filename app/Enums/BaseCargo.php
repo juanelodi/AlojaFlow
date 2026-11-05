@@ -22,4 +22,12 @@ enum BaseCargo: string
     case PorPersona = 'por_persona';
     case PorPersonaNoche = 'por_persona_noche';
     case PorcentajeAlojamiento = 'porcentaje_alojamiento';
+
+    /**
+     * Si se cobra por cada noche: solo entonces importa cuáles cuentan.
+     */
+    public function esPorNoche(): bool
+    {
+        return in_array($this, [self::PorNoche, self::PorPersonaNoche], true);
+    }
 }

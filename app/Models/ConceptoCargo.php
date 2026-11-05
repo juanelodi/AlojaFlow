@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\BaseCargo;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -23,6 +24,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $importe
  * @property string|null $porcentaje
  * @property int|null $cupo_diario
+ * @property list<int>|null $dias_semana del lunes (1) al domingo (7)
+ * @property int|null $cada_noches
+ * @property CarbonImmutable|null $desde
+ * @property CarbonImmutable|null $hasta
+ * @property int|null $noches_minimas
+ * @property list<int>|null $solo_tarifas
+ * @property list<int>|null $solo_unidades
  * @property bool $para_administrador
  * @property bool $obligatorio
  * @property bool $visible_motor
@@ -38,6 +46,13 @@ class ConceptoCargo extends ModeloBase
     protected function casts(): array
     {
         return [
+            'dias_semana' => 'array',
+            'cada_noches' => 'integer',
+            'desde' => 'immutable_date',
+            'hasta' => 'immutable_date',
+            'noches_minimas' => 'integer',
+            'solo_tarifas' => 'array',
+            'solo_unidades' => 'array',
             'base' => BaseCargo::class,
             'importe' => 'integer',
             'porcentaje' => 'decimal:4',

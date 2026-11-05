@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Motor;
 
 use App\Models\Tarifa;
+use App\Models\Unidad;
 use App\Reservas\Presupuesto;
 
 /**
@@ -23,6 +24,7 @@ final readonly class Oferta
      * @param  string|null  $politica  las condiciones de esta tarifa, si tiene las suyas
      * @param  string|null  $politicaNombre  cómo se llaman
      * @param  float  $anticipo  el porcentaje que se pide al reservar
+     * @param  Unidad|null  $unidad  la que le tocaría
      */
     public function __construct(
         public Tarifa $tarifa,
@@ -35,6 +37,7 @@ final readonly class Oferta
         public ?string $politica = null,
         public ?string $politicaNombre = null,
         public float $anticipo = 0.0,
+        public ?Unidad $unidad = null,
     ) {
     }
 }

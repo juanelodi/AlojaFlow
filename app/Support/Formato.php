@@ -67,6 +67,18 @@ final class Formato
         return $dias;
     }
 
+    /**
+     * «lun, mar, sáb», en el idioma de quien mira.
+     *
+     * @param  list<int>  $dias  del lunes (1) al domingo (7)
+     */
+    public static function diasCortos(array $dias): string
+    {
+        sort($dias);
+
+        return implode(', ', array_map(fn (int $dia): string => (string) CarbonImmutable::create(2024, 1, $dia)?->locale(app()->getLocale())->isoFormat('ddd'), $dias));
+    }
+
     public static function fechaCorta(?CarbonInterface $fecha): string
     {
         return self::fecha($fecha, 'ddd D MMM');

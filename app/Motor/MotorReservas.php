@@ -34,6 +34,7 @@ use App\Modulos\Modulos;
 use App\Reservas\Cotizador;
 use App\Reservas\Cupones;
 use App\Reservas\GestorReservas;
+use App\Reservas\ReglasCargo;
 use App\Reservas\ReservaRechazada;
 use App\Reservas\Restricciones;
 use App\Servicios\Disponibilidad;
@@ -116,6 +117,7 @@ final class MotorReservas
                 $politica === null ? null : app(GestorPoliticas::class)->textoDe($politica),
                 $politica?->nombre,
                 $this->anticipo($tarifa, $ajustes),
+                $primera,
             );
         }
         // La más barata primero. Lo de cada noche ya está calculado: el precio base no dice nada de una que sale de otra.
@@ -190,19 +192,20 @@ final class MotorReservas
             return $oferta;
         }
 
-        return new Oferta($oferta->tarifa, $oferta->libres, $oferta->capacidad, Cotizador::presupuesto($unidad, $llegada, $salida, $personas, [$cargo => 1.0], tarifaId: $oferta->tarifa->id), $oferta->estanciaMinima, $oferta->cumpleEstancia, AtributosLugar::etiquetas($unidad), $oferta->politica, $oferta->politicaNombre, $oferta->anticipo);
+        return new Oferta($oferta->tarifa, $oferta->libres, $oferta->capacidad, Cotizador::presupuesto($unidad, $llegada, $salida, $personas, [$cargo => 1.0], tarifaId: $oferta->tarifa->id), $oferta->estanciaMinima, $oferta->cumpleEstancia, AtributosLugar::etiquetas($unidad), $oferta->politica, $oferta->politicaNombre, $oferta->anticipo, $unidad);
     }
 
     /**
-     * Cargos opcionales que el huésped puede añadir.
+     * Cargos opcionales que el huésped puede añadir a esa estancia: los que cumplen sus reglas (D-121).
      *
      * @return \Illuminate\Database\Eloquent\Collection<int, ConceptoCargo>
      */
-    public function cargosOpcionales(Propiedad $propiedad): \Illuminate\Database\Eloquent\Collection
+    public function cargosOpcionales(Propiedad $propiedad, Unidad $unidad, int $tarifaId, CarbonImmutable $llegada, CarbonImmutable $salida): \Illuminate\Database\Eloquent\Collection
     {
         return ConceptoCargo::query()->where('propiedad_id', $propiedad->id)->where('activo', true)
             ->where('obligatorio', false)->where('visible_motor', true)->when((new AjustesMotor($propiedad))->cargoLugarId(), fn ($q, int $cargo) => $q->whereKeyNot($cargo))
-            ->orderBy('orden')->orderBy('nombre')->get();
+            ->orderBy('orden')->orderBy('nombre')->get()
+            ->filter(fn (ConceptoCargo $concepto): bool => ReglasCargo::aplica($concepto, $unidad, $tarifaId, $llegada, $salida))->values();
     }
 
     /**
@@ -269,7 +272,9 @@ final class MotorReservas
             }
         }
 
-        $permitidos = $this->cargosOpcionales($propiedad)->pluck('id')->all();
+        /** @var Unidad $candidata */
+        $candidata = $candidatas->first();
+        $permitidos = $this->cargosOpcionales($propiedad, $candidata, $tarifa->id, $llegada, $salida)->pluck('id')->all();
         $elegidos = array_fill_keys(array_values(array_intersect($datos['cargos'], $permitidos)), 1.0);
         foreach ((array) ($datos['cantidades'] ?? []) as $concepto => $cantidad) {
             if ($cantidad > 0 && in_array((int) $concepto, $permitidos, true)) {

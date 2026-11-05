@@ -160,7 +160,13 @@ final class Cotizador
         $cargos = [];
         $conceptos = ConceptoCargo::query()->where('propiedad_id', $unidad->propiedad_id)->where('activo', true)->orderBy('orden')->orderBy('nombre')->get();
         foreach ($conceptos as $concepto) {
-            if (! $concepto->obligatorio && ! isset($cargosElegidos[$concepto->id])) {
+            $elegido = isset($cargosElegidos[$concepto->id]);
+            if (! $elegido && ! $concepto->obligatorio) {
+                continue;
+            }
+            $aplica = ReglasCargo::aplica($concepto, $unidad, $cotizacion?->tarifaId, $llegada, $salida);
+            // Lo que se suma solo pasa por sus reglas; lo que alguien añadió a mano se cobra igual, por toda la estancia (D-121).
+            if (! $elegido && ! $aplica) {
                 continue;
             }
             $cantidad = (float) ($cargosElegidos[$concepto->id] ?? 1);
@@ -168,7 +174,7 @@ final class Cotizador
                 'concepto_cargo_id' => $concepto->id,
                 'nombre' => $concepto->nombre,
                 'cantidad' => $cantidad,
-                'importe' => (int) round($cantidad * self::importeSegunBase($concepto->base, $concepto->importe, $concepto->porcentaje, $alojamiento - $descuento, $noches, $personas)),
+                'importe' => (int) round($cantidad * self::importeSegunBase($concepto->base, $concepto->importe, $concepto->porcentaje, $alojamiento - $descuento, $aplica ? ReglasCargo::nochesQueCuentan($concepto, $llegada, $salida) : $noches, $personas)),
             ];
         }
 

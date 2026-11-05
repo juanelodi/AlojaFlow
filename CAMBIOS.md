@@ -2,6 +2,28 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.26 — 2026-11-05
+
+**Cargos con días y condiciones.** Un cargo ya no tiene que cobrarse siempre igual. En Dinero → Cargos adicionales, cada uno tiene una parte nueva, «Cuándo se cobra», y si la dejas vacía todo sigue como antes.
+
+**Días**
+- **Solo ciertas noches de la semana**, en los cargos por noche: un desayuno que no se sirve los domingos.
+- **Cada cuántas noches:** un cambio de sábanas cada 3 noches se cobra 2 veces en una estancia de 7.
+
+**Condiciones**
+- **Solo en ciertas fechas.** Un cargo por noche cuenta las noches que caen dentro; los demás se cobran si alguna noche cae dentro.
+- **Solo si la estancia dura al menos tantas noches.**
+- **Solo con ciertas tarifas o en ciertas unidades:** un desayuno obligatorio que solo va con la tarifa «con desayuno».
+
+**Cómo se aplican**
+- Un cargo obligatorio solo se suma cuando cumple sus reglas.
+- En el motor, un cargo opcional solo se ofrece si cumple sus reglas, y se dice qué noches cuenta.
+- En el panel, quien atiende puede añadirlo a mano de todos modos: entonces se cobra por toda la estancia.
+
+**Demostración:** un cargo de limpieza a media estancia, cada 3 noches.
+
+**Sin verificar:** no se ha probado con un alojamiento real ni en un teléfono de verdad.
+
 ## 1.0.25 — 2026-11-05
 
 **Varias tarifas por unidad:** una misma habitación se puede vender de varias maneras, como «con desayuno» o «no reembolsable». Es lo primero de lo que elegiste del sistema anterior.

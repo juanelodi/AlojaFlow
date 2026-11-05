@@ -2,6 +2,7 @@
 @use('App\Support\Formato')
 @use('App\Enums\BaseCargo')
 @use('App\Enums\TipoEquipo')
+@use('App\Reservas\ReglasCargo')
 @extends('publico.layout')
 @section('titulo', __('motor.tus_datos'))
 @section('contenido')
@@ -91,7 +92,7 @@
             @foreach ($cargos as $cargo)
                 @if (array_key_exists($cargo->id, $cupos))
                     <div class="campo">
-                        <label for="cantidad-{{ $cargo->id }}">{{ $cargo->nombre }} <span class="gris" style="font-weight:400">{{ Formato::dinero($cargo->importe, $propiedad->moneda) }} · {{ $cargo->base->etiqueta() }}</span></label>
+                        <label for="cantidad-{{ $cargo->id }}">{{ $cargo->nombre }} <span class="gris" style="font-weight:400">{{ Formato::dinero($cargo->importe, $propiedad->moneda) }} · {{ ReglasCargo::etiqueta($cargo) }}</span></label>
                         @if ($cupos[$cargo->id] > 0)
                             <select id="cantidad-{{ $cargo->id }}" name="cantidades[{{ $cargo->id }}]">
                                 @for ($n = 0; $n <= min($cupos[$cargo->id], 10); $n++)
@@ -109,9 +110,9 @@
                     <span>{{ $cargo->nombre }}
                         <span class="gris">
                             @if ($cargo->base === BaseCargo::PorcentajeAlojamiento)
-                                {{ (float) $cargo->porcentaje }} %
+                                {{ Formato::tasa($cargo->porcentaje) }}
                             @else
-                                {{ Formato::dinero($cargo->importe, $propiedad->moneda) }} · {{ $cargo->base->etiqueta() }}
+                                {{ Formato::dinero($cargo->importe, $propiedad->moneda) }} · {{ ReglasCargo::etiqueta($cargo) }}
                             @endif
                         </span>
                     </span>

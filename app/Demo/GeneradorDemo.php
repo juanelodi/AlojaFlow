@@ -239,6 +239,7 @@ final class GeneradorDemo
         ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Desayuno', 'base' => BaseCargo::PorPersonaNoche, 'importe' => 15000, 'orden' => 2]);
         ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Traslado al aeropuerto', 'base' => BaseCargo::PorEstancia, 'importe' => 45000, 'orden' => 3]);
         ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.kayak'), 'base' => BaseCargo::PorNoche, 'importe' => 25000, 'cupo_diario' => 3, 'orden' => 4]);
+        ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.limpieza_media'), 'base' => BaseCargo::PorNoche, 'importe' => 20000, 'cada_noches' => 3, 'noches_minimas' => 3, 'orden' => 5]);
         (new AjustesCamping($propiedad))->guardarTarifas(['luz' => '3.50', 'agua' => '25', 'gas' => '14']);
         foreach (['Directo' => null, 'Booking' => 15, 'Airbnb' => 3, 'Teléfono' => null] as $nombre => $comision) {
             Canal::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => $nombre, 'comision_porcentaje' => $comision]);

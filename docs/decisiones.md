@@ -696,6 +696,9 @@ Lleva porcentaje e importe por noche: la «no reembolsable» es un porcentaje, y
 ### D-120 · 2026-11-05 · Condiciones por tarifa y no reembolsable
 La política que vale es la del canal, luego la de la tarifa (o la de su base) y luego la general: lo que vendió un portal se rige por lo que dijo el portal. **La política propia de una tarifa también decide el anticipo del motor,** su depósito, aunque sea cero: si no, una «no reembolsable» se reservaría con el anticipo general y una «paga al llegar» no podría existir. `no_reembolsable` es una casilla y no 365 días de plazo, porque con un plazo una reserva lejana seguiría siendo gratis de cancelar.
 
+### D-121 · 2026-11-05 · Cuándo se cobra un cargo
+Noches de la semana, cada cuántas noches, fechas, noches mínimas, tarifas y unidades. Son columnas en el cargo y no un lenguaje de reglas: HotelDruid tenía muchas más combinaciones, como días alternos, incompatibilidades o «si faltan menos de tantos días», pero la mayoría se resuelven con estas. **Las reglas deciden lo que se suma solo y lo que se ofrece en el motor; en el panel, lo que alguien añade a mano se cobra igual, por toda la estancia:** un caso especial lo decide quien atiende. La noche cuenta por el día en que duermen, no por el de la mañana siguiente. Las noches se cuentan primero por día y fechas, y luego se divide entre «cada cuántas»: 7 noches cada 3 son 2 veces, no 3, porque el cargo se cobra cuando ya pasaron esas noches. Un porcentaje con fechas cae sobre todo el alojamiento si alguna noche entra: repartirlo por noche sería otra regla que nadie pidió.
+
 ---
 
 ## Pendientes
