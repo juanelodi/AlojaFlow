@@ -16,10 +16,9 @@ use App\Enums\TipoEventoReserva;
 use App\Enums\TipoReserva;
 use App\Models\EjecucionSincronizacion;
 use App\Models\Principal;
-use App\Reservas\GestorReservas;
 use App\Sincronizacion\ContextoSincronizacion;
+use App\Sincronizacion\NochesProyectadas;
 use App\Support\Contactos;
-use App\Support\Dinero;
 use App\Support\Huellas;
 use Carbon\CarbonImmutable;
 use Generator;
@@ -416,7 +415,7 @@ class Proyector
         $noches = [];
         foreach ($pendientes as $clave => $pendiente) {
             $id = (int) $ids[(string) $clave];
-            $noches = array_merge($noches, $this->noches($id, $pendiente['fila']));
+            $noches = array_merge($noches, NochesProyectadas::de($id, $pendiente['fila']));
             $this->guardarAcompanantes($id, $pendiente['acompanantes'], $huespedes);
             $this->evento($id, TipoEventoReserva::Creada, ['despues' => $this->resumen($pendiente['fila'])]);
         }
@@ -438,7 +437,7 @@ class Proyector
             'ejecucion_id' => $this->ejecucion->id, 'actualizado_en' => $this->ahora,
         ]);
         DB::table('reservas_noches')->where('reserva_id', $existente->id)->delete();
-        $noches = $this->noches((int) $existente->id, $datos);
+        $noches = NochesProyectadas::de((int) $existente->id, $datos);
         foreach (array_chunk($noches, 1000) as $lote) {
             DB::table('reservas_noches')->insert($lote);
         }
@@ -468,38 +467,6 @@ class Proyector
         DB::table('reservas_noches')->where('reserva_id', $existente->id)->delete();
         $this->evento((int) $existente->id, TipoEventoReserva::Eliminada, ['reutilizada' => $reutilizada]);
         $this->resultado->contar('reservas_eliminadas');
-    }
-
-    /**
-     * Noches que ocupa una reserva vigente, con el total repartido (D-019; exclusiva = NULL en la fase 1).
-     *
-     * @param  array<string, mixed>  $datos
-     * @return list<array<string, mixed>>
-     */
-    private function noches(int $reservaId, array $datos): array
-    {
-        if ($datos['estado'] === EstadoReserva::Cancelada->value) {
-            return [];
-        }
-
-        $inicio = CarbonImmutable::parse((string) $datos['llegada']);
-        $cuantas = (int) $inicio->diffInDays(CarbonImmutable::parse((string) $datos['salida']));
-        // Una fecha absurda en la principal no debe llenar la memoria en cada sincronización.
-        $cuantas = min($cuantas, GestorReservas::NOCHES_MAXIMAS);
-        $importes = Dinero::repartir((int) $datos['total'], $cuantas);
-        $noches = [];
-        for ($i = 0; $i < $cuantas; $i++) {
-            $noches[] = [
-                'reserva_id' => $reservaId,
-                'propiedad_id' => $datos['propiedad_id'],
-                'unidad_id' => $datos['unidad_id'],
-                'fecha' => $inicio->addDays($i)->format('Y-m-d'),
-                'importe' => $importes[$i],
-                'exclusiva' => null,
-            ];
-        }
-
-        return $noches;
     }
 
     /**

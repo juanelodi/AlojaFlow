@@ -18,7 +18,7 @@ use App\Models\RegistroAuditoria;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Sincronizacion\HotelDruid\ErrorSincronizacion;
-use App\Sincronizacion\HotelDruid\Sincronizador;
+use App\Sincronizacion\Subordinadores;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
@@ -41,7 +41,7 @@ final class AccionesSincronizacion
                     return;
                 }
                 try {
-                    app(Sincronizador::class)->cliente($principal)->probarConexion();
+                    Subordinadores::de($principal)->probar($principal);
                     Notification::make()->success()->title(__('ui.propiedades.probar_ok'))->send();
                 } catch (ErrorSincronizacion $e) {
                     Notification::make()->danger()->title($e->codigo->value.' · '.$e->codigo->etiqueta())->body(e($e->getMessage()))->persistent()->send();
@@ -63,7 +63,7 @@ final class AccionesSincronizacion
                 if (function_exists('set_time_limit')) {
                     @set_time_limit(600);
                 }
-                $ejecucion = app(Sincronizador::class)->sincronizar($principal, OrigenEjecucion::Manual);
+                $ejecucion = Subordinadores::de($principal)->sincronizar($principal, OrigenEjecucion::Manual);
                 RegistroAuditoria::anotar('sincronizacion.manual', $principal, ['ejecucion' => $ejecucion->id], $record->id);
 
                 if ($ejecucion->estado === EstadoEjecucion::Correcta) {

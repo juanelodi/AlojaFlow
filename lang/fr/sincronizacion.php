@@ -9,7 +9,7 @@
 declare(strict_types=1);
 
 return [
-    'fila_protegida' => 'Cette donnée vient de l’installation principale (HotelDruid) et ne peut être modifiée que là-bas.',
+    'fila_protegida' => 'Cette donnée vient de l’installation principale et ne peut être modifiée que là-bas.',
     'redireccion' => 'L’installation principale a répondu par une redirection vers :destino. Vérifiez l’adresse.',
     'version_no_admitida' => 'L’installation principale a le schéma :version, qu’AlojaFlow ne prend pas en charge (il prend en charge 3.08 et 3.081).',
     'copia_cortada' => 'La copie est arrivée tronquée : la fin manque.',
@@ -37,6 +37,35 @@ return [
         'SUB-014' => 'Une synchronisation de cette installation principale est déjà en cours.',
         'SUB-015' => 'L’installation principale a mis trop de temps à répondre.',
         'SUB-016' => 'L’adresse de l’installation principale n’est pas autorisée.',
+        'SUB-017' => 'L’autre installation n’a pas répondu comme prévu. Vérifiez qu’elle a AlojaFlow 1.0.12 ou plus récent et le module de subordination activé.',
+        'SUB-018' => 'L’autre installation a refusé le code de connexion. Il a peut-être été révoqué : demandez-en un nouveau.',
         'SUB-099' => 'L’installation principale a donné une réponse qu’AlojaFlow ne reconnaît pas.',
+    ],
+
+    'compartir' => [
+        'titulo' => 'Partager avec une autre installation',
+        'ayuda' => 'Une autre installation d’AlojaFlow peut copier cet établissement, en lecture seule : les réservations se modifient toujours ici. Les photos et les fichiers ne voyagent jamais.',
+        'sin_conexiones' => 'Vous ne le partagez encore avec personne',
+        'nombre' => 'Nom',
+        'nombre_ayuda' => 'Pour la reconnaître, par exemple « Siège ».',
+        'documentos' => 'Inclure les pièces d’identité',
+        'documentos_ayuda' => 'Désactivé, ni le numéro ni les autres données de la pièce ne voyagent. Activez-le seulement si l’autre installation en a besoin.',
+        'ultimo_uso' => 'Dernière utilisation',
+        'estado' => 'État',
+        'activa' => 'Active',
+        'revocada' => 'Révoquée',
+        'crear' => 'Partager',
+        'revocar' => 'Révoquer',
+        'revocar_texto' => 'L’autre installation ne pourra plus copier. Ce qu’elle a déjà copié reste là-bas.',
+        'codigo_titulo' => 'Code de connexion',
+        'codigo_texto' => 'Copiez-le et collez-le dans l’autre installation en créant l’établissement subordonné. Par sécurité, il n’est plus affiché.',
+        'codigo_listo' => 'Je l’ai copié',
+    ],
+
+    'formulario' => [
+        'tipo' => 'Depuis quel système copier',
+        'codigo' => 'Code de connexion',
+        'codigo_ayuda' => 'Il se génère dans l’autre installation : en modifiant l’établissement, dans « Partager avec une autre installation ». S’il est déjà connecté, laissez vide pour conserver l’actuel.',
+        'codigo_invalido' => 'Ce n’est pas un code de connexion AlojaFlow. Copiez-le en entier.',
     ],
 ];

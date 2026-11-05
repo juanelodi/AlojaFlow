@@ -14,6 +14,7 @@ use App\Demo\ModoDemo;
 use App\Filament\Resources\Propiedades\Pages\CreatePropiedad;
 use App\Filament\Resources\Propiedades\Pages\EditPropiedad;
 use App\Filament\Resources\Propiedades\Pages\ListPropiedades;
+use App\Filament\Resources\Propiedades\RelationManagers\ConexionesRelationManager;
 use App\Filament\Resources\Propiedades\RelationManagers\EjecucionesRelationManager;
 use App\Filament\Resources\Propiedades\Schemas\PropiedadForm;
 use App\Filament\Resources\Propiedades\Tables\PropiedadesTable;
@@ -100,7 +101,7 @@ class PropiedadResource extends Resource
 
     public static function getRelations(): array
     {
-        return [EjecucionesRelationManager::class];
+        return [EjecucionesRelationManager::class, ConexionesRelationManager::class];
     }
 
     public static function getPages(): array

@@ -9,7 +9,7 @@
 declare(strict_types=1);
 
 return [
-    'ModoPropiedad' => ['nativa' => 'Independiente', 'subordinada' => 'Subordinada a HotelDruid'],
+    'ModoPropiedad' => ['nativa' => 'Independiente', 'subordinada' => 'Subordinada'],
     'MetodoPago' => ['efectivo' => 'Efectivo', 'tarjeta' => 'Tarjeta', 'transferencia' => 'Transferencia', 'otro' => 'Otro'],
     'ModoTarifa' => ['por_noche' => 'Por noche (con persona extra)', 'por_persona' => 'Por persona'],
     'BaseCargo' => ['por_estancia' => 'Por estancia', 'por_noche' => 'Por noche', 'por_persona' => 'Por persona', 'por_persona_noche' => 'Por persona y noche', 'porcentaje_alojamiento' => 'Porcentaje del alojamiento'],
@@ -25,7 +25,8 @@ return [
     'TipoEventoReserva' => ['creada' => 'Nueva', 'modificada' => 'Modificada', 'cancelada' => 'Cancelada', 'eliminada' => 'Eliminada en la principal', 'reactivada' => 'Reactivada'],
     'NivelAviso' => ['informacion' => 'Información', 'advertencia' => 'Advertencia', 'error' => 'Error'],
     'TipoContacto' => ['telefono' => 'Teléfono', 'correo' => 'Correo', 'fax' => 'Fax'],
-    'OrigenFila' => ['hoteldruid' => 'HotelDruid', 'alojaflow' => 'AlojaFlow'],
+    'TipoPrincipal' => ['hoteldruid' => 'HotelDruid o AlojaFlow 1.2.x', 'alojaflow' => 'Otra instalación de AlojaFlow'],
+    'OrigenFila' => ['hoteldruid' => 'HotelDruid', 'alojaflow' => 'AlojaFlow', 'otra_instalacion' => 'Otra instalación'],
     'EstadoActualizacion' => ['preparada' => 'Preparada', 'aplicando' => 'Aplicando', 'archivos_aplicados' => 'Sin terminar', 'completada' => 'Completada', 'fallida' => 'Fallida', 'revertida' => 'Revertida'],
 
     'EstadoLimpieza' => [

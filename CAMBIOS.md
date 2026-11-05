@@ -2,6 +2,23 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.12 — 2026-11-05
+
+**Una instalación de AlojaFlow ya puede subordinar a otra.** La subordinada tiene una copia de solo lectura de una propiedad, y le suma lo suyo: limpieza, llegada en línea, mensajes.
+Nunca escribe en la principal, y las reservas se cambian allá.
+
+**Cómo se usa**
+- En la principal: prende el módulo de Subordinación, edita la propiedad y usa «Compartir con otra instalación». Sale un código, que solo se ve una vez.
+- En la subordinada: crea una propiedad subordinada, elige «Otra instalación de AlojaFlow» y pega el código.
+- Se puede revocar cada conexión sin tocar las demás. Se comparte una propiedad a la vez, y solo las independientes.
+- El documento de identidad no viaja salvo que lo actives en esa conexión, y las fotos y los archivos nunca.
+- Si nada cambió, no baja nada: gasta muy poco del hosting. Las dos instalaciones deben tener esta versión o una posterior.
+
+**Lo que todavía no viaja:** los pagos y la caja uno por uno; llega en la 1.0.15. El total pagado de cada reserva sí.
+
+
+**Lo que se comprobó:** con dos instalaciones reales en este equipo, con el Apache de Wamp y en red local. **Sin verificar:** entre dos hostings reales con https.
+
 ## 1.0.11 — 2026-11-05
 
 **AlojaFlow ahora es modular, se instala más fácil y se actualiza diciéndote qué está pasando.**

@@ -23,7 +23,7 @@
             @elseif ($paso === 2)
                 <fieldset class="af-opciones">
                     <legend class="af-preguntas__titulo">{{ __('modulos.preguntas.otro_sistema.titulo') }}</legend>
-                    @foreach (['no', 'principal'] as $opcion)
+                    @foreach (['no', 'principal', 'alojaflow'] as $opcion)
                         <label class="af-opcion" wire:key="otro-{{ $opcion }}">
                             <input type="radio" name="otro_sistema" value="{{ $opcion }}" wire:model.live="otroSistema">
                             <span class="af-opcion__texto"><span class="af-opcion__titulo">{{ __('modulos.preguntas.otro_sistema.'.$opcion) }}</span><span class="af-nota">{{ __('modulos.preguntas.otro_sistema.'.$opcion.'_ayuda') }}</span></span>

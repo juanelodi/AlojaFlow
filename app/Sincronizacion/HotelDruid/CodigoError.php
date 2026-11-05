@@ -30,6 +30,8 @@ enum CodigoError: string
     case EnCurso = 'SUB-014';
     case TiempoAgotado = 'SUB-015';
     case DestinoNoPermitido = 'SUB-016';
+    case PrincipalSinCompartir = 'SUB-017';
+    case ConexionRechazada = 'SUB-018';
     case RespuestaDesconocida = 'SUB-099';
 
     /**
@@ -38,7 +40,7 @@ enum CodigoError: string
      */
     public function pausaLaPrincipal(): bool
     {
-        return in_array($this, [self::Credenciales, self::VersionNoAdmitida, self::DestinoNoPermitido, self::LimiteDiario], true);
+        return in_array($this, [self::Credenciales, self::ConexionRechazada, self::VersionNoAdmitida, self::DestinoNoPermitido, self::LimiteDiario], true);
     }
 
     public function etiqueta(): string

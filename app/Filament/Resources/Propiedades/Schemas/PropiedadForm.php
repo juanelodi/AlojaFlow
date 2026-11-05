@@ -13,13 +13,17 @@ namespace App\Filament\Resources\Propiedades\Schemas;
 use App\Enums\MetodoPeticion;
 use App\Enums\ModoPropiedad;
 use App\Enums\PaquetePais;
+use App\Enums\TipoPrincipal;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Paises\CatalogoPaises;
+use App\Sincronizacion\AlojaFlow\CodigoConexion;
 use App\Support\Formato;
+use Closure;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -84,13 +88,32 @@ class PropiedadForm
             Section::make(__('ui.propiedades.principal'))->columnSpanFull()
                 ->description(__('ui.propiedades.principal_ayuda'))
                 ->relationship('principal')
+                ->mutateRelationshipDataBeforeCreateUsing(fn (array $data): array => self::conCodigoLeido($data))
+                ->mutateRelationshipDataBeforeSaveUsing(fn (array $data): array => self::conCodigoLeido($data))
                 ->visible(fn (Get $get): bool => self::modo($get) === ModoPropiedad::Subordinada)
                 ->columns(['default' => 1, 'md' => 2])
                 ->schema([
+                    Radio::make('tipo')->label(__('sincronizacion.formulario.tipo'))->required()->live()->columnSpanFull()
+                        ->options(TipoPrincipal::opciones())->default(TipoPrincipal::HotelDruid->value)
+                        // Cambiar de sistema a una principal con datos sería otra propiedad.
+                        ->disabledOn('edit')->dehydrated(fn (string $operation): bool => $operation === 'create'),
+                    Textarea::make('codigo_conexion')->label(__('sincronizacion.formulario.codigo'))->helperText(__('sincronizacion.formulario.codigo_ayuda'))->rows(3)->columnSpanFull()
+                        ->visible(fn (Get $get): bool => self::esDeAlojaFlow($get))
+                        ->required(fn (string $operation): bool => $operation === 'create')
+                        ->formatStateUsing(fn (): string => '')
+                        ->dehydrated(fn (?string $state): bool => filled($state))
+                        ->rule(fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
+                            if (filled($value) && CodigoConexion::leer((string) $value) === null) {
+                                $fail(__('sincronizacion.formulario.codigo_invalido'));
+                            }
+                        }),
                     TextInput::make('url_base')->label(__('ui.propiedades.url_base'))->helperText(__('ui.propiedades.url_base_ayuda'))
+                        ->visible(fn (Get $get): bool => ! self::esDeAlojaFlow($get))
                         ->required()->maxLength(255)->url()->regex('#^https?://[^?\#]+/$#')->columnSpanFull(),
-                    TextInput::make('usuario')->label(__('ui.propiedades.usuario'))->maxLength(100)->autocomplete('off'),
+                    TextInput::make('usuario')->label(__('ui.propiedades.usuario'))->maxLength(100)->autocomplete('off')
+                        ->visible(fn (Get $get): bool => ! self::esDeAlojaFlow($get)),
                     TextInput::make('contrasena')->label(__('ui.propiedades.contrasena'))->helperText(__('ui.propiedades.contrasena_ayuda'))
+                        ->visible(fn (Get $get): bool => ! self::esDeAlojaFlow($get))
                         ->password()->revealable()->maxLength(200)->autocomplete('new-password')
                         // Vacía al editar = conservar la actual; nunca se muestra (regla 13).
                         ->formatStateUsing(fn (): string => '')
@@ -106,12 +129,39 @@ class PropiedadForm
                             1440 => __('ui.propiedades.cada_horas', ['horas' => 24]),
                         ]),
                     Select::make('metodo')->label(__('ui.propiedades.metodo'))->helperText(__('ui.propiedades.metodo_ayuda'))->options(MetodoPeticion::opciones())
+                        ->visible(fn (Get $get): bool => ! self::esDeAlojaFlow($get))
                         ->default(MetodoPeticion::Post->value)->required()->native(false),
-                    Toggle::make('compresion')->label(__('ui.propiedades.compresion'))->default(true),
+                    Toggle::make('compresion')->label(__('ui.propiedades.compresion'))->default(true)
+                        ->visible(fn (Get $get): bool => ! self::esDeAlojaFlow($get)),
                     Toggle::make('permitir_red_local')->label(__('ui.propiedades.red_local'))->helperText(__('ui.propiedades.red_local_ayuda'))
                         ->default(false),
                 ]),
         ]);
+    }
+
+    private static function esDeAlojaFlow(Get $get): bool
+    {
+        $tipo = $get('tipo');
+
+        return ($tipo instanceof TipoPrincipal ? $tipo : TipoPrincipal::tryFrom((string) $tipo)) === TipoPrincipal::AlojaFlow;
+    }
+
+    /**
+     * El código se separa en la dirección y el token, que son los que se guardan. Vacío al editar = conservar los actuales.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private static function conCodigoLeido(array $data): array
+    {
+        $leido = isset($data['codigo_conexion']) ? CodigoConexion::leer((string) $data['codigo_conexion']) : null;
+        unset($data['codigo_conexion']);
+        if ($leido !== null) {
+            $data['url_base'] = $leido['url'];
+            $data['contrasena'] = $leido['token'];
+        }
+
+        return $data;
     }
 
     private static function modo(Get $get): ?ModoPropiedad

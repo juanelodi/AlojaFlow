@@ -4,7 +4,7 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-05): versión de prueba 1.0.11**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-05): versión de prueba 1.0.12**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
   D-029) y D-036 se revisan con el usuario. En curso: el plan de [docs/plan-paridad.md](docs/plan-paridad.md), hasta la 1.0.24.
@@ -189,6 +189,8 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
     y `LectorCopia` (formato);
   - `CargadorEspejo` (`hd_filas`), `Proyector` (modelo propio y eventos) y `Sincronizador`
     (ciclo completo).
+- `app/Sincronizacion/AlojaFlow/` — copiar de otra instalación de AlojaFlow (D-073): `Exportador` y `GestorConexiones` del lado de la principal; `ClienteRemoto`, `Sincronizador` y `Proyector` del de
+  la subordinada. `Subordinadores::de($principal)` elige con cuál se copia. Contrato en `docs/especificacion/subordinacion-alojaflow.md`.
 - `app/Actualizacion/` — paquetes de versión y actualizaciones
   (`docs/especificacion/instalacion-actualizaciones.md`):
   - `Empaquetador` (construye el zip firmado) y `Revisor` (lo comprueba sin cambiar nada);

@@ -12,16 +12,19 @@ namespace App\Models;
 
 use App\Enums\EstadoPrincipal;
 use App\Enums\MetodoPeticion;
+use App\Enums\TipoPrincipal;
 use App\Sincronizacion\HotelDruid\CodigoError;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * Instalación de HotelDruid o AlojaFlow 1.2.x de la que se lee la copia (subordinacion.md A2).
+ * Instalación de la que se copia una propiedad: HotelDruid o AlojaFlow 1.2.x (subordinacion.md A2), u otra instalación de
+ * AlojaFlow (D-073). En esta última, el token de la conexión va en `contrasena`.
  *
  * @property int $id
  * @property int $propiedad_id
+ * @property TipoPrincipal $tipo
  * @property string $url_base
  * @property string|null $usuario
  * @property string|null $contrasena
@@ -41,6 +44,8 @@ use Illuminate\Support\Carbon;
  * @property bool|null $inicio_sesion_activado
  * @property Carbon|null $fecha_copia
  * @property Carbon|null $ultima_correcta_en
+ * @property string|null $revision_origen
+ * @property Carbon|null $ultima_bajada_en
  * @property-read Propiedad $propiedad
  * @property-read EjecucionSincronizacion|null $ejecucionVigente
  */
@@ -49,7 +54,7 @@ class Principal extends ModeloBase
     protected $table = 'principales';
 
     protected $fillable = [
-        'url_base', 'usuario', 'contrasena', 'metodo', 'compresion', 'frecuencia_minutos',
+        'tipo', 'url_base', 'usuario', 'contrasena', 'metodo', 'compresion', 'frecuencia_minutos',
         'permitir_red_local',
     ];
 
@@ -59,6 +64,7 @@ class Principal extends ModeloBase
     protected function casts(): array
     {
         return [
+            'tipo' => TipoPrincipal::class,
             'usuario' => 'encrypted',
             'contrasena' => 'encrypted',
             'metodo' => MetodoPeticion::class,
@@ -70,6 +76,7 @@ class Principal extends ModeloBase
             'inicio_sesion_activado' => 'boolean',
             'fecha_copia' => 'datetime',
             'ultima_correcta_en' => 'datetime',
+            'ultima_bajada_en' => 'datetime',
         ];
     }
 
@@ -77,7 +84,7 @@ class Principal extends ModeloBase
     {
         // Con credenciales o dirección nuevas, una principal pausada por ellas vuelve a intentarlo (A5).
         static::saving(function (Principal $principal): void {
-            $reanudables = [CodigoError::Credenciales->value, CodigoError::DestinoNoPermitido->value, CodigoError::AnioInexistente->value];
+            $reanudables = [CodigoError::Credenciales->value, CodigoError::ConexionRechazada->value, CodigoError::DestinoNoPermitido->value, CodigoError::AnioInexistente->value];
             if ($principal->exists && $principal->estado === EstadoPrincipal::Pausada
                 && in_array($principal->codigo_pausa, $reanudables, true)
                 && $principal->isDirty(['url_base', 'usuario', 'contrasena', 'metodo', 'permitir_red_local'])) {
@@ -135,5 +142,13 @@ class Principal extends ModeloBase
     public function urlReserva(int $anio, int $idPrenota): string
     {
         return $this->url_base.'modifica_prenota.php?'.http_build_query(['id_prenota' => $idPrenota, 'anno' => $anio]);
+    }
+
+    /**
+     * Lo mismo para una reserva de otra instalación de AlojaFlow.
+     */
+    public function urlReservaEnAlojaFlow(int $id): string
+    {
+        return $this->url_base.'reservas/'.$id;
     }
 }

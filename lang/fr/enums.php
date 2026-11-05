@@ -11,7 +11,7 @@ declare(strict_types=1);
 return [
     'ModoPropiedad' => [
         'nativa' => 'Indépendant',
-        'subordinada' => 'Subordonné à HotelDruid',
+        'subordinada' => 'Subordonné',
     ],
     'MetodoPago' => [
         'efectivo' => 'Espèces',
@@ -88,10 +88,10 @@ return [
         'correo' => 'E-mail',
         'fax' => 'Fax',
     ],
+    'TipoPrincipal' => ['hoteldruid' => 'HotelDruid ou AlojaFlow 1.2.x', 'alojaflow' => 'Une autre installation d’AlojaFlow'],
     'OrigenFila' => [
         'hoteldruid' => 'HotelDruid',
-        'alojaflow' => 'AlojaFlow',
-    ],
+        'alojaflow' => 'AlojaFlow', 'otra_instalacion' => 'Autre installation'],
     'EstadoActualizacion' => [
         'preparada' => 'Préparée',
         'aplicando' => 'En cours d’application',

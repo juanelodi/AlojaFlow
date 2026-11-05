@@ -31,7 +31,7 @@ return [
 
     'lista' => [
         'varias_propiedades' => ['nombre' => 'Several properties', 'descripcion' => 'Manage more than one place to stay from this installation.'],
-        'subordinacion' => ['nombre' => 'Subordination', 'descripcion' => 'Copy the bookings from HotelDruid or AlojaFlow 1.2.x, which remain the main system. AlojaFlow never writes to them.'],
+        'subordinacion' => ['nombre' => 'Subordination', 'descripcion' => 'Copy the bookings from another system that remains the main one: HotelDruid, AlojaFlow 1.2.x or another AlojaFlow installation. It is never written to. It also lets you share your properties with another installation.'],
         'motor' => ['nombre' => 'Booking engine', 'descripcion' => 'A page where guests look for dates and book on their own.'],
         'pagos' => ['nombre' => 'Online payments', 'descripcion' => 'Charge with Stripe or Mercado Pago from the booking engine.'],
         'ical' => ['nombre' => 'External calendars', 'descripcion' => 'Block dates using Airbnb, Booking and Vrbo calendars, and give them yours.'],
@@ -77,6 +77,8 @@ return [
             'no_ayuda' => 'You enter your bookings, rates and guests here.',
             'principal' => 'Yes, HotelDruid or AlojaFlow 1.2.x',
             'principal_ayuda' => 'AlojaFlow copies its bookings and adds its own on top, without ever writing to it.',
+            'alojaflow' => 'Yes, another AlojaFlow installation',
+            'alojaflow_ayuda' => 'This one copies a property from the other with a connection code, without ever writing to it.',
         ],
         'reservas' => [
             'titulo' => 'What else do you need for your bookings?',

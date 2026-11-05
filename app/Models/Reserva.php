@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\EstadoReserva;
 use App\Enums\OrigenFila;
+use App\Enums\TipoPrincipal;
 use App\Enums\TipoReserva;
 use App\Models\Concerns\ProtegidaPorSincronizacion;
 use Carbon\CarbonImmutable;
@@ -211,6 +212,10 @@ class Reserva extends ModeloBase
 
     public function urlEnPrincipal(): ?string
     {
+        // Los bloqueos de otra instalación llegan como «b:id» y allá no son una reserva.
+        if ($this->principal?->tipo === TipoPrincipal::AlojaFlow) {
+            return ctype_digit((string) $this->clave_origen) ? $this->principal->urlReservaEnAlojaFlow((int) $this->clave_origen) : null;
+        }
         $clave = $this->claveEnPrincipal();
 
         return $clave && $this->principal ? $this->principal->urlReserva($clave[0], $clave[1]) : null;

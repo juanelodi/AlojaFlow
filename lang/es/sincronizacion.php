@@ -9,7 +9,7 @@
 declare(strict_types=1);
 
 return [
-    'fila_protegida' => 'Este dato viene de la principal (HotelDruid) y solo se puede cambiar allí.',
+    'fila_protegida' => 'Este dato viene de la instalación principal y solo se puede cambiar allí.',
     'redireccion' => 'La principal respondió con una redirección hacia :destino. Revisa la dirección.',
     'version_no_admitida' => 'La principal tiene el esquema :version, que AlojaFlow no admite (admite 3.08 y 3.081).',
     'copia_cortada' => 'La copia llegó cortada: falta el final.',
@@ -37,6 +37,35 @@ return [
         'SUB-014' => 'Ya hay una sincronización de esta principal en marcha.',
         'SUB-015' => 'La principal tardó demasiado en responder.',
         'SUB-016' => 'La dirección de la principal no está permitida.',
+        'SUB-017' => 'La otra instalación no respondió como se esperaba. Revisa que tenga AlojaFlow 1.0.12 o posterior y el módulo de subordinación prendido.',
+        'SUB-018' => 'La otra instalación rechazó el código de conexión. Pudieron haberlo revocado: pide uno nuevo.',
         'SUB-099' => 'La principal dio una respuesta que AlojaFlow no reconoce.',
+    ],
+
+    'compartir' => [
+        'titulo' => 'Compartir con otra instalación',
+        'ayuda' => 'Otra instalación de AlojaFlow puede copiar esta propiedad, solo para leerla: las reservas se siguen cambiando aquí. Las fotos y los archivos nunca viajan.',
+        'sin_conexiones' => 'Todavía no la compartes con nadie',
+        'nombre' => 'Nombre',
+        'nombre_ayuda' => 'Para reconocerla, por ejemplo «Oficina central».',
+        'documentos' => 'Incluir documentos de identidad',
+        'documentos_ayuda' => 'Apagado, no viaja ni el número ni los demás datos del documento. Actívalo solo si la otra instalación los necesita.',
+        'ultimo_uso' => 'Último uso',
+        'estado' => 'Estado',
+        'activa' => 'Activa',
+        'revocada' => 'Revocada',
+        'crear' => 'Compartir',
+        'revocar' => 'Revocar',
+        'revocar_texto' => 'La otra instalación dejará de poder copiar. Lo que ya copió se queda allá.',
+        'codigo_titulo' => 'Código de conexión',
+        'codigo_texto' => 'Cópialo y pégalo en la otra instalación, al crear la propiedad subordinada. Por seguridad, no se vuelve a mostrar.',
+        'codigo_listo' => 'Ya lo copié',
+    ],
+
+    'formulario' => [
+        'tipo' => 'De qué sistema se copia',
+        'codigo' => 'Código de conexión',
+        'codigo_ayuda' => 'Se genera en la otra instalación: al editar la propiedad, en «Compartir con otra instalación». Si ya está conectada, déjalo vacío para conservar el actual.',
+        'codigo_invalido' => 'Ese no es un código de conexión de AlojaFlow. Cópialo completo.',
     ],
 ];

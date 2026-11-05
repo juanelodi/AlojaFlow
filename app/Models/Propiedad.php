@@ -63,6 +63,12 @@ class Propiedad extends ModeloBase
         ];
     }
 
+    /** @return HasMany<ConexionCompartida, $this> */
+    public function conexionesCompartidas(): HasMany
+    {
+        return $this->hasMany(ConexionCompartida::class);
+    }
+
     /** @return HasOne<Principal, $this> */
     public function principal(): HasOne
     {

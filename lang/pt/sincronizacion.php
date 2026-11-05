@@ -9,7 +9,7 @@
 declare(strict_types=1);
 
 return [
-    'fila_protegida' => 'Este dado vem da instalação principal (HotelDruid) e só pode ser alterado lá.',
+    'fila_protegida' => 'Este dado vem da instalação principal e só pode ser alterado lá.',
     'redireccion' => 'A instalação principal respondeu com um redirecionamento para :destino. Verifique o endereço.',
     'version_no_admitida' => 'A instalação principal tem o esquema :version, que o AlojaFlow não suporta (suporta 3.08 e 3.081).',
     'copia_cortada' => 'A cópia chegou cortada: falta o final.',
@@ -37,6 +37,35 @@ return [
         'SUB-014' => 'Já há uma sincronização desta instalação principal em curso.',
         'SUB-015' => 'A instalação principal demorou demasiado a responder.',
         'SUB-016' => 'O endereço da instalação principal não é permitido.',
+        'SUB-017' => 'A outra instalação não respondeu como esperado. Verifique se tem o AlojaFlow 1.0.12 ou posterior e o módulo de subordinação ligado.',
+        'SUB-018' => 'A outra instalação rejeitou o código de conexão. Pode ter sido revogado: peça um novo.',
         'SUB-099' => 'A instalação principal deu uma resposta que o AlojaFlow não reconhece.',
+    ],
+
+    'compartir' => [
+        'titulo' => 'Compartilhar com outra instalação',
+        'ayuda' => 'Outra instalação do AlojaFlow pode copiar esta propriedade, só para leitura: as reservas continuam sendo alteradas aqui. Fotos e arquivos nunca viajam.',
+        'sin_conexiones' => 'Você ainda não a compartilha com ninguém',
+        'nombre' => 'Nome',
+        'nombre_ayuda' => 'Para reconhecê-la, por exemplo «Escritório central».',
+        'documentos' => 'Incluir documentos de identidade',
+        'documentos_ayuda' => 'Desligado, não viajam nem o número nem os outros dados do documento. Ligue só se a outra instalação precisar.',
+        'ultimo_uso' => 'Último uso',
+        'estado' => 'Estado',
+        'activa' => 'Ativa',
+        'revocada' => 'Revogada',
+        'crear' => 'Compartilhar',
+        'revocar' => 'Revogar',
+        'revocar_texto' => 'A outra instalação não poderá mais copiar. O que já copiou fica lá.',
+        'codigo_titulo' => 'Código de conexão',
+        'codigo_texto' => 'Copie e cole na outra instalação, ao criar a propriedade subordinada. Por segurança, não é mostrado de novo.',
+        'codigo_listo' => 'Já copiei',
+    ],
+
+    'formulario' => [
+        'tipo' => 'De qual sistema copiar',
+        'codigo' => 'Código de conexão',
+        'codigo_ayuda' => 'É gerado na outra instalação: ao editar a propriedade, em «Compartilhar com outra instalação». Se já estiver conectada, deixe vazio para manter o atual.',
+        'codigo_invalido' => 'Esse não é um código de conexão do AlojaFlow. Copie-o completo.',
     ],
 ];

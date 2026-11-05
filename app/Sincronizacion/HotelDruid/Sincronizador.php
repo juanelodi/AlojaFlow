@@ -17,6 +17,8 @@ use App\Enums\OrigenEjecucion;
 use App\Models\Aviso;
 use App\Models\EjecucionSincronizacion;
 use App\Models\Principal;
+use App\Sincronizacion\ConFallosDeEjecucion;
+use App\Sincronizacion\Subordinador;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\Cache;
@@ -27,8 +29,10 @@ use Throwable;
 /**
  * Ciclo completo de sincronización de una principal (subordinacion.md A4 y A5).
  */
-class Sincronizador
+class Sincronizador implements Subordinador
 {
+    use ConFallosDeEjecucion;
+
     public const AVISO_FALLO = 'sincronizacion_fallida';
 
     public const AVISO_SIN_INICIO_SESION = 'principal_sin_inicio_sesion';
@@ -47,6 +51,11 @@ class Sincronizador
     public function cliente(Principal $principal): ClientePrincipal
     {
         return new ClientePrincipal($principal, $this->http, $this->validador);
+    }
+
+    public function probar(Principal $principal): void
+    {
+        $this->cliente($principal)->probarConexion();
     }
 
     public function sincronizar(Principal $principal, OrigenEjecucion $origen): EjecucionSincronizacion
@@ -173,35 +182,6 @@ class Sincronizador
     private function terminarMal(Principal $principal, EjecucionSincronizacion $ejecucion, ErrorSincronizacion $error, array $incidencias): void
     {
         DB::table('hd_filas')->where('ejecucion_id', $ejecucion->id)->delete();
-
-        $ejecucion->update([
-            'estado' => EstadoEjecucion::Fallida,
-            'terminada_en' => now(),
-            'paso_fallido' => $error->paso,
-            'codigo_error' => $error->codigo->value,
-            'detalle' => mb_substr($error->getMessage(), 0, 2000),
-            'incidencias' => $incidencias ?: null,
-        ]);
-
-        $fallos = $principal->fallos_consecutivos + 1;
-        $cambios = ['fallos_consecutivos' => $fallos, 'proxima_en' => now()->addMinutes($principal->frecuencia_minutos)];
-        if ($error->codigo->pausaLaPrincipal()) {
-            $cambios += [
-                'estado' => EstadoPrincipal::Pausada,
-                'codigo_pausa' => $error->codigo->value,
-                // El límite diario se reinicia a las 00:00 de la principal; lo demás espera al administrador.
-                'pausada_hasta' => $error->codigo === CodigoError::LimiteDiario
-                    ? CarbonImmutable::now($principal->propiedad->zona_horaria)->addDay()->startOfDay()->utc()
-                    : null,
-            ];
-        }
-        $principal->forceFill($cambios)->save();
-
-        if ($error->codigo->pausaLaPrincipal() || $fallos >= (int) config('alojaflow.subordinacion.fallos_para_avisar')) {
-            Aviso::abrir($principal->propiedad_id, self::AVISO_FALLO, NivelAviso::Error, [
-                'codigo' => $error->codigo->value,
-                'mensaje' => $error->codigo->etiqueta(),
-            ]);
-        }
+        $this->anotarFallo($principal, $ejecucion, $error, $incidencias);
     }
 }

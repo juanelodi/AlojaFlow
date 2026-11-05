@@ -16,4 +16,5 @@ enum OrigenFila: string
 
     case HotelDruid = 'hoteldruid';
     case AlojaFlow = 'alojaflow';
+    case OtraInstalacion = 'otra_instalacion';
 }

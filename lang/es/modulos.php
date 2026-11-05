@@ -31,7 +31,7 @@ return [
 
     'lista' => [
         'varias_propiedades' => ['nombre' => 'Varias propiedades', 'descripcion' => 'Manejar más de un alojamiento desde esta instalación.'],
-        'subordinacion' => ['nombre' => 'Subordinación', 'descripcion' => 'Copiar las reservas de HotelDruid o AlojaFlow 1.2.x, que siguen siendo el sistema principal. AlojaFlow nunca escribe en ellos.'],
+        'subordinacion' => ['nombre' => 'Subordinación', 'descripcion' => 'Copiar las reservas de otro sistema que sigue siendo el principal: HotelDruid, AlojaFlow 1.2.x u otra instalación de AlojaFlow. Nunca se escribe en él. También sirve para compartir tus propiedades con otra instalación.'],
         'motor' => ['nombre' => 'Motor de reservas', 'descripcion' => 'Una página donde los huéspedes buscan fechas y reservan solos.'],
         'pagos' => ['nombre' => 'Cobros en línea', 'descripcion' => 'Cobrar con Stripe o Mercado Pago desde el motor de reservas.'],
         'ical' => ['nombre' => 'Calendarios externos', 'descripcion' => 'Bloquear fechas con los calendarios de Airbnb, Booking y Vrbo, y darles el tuyo.'],
@@ -77,6 +77,8 @@ return [
             'no_ayuda' => 'Aquí capturas tus reservas, tarifas y huéspedes.',
             'principal' => 'Sí, HotelDruid o AlojaFlow 1.2.x',
             'principal_ayuda' => 'AlojaFlow copia sus reservas y agrega lo suyo encima, sin escribir nunca en él.',
+            'alojaflow' => 'Sí, otra instalación de AlojaFlow',
+            'alojaflow_ayuda' => 'Esta copia una propiedad de la otra con un código de conexión, sin escribir nunca en ella.',
         ],
         'reservas' => [
             'titulo' => '¿Qué más necesitas para tus reservas?',

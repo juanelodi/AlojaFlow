@@ -13,7 +13,7 @@ namespace App\Console\Commands;
 use App\Enums\EstadoEjecucion;
 use App\Enums\OrigenEjecucion;
 use App\Models\Principal;
-use App\Sincronizacion\HotelDruid\Sincronizador;
+use App\Sincronizacion\Subordinadores;
 use Illuminate\Console\Command;
 
 /**
@@ -24,9 +24,9 @@ class Sincronizar extends Command
 {
     protected $signature = 'alojaflow:sincronizar {--principal= : ID de una principal concreta}';
 
-    protected $description = 'Sincroniza las principales de HotelDruid que tocan';
+    protected $description = 'Sincroniza las principales que tocan';
 
-    public function handle(Sincronizador $sincronizador): int
+    public function handle(): int
     {
         $ahora = now();
         $consulta = Principal::query()->with('propiedad')
@@ -42,7 +42,7 @@ class Sincronizar extends Command
 
         foreach ($principales as $principal) {
             $origen = $this->option('principal') !== null ? OrigenEjecucion::Manual : OrigenEjecucion::Programada;
-            $ejecucion = $sincronizador->sincronizar($principal, $origen);
+            $ejecucion = Subordinadores::de($principal)->sincronizar($principal, $origen);
             $mensaje = $principal->propiedad->nombre.': '.$ejecucion->estado->etiqueta()
                 .($ejecucion->codigo_error ? ' ('.$ejecucion->codigo_error.' '.$ejecucion->detalle.')' : '');
             $ejecucion->estado === EstadoEjecucion::Correcta ? $this->info($mensaje) : $this->warn($mensaje);

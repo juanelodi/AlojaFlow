@@ -9,7 +9,7 @@
 declare(strict_types=1);
 
 return [
-    'fila_protegida' => 'This data comes from the main installation (HotelDruid) and can only be changed there.',
+    'fila_protegida' => 'This data comes from the main installation and can only be changed there.',
     'redireccion' => 'The main installation answered with a redirect to :destino. Check the address.',
     'version_no_admitida' => 'The main installation uses schema :version, which AlojaFlow does not support (it supports 3.08 and 3.081).',
     'copia_cortada' => 'The backup arrived truncated: its end is missing.',
@@ -37,6 +37,35 @@ return [
         'SUB-014' => 'A synchronisation of this main installation is already running.',
         'SUB-015' => 'The main installation took too long to answer.',
         'SUB-016' => 'The address of the main installation is not allowed.',
+        'SUB-017' => 'The other installation did not respond as expected. Check that it has AlojaFlow 1.0.12 or later and the subordination module turned on.',
+        'SUB-018' => 'The other installation rejected the connection code. It may have been revoked: ask for a new one.',
         'SUB-099' => 'The main installation gave an answer AlojaFlow does not recognise.',
+    ],
+
+    'compartir' => [
+        'titulo' => 'Share with another installation',
+        'ayuda' => 'Another AlojaFlow installation can copy this property, for reading only: bookings are still changed here. Photos and files never travel.',
+        'sin_conexiones' => 'You are not sharing it with anyone yet',
+        'nombre' => 'Name',
+        'nombre_ayuda' => 'To recognise it, for example «Head office».',
+        'documentos' => 'Include identity documents',
+        'documentos_ayuda' => 'When off, neither the number nor the other document details travel. Turn it on only if the other installation needs them.',
+        'ultimo_uso' => 'Last used',
+        'estado' => 'Status',
+        'activa' => 'Active',
+        'revocada' => 'Revoked',
+        'crear' => 'Share',
+        'revocar' => 'Revoke',
+        'revocar_texto' => 'The other installation will no longer be able to copy. What it already copied stays there.',
+        'codigo_titulo' => 'Connection code',
+        'codigo_texto' => 'Copy it and paste it in the other installation when creating the subordinate property. For safety, it is not shown again.',
+        'codigo_listo' => 'I copied it',
+    ],
+
+    'formulario' => [
+        'tipo' => 'Which system it copies from',
+        'codigo' => 'Connection code',
+        'codigo_ayuda' => 'It is generated in the other installation: when editing the property, under «Share with another installation». If it is already connected, leave it empty to keep the current one.',
+        'codigo_invalido' => 'That is not an AlojaFlow connection code. Copy it in full.',
     ],
 ];

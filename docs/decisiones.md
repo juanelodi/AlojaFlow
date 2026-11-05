@@ -533,6 +533,15 @@ duplica, y reintentar sigue desde donde iba. Al terminar se revisa solo, con un 
 paso 1 y el 2. Al instalar sale de inmediato una página de «Instalando…» que se queda mientras el navegador espera, porque antes parecía que
 el botón no hizo nada.
 
+### D-073 · 2026-11-05 · Subordinar otra instalación de AlojaFlow
+Una instalación copia una propiedad de otra, de solo lectura, como con HotelDruid. **Se conecta con un código** que genera la principal y se pega en la subordinada,
+en vez de usuario y contraseña: se puede revocar uno sin tocar a nadie más, y da acceso a una sola propiedad. El token va en una cabecera y la principal guarda su huella.
+Se comparte propiedad por propiedad y solo las independientes, así que no hay cadenas. El documento de identidad no viaja salvo que esa conexión lo permita, y las
+fotos y los archivos nunca. La principal solo expone GET. La subordinada pregunta primero por una revisión y no baja nada si no cambió, aunque cada 6 horas baja todo de todos
+modos: la revisión no ve cualquier cambio. Lo que llega se trata como dato ajeno, y se proyecta en una sola transacción. **Por qué un contrato propio y no la copia de seguridad:** esa
+copia lleva todos los datos de la instalación, y aquí se comparte solo una propiedad. **Lo que aún no viaja:** los pagos y la caja uno por uno; llegan con la 1.0.15, igual que
+los de HotelDruid. El total pagado de cada reserva sí. **Riesgo que queda:** las dos puntas deben tener la 1.0.12 o posterior. Contrato en `docs/especificacion/subordinacion-alojaflow.md`.
+
 ---
 
 ## Pendientes
