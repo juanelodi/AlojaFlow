@@ -68,11 +68,7 @@ class EditPropiedad extends EditRecord
                 ->schema(fn (Propiedad $record): array => $record->esIndependiente() ? [
                     TextInput::make('confirmacion')->label(__('ui.propiedades.eliminar_confirmacion'))->required()->in([$record->codigo])->autocomplete('off'),
                 ] : [])
-                ->before(function (Propiedad $record, DeleteAction $action, BorradorPropiedad $borrador): void {
-                    if ($borrador->tieneFacturas($record)) {
-                        Notification::make()->danger()->persistent()->title(__('ui.propiedades.error_con_facturas'))->send();
-                        $action->halt();
-                    }
+                ->before(function (Propiedad $record): void {
                     RegistroAuditoria::anotar('propiedad.eliminar', $record, ['nombre' => $record->nombre, 'modo' => $record->modo->value]);
                 })
                 ->using(function (Propiedad $record, BorradorPropiedad $borrador): bool {

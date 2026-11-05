@@ -39,11 +39,6 @@ return [
         'ayuda' => 'Free data on this record, such as «Type: VIP». If it matches a colour in Client colours, their bookings are marked that way on the calendar.',
         'agregar' => 'Add data',
     ],
-    'facturas' => [
-        'formato' => 'Format',
-        'excel' => 'To open in Excel',
-        'csv' => 'Standard CSV, for other programs (comma, decimal point)',
-    ],
     'franja' => [
         'dias' => 'Days to copy',
         'dias_ayuda' => 'With none ticked, every day.',

@@ -45,7 +45,7 @@ copia desde **Sistema → Copias de seguridad** y guárdala fuera del servidor.
 | **Plantillas, Automatizaciones, Avisos a otros sistemas, Correo** | Qué se manda, cuándo y a quién |
 | **Calendarios iCal / Choques** | Enlaces para los portales, lectura de sus calendarios y aviso cuando una habitación está ocupada dos veces |
 | **Llegadas en línea / Documentos legales** | Lo que mandan los huéspedes antes de llegar, los textos que aceptan y la prueba de la aceptación |
-| **Facturas y recibos / Datos fiscales / Políticas** | Facturar desde la reserva, exportar para el contador; penalización al cancelar y marca de no-show |
+| **Recibos / Políticas** | El recibo en PDF de cada pago, en la reserva; penalización al cancelar y marca de no-show |
 | **Informes** | Doce informes con CSV |
 | **Usuarios** | Usuarios con un rol en cada propiedad (gerente, recepción, limpieza, mantenimiento, contador), administrador o super administrador |
 | **Módulos** | Sistema → Módulos: prender y apagar lo que usa la instalación. Solo el super administrador |
@@ -54,8 +54,7 @@ copia desde **Sistema → Copias de seguridad** y guárdala fuera del servidor.
 | **Acerca de / Código fuente** | Licencia, créditos y descarga del código de la versión instalada |
 
 **Todavía no trae:**
-- timbrado real de CFDI (falta un PAC), factura global, complementos de pago y notas de crédito;
-- VeriFactu de España: hay exportación, pero no el registro encadenado;
+- facturas, en ningún país: de cada pago sale un recibo (D-131);
 - código de confirmación por WhatsApp o SMS;
 - channel manager por API: con los portales se trabaja por iCal.
 
@@ -77,7 +76,7 @@ Con la demo creada (**Hotel Bahía Serena**):
 4. **Mensajes:** en una reserva, **Mandar mensaje** con una plantilla; sin correo configurado, míralo en **Mensajes**.
 5. **Llegada en línea:** en una reserva, **Más → Enlace de llegada**, ábrelo en otra ventana y mándalo; revísalo
    en **Llegadas en línea**.
-6. **Factura:** da de alta **Datos fiscales** con una serie y, en una reserva, **Más → Facturar**. Descarga PDF y XML.
+6. **Recibo:** en una reserva, registra un pago y pulsa **Recibo** para bajar el PDF.
 7. **iCal:** en **Calendarios iCal → Enlaces para los portales**, abre un enlace; agrega como fuente el de otra
    habitación para ver un bloqueo y su choque.
 8. **Pasar a independiente:** en una propiedad subordinada de prueba, en **Propiedades → Editar**.

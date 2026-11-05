@@ -87,7 +87,6 @@ return [
         'error_fecha' => ':unidad ha già una lettura più recente. Controlla la data.',
         'error_menor' => 'La lettura di :unidad è inferiore alla precedente (:anterior). Se hai cambiato il contatore, spunta «Contatore nuovo».',
         'error_no_ultima' => 'Si può rimuovere solo l’ultima lettura di ogni contatore.',
-        'error_facturada' => 'L’addebito di questa lettura è già fatturato. Annulla prima la fattura.',
     ],
     'residentes' => [
         'titulo' => 'Residenti',

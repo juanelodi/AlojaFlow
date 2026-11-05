@@ -10,10 +10,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\EstadoFactura;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Un pago previsto de una estancia larga. Si está pagado o no se calcula: lo pagado se aplica a los primeros en vencer (`Mensualidades`).
@@ -28,7 +26,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CarbonImmutable $vence_en
  * @property \Illuminate\Support\Carbon|null $creado_en
  * @property-read Reserva $reserva
- * @property-read Factura|null $facturaVigente
  */
 class CuotaReserva extends ModeloBase
 {
@@ -45,16 +42,6 @@ class CuotaReserva extends ModeloBase
     public function reserva(): BelongsTo
     {
         return $this->belongsTo(Reserva::class);
-    }
-
-    /**
-     * Una factura cancelada no cuenta: la cuota se puede volver a facturar.
-     *
-     * @return HasOne<Factura, $this>
-     */
-    public function facturaVigente(): HasOne
-    {
-        return $this->hasOne(Factura::class, 'cuota_reserva_id')->where('estado', '!=', EstadoFactura::Cancelada->value);
     }
 
     /**

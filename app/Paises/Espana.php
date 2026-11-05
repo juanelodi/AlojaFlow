@@ -65,9 +65,4 @@ final class Espana extends PaisBase
     {
         return new DeclaracionEstancias();
     }
-
-    public function exportaLibroFiscal(): bool
-    {
-        return true;
-    }
 }

@@ -23,7 +23,6 @@ return [
         'procedencia' => 'Cidade de origem',
         'motivo_viaje' => 'Motivo da viagem',
         'placas' => 'Matrícula do veículo',
-        'rfc' => 'RFC (se precisar de fatura)',
         'soporte' => 'Número de suporte',
         'parentesco' => 'Parentesco (para menores)',
     ],

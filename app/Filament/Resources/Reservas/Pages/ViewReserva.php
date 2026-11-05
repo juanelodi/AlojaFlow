@@ -45,7 +45,6 @@ class ViewReserva extends ViewRecord
             ActionGroup::make([
                 AccionesReserva::enlaceLlegada(),
                 AccionesReserva::enlacePago(),
-                AccionesReserva::facturar(),
                 AccionesReserva::noShow(),
                 AccionesReserva::confirmacionPdf(),
                 AccionesReserva::documentoPropio(),

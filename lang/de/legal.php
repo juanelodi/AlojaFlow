@@ -23,7 +23,6 @@ return [
         'procedencia' => 'Herkunftsort',
         'motivo_viaje' => 'Reisegrund',
         'placas' => 'Kfz-Kennzeichen',
-        'rfc' => 'RFC (falls Sie eine Rechnung benötigen)',
         'soporte' => 'Dokumentennummer',
         'parentesco' => 'Verwandtschaft (bei Minderjährigen)',
     ],

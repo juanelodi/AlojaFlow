@@ -39,11 +39,6 @@ return [
         'ayuda' => 'Dados livres desta ficha, como «Tipo: VIP». Se coincidirem com uma cor de Cores dos clientes, as suas reservas ficam assim marcadas no calendário.',
         'agregar' => 'Adicionar dado',
     ],
-    'facturas' => [
-        'formato' => 'Formato',
-        'excel' => 'Para abrir no Excel',
-        'csv' => 'CSV padrão, para outros programas (vírgula, ponto decimal)',
-    ],
     'franja' => [
         'dias' => 'Dias de cópia',
         'dias_ayuda' => 'Sem nenhum marcado, todos os dias.',

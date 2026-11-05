@@ -67,8 +67,6 @@ return [
         'copia_aceptacion' => 'Copia firmada',
         'foto_tarea' => 'Foto',
         'plano' => 'Plano',
-        'factura_xml' => 'Factura (XML)',
-        'factura_pdf' => 'Factura (PDF)',
         'exportacion' => 'Exportación',
         'comprobante' => 'Comprobante de pago',
         'foto_publica' => 'Foto de la página pública',
@@ -117,7 +115,6 @@ return [
         'ical' => 'Calendario iCal',
         'llegada' => 'Llegada en línea',
         'contrato' => 'Contrato',
-        'factura' => 'Factura',
         'grupo' => 'Grupo',
         'mi_reserva' => 'Mi reserva',
         'propietario' => 'Portal del propietario',
@@ -159,21 +156,8 @@ return [
         'anonimizacion' => 'Anonimización',
     ],
 
-    'EstadoFactura' => [
-        'emitida' => 'Emitida',
-        'registrada' => 'Timbrada',
-        'cancelada' => 'Cancelada',
-    ],
 
-    'TipoDocumentoFiscal' => [
-        'factura' => 'Factura',
-        'recibo' => 'Recibo sin valor fiscal',
-    ],
 
-    'ModoFiscal' => [
-        'pruebas' => 'Pruebas',
-        'produccion' => 'Producción',
-    ],
     'EstadoGrupo' => [
         'tentativo' => 'Tentativo',
         'confirmado' => 'Confirmado',
@@ -188,12 +172,6 @@ return [
         'por_confirmar' => 'Por confirmar',
         'confirmado' => 'Confirmado',
         'rechazado' => 'Rechazado',
-    ],
-    'MotivoCancelacionCfdi' => [
-        '01' => '01 · Con errores, con factura que la sustituye',
-        '02' => '02 · Con errores, sin factura que la sustituya',
-        '03' => '03 · No se llevó a cabo la operación',
-        '04' => '04 · Operación incluida en una factura global',
     ],
     'EstadoEnvioAutoridad' => [
         'pendiente' => 'Por enviar',

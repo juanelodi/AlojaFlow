@@ -13,6 +13,7 @@ return [
     'codigo' => 'Código',
     'confirmacion' => 'Confirmación de reserva',
     'recibo' => 'Recibo de pago',
+    'recibo_numero' => 'Recibo núm.',
     'devolucion' => 'Comprobante de devolución',
     'estancia' => 'Estancia',
     'importes' => 'Importes',

@@ -10,15 +10,10 @@ declare(strict_types=1);
 
 namespace App\Documentos;
 
-use App\Archivos\GestorArchivos;
-use App\Enums\EstadoFactura;
 use App\Enums\EstadoReserva;
-use App\Enums\TipoDocumentoFiscal;
-use App\Facturacion\DatosTimbre;
 use App\Models\Aceptacion;
 use App\Models\DocumentoLegal;
 use App\Models\EstadoCuenta;
-use App\Models\Factura;
 use App\Models\Grupo;
 use App\Models\Pago;
 use App\Models\Propiedad;
@@ -26,7 +21,6 @@ use App\Models\RegistroLlegada;
 use App\Models\Reserva;
 use App\Paises\Paises;
 use App\Reservas\Cotizador;
-use App\Support\Formato;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 /**
@@ -90,28 +84,6 @@ final class GeneradorPdf
             ->setPaper('letter', count($columnas) > 5 ? 'landscape' : 'portrait')
             ->setOption(['isRemoteEnabled' => false, 'isPhpEnabled' => false, 'isJavascriptEnabled' => false])
             ->output();
-    }
-
-    public function factura(Factura $factura): string
-    {
-        $factura->loadMissing(['lineas.impuestos', 'propiedad']);
-        $impuestos = [];
-        foreach ($factura->lineas as $linea) {
-            foreach ($linea->impuestos as $impuesto) {
-                $impuestos[$impuesto->nombre.' '.(float) $impuesto->tasa.' %'] = ($impuestos[$impuesto->nombre.' '.(float) $impuesto->tasa.' %'] ?? 0) + $impuesto->importe;
-            }
-        }
-        $esFiscal = $factura->tipo === TipoDocumentoFiscal::Factura && Paises::de($factura->propiedad)->generadorFiscal() !== null;
-        $sinValidez = match (true) {
-            $factura->estado === EstadoFactura::Cancelada => __('dinero.cancelacion.aviso_pdf', ['fecha' => Formato::momento($factura->cancelada_en, $factura->propiedad->zona_horaria)]),
-            ! $esFiscal => __('dinero.facturas.no_fiscal'),
-            $factura->uuid_fiscal === null => __('dinero.facturas.sin_timbrar'),
-            default => null,
-        };
-
-        $timbre = $factura->uuid_fiscal !== null && $factura->xml !== null ? DatosTimbre::de(app(GestorArchivos::class)->contenido($factura->xml)) : null;
-
-        return $this->pdf('documentos.factura', ['factura' => $factura, 'impuestos' => $impuestos, 'sinValidez' => $sinValidez, 'timbre' => $timbre], $factura->propiedad->idioma);
     }
 
     public function registroLlegada(RegistroLlegada $registro): string

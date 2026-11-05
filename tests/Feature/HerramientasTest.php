@@ -12,12 +12,10 @@ use App\Actualizacion\EsquemaAlDia;
 use App\Enums\EstadoReserva;
 use App\Enums\ModoPropiedad;
 use App\Enums\TipoContacto;
-use App\Enums\TipoEmpresa;
 use App\Filament\Pages\AnonimizarHuespedes;
 use App\Filament\Pages\Calendario;
 use App\Filament\Pages\EditarPerfil;
 use App\Filament\Pages\HuespedesDuplicados;
-use App\Filament\Resources\Facturas\Pages\ListFacturas;
 use App\Filament\Resources\Huespedes\Pages\EditHuesped;
 use App\Filament\Resources\Propiedades\Pages\EditPropiedad;
 use App\Filament\Resources\RegistrosTuristicos\Pages\CreateRegistroTuristico;
@@ -27,7 +25,6 @@ use App\Instalacion\Instalador;
 use App\Models\Aviso;
 use App\Models\ColorTipoCliente;
 use App\Models\ContactoHuesped;
-use App\Models\Empresa;
 use App\Models\Huesped;
 use App\Models\Principal;
 use App\Models\Propiedad;
@@ -262,38 +259,6 @@ describe('tipo de cliente en una independiente', function (): void {
         $hoy = $this->propiedad->hoy();
         ($this->reservar)($ficha, $hoy->format('Y-m-d'), $hoy->addDays(2)->format('Y-m-d'));
         Livewire::actingAs($this->recepcion)->test(Calendario::class)->assertSeeHtml('#7c3aed');
-    });
-});
-
-describe('exportar facturas', function (): void {
-    it('para Excel va en columnas, con el decimal de su moneda y las columnas nuevas', function (): void {
-        $factura = crearFacturaDePrueba($this);
-        $exportar = fn () => Livewire::actingAs($this->admin)->test(ListFacturas::class)
-            ->callAction('exportar', data: ['desde' => now()->startOfYear()->format('Y-m-d'), 'hasta' => now()->endOfYear()->format('Y-m-d'), 'formato' => 'excel'])
-            ->assertHasNoActionErrors()
-            ->assertFileDownloaded(null, null, App\Support\Csv::TIPO_EXCEL);
-        $texto = fn ($respuesta): string => App\Support\Csv::enUtf8((string) base64_decode((string) ($respuesta->effects['download']['content'] ?? ''), true));
-
-        expect($texto($exportar()))
-            ->toContain("Correo\t")
-            ->toContain('1000.00')
-            ->toContain('ana@example.com')
-            ->not->toContain('1000,00');
-
-        App\Models\Factura::query()->whereKey($factura->id)->update(['moneda' => 'EUR']);
-
-        expect($texto($exportar()))->toContain('1000,00')->not->toContain('1000.00');
-    });
-
-    it('el CSV estándar lleva coma y punto decimal', function (): void {
-        crearFacturaDePrueba($this);
-
-        $respuesta = Livewire::actingAs($this->admin)->test(ListFacturas::class)
-            ->callAction('exportar', data: ['desde' => now()->startOfYear()->format('Y-m-d'), 'hasta' => now()->endOfYear()->format('Y-m-d'), 'formato' => 'csv'])
-            ->assertHasNoActionErrors();
-
-        $contenido = base64_decode((string) ($respuesta->effects['download']['content'] ?? ''), true);
-        expect($contenido)->toStartWith("\xEF\xBB\xBF")->toContain('Correo,')->toContain('1000.00')->not->toContain('1000,00');
     });
 });
 
@@ -602,54 +567,3 @@ describe('catálogo de impuestos por estado', function (): void {
             ->assertActionDataSet(['region' => null, 'tasa' => null]);
     });
 });
-
-describe('facturar a la empresa de la reserva', function (): void {
-    it('propone sus datos', function (): void {
-        $empresa = Empresa::query()->create(['propiedad_id' => $this->propiedad->id, 'tipo' => TipoEmpresa::Empresa, 'nombre' => 'Acme SA', 'identificador_fiscal' => 'ACM010101AAA', 'correo' => 'pagos@acme.example.com', 'activa' => true]);
-        $hoy = $this->propiedad->hoy();
-        $reserva = ($this->reservar)(($this->ficha)(), $hoy->format('Y-m-d'), $hoy->addDay()->format('Y-m-d'), ['empresa_id' => $empresa->id]);
-
-        Livewire::actingAs($this->admin)->test(App\Filament\Resources\Reservas\Pages\ViewReserva::class, ['record' => $reserva->getRouteKey()])
-            ->mountAction('facturar')
-            ->assertActionDataSet(['identificador_fiscal' => 'ACM010101AAA', 'nombre' => 'Acme SA', 'correo' => 'pagos@acme.example.com']);
-    });
-
-    it('no mezcla los datos fiscales del huésped con los de la empresa, y usa los que ya se le facturaron', function (): void {
-        $empresa = Empresa::query()->create(['propiedad_id' => $this->propiedad->id, 'tipo' => TipoEmpresa::Empresa, 'nombre' => 'Acme SA', 'identificador_fiscal' => 'acm010101aaa', 'activa' => true]);
-        $ficha = ($this->ficha)();
-        App\Models\ReceptorFiscal::query()->create(['propiedad_id' => $this->propiedad->id, 'huesped_id' => $ficha->id, 'identificador_fiscal' => 'XAXX010101000', 'nombre' => 'Ana', 'regimen_fiscal' => '616', 'codigo_postal' => '40880', 'uso' => 'S01', 'correo' => 'ana@example.com']);
-        $hoy = $this->propiedad->hoy();
-        $reserva = ($this->reservar)($ficha, $hoy->format('Y-m-d'), $hoy->addDay()->format('Y-m-d'), ['empresa_id' => $empresa->id]);
-
-        Livewire::actingAs($this->admin)->test(App\Filament\Resources\Reservas\Pages\ViewReserva::class, ['record' => $reserva->getRouteKey()])
-            ->mountAction('facturar')
-            ->assertActionDataSet(['identificador_fiscal' => 'acm010101aaa', 'regimen_fiscal' => null, 'codigo_postal' => null, 'correo' => null]);
-
-        App\Models\ReceptorFiscal::query()->create(['propiedad_id' => $this->propiedad->id, 'huesped_id' => $ficha->id, 'identificador_fiscal' => 'ACM010101AAA', 'nombre' => 'Acme SA', 'regimen_fiscal' => '601', 'codigo_postal' => '06000', 'uso' => 'G03']);
-
-        Livewire::actingAs($this->admin)->test(App\Filament\Resources\Reservas\Pages\ViewReserva::class, ['record' => $reserva->getRouteKey()])
-            ->mountAction('facturar')
-            ->assertActionDataSet(['regimen_fiscal' => '601', 'codigo_postal' => '06000', 'uso' => 'G03']);
-    });
-
-    it('sin empresa, sigue proponiendo lo del huésped', function (): void {
-        $ficha = ($this->ficha)();
-        App\Models\ReceptorFiscal::query()->create(['propiedad_id' => $this->propiedad->id, 'huesped_id' => $ficha->id, 'identificador_fiscal' => 'XAXX010101000', 'nombre' => 'Ana', 'regimen_fiscal' => '616', 'codigo_postal' => '40880', 'uso' => 'S01', 'correo' => 'ana@example.com']);
-        $hoy = $this->propiedad->hoy();
-        $reserva = ($this->reservar)($ficha, $hoy->format('Y-m-d'), $hoy->addDay()->format('Y-m-d'));
-
-        Livewire::actingAs($this->admin)->test(App\Filament\Resources\Reservas\Pages\ViewReserva::class, ['record' => $reserva->getRouteKey()])
-            ->mountAction('facturar')
-            ->assertActionDataSet(['identificador_fiscal' => 'XAXX010101000', 'nombre' => 'Ana', 'regimen_fiscal' => '616', 'correo' => 'ana@example.com']);
-    });
-});
-
-function crearFacturaDePrueba(object $prueba): App\Models\Factura
-{
-    $hoy = $prueba->propiedad->hoy();
-    $reserva = ($prueba->reservar)(($prueba->ficha)(), $hoy->format('Y-m-d'), $hoy->addDay()->format('Y-m-d'));
-    $entidad = App\Models\EntidadFiscal::query()->create(['propiedad_id' => $prueba->propiedad->id, 'nombre' => 'Posada SA de CV', 'pais' => 'MX', 'identificador_fiscal' => 'EKU9003173C9', 'regimen_fiscal' => '601', 'codigo_postal' => '06000', 'activa' => true]);
-    $serie = App\Models\SerieFacturacion::query()->create(['entidad_fiscal_id' => $entidad->id, 'serie' => 'A', 'siguiente_numero' => 41])->refresh();
-
-    return app(App\Facturacion\GestorFacturas::class)->emitir($reserva, $serie, ['identificador_fiscal' => 'xaxx010101000', 'nombre' => 'Ana Ejemplo', 'regimen_fiscal' => '616', 'codigo_postal' => '06000', 'uso' => 'S01', 'correo' => 'ana@example.com'], '04', 'PUE');
-}

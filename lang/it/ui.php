@@ -197,7 +197,7 @@ return [
         'pais_ayuda' => 'Scegliendolo vengono proposti la valuta, il fuso orario, la lingua e le regole di quel paese.',
         'avanzado' => 'Impostazioni avanzate',
         'avanzado_ayuda' => 'Si compilano da soli con il nome e il paese. Cambiali solo se serve.',
-        'paquete_pais_ayuda' => 'Le regole di fatturazione, imposte e registrazione degli ospiti che si applicano.',
+        'paquete_pais_ayuda' => 'Le regole di imposte e registrazione degli ospiti che si applicano.',
         'zona_horaria' => 'Fuso orario',
         'moneda' => 'Valuta (codice ISO a 3 lettere)',
         'idioma' => 'Lingua per gli ospiti',
@@ -236,7 +236,6 @@ return [
         'eliminar_independiente' => 'Verranno eliminati per sempre camere, tariffe, ospiti, prenotazioni e pagamenti. Non esiste un’altra copia di questi dati. Per confermare, scrivi il codice: :codigo',
         'eliminar_subordinada' => 'Viene eliminata da AlojaFlow, con i suoi dati propri. L’installazione principale non viene toccata.',
         'eliminar_confirmacion' => 'Codice della struttura',
-        'error_con_facturas' => 'Questa struttura ha fatture o ricevute emesse, che vanno conservate: non si può eliminare. Puoi disattivarla.',
     ],
     'ejecuciones' => [
         'iniciada' => 'Inizio',
@@ -482,8 +481,6 @@ return [
         'tarifa_no_reembolsable_texto' => 'La stessa camera, il 10 % in meno, pagando tutto alla prenotazione.',
         'tarifa_desayuno' => 'Doppia con colazione',
         'tarifa_desayuno_texto' => 'Include la colazione di ogni giorno.',
-        'entidad' => 'Hotel Bahía Serena SA de CV (fittizio)',
-        'domicilio' => 'Av. del Mar 123, Bahía de Banderas (fittizio)',
     ],
     'usuarios' => [
         'modelo' => 'utente',
@@ -588,7 +585,7 @@ return [
         'incluido' => 'Già inclusa nel prezzo',
         'incluido_ayuda' => 'Altrimenti si somma al totale della prenotazione.',
         'codigo' => 'Codice',
-        'codigo_ayuda' => 'Facoltativo; si usa nella fatturazione.',
+        'codigo_ayuda' => 'Facoltativo; un codice per riconoscerla.',
         'vacio' => 'Non ci sono ancora imposte',
     ],
     'cargos' => [

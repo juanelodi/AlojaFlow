@@ -129,8 +129,8 @@ final class Mensualidades
     }
 
     /**
-     * Reparte el total en pagos iguales, y el último cubre lo que no llena un periodo. No se toca lo ya facturado, que es un documento
-     * emitido, ni lo de un medidor, que se cobra aparte.
+     * Reparte el total en pagos iguales, y el último cubre lo que no llena un periodo. No se toca lo de un medidor, que se cobra
+     * aparte.
      *
      * @return int cuotas creadas
      */
@@ -141,10 +141,9 @@ final class Mensualidades
             if ($actual->estado === EstadoReserva::Cancelada) {
                 throw new ReservaRechazada(__('ui.reservas.error_cancelada'));
             }
-            $actual->cuotas()->whereNull('cargo_id')->whereDoesntHave('facturaVigente')->delete();
-            $quedan = $actual->cuotas()->get();
-            $importe = $actual->total - (int) $quedan->sum('importe');
-            $filas = $importe > 0 ? $this->plan($actual, $importe, $this->inicio($actual, $quedan->max('hasta')), $periodo, $primerVencimiento) : [];
+            $actual->cuotas()->whereNull('cargo_id')->delete();
+            $importe = $actual->total - (int) $actual->cuotas()->sum('importe');
+            $filas = $importe > 0 ? $this->plan($actual, $importe, CarbonImmutable::parse($actual->llegada->format('Y-m-d')), $periodo, $primerVencimiento) : [];
             foreach ($filas as $fila) {
                 $actual->cuotas()->create($fila);
             }
@@ -154,20 +153,13 @@ final class Mensualidades
         });
     }
 
-    private function inicio(Reserva $reserva, ?CarbonImmutable $hastaFacturado): CarbonImmutable
-    {
-        $llegada = CarbonImmutable::parse($reserva->llegada->format('Y-m-d'));
-
-        return $hastaFacturado !== null && $hastaFacturado->gt($llegada) ? CarbonImmutable::parse($hastaFacturado->format('Y-m-d')) : $llegada;
-    }
-
     /**
      * @return list<array{concepto: string|null, desde: string|null, hasta: string|null, importe: int, vence_en: string}>
      */
     private function plan(Reserva $reserva, int $importe, CarbonImmutable $inicio, string $periodo, CarbonImmutable $primerVencimiento): array
     {
         $periodos = self::periodos($inicio, CarbonImmutable::parse($reserva->salida->format('Y-m-d')), $periodo);
-        // Ya no quedan fechas por cobrar, y sí dinero: subió el total de algo ya facturado.
+        // Sin fechas que repartir: queda como saldo.
         if ($periodos === []) {
             return [['concepto' => __('estancias.cuotas.saldo', [], $reserva->propiedad->idioma), 'desde' => null, 'hasta' => null, 'importe' => $importe, 'vence_en' => $primerVencimiento->format('Y-m-d')]];
         }

@@ -87,7 +87,6 @@ return [
         'error_fecha' => 'En :unidad ya hay una lectura más reciente. Revisa la fecha.',
         'error_menor' => 'La lectura de :unidad es menor que la anterior (:anterior). Si cambiaste el medidor, marca «Medidor nuevo».',
         'error_no_ultima' => 'Solo se puede quitar la última lectura de cada medidor.',
-        'error_facturada' => 'Lo cobrado por esta lectura ya está facturado. Cancela primero la factura.',
     ],
     'residentes' => [
         'titulo' => 'Residentes',

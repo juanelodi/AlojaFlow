@@ -24,7 +24,6 @@ return [
         'procedencia' => 'Ciudad de procedencia',
         'motivo_viaje' => 'Motivo del viaje',
         'placas' => 'Placas del vehículo',
-        'rfc' => 'RFC (si necesitas factura)',
         'soporte' => 'Número de soporte',
         'parentesco' => 'Parentesco (en menores)',
     ],
@@ -40,17 +39,17 @@ Identificación y contacto: nombre, nacionalidad, fecha de nacimiento, domicilio
 No recabamos datos personales sensibles. Te pedimos no anotarlos en los comentarios.
 
 PARA QUÉ LOS USAMOS
-Finalidades necesarias: gestionar tu reserva y tu estancia, registrarte como huésped, cobrar y facturar, y atender aclaraciones.
+Finalidades necesarias: gestionar tu reserva y tu estancia, registrarte como huésped, cobrar y atender aclaraciones.
 Finalidades voluntarias: enviarte promociones. Si no lo deseas, escríbenos a {correo}; esto no afecta tu reserva.
 
 CON QUIÉN LOS COMPARTIMOS
-Con proveedores que nos ayudan a prestar el servicio (hospedaje de datos, correo, pagos), con las autoridades cuando la ley lo exige, y con el Servicio de Administración Tributaria para la facturación. No vendemos tus datos.
+Con proveedores que nos ayudan a prestar el servicio (hospedaje de datos, correo, pagos) y con las autoridades cuando la ley lo exige. No vendemos tus datos.
 
 TUS DERECHOS (ARCO)
 Puedes acceder a tus datos, rectificarlos, cancelarlos u oponerte a su uso, así como revocar tu consentimiento, escribiendo a {correo} o llamando al {telefono}. Indica tu nombre, cómo acreditas tu identidad y qué pides. Te responderemos en los plazos de la ley.
 
 CUÁNTO TIEMPO LOS GUARDAMOS
-La fotografía de tu identificación, hasta 30 días después de tu salida. Los datos del registro, un año. Lo fiscal, lo que exige la ley.
+La fotografía de tu identificación, hasta 30 días después de tu salida. Los datos del registro, un año. Los de tus pagos, lo que exige la ley.
 
 CAMBIOS
 Publicaremos cualquier cambio a este aviso en nuestra página o te lo daremos a conocer al hacer tu registro.

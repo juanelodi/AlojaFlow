@@ -24,7 +24,6 @@ use App\Enums\PaquetePais;
 use App\Enums\ServicioMedido;
 use App\Enums\TipoDocumentoLegal;
 use App\Enums\TipoLugar;
-use App\Facturacion\GestorFacturas;
 use App\Filament\Pages\Lecturas as PaginaLecturas;
 use App\Filament\Pages\Residentes as PaginaResidentes;
 use App\Filament\Resources\Reservas\Pages\EditReserva;
@@ -33,14 +32,11 @@ use App\Models\CargoReserva;
 use App\Models\ConceptoCargo;
 use App\Models\CuotaReserva;
 use App\Models\DocumentoLegal;
-use App\Models\EntidadFiscal;
 use App\Models\Huesped;
-use App\Models\Impuesto;
 use App\Models\Lectura;
 use App\Models\Plano;
 use App\Models\Propiedad;
 use App\Models\Reserva;
-use App\Models\SerieFacturacion;
 use App\Models\Tarifa;
 use App\Models\TemporadaTarifa;
 use App\Models\Unidad;
@@ -381,12 +377,6 @@ describe('lecturas', function (): void {
         $this->propiedad->refresh();
         $this->lecturas = app(GestorLecturas::class);
         $this->leer = fn (int $dias, string|float|int $actual, array $mas = []): int => $this->lecturas->registrar($this->propiedad, ServicioMedido::Luz, $this->hoy->addDays($dias), [$this->unidad->id => ['actual' => $actual] + $mas]);
-        $this->serie = function (): SerieFacturacion {
-            $entidad = EntidadFiscal::query()->create(['propiedad_id' => $this->propiedad->id, 'nombre' => 'Camping SA', 'pais' => 'MX', 'identificador_fiscal' => 'EKU9003173C9', 'regimen_fiscal' => '601', 'codigo_postal' => '01000']);
-
-            return SerieFacturacion::query()->create(['entidad_fiscal_id' => $entidad->id, 'serie' => 'A', 'siguiente_numero' => 1])->refresh();
-        };
-        $this->receptor = ['identificador_fiscal' => 'XAXX010101000', 'nombre' => 'Ana Ejemplo', 'regimen_fiscal' => '616', 'codigo_postal' => '06000', 'uso' => 'S01'];
     });
 
     it('la primera lectura es el punto de partida; la siguiente se cobra a quien está', function (): void {
@@ -552,37 +542,6 @@ describe('lecturas', function (): void {
         // Y quitar la lectura se lleva su pago.
         $this->lecturas->quitar(Lectura::query()->latest('id')->first());
         expect($reserva->cuotas()->whereNotNull('cargo_id')->count())->toBe(0);
-    });
-
-    it('la factura del pago del medidor lleva solo eso, y las demás no lo reparten', function (): void {
-        Impuesto::query()->create(['propiedad_id' => $this->propiedad->id, 'codigo' => '002', 'nombre' => 'IVA', 'base' => BaseCargo::PorcentajeAlojamiento, 'tasa' => 16, 'incluido_en_precio' => true, 'orden' => 1]);
-        $serie = ($this->serie)();
-        $reserva = app(GestorReservas::class)->crear($this->propiedad, ['unidad_id' => $this->unidad->id, 'titular_id' => $this->huesped->id, 'llegada' => $this->hoy->subDays(30)->format('Y-m-d'), 'salida' => $this->hoy->subDays(30)->addMonthsNoOverflow(2)->format('Y-m-d'), 'personas' => 2, 'estado' => EstadoReserva::Confirmada->value, 'total' => 2320000]);
-        app(Mensualidades::class)->generar($reserva, Mensualidades::MES, $this->hoy->subDays(30));
-        ($this->leer)(-20, 100);
-        ($this->leer)(0, 1100);
-        $reserva->refresh();
-
-        $delMedidor = app(GestorFacturas::class)->emitirCuota($reserva->cuotas()->whereNotNull('cargo_id')->sole(), $serie, $this->receptor, '04', 'PUE');
-        expect($delMedidor->total)->toBe(350000)
-            ->and($delMedidor->lineas()->sole()->concepto)->toContain('Luz');
-
-        $mes = app(GestorFacturas::class)->emitirCuota($reserva->cuotas()->whereNull('cargo_id')->first(), $serie, $this->receptor, '04', 'PUE');
-        expect($mes->total)->toBe(1160000)
-            ->and($mes->lineas()->sole()->concepto)->toContain('Hospedaje')
-            ->and($mes->subtotal + $mes->impuestos)->toBe(1160000);
-    });
-
-    it('lo facturado no se puede quitar', function (): void {
-        $serie = ($this->serie)();
-        $reserva = ($this->reservar)($this->unidad, -40, 40);
-        app(Mensualidades::class)->generar($reserva, Mensualidades::MES, $this->hoy->subDays(40));
-        ($this->leer)(-20, 100);
-        ($this->leer)(0, 110);
-        app(GestorFacturas::class)->emitirCuota($reserva->refresh()->cuotas()->whereNotNull('cargo_id')->sole(), $serie, $this->receptor, '04', 'PUE');
-
-        expect(fn () => $this->lecturas->quitar(Lectura::query()->latest('id')->first()))->toThrow(ErrorLectura::class, __('camping.lecturas.error_facturada'));
-        expect($reserva->refresh()->cargos()->count())->toBe(1);
     });
 
     it('la pantalla captura en bloque, enseña lo que se va a cobrar y deja quitar', function (): void {

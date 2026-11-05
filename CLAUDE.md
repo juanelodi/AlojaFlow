@@ -4,7 +4,7 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-05): versión de prueba 1.0.30**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-05): versión de prueba 1.0.31**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
   D-029) y D-036 se revisan con el usuario. El plan de [docs/plan-paridad.md](docs/plan-paridad.md) quedó completo en la 1.0.24, y lo que se eligió del núcleo heredado ([docs/nucleo-heredado.md](docs/nucleo-heredado.md), D-117), en la 1.0.29.
@@ -117,9 +117,8 @@ spatie/laravel-permission 8, Pest 4, Larastan 3.
 | Roles y permisos | spatie/laravel-permission | MIT |
 | Copias de seguridad | Propias, sin `mysqldump` (`App\Copias`, D-038) | — |
 | Calendarios iCal (Airbnb, Booking, Vrbo) | sabre/vobject | BSD-3 |
-| PDF (facturas, contratos) | barryvdh/laravel-dompdf (dompdf) | MIT / LGPL-2.1 |
+| PDF (recibos, contratos) | barryvdh/laravel-dompdf (dompdf) | MIT / LGPL-2.1 |
 | Pagos en línea | Stripe y Mercado Pago por su API, sin SDK (`App\Pagos`, D-042) | — |
-| Facturación electrónica México | XML de CFDI 4.0 propio; timbra con SW Sapien por su API, sin SDK (`App\Facturacion`, D-049, D-098) | — |
 | Colas y tareas | driver `database` + programador de Laravel con un solo cron por minuto (sin Redis ni Supervisor) | — |
 | Pruebas | Pest | MIT |
 | Análisis estático | Larastan (PHPStan) | MIT |
@@ -137,7 +136,7 @@ recursos ya compilados; un solo cron dispara el programador de tareas. Sin CDN e
 ejecución: todos los recursos se sirven desde la instalación. `public/.htaccess` los comprime y los
 deja en caché (D-067, `docs/rendimiento-movil.md`).
 
-**Paquetes de país.** Lo que cambia por país (facturación, registro de viajeros, impuestos al
+**Paquetes de país.** Lo que cambia por país (registro de viajeros, impuestos al
 hospedaje, privacidad, documentos de identidad, formatos) va detrás de interfaces con una
 implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nada de
 `if ($pais === …)` repartidos por el código.
@@ -145,7 +144,7 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 ## Convenciones
 
 - **Código en español:** clases, métodos, variables, tablas, columnas y rutas en español, sin
-  acentos ni ñ (`Habitacion`, `anio`, `crearFactura()`, tabla `reservas`). Lo que imponen
+  acentos ni ñ (`Habitacion`, `anio`, `crearReserva()`, tabla `reservas`). Lo que imponen
   Laravel y los paquetes se queda como viene (`users`, `jobs`, `roles`, `handle()`,
   `render()`…).
 - **Modelos Eloquent con `$table` explícito:** el pluralizador de Laravel es inglés
@@ -209,8 +208,8 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 - `app/Limpieza/AvisoEquipo.php`, el parte para el equipo, y `Omisiones.php`, a quién no mostrar en cada lugar (D-074).
 - `app/Limpieza/`, `app/Comunicacion/` (`Mensajero`, D-045), `app/Ical/` (D-046), `app/Llegada/` y
   `app/Privacidad/` (D-047): datos propios, que valen igual en independientes y subordinadas.
-- `app/Paises/` — **todo lo que cambia por país** va detrás de `Pais` (D-048). `app/Facturacion/`,
-  facturas y CFDI (D-049). `app/Dinero/`, políticas (D-050).
+- `app/Paises/` — **todo lo que cambia por país** va detrás de `Pais` (D-048). `app/Dinero/`, políticas (D-050). Por ahora no se factura
+  en ningún país: de un pago sale un recibo (`GeneradorPdf::recibo`, D-131).
 - `app/Autoridades/` — registro de viajeros: `GestorEnvios` concilia reservas con lo comunicado y `Ses/` es SES.Hospedajes (D-100).
 - `app/Documentos/` — PDF (`GeneradorPdf`), documentos que escribe el alojamiento (`MotorDocumentos`, D-123) y `CamposPropios` (D-122).
 - `app/Propietarios/` — propiedades de terceros: `CalculadorEstado` y `GestorEstados` (D-114, D-115), `AccesoPropietario` y `PortalPropietario` (D-116). `app/Seguridad/AccesoConClave.php`, enlace y clave de quien no es usuario del panel.

@@ -87,7 +87,6 @@ return [
         'error_fecha' => ':unidad a déjà un relevé plus récent. Vérifiez la date.',
         'error_menor' => 'Le relevé de :unidad est inférieur au précédent (:anterior). Si vous avez changé le compteur, cochez « Nouveau compteur ».',
         'error_no_ultima' => 'Seul le dernier relevé de chaque compteur peut être retiré.',
-        'error_facturada' => 'Le montant de ce relevé est déjà facturé. Annulez d’abord la facture.',
     ],
     'residentes' => [
         'titulo' => 'Résidents',

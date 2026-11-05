@@ -14,14 +14,10 @@ use App\Comunicacion\Mensajero;
 use App\Comunicacion\VariablesMensaje;
 use App\Enums\EstadoReserva;
 use App\Enums\TipoReserva;
-use App\Facturacion\GestorFacturas;
-use App\Filament\Resources\Reservas\AccionesReserva;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\CuotaReserva;
-use App\Models\Factura;
 use App\Models\RegistroAuditoria;
 use App\Models\Reserva;
-use App\Models\SerieFacturacion;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Motor\Pasarelas;
@@ -43,11 +39,10 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * El calendario de cobros de una estancia larga (D-108): generarlo, ajustarlo a mano, recordar y facturar cada pago.
+ * El calendario de cobros de una estancia larga (D-108): generarlo, ajustarlo a mano, y recordar cada pago.
  */
 class CuotasRelationManager extends RelationManager
 {
@@ -64,12 +59,12 @@ class CuotasRelationManager extends RelationManager
     }
 
     /**
-     * Quien cobra y quien factura. En una subordinada los pagos los lleva la principal, y un grupo tiene su propio calendario.
+     * Quien cobra y quien lleva las cuentas. En una subordinada los pagos los lleva la principal, y un grupo tiene su propio calendario.
      */
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
         return Modulos::activo(Modulo::EstanciasLargas) && $ownerRecord instanceof Reserva && $ownerRecord->tipo === TipoReserva::Reserva && $ownerRecord->grupo_id === null && ! $ownerRecord->sincronizada
-            && (in_array($ownerRecord->propiedad_id, ReservaResource::propiedadesGestionables(), true) || Acceso::puede(Acceso::usuarioActual(), Acceso::FACTURACION, $ownerRecord->propiedad_id));
+            && (in_array($ownerRecord->propiedad_id, ReservaResource::propiedadesGestionables(), true) || Acceso::puede(Acceso::usuarioActual(), Acceso::CUENTAS, $ownerRecord->propiedad_id));
     }
 
     public function isReadOnly(): bool
@@ -80,7 +75,6 @@ class CuotasRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('facturaVigente'))
             ->paginated(false)
             ->description(fn (): ?string => $this->avisoDeSuma())
             ->columns([
@@ -96,10 +90,6 @@ class CuotasRelationManager extends RelationManager
                         'parcial' => 'warning',
                         default => 'gray',
                     }),
-                TextColumn::make('factura')->label(__('estancias.cuotas.factura'))->placeholder('—')
-                    ->visible(fn (): bool => Modulos::activo(Modulo::Facturacion))
-                    ->state(fn (CuotaReserva $record): ?string => $record->facturaVigente?->folio())
-                    ->url(fn (CuotaReserva $record): ?string => $record->facturaVigente?->pdf_archivo_id === null ? null : route('archivos.ver', (int) $record->facturaVigente->pdf_archivo_id), shouldOpenInNewTab: true),
             ])
             ->emptyStateHeading(__('estancias.cuotas.vacio'))
             ->emptyStateDescription(__('estancias.cuotas.vacio_ayuda'))
@@ -141,17 +131,6 @@ class CuotasRelationManager extends RelationManager
             ])
             ->recordActions([
                 ActionGroup::make([
-                    Action::make('facturarCuota')
-                        ->label(__('dinero.facturas.facturar'))
-                        ->icon(Heroicon::OutlinedDocumentCurrencyDollar)
-                        ->color('gray')
-                        ->visible(fn (CuotaReserva $record): bool => Modulos::activo(Modulo::Facturacion) && $record->facturaVigente === null && $this->reserva()->estado !== EstadoReserva::Cancelada && Acceso::puede(Acceso::usuarioActual(), Acceso::FACTURACION, $this->reserva()->propiedad_id))
-                        ->fillForm(fn (): array => AccionesReserva::datosFactura($this->reserva()))
-                        ->schema(fn (): array => AccionesReserva::camposFactura($this->reserva()))
-                        ->action(function (CuotaReserva $record, array $data, GestorFacturas $facturas): void {
-                            $serie = SerieFacturacion::query()->with('entidad')->findOrFail((int) $data['serie_id']);
-                            AccionesReserva::emitirFactura($data, fn (array $receptor): Factura => $facturas->emitirCuota($record, $serie, $receptor, $data['forma_pago'] ?? null, $data['metodo_pago'] ?? null));
-                        }),
                     Action::make('enlaceCuota')
                         ->label(__('operacion.enlaces.crear'))
                         ->icon(Heroicon::OutlinedLink)
@@ -173,14 +152,10 @@ class CuotasRelationManager extends RelationManager
                     Action::make('editarCuota')
                         ->label(__('estancias.cuotas.editar'))
                         ->icon(Heroicon::OutlinedPencilSquare)
-                        ->visible(fn (CuotaReserva $record): bool => $this->puedeCambiar() && $record->facturaVigente === null && $record->cargo_id === null)
+                        ->visible(fn (CuotaReserva $record): bool => $this->puedeCambiar() && $record->cargo_id === null)
                         ->fillForm(fn (CuotaReserva $record): array => ['concepto' => $record->concepto, 'importe' => Dinero::aDecimal($record->importe, $this->reserva()->moneda), 'vence_en' => $record->vence_en->format('Y-m-d')])
                         ->schema(fn (CuotaReserva $record): array => $this->campos($record->desde === null))
                         ->action(function (CuotaReserva $record, array $data): void {
-                            // Se vuelve a mirar aquí: entre abrir el formulario y guardarlo, alguien pudo haberla facturado.
-                            if ($record->facturaVigente()->exists()) {
-                                return;
-                            }
                             $record->update($this->datos($data));
                             RegistroAuditoria::anotar('cuota_reserva.editar', $record, ['importe' => $record->importe], $this->reserva()->propiedad_id);
                             $this->filas = null;
@@ -190,11 +165,8 @@ class CuotasRelationManager extends RelationManager
                         ->icon(Heroicon::OutlinedTrash)
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->visible(fn (CuotaReserva $record): bool => $this->puedeCambiar() && $record->facturaVigente === null && $record->cargo_id === null)
+                        ->visible(fn (CuotaReserva $record): bool => $this->puedeCambiar() && $record->cargo_id === null)
                         ->action(function (CuotaReserva $record): void {
-                            if ($record->facturaVigente()->exists()) {
-                                return;
-                            }
                             RegistroAuditoria::anotar('cuota_reserva.quitar', $record, ['importe' => $record->importe], $this->reserva()->propiedad_id);
                             $record->delete();
                             $this->filas = null;

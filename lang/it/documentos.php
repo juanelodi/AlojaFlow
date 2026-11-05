@@ -13,6 +13,7 @@ return [
     'codigo' => 'Codice',
     'confirmacion' => 'Conferma di prenotazione',
     'recibo' => 'Ricevuta di pagamento',
+    'recibo_numero' => 'Ricevuta n.',
     'devolucion' => 'Ricevuta di rimborso',
     'estancia' => 'Soggiorno',
     'importes' => 'Importi',

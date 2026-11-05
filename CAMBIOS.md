@@ -2,6 +2,17 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.31 — 2026-11-05
+
+**Por ahora no se factura, en ningún país.** De cada pago sale un recibo normal en PDF, con su número, y ese es el único documento de cobro.
+
+- **Se quitó:** Facturas, Datos fiscales, el módulo de facturación, el botón **Facturar** de la reserva y de cada pago del calendario, el CFDI y el timbrado de México, la exportación de facturas y el libro para España.
+- **Se quitó del registro de llegada de México** el campo RFC, que solo servía para facturar. Lo que ya se haya capturado no se borra.
+- **El permiso «Datos fiscales, facturas y exportaciones»** ahora se llama «Estados de cuenta y calendario de cobros». El rol de contador lo conserva.
+- **Una propiedad con documentos emitidos** ya se puede borrar, y un pago del calendario ya se puede cambiar o quitar, porque ya no hay factura de por medio.
+
+**Antes de actualizar:** si en tu instalación emitiste facturas o recibos desde la pantalla de Facturas, descárgalos primero. La actualización los borra, con sus XML y PDF, y solo quedan en la copia de la base que hace antes de empezar. Los recibos de cada pago no cambian: se generan al pedirlos.
+
 ## 1.0.30 — 2026-11-05
 
 **Lo que exportas se abre en columnas en cualquier Excel.** Antes dependía del país: lo que salía con comas quedaba en una sola columna en el Excel de España, Francia o Alemania, y lo que salía con punto y coma, en el de México y Estados Unidos.

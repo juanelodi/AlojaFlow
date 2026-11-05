@@ -62,7 +62,7 @@ Filament o propia con Livewire (D-010).
 |---|---|---|
 | Acceso | Inicio de sesión, 2FA, recuperar contraseña | Fortify + Livewire |
 | Operación | Resumen de propiedades, Hoy, Cierre del día, Calendario por habitaciones, Disponibilidad, Plano de ocupación, Reserva (consulta con enlace a la principal y datos propios), Huésped, Limpieza (móvil), Mantenimiento, Aviso de entradas y salidas, Mensajes, Choques iCal, Facturas, Informes, Estado de la sincronización | Livewire propio |
-| Administración | Propiedades y principales, Unidades (fotos, plano), Usuarios y roles, Plantillas, Automatizaciones y webhooks, Calendarios iCal, Políticas, País e impuestos, Facturación (certificados, PAC, series), Documentos legales, Idiomas, Copias de seguridad, Actualizaciones, Auditoría | Filament |
+| Administración | Propiedades y principales, Unidades (fotos, plano), Usuarios y roles, Plantillas, Automatizaciones y webhooks, Calendarios iCal, Políticas, País e impuestos, Documentos legales, Idiomas, Copias de seguridad, Actualizaciones, Auditoría | Filament |
 | Huésped (públicas) | Pre-check-in, Firma del contrato con OTP, Aviso de privacidad | Livewire propio |
 | Comunes | «Acerca de» y «Código fuente», selector de propiedad, indicador de antigüedad de los datos | Ambas |
 

@@ -67,8 +67,6 @@ return [
         'copia_aceptacion' => 'Signed copy',
         'foto_tarea' => 'Photo',
         'plano' => 'Floor plan',
-        'factura_xml' => 'Invoice (XML)',
-        'factura_pdf' => 'Invoice (PDF)',
         'exportacion' => 'Export',
         'comprobante' => 'Payment receipt',
         'foto_publica' => 'Public page photo',
@@ -117,7 +115,6 @@ return [
         'ical' => 'iCal calendar',
         'llegada' => 'Online check-in',
         'contrato' => 'Contract',
-        'factura' => 'Invoice',
         'grupo' => 'Group',
         'mi_reserva' => 'My booking',
         'propietario' => 'Owner portal',
@@ -159,21 +156,8 @@ return [
         'anonimizacion' => 'Anonymization',
     ],
 
-    'EstadoFactura' => [
-        'emitida' => 'Issued',
-        'registrada' => 'Stamped',
-        'cancelada' => 'Cancelled',
-    ],
 
-    'TipoDocumentoFiscal' => [
-        'factura' => 'Invoice',
-        'recibo' => 'Receipt without tax value',
-    ],
 
-    'ModoFiscal' => [
-        'pruebas' => 'Testing',
-        'produccion' => 'Production',
-    ],
     'EstadoGrupo' => [
         'tentativo' => 'Tentative',
         'confirmado' => 'Confirmed',
@@ -188,12 +172,6 @@ return [
         'por_confirmar' => 'To be confirmed',
         'confirmado' => 'Confirmed',
         'rechazado' => 'Rejected',
-    ],
-    'MotivoCancelacionCfdi' => [
-        '01' => '01 · With errors, with a replacing invoice',
-        '02' => '02 · With errors, without a replacing invoice',
-        '03' => '03 · The transaction did not take place',
-        '04' => '04 · Transaction included in a global invoice',
     ],
     'EstadoEnvioAutoridad' => [
         'pendiente' => 'To send',

@@ -33,7 +33,6 @@ use App\Models\Huesped;
 use App\Models\NotaReserva;
 use App\Models\Principal;
 use App\Models\Propiedad;
-use App\Models\ReceptorFiscal;
 use App\Models\RegistroAuditoria;
 use App\Models\RegistroLlegada;
 use App\Models\Unidad;
@@ -95,7 +94,6 @@ describe('privacidad', function () {
         $copia = app(GestorArchivos::class)->guardar('pdf con nombre', 'aceptacion.pdf', 'application/pdf', ClaseArchivo::CopiaAceptacion, null, $this->propiedad->id, cifrar: true);
         $aceptacion = Aceptacion::query()->create(['reserva_id' => $this->reserva->id, 'propiedad_id' => $this->propiedad->id, 'documento_legal_id' => $documento->id, 'firmante_nombre' => 'Ana Ejemplo', 'ip' => '203.0.113.5', 'huella_documento' => $documento->huella, 'aceptada_en' => now('UTC'), 'verificacion' => 'casilla', 'copia_archivo_id' => $copia->id, 'conservar_hasta' => now()->addYears(5)]);
         NotaReserva::query()->create(['reserva_id' => $this->reserva->id, 'texto' => 'Ana viene con su mamá']);
-        ReceptorFiscal::query()->create(['propiedad_id' => $this->propiedad->id, 'huesped_id' => $this->huesped->id, 'nombre' => 'Ana Ejemplo', 'identificador_fiscal' => 'XAXX010101000']);
         $aviso = Envio::query()->create(['propiedad_id' => $this->propiedad->id, 'reserva_id' => $this->reserva->id, 'canal' => 'correo', 'destino' => 'dueno@example.com', 'asunto' => 'Nueva reserva', 'cuerpo' => 'Ana Ejemplo, ana@example.com', 'estado' => 'manual', 'clave_idempotencia' => 'motor:reserva:1']);
 
         app(GestorPrivacidad::class)->anonimizar($this->huesped);
@@ -103,8 +101,7 @@ describe('privacidad', function () {
         expect($aceptacion->refresh()->copia_archivo_id)->toBeNull()
             ->and(Storage::disk('local')->exists($copia->ruta))->toBeFalse()
             ->and($aviso->refresh()->cuerpo)->toBeNull()
-            ->and(NotaReserva::query()->count())->toBe(0)
-            ->and(ReceptorFiscal::query()->count())->toBe(0);
+            ->and(NotaReserva::query()->count())->toBe(0);
     });
 
     it('anonimizar a quien viajó de acompañante limpia sus datos y deja los del titular', function () {

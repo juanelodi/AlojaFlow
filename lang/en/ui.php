@@ -198,7 +198,7 @@ return [
         'pais_ayuda' => 'Choosing it proposes the currency, time zone, language and rules of that country.',
         'avanzado' => 'Advanced settings',
         'avanzado_ayuda' => 'They fill in from the name and the country. Change them only if needed.',
-        'paquete_pais_ayuda' => 'The invoicing, tax and guest registration rules that apply.',
+        'paquete_pais_ayuda' => 'The tax and guest registration rules that apply.',
         'pais' => 'Country',
         'zona_horaria' => 'Time zone',
         'moneda' => 'Currency (3-letter ISO code)',
@@ -238,7 +238,6 @@ return [
         'eliminar_independiente' => 'Its rooms, rates, guests, bookings and payments will be deleted forever. There is no other copy of this data. To confirm, type the code: :codigo',
         'eliminar_subordinada' => 'It is deleted from AlojaFlow with its own data. The main installation is not touched.',
         'eliminar_confirmacion' => 'Property code',
-        'error_con_facturas' => 'This property has issued invoices or receipts, which must be kept: it cannot be deleted. You can deactivate it.',
     ],
 
     'ejecuciones' => [
@@ -491,8 +490,6 @@ return [
         'tarifa_no_reembolsable_texto' => 'The same room, 10% cheaper, paying in full when booking.',
         'tarifa_desayuno' => 'Double with breakfast',
         'tarifa_desayuno_texto' => 'Includes breakfast every day.',
-        'entidad' => 'Hotel Bahía Serena SA de CV (fictitious)',
-        'domicilio' => 'Av. del Mar 123, Bahía de Banderas (fictitious)',
     ],
 
     'usuarios' => [
@@ -604,7 +601,7 @@ return [
         'incluido' => 'Already included in the price',
         'incluido_ayuda' => 'If not, it is added to the booking total.',
         'codigo' => 'Code',
-        'codigo_ayuda' => 'Optional; used for invoicing.',
+        'codigo_ayuda' => 'Optional; a code to identify it.',
         'vacio' => 'No taxes yet',
     ],
 

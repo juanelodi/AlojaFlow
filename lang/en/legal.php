@@ -24,7 +24,6 @@ return [
         'procedencia' => 'City you are coming from',
         'motivo_viaje' => 'Reason for travel',
         'placas' => 'Vehicle license plate',
-        'rfc' => 'RFC (if you need an invoice)',
         'soporte' => 'Support number',
         'parentesco' => 'Relationship (for minors)',
     ],
@@ -40,17 +39,17 @@ Identification and contact: name, nationality, date of birth, address, email and
 We do not collect sensitive personal data. Please do not write it in comments.
 
 WHAT WE USE IT FOR
-Necessary purposes: managing your booking and stay, registering you as a guest, charging and invoicing, and handling queries.
+Necessary purposes: managing your booking and stay, registering you as a guest, charging and handling queries.
 Voluntary purposes: sending you promotions. If you do not want this, write to {correo}; it does not affect your booking.
 
 WHO WE SHARE IT WITH
-Providers who help us deliver the service (data hosting, email, payments), authorities when the law requires it, and the Mexican tax authority (SAT) for invoicing. We do not sell your data.
+Providers who help us deliver the service (data hosting, email, payments) and authorities when the law requires it. We do not sell your data.
 
 YOUR RIGHTS (ARCO)
 You can access, rectify, cancel or object to the use of your data, and revoke your consent, by writing to {correo} or calling {telefono}. Include your name, how you prove your identity and what you request. We will respond within the legal time limits.
 
 HOW LONG WE KEEP IT
-The photo of your ID, up to 30 days after you leave. Registration data, one year. Tax data, as long as the law requires.
+The photo of your ID, up to 30 days after you leave. Registration data, one year. Payment data, as long as the law requires.
 
 CHANGES
 We will publish any change to this notice on our website or tell you about it when you register.

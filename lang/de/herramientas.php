@@ -39,11 +39,6 @@ return [
         'ayuda' => 'Freie Angaben zu diesem Eintrag, wie «Typ: VIP». Passen sie zu einer Farbe unter Kundenfarben, werden die Buchungen im Kalender so markiert.',
         'agregar' => 'Angabe hinzufügen',
     ],
-    'facturas' => [
-        'formato' => 'Format',
-        'excel' => 'Zum Öffnen in Excel',
-        'csv' => 'Standard-CSV für andere Programme (Komma, Dezimalpunkt)',
-    ],
     'franja' => [
         'dias' => 'Tage zum Kopieren',
         'dias_ayuda' => 'Ohne Auswahl jeden Tag.',

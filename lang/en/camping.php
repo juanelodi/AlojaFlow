@@ -87,7 +87,6 @@ return [
         'error_fecha' => ':unidad already has a more recent reading. Check the date.',
         'error_menor' => 'The reading for :unidad is lower than the previous one (:anterior). If you replaced the meter, tick “New meter”.',
         'error_no_ultima' => 'Only the last reading of each meter can be removed.',
-        'error_facturada' => 'The charge for this reading has already been invoiced. Cancel the invoice first.',
     ],
     'residentes' => [
         'titulo' => 'Residents',

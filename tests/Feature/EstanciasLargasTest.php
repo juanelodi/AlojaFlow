@@ -15,7 +15,6 @@ use App\Enums\AccionAutomatizacion;
 use App\Enums\BaseCargo;
 use App\Enums\DisparadorAutomatizacion;
 use App\Enums\EstadoEnvio;
-use App\Enums\EstadoFactura;
 use App\Enums\EstadoReserva;
 use App\Enums\LugarOmision;
 use App\Enums\MetodoPago;
@@ -23,14 +22,11 @@ use App\Enums\ModoPropiedad;
 use App\Enums\ModoTarifa;
 use App\Enums\PaquetePais;
 use App\Enums\TipoContacto;
-use App\Facturacion\ErrorFacturacion;
-use App\Facturacion\GestorFacturas;
 use App\Filament\Pages\Mensualidades as PaginaMensualidades;
 use App\Filament\Resources\Reservas\Pages\ViewReserva;
 use App\Filament\Resources\Reservas\RelationManagers\CuotasRelationManager;
 use App\Models\Automatizacion;
 use App\Models\CuotaReserva;
-use App\Models\EntidadFiscal;
 use App\Models\Envio;
 use App\Models\Grupo;
 use App\Models\Huesped;
@@ -39,7 +35,6 @@ use App\Models\Omision;
 use App\Models\Plantilla;
 use App\Models\Propiedad;
 use App\Models\Reserva;
-use App\Models\SerieFacturacion;
 use App\Models\Tarifa;
 use App\Models\TemporadaTarifa;
 use App\Models\Unidad;
@@ -350,177 +345,6 @@ describe('lo que toca cobrar en línea', function (): void {
     });
 });
 
-describe('factura por pago', function (): void {
-    beforeEach(function (): void {
-        Impuesto::query()->create(['propiedad_id' => $this->propiedad->id, 'codigo' => '002', 'nombre' => 'IVA', 'base' => BaseCargo::PorcentajeAlojamiento, 'tasa' => 16, 'incluido_en_precio' => true, 'orden' => 1]);
-        $entidad = EntidadFiscal::query()->create(['propiedad_id' => $this->propiedad->id, 'nombre' => 'Posada SA de CV', 'pais' => 'MX', 'identificador_fiscal' => 'EKU9003173C9', 'regimen_fiscal' => '601', 'codigo_postal' => '01000']);
-        $this->serie = SerieFacturacion::query()->create(['entidad_fiscal_id' => $entidad->id, 'serie' => 'A', 'siguiente_numero' => 41])->refresh();
-        $this->facturas = app(GestorFacturas::class);
-        $this->receptor = ['identificador_fiscal' => 'xaxx010101000', 'nombre' => 'Ana Ejemplo', 'regimen_fiscal' => '616', 'codigo_postal' => '06000', 'uso' => 'S01', 'correo' => 'ana@example.com'];
-        $this->conCalendario = function (): Reserva {
-            $reserva = app(GestorReservas::class)->crear($this->propiedad, [
-                'unidad_id' => $this->unidad->id, 'titular_id' => $this->huesped->id, 'llegada' => '2027-01-15', 'salida' => '2027-03-15', 'personas' => 2, 'estado' => EstadoReserva::Confirmada->value, 'total' => 2320000,
-            ]);
-            app(Mensualidades::class)->generar($reserva, Mensualidades::MES, ($this->fecha)('2027-01-15'));
-
-            return $reserva;
-        };
-    });
-
-    it('factura lo de ese pago, con su periodo y sus impuestos que cuadran', function (): void {
-        $reserva = ($this->conCalendario)();
-        $cuota = $reserva->cuotas()->first();
-
-        $factura = $this->facturas->emitirCuota($cuota, $this->serie, $this->receptor, '04', 'PUE');
-
-        expect($factura->total)->toBe(1160000)
-            ->and($factura->subtotal)->toBe(1000000)
-            ->and($factura->impuestos)->toBe(160000)
-            ->and($factura->cuota_reserva_id)->toBe($cuota->id)
-            ->and($factura->lineas()->first()->concepto)->toContain('Cuarto 101')->toContain($reserva->numero)->toContain('2027')
-            ->and($factura->reservas()->pluck('reservas.id')->all())->toBe([$reserva->id])
-            ->and($cuota->refresh()->facturaVigente?->id)->toBe($factura->id);
-    });
-
-    it('el XML de México sale bien formado con los importes del pago', function (): void {
-        $reserva = ($this->conCalendario)();
-
-        $factura = $this->facturas->emitirCuota($reserva->cuotas()->first(), $this->serie, $this->receptor, '04', 'PUE');
-
-        $xml = simplexml_load_string(app(App\Archivos\GestorArchivos::class)->contenido($factura->xml));
-        expect((string) $xml['SubTotal'])->toBe('10000.00')
-            ->and((string) $xml['Total'])->toBe('11600.00');
-    });
-
-    it('un cargo de la reserva va en su línea, en proporción, y todo suma justo el pago', function (): void {
-        $reserva = ($this->conCalendario)();
-        $reserva->cargos()->create(['nombre' => 'Limpieza', 'cantidad' => 1, 'importe' => 232000]);
-
-        $factura = $this->facturas->emitirCuota($reserva->refresh()->cuotas()->first(), $this->serie, $this->receptor, '04', 'PUE');
-
-        $lineas = $factura->lineas()->orderBy('orden')->get();
-        expect($lineas)->toHaveCount(2)
-            ->and($lineas[1]->concepto)->toBe('Limpieza')
-            ->and($lineas[1]->importe)->toBe(100000)
-            ->and($factura->subtotal + $factura->impuestos)->toBe(1160000);
-    });
-
-    it('una reserva cancelada ya no se factura por pagos', function (): void {
-        $reserva = ($this->conCalendario)();
-        app(GestorReservas::class)->cancelar($reserva);
-
-        expect(fn () => $this->facturas->emitirCuota($reserva->cuotas()->first(), $this->serie, $this->receptor))->toThrow(ErrorFacturacion::class, __('ui.reservas.error_cancelada'));
-    });
-
-    it('no se factura dos veces el mismo pago, y cancelada se puede volver a facturar', function (): void {
-        $cuota = ($this->conCalendario)()->cuotas()->first();
-        $factura = $this->facturas->emitirCuota($cuota, $this->serie, $this->receptor, '04', 'PUE');
-
-        expect(fn () => $this->facturas->emitirCuota($cuota, $this->serie, $this->receptor))->toThrow(ErrorFacturacion::class, __('dinero.facturas.error_ya_facturada'));
-
-        $this->facturas->cancelar($factura, 'Error en el nombre');
-        expect($factura->refresh()->estado)->toBe(EstadoFactura::Cancelada)
-            ->and($this->facturas->emitirCuota($cuota->refresh(), $this->serie, $this->receptor, '04', 'PUE')->folio())->toBe('A-42');
-    });
-
-    it('cada pago tiene la suya, y la reserva entera ya no se puede facturar', function (): void {
-        $reserva = ($this->conCalendario)();
-        [$primera, $segunda] = $reserva->cuotas()->get()->all();
-
-        $this->facturas->emitirCuota($primera, $this->serie, $this->receptor, '04', 'PUE');
-        expect($this->facturas->emitirCuota($segunda, $this->serie, $this->receptor, '04', 'PUE')->folio())->toBe('A-42');
-
-        expect(fn () => $this->facturas->emitir($reserva->refresh(), $this->serie, $this->receptor))->toThrow(ErrorFacturacion::class, __('dinero.facturas.error_ya_facturada'));
-    });
-
-    it('con la reserva entera facturada, un pago ya no se factura', function (): void {
-        $reserva = ($this->conCalendario)();
-        $this->facturas->emitir($reserva, $this->serie, $this->receptor, '04', 'PUE');
-
-        expect(fn () => $this->facturas->emitirCuota($reserva->cuotas()->first(), $this->serie, $this->receptor))->toThrow(ErrorFacturacion::class, __('dinero.facturas.error_ya_facturada'));
-    });
-
-    it('lo facturado no puede pasar del total, aunque el calendario sume de más', function (): void {
-        $reserva = ($this->conCalendario)();
-        [$primera, $segunda] = $reserva->cuotas()->get()->all();
-        $segunda->update(['importe' => 1160001]);
-        $this->facturas->emitirCuota($primera, $this->serie, $this->receptor, '04', 'PUE');
-
-        expect(fn () => $this->facturas->emitirCuota($segunda->refresh(), $this->serie, $this->receptor))->toThrow(ErrorFacturacion::class, __('estancias.cuotas.error_factura_total'));
-        expect($this->serie->refresh()->siguiente_numero)->toBe(42);
-    });
-
-    it('generar otra vez respeta lo facturado y reparte solo lo que falta', function (): void {
-        $reserva = ($this->conCalendario)();
-        $this->facturas->emitirCuota($reserva->cuotas()->first(), $this->serie, $this->receptor, '04', 'PUE');
-        app(GestorReservas::class)->cambiarTotal($reserva->refresh(), 2900000);
-
-        app(Mensualidades::class)->generar($reserva->refresh(), Mensualidades::MES, ($this->fecha)('2027-02-15'));
-
-        $cuotas = $reserva->cuotas()->get();
-        expect($cuotas->pluck('importe')->all())->toBe([1160000, 1740000])
-            ->and($cuotas[1]->desde->format('Y-m-d'))->toBe('2027-02-15')
-            ->and($cuotas[0]->facturaVigente)->not->toBeNull();
-    });
-
-    it('si ya no quedan fechas por cobrar y sí dinero, queda como saldo', function (): void {
-        $reserva = ($this->conCalendario)();
-        foreach ($reserva->cuotas()->get() as $cuota) {
-            $this->facturas->emitirCuota($cuota, $this->serie, $this->receptor, '04', 'PUE');
-        }
-        app(GestorReservas::class)->cambiarTotal($reserva->refresh(), 2420000);
-
-        expect(app(Mensualidades::class)->generar($reserva->refresh(), Mensualidades::MES, ($this->fecha)('2027-03-15')))->toBe(1);
-
-        $saldo = $reserva->cuotas()->get()->last();
-        expect($saldo->importe)->toBe(100000)
-            ->and($saldo->periodo())->toBe(__('estancias.cuotas.saldo'));
-    });
-
-    it('si todo está facturado, no hay nada que repartir', function (): void {
-        $reserva = ($this->conCalendario)();
-        foreach ($reserva->cuotas()->get() as $cuota) {
-            $this->facturas->emitirCuota($cuota, $this->serie, $this->receptor, '04', 'PUE');
-        }
-
-        expect(app(Mensualidades::class)->generar($reserva->refresh(), Mensualidades::MES, ($this->fecha)('2027-03-15')))->toBe(0);
-    });
-
-    it('un impuesto exento por estancia larga no sale en la factura', function (): void {
-        Impuesto::query()->where('propiedad_id', $this->propiedad->id)->update(['exento_desde_noches' => 30]);
-        $reserva = ($this->conCalendario)();
-
-        $factura = $this->facturas->emitirCuota($reserva->cuotas()->first(), $this->serie, $this->receptor, '04', 'PUE');
-
-        expect($factura->impuestos)->toBe(0)
-            ->and($factura->subtotal)->toBe(1160000);
-    });
-
-    it('un empleado sin permiso de facturar no lo ve', function (): void {
-        $reserva = ($this->conCalendario)();
-
-        Livewire::actingAs($this->recepcion)->test(CuotasRelationManager::class, ['ownerRecord' => $reserva, 'pageClass' => ViewReserva::class])
-            ->assertTableActionHidden('facturarCuota', $reserva->cuotas()->first());
-    });
-
-    it('desde el panel sale la factura del pago, y ya no se puede editar ni quitar', function (): void {
-        $reserva = ($this->conCalendario)();
-        $cuota = $reserva->cuotas()->first();
-
-        Livewire::test(CuotasRelationManager::class, ['ownerRecord' => $reserva, 'pageClass' => ViewReserva::class])
-            ->callTableAction('facturarCuota', $cuota, ['serie_id' => $this->serie->id, 'identificador_fiscal' => 'XAXX010101000', 'nombre' => 'Ana Ejemplo', 'regimen_fiscal' => '616', 'codigo_postal' => '06000', 'uso' => 'S01', 'forma_pago' => '04', 'metodo_pago' => 'PUE'])
-            ->assertHasNoTableActionErrors();
-
-        expect($cuota->refresh()->facturaVigente)->not->toBeNull();
-
-        Livewire::test(CuotasRelationManager::class, ['ownerRecord' => $reserva->refresh(), 'pageClass' => ViewReserva::class])
-            ->assertTableActionHidden('editarCuota', $cuota)
-            ->assertTableActionHidden('quitarCuota', $cuota)
-            ->assertTableActionHidden('facturarCuota', $cuota)
-            ->assertSee('A-41');
-    });
-});
-
 describe('recordatorios', function (): void {
     beforeEach(function (): void {
         PlantillasBase::prenderRecordatoriosDeCuota($this->propiedad);
@@ -730,7 +554,7 @@ describe('en el panel', function (): void {
             ->assertTableActionVisible('recordarCuota', $cuota);
     });
 
-    it('un contador lo ve y factura, pero no cambia el calendario', function (): void {
+    it('un contador lo ve, pero no cambia el calendario', function (): void {
         $contador = User::query()->create(['name' => 'Con', 'email' => 'con@example.com', 'password' => Hash::make('contrasena-de-prueba'), 'activo' => true, 'idioma' => 'es']);
         Acceso::asignarRoles($contador, [['propiedad_id' => $this->propiedad->id, 'rol' => 'contador']]);
         $reserva = ($this->reservar)();
@@ -740,7 +564,6 @@ describe('en el panel', function (): void {
         expect(CuotasRelationManager::canViewForRecord($reserva, ViewReserva::class))->toBeTrue();
 
         Livewire::actingAs($contador)->test(CuotasRelationManager::class, ['ownerRecord' => $reserva, 'pageClass' => ViewReserva::class])
-            ->assertTableActionVisible('facturarCuota', $cuota)
             ->assertTableActionHidden('generarCalendario')
             ->assertTableActionHidden('editarCuota', $cuota);
     });

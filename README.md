@@ -15,11 +15,11 @@ propietarios con varias propiedades. Licencia **AGPL-3.0-or-later**.
 > - mensajes automáticos por correo, WhatsApp con texto listo y avisos a otros sistemas;
 > - calendarios iCal con Airbnb, Booking.com y Vrbo, con aviso de choques;
 > - llegada en línea con documentos legales, y herramientas de privacidad;
-> - políticas, facturas y recibos (CFDI 4.0 preparado en México), e informes con CSV;
+> - políticas, recibos en PDF e informes con CSV;
 > - usuarios con roles por propiedad.
 >
-> **Por verificar antes de usarlo en real:** los cobros con llaves reales de Stripe y Mercado Pago, el timbrado
-> de CFDI con un PAC y los textos legales con un abogado ([docs/paises/](docs/paises/mexico.md)).
+> **Por verificar antes de usarlo en real:** los cobros con llaves reales de Stripe y Mercado Pago
+> y los textos legales con un abogado ([docs/paises/](docs/paises/mexico.md)).
 >
 > Trae una demo con datos ficticios para probarlo, y se actualiza desde el propio panel, subiendo
 > el zip firmado de cada versión.

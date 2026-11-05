@@ -199,7 +199,7 @@ return [
         'pais_ayuda' => 'Al elegirlo se proponen la moneda, la zona horaria, el idioma y las reglas de ese país.',
         'avanzado' => 'Ajustes avanzados',
         'avanzado_ayuda' => 'Se llenan solos con el nombre y el país. Cámbialos solo si hace falta.',
-        'paquete_pais_ayuda' => 'Las reglas de facturación, impuestos y registro de viajeros que se aplican.',
+        'paquete_pais_ayuda' => 'Las reglas de impuestos y registro de viajeros que se aplican.',
         'zona_horaria' => 'Zona horaria',
         'moneda' => 'Moneda (código ISO de 3 letras)',
         'idioma' => 'Idioma para los huéspedes',
@@ -238,7 +238,6 @@ return [
         'eliminar_independiente' => 'Se borrarán para siempre sus habitaciones, tarifas, huéspedes, reservas y pagos. No hay otra copia de estos datos. Para confirmar, escribe el código: :codigo',
         'eliminar_subordinada' => 'Se borra de AlojaFlow, con sus datos propios. La instalación principal no se toca.',
         'eliminar_confirmacion' => 'Código de la propiedad',
-        'error_con_facturas' => 'Esta propiedad tiene facturas o recibos emitidos, que hay que conservar: no se puede borrar. Puedes desactivarla.',
     ],
 
     'ejecuciones' => [
@@ -491,8 +490,6 @@ return [
         'tarifa_no_reembolsable_texto' => 'La misma habitación, 10 % más barata, pagando todo al reservar.',
         'tarifa_desayuno' => 'Doble con desayuno',
         'tarifa_desayuno_texto' => 'Incluye el desayuno de cada día.',
-        'entidad' => 'Hotel Bahía Serena SA de CV (ficticio)',
-        'domicilio' => 'Av. del Mar 123, Bahía de Banderas (ficticio)',
     ],
 
     'usuarios' => [
@@ -604,7 +601,7 @@ return [
         'incluido' => 'Ya va incluido en el precio',
         'incluido_ayuda' => 'Si no, se suma al total de la reserva.',
         'codigo' => 'Clave',
-        'codigo_ayuda' => 'Opcional; se usa en la facturación.',
+        'codigo_ayuda' => 'Opcional; una clave para reconocerlo.',
         'vacio' => 'Todavía no hay impuestos',
     ],
 

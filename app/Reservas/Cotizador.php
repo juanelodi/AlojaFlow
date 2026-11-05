@@ -329,7 +329,7 @@ final class Cotizador
                 'importe' => self::importeImpuesto($impuesto, $base, $noches, $personas, $exentos, $llegada),
                 'incluido' => $impuesto->incluido_en_precio,
                 'cobrado_por_canal' => $canalCobra && ! $impuesto->incluido_en_precio,
-                // Lo que la declaración y la factura tienen que decir: cuántas unidades de estancia, y a cuánto.
+                // Lo que la declaración tiene que decir: cuántas unidades de estancia, y a cuánto.
                 'unidades' => $porPersonaNoche ? $gravadas * max(0, $personas - $exentosAqui) : 0,
                 'unidades_exentas' => $porPersonaNoche ? $gravadas * $exentosAqui : 0,
                 'importe_unitario' => $impuesto->base === BaseCargo::PorcentajeAlojamiento ? null : (int) $impuesto->importe,

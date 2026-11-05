@@ -154,7 +154,6 @@ it('lo que un texto cita de otro coincide', function (string $idioma) {
         ['ui.estado.correo_ayuda', 'mensajes.correo.titulo'],
         ['ui.unidades.tarifa_ayuda', 'ui.tarifas.modelos'],
         ['ui.resumen.sin_propiedades_texto', 'ui.propiedades.modelos'],
-        ['dinero.facturas.sin_entidad', 'ui.nav.configuracion'],
         ['avisos.ical_falla', 'ical.fuentes.modelos'],
         ['avisos.choques', 'ical.choques.modelos'],
         ['avisos.envios_fallidos', 'mensajes.envios.modelos'],

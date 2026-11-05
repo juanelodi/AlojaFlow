@@ -197,7 +197,7 @@ return [
         'pais_ayuda' => 'Ao escolhê-lo, são propostos a moeda, o fuso horário, o idioma e as regras desse país.',
         'avanzado' => 'Definições avançadas',
         'avanzado_ayuda' => 'Preenchem-se sozinhas com o nome e o país. Altere-as só se for preciso.',
-        'paquete_pais_ayuda' => 'As regras de faturação, impostos e registo de hóspedes que se aplicam.',
+        'paquete_pais_ayuda' => 'As regras de impostos e registo de hóspedes que se aplicam.',
         'zona_horaria' => 'Fuso horário',
         'moneda' => 'Moeda (código ISO de 3 letras)',
         'idioma' => 'Idioma para os hóspedes',
@@ -236,7 +236,6 @@ return [
         'eliminar_independiente' => 'Os seus quartos, tarifas, hóspedes, reservas e pagamentos serão apagados para sempre. Não existe outra cópia destes dados. Para confirmar, escreva o código: :codigo',
         'eliminar_subordinada' => 'É apagado do AlojaFlow, com os seus dados próprios. A instalação principal não é alterada.',
         'eliminar_confirmacion' => 'Código do alojamento',
-        'error_con_facturas' => 'Este alojamento tem faturas ou recibos emitidos, que têm de ser conservados: não pode ser apagado. Pode desativá-lo.',
     ],
     'ejecuciones' => [
         'iniciada' => 'Início',
@@ -482,8 +481,6 @@ return [
         'tarifa_no_reembolsable_texto' => 'O mesmo quarto, 10 % mais barato, pagando tudo ao reservar.',
         'tarifa_desayuno' => 'Duplo com pequeno-almoço',
         'tarifa_desayuno_texto' => 'Inclui o pequeno-almoço de cada dia.',
-        'entidad' => 'Hotel Bahía Serena SA de CV (fictício)',
-        'domicilio' => 'Av. del Mar 123, Bahía de Banderas (fictício)',
     ],
     'usuarios' => [
         'modelo' => 'utilizador',
@@ -588,7 +585,7 @@ return [
         'incluido' => 'Já incluído no preço',
         'incluido_ayuda' => 'Caso contrário, soma-se ao total da reserva.',
         'codigo' => 'Código',
-        'codigo_ayuda' => 'Opcional; é usado na faturação.',
+        'codigo_ayuda' => 'Opcional; um código para o identificar.',
         'vacio' => 'Ainda não há impostos',
     ],
     'cargos' => [

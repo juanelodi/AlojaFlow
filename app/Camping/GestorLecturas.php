@@ -171,14 +171,14 @@ final class GestorLecturas
         ], $idioma);
         $cargo = $this->reservas->agregarCargo($reserva, $nombre, (float) $lectura->consumo, $lectura->importe);
         $lectura->update(['cargo_id' => $cargo->id]);
-        // Con calendario de cobros, un pago aparte: se cobra y se factura tal cual, y el calendario sigue sumando el total.
+        // Con calendario de cobros, un pago aparte: se cobra tal cual, y el calendario sigue sumando el total.
         if (Modulos::activo(Modulo::EstanciasLargas) && $reserva->cuotas()->exists()) {
             $reserva->cuotas()->create(['cargo_id' => $cargo->id, 'concepto' => $cargo->nombre, 'importe' => $lectura->importe, 'vence_en' => $lectura->leida_en->format('Y-m-d')]);
         }
     }
 
     /**
-     * Solo la última de cada medidor: las demás ya son el punto de partida de otra. Lo cobrado se devuelve al total, salvo que ya se haya facturado.
+     * Solo la última de cada medidor: las demás ya son el punto de partida de otra. Lo cobrado se devuelve al total.
      */
     public function quitar(Lectura $lectura): void
     {
@@ -188,11 +188,7 @@ final class GestorLecturas
                 throw new ErrorLectura(__('camping.lecturas.error_no_ultima'));
             }
             if ($actual->cargo !== null) {
-                $cuota = CuotaReserva::query()->where('cargo_id', $actual->cargo->id)->first();
-                if ($cuota?->facturaVigente !== null) {
-                    throw new ErrorLectura(__('camping.lecturas.error_facturada'));
-                }
-                $cuota?->delete();
+                CuotaReserva::query()->where('cargo_id', $actual->cargo->id)->first()?->delete();
                 $this->reservas->quitarCargo($actual->cargo);
             }
             RegistroAuditoria::anotar('lectura.quitar', $actual, ['servicio' => $actual->servicio->value, 'importe' => $actual->importe], $actual->propiedad_id);

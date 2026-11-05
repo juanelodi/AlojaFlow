@@ -87,7 +87,6 @@ return [
         'error_fecha' => ':unidad hat bereits einen neueren Stand. Prüfen Sie das Datum.',
         'error_menor' => 'Der Stand von :unidad ist niedriger als der vorherige (:anterior). Wenn Sie den Zähler getauscht haben, markieren Sie „Neuer Zähler“.',
         'error_no_ultima' => 'Nur der letzte Stand jedes Zählers kann entfernt werden.',
-        'error_facturada' => 'Dieser Stand wurde bereits in Rechnung gestellt. Stornieren Sie zuerst die Rechnung.',
     ],
     'residentes' => [
         'titulo' => 'Dauergäste',

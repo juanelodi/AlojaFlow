@@ -4,6 +4,8 @@
 
 # Qué sumar a AlojaFlow y qué evitar
 
+> **2026-11-05:** se decidió no hacer facturación por ahora (D-131). Lo que este documento propone de CFDI, PAC, VeriFactu y facturas queda fuera mientras no se retome.
+
 Lo que más le conviene sumar a AlojaFlow no es un channel manager propio ni un punto de venta completo, sino cuatro paquetes más baratos: factura válida en México, más formas de cobrar, reglas de venta en el motor y una página de la reserva que le ahorre mensajes al alojamiento. Casi todo corre en hosting compartido con el cron (tarea programada del hosting) cada 10 minutos, no pide contratar nada nuevo y reutiliza piezas que ya existen: enlaces firmados, retención con caducidad, cargos, plantillas y tareas. Lo que sí tiene fecha y multa es legal: el parte de viajeros a SES.Hospedajes rige en España desde el 2 de diciembre de 2024, y el CFDI mexicano sigue sin timbrar. La evidencia pide cautela: casi todas las cifras de efecto salen de vendedores, la única medición independiente de impacto económico con muestra declarada es cerca de 9 % de ingreso con precios automáticos en Airbnb, que conozco solo por prensa, y no hay demanda medida en México ni Latinoamérica. Sobre lo que dejaste pendiente: cambio de unidad a mitad de estancia sí; bitácora en lugar de chat interno; punto de venta solo ligero; tarifas derivadas hasta que existan planes de tarifa; almacenes no; channel manager solo como conector opcional y con prerrequisitos; feed de Google no.
 
 ## Las 17 funciones que más conviene agregar

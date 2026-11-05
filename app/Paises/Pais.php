@@ -11,7 +11,6 @@ declare(strict_types=1);
 namespace App\Paises;
 
 use App\Autoridades\RegistroViajeros;
-use App\Facturacion\GeneradorFiscal;
 
 /**
  * Lo que cambia de un país a otro. Todo lo legal va detrás de esta interfaz: el resto del código no
@@ -48,11 +47,6 @@ interface Pais
     public function legalRevisado(): bool;
 
     /**
-     * El documento fiscal del país; null si solo se emiten recibos sin valor fiscal.
-     */
-    public function generadorFiscal(): ?GeneradorFiscal;
-
-    /**
      * A quién hay que comunicarle las reservas y las llegadas; null si en este país no hay un registro al que se le pueda mandar.
      */
     public function registroViajeros(): ?RegistroViajeros;
@@ -61,11 +55,6 @@ interface Pais
      * El archivo para declarar las estancias de una tasa turística, si hay un formato oficial que se conozca.
      */
     public function declaracionEstancias(): ?DeclaracionEstancias;
-
-    /**
-     * Si las facturas se exportan por tipo de impuesto para pasarlas a un programa de facturación del país (D-103).
-     */
-    public function exportaLibroFiscal(): bool;
 
     /**
      * Cómo guarda Excel una fecha en ese país: 03/04/2027 es el 3 de abril o el 4 de marzo.

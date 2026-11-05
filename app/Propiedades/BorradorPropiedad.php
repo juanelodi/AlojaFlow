@@ -11,7 +11,6 @@ declare(strict_types=1);
 namespace App\Propiedades;
 
 use App\Models\Aceptacion;
-use App\Models\Factura;
 use App\Models\Propiedad;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -22,22 +21,10 @@ use Illuminate\Support\Facades\Storage;
  */
 final class BorradorPropiedad
 {
-    public function tieneFacturas(Propiedad $propiedad): bool
+    public function borrar(Propiedad $propiedad): void
     {
-        return Factura::query()->where('propiedad_id', $propiedad->id)->exists();
-    }
-
-    /**
-     * Las facturas se conservan por ley: solo se borran si se pide a propósito (la demostración).
-     */
-    public function borrar(Propiedad $propiedad, bool $conFacturas = false): void
-    {
-        if (! $conFacturas && $this->tieneFacturas($propiedad)) {
-            throw new ErrorIndependizar(__('ui.propiedades.error_con_facturas'));
-        }
         DB::transaction(function () use ($propiedad): void {
             // Estas filas impiden borrar lo que apuntan: van primero.
-            Factura::query()->where('propiedad_id', $propiedad->id)->delete();
             Aceptacion::query()->where('propiedad_id', $propiedad->id)->delete();
             $propiedad->delete();
         });

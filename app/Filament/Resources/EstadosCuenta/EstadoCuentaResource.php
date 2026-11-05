@@ -51,7 +51,7 @@ class EstadoCuentaResource extends RecursoDePropiedad
 
     protected static function permiso(): string
     {
-        return Acceso::FACTURACION;
+        return Acceso::CUENTAS;
     }
 
     public static function getNavigationGroup(): ?string

@@ -172,9 +172,6 @@ final class GestorPrivacidad
                 }
             }
             $this->anonimizarGrupos($huesped);
-            // Las facturas guardan su propia copia del receptor, que la ley obliga a conservar; esto es solo
-            // lo que se ofrece para no volver a escribirlo.
-            DB::table('receptores_fiscales')->where('huesped_id', $huesped->id)->delete();
             foreach (Archivo::query()->where('objeto_type', $huesped->getMorphClass())->where('objeto_id', $huesped->id)->get() as $archivo) {
                 $this->archivos->eliminar($archivo);
             }

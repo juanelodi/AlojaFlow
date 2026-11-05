@@ -25,7 +25,6 @@ use App\Filament\Pages\Resumen;
 use App\Filament\Resources\Automatizaciones\AutomatizacionResource;
 use App\Filament\Resources\Cajas\CajaResource;
 use App\Filament\Resources\Cupones\CuponResource;
-use App\Filament\Resources\Facturas\FacturaResource;
 use App\Filament\Resources\FuentesIcal\FuenteIcalResource;
 use App\Filament\Resources\Grupos\GrupoResource;
 use App\Filament\Resources\Llegadas\RegistroLlegadaResource;
@@ -90,7 +89,7 @@ describe('módulos', function () {
         $de = [
             Limpieza::class => Modulo::Limpieza, TareaResource::class => Modulo::Limpieza, PlanoPropiedad::class => Modulo::Plano,
             Informes::class => Modulo::Informes, Indicadores::class => Modulo::Informes, CierreDia::class => Modulo::Caja,
-            CajaResource::class => Modulo::Caja, MotorDeReservas::class => Modulo::Motor, FacturaResource::class => Modulo::Facturacion,
+            CajaResource::class => Modulo::Caja, MotorDeReservas::class => Modulo::Motor,
             FuenteIcalResource::class => Modulo::Ical, GrupoResource::class => Modulo::Grupos, CuponResource::class => Modulo::Cupones,
             RegistroLlegadaResource::class => Modulo::Llegada, AutomatizacionResource::class => Modulo::Mensajes, WebhookResource::class => Modulo::Integraciones,
         ];

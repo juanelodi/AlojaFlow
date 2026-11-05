@@ -134,8 +134,6 @@ return [
         'copia_aceptacion' => 'Unterschriebene Kopie',
         'foto_tarea' => 'Foto',
         'plano' => 'Plan',
-        'factura_xml' => 'Rechnung (XML)',
-        'factura_pdf' => 'Rechnung (PDF)',
         'exportacion' => 'Export',
         'comprobante' => 'Zahlungsbeleg',
         'foto_publica' => 'Foto der öffentlichen Seite',
@@ -179,7 +177,6 @@ return [
         'ical' => 'iCal-Kalender',
         'llegada' => 'Online-Check-in',
         'contrato' => 'Vertrag',
-        'factura' => 'Rechnung',
         'grupo' => 'Gruppe',
         'mi_reserva' => 'Meine Buchung',
         'propietario' => 'Eigentümerportal',
@@ -214,19 +211,6 @@ return [
         'exportacion' => 'Export',
         'anonimizacion' => 'Anonymisierung',
     ],
-    'EstadoFactura' => [
-        'emitida' => 'Ausgestellt',
-        'registrada' => 'Gestempelt',
-        'cancelada' => 'Storniert',
-    ],
-    'TipoDocumentoFiscal' => [
-        'factura' => 'Rechnung',
-        'recibo' => 'Quittung ohne steuerliche Gültigkeit',
-    ],
-    'ModoFiscal' => [
-        'pruebas' => 'Test',
-        'produccion' => 'Produktion',
-    ],
     'EstadoGrupo' => [
         'tentativo' => 'Vorläufig',
         'confirmado' => 'Bestätigt',
@@ -241,12 +225,6 @@ return [
         'por_confirmar' => 'Zu bestätigen',
         'confirmado' => 'Bestätigt',
         'rechazado' => 'Abgelehnt',
-    ],
-    'MotivoCancelacionCfdi' => [
-        '01' => '01 · Mit Fehlern, mit Ersatzrechnung',
-        '02' => '02 · Mit Fehlern, ohne Ersatzrechnung',
-        '03' => '03 · Der Vorgang fand nicht statt',
-        '04' => '04 · Vorgang in einer Sammelrechnung enthalten',
     ],
     'EstadoEnvioAutoridad' => [
         'pendiente' => 'Zu senden',

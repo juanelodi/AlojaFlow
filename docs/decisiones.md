@@ -733,6 +733,15 @@ El repositorio es público: lo que dice dónde está la instalación de prueba y
 ### D-130 · 2026-11-05 · El sitio alojaflow.com y su wiki
 Sitio estático con Astro, y buscador con Pagefind, que corre en el navegador y no manda a nadie lo que se escribe. Va en español y en inglés, y vive fuera de este repositorio: no se empaqueta con el sistema, y su código de capturas no tiene por qué ser público. La portada ofrece la descarga gratis y servicios, sin precios, porque siguen sin decidirse. Dice que es una versión de prueba y qué falta verificar, con la misma lista de `CAMBIOS.md`: una promesa fiscal sin probar le costaría más a un alojamiento que a nosotros. No hay demo en vivo: las capturas son reales, con datos ficticios, de una instalación aislada. Google Analytics queda preparado y apagado hasta tener su ID, y solo se carga con consentimiento.
 
+### D-131 · 2026-11-05 · Por ahora no se factura: de un pago sale un recibo
+El usuario decidió no meterse en facturación en ningún país: «solo un recibo normal». Se quita todo lo de facturas, sin apagarlo nada más, porque lo no verificado estorba más de lo que ayuda: el timbrado nunca se probó de verdad, y prometerlo era el pendiente más delicado. Se van `App\Facturacion`, las pantallas de Facturas y Datos fiscales, el módulo, el botón Facturar, la factura por cuota, el libro para España, el campo RFC del registro de llegada en México, y las tablas. Sustituye a D-049, D-098, D-103 y D-109, y a la parte de facturas de D-081.
+
+**El recibo ya existía** (`GeneradorPdf::recibo`, uno por pago) y ahora lleva su número. Sigue diciendo que no es un comprobante fiscal: en un país donde hay que facturar, que no parezca que sustituye a la factura. Los identificadores fiscales de huésped, empresa y propietario se quedan: son datos que vienen de la principal o que el alojamiento anota, y no facturan nada.
+
+**Lo emitido se borra al actualizar.** La migración se lleva las filas, y los XML y PDF del disco. Dejarlas sin pantallas ni forma de borrar habría sido peor, con datos personales que nadie ve, y no hay facturas de verdad: esta es una versión de prueba y nunca se timbró ninguna. Queda la copia previa de la base que hace la actualización. `down()` devuelve las tablas vacías, y el código está en la etiqueta v1.0.30 por si se retoma.
+
+**El permiso `facturacion.gestionar` pasa a `cuentas.gestionar`,** con el mismo id: quien lo tenía conserva los estados de cuenta y el calendario de cobros.
+
 ---
 
 ## Pendientes

@@ -197,7 +197,7 @@ return [
         'pais_ayuda' => 'Bei der Auswahl werden Währung, Zeitzone, Sprache und Regeln dieses Landes vorgeschlagen.',
         'avanzado' => 'Erweiterte Einstellungen',
         'avanzado_ayuda' => 'Sie werden aus Name und Land ausgefüllt. Ändern Sie sie nur bei Bedarf.',
-        'paquete_pais_ayuda' => 'Die geltenden Regeln für Rechnungen, Steuern und die Gästeanmeldung.',
+        'paquete_pais_ayuda' => 'Die geltenden Regeln für Steuern und die Gästeanmeldung.',
         'zona_horaria' => 'Zeitzone',
         'moneda' => 'Währung (ISO-Code mit 3 Buchstaben)',
         'idioma' => 'Sprache für die Gäste',
@@ -236,7 +236,6 @@ return [
         'eliminar_independiente' => 'Zimmer, Tarife, Gäste, Buchungen und Zahlungen werden endgültig gelöscht. Es gibt keine andere Kopie dieser Daten. Geben Sie zur Bestätigung den Code ein: :codigo',
         'eliminar_subordinada' => 'Sie wird mit ihren eigenen Daten aus AlojaFlow gelöscht. Die Hauptinstallation bleibt unberührt.',
         'eliminar_confirmacion' => 'Code der Unterkunft',
-        'error_con_facturas' => 'Diese Unterkunft hat ausgestellte Rechnungen oder Quittungen, die aufbewahrt werden müssen: Sie kann nicht gelöscht werden. Sie können sie deaktivieren.',
     ],
     'ejecuciones' => [
         'iniciada' => 'Start',
@@ -482,8 +481,6 @@ return [
         'tarifa_no_reembolsable_texto' => 'Dasselbe Zimmer, 10 % günstiger, bei voller Zahlung beim Buchen.',
         'tarifa_desayuno' => 'Doppelzimmer mit Frühstück',
         'tarifa_desayuno_texto' => 'Enthält das Frühstück jeden Tag.',
-        'entidad' => 'Hotel Bahía Serena SA de CV (fiktiv)',
-        'domicilio' => 'Av. del Mar 123, Bahía de Banderas (fiktiv)',
     ],
     'usuarios' => [
         'modelo' => 'Benutzer',
@@ -588,7 +585,7 @@ return [
         'incluido' => 'Bereits im Preis enthalten',
         'incluido_ayuda' => 'Andernfalls wird sie zum Gesamtbetrag der Buchung addiert.',
         'codigo' => 'Schlüssel',
-        'codigo_ayuda' => 'Optional; wird bei der Rechnungsstellung verwendet.',
+        'codigo_ayuda' => 'Optional; ein Code zur Erkennung.',
         'vacio' => 'Noch keine Steuern',
     ],
     'cargos' => [

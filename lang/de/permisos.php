@@ -40,8 +40,8 @@ return [
         'huespedes' => [
             'gestionar' => 'Gästeanmeldung, Dokumente und Datenschutz',
         ],
-        'facturacion' => [
-            'gestionar' => 'Steuerdaten, Rechnungen und Exporte',
+        'cuentas' => [
+            'gestionar' => 'Eigentümerabrechnungen und Zahlungspläne',
         ],
     ],
     'roles' => [

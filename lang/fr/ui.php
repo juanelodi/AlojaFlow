@@ -197,7 +197,7 @@ return [
         'pais_ayuda' => 'En le choisissant, la devise, le fuseau horaire, la langue et les règles de ce pays sont proposés.',
         'avanzado' => 'Réglages avancés',
         'avanzado_ayuda' => 'Ils se remplissent à partir du nom et du pays. Ne les changez qu’en cas de besoin.',
-        'paquete_pais_ayuda' => 'Les règles de facturation, de taxes et d’enregistrement des voyageurs qui s’appliquent.',
+        'paquete_pais_ayuda' => 'Les règles de taxes et d’enregistrement des voyageurs qui s’appliquent.',
         'zona_horaria' => 'Fuseau horaire',
         'moneda' => 'Devise (code ISO à 3 lettres)',
         'idioma' => 'Langue pour les clients',
@@ -236,7 +236,6 @@ return [
         'eliminar_independiente' => 'Ses chambres, tarifs, clients, réservations et paiements seront supprimés définitivement. Il n’existe aucune autre copie de ces données. Pour confirmer, saisissez le code : :codigo',
         'eliminar_subordinada' => 'Il est supprimé d’AlojaFlow avec ses données propres. L’installation principale n’est pas touchée.',
         'eliminar_confirmacion' => 'Code de l’établissement',
-        'error_con_facturas' => 'Cet établissement a des factures ou des reçus émis, qu’il faut conserver : il ne peut pas être supprimé. Vous pouvez le désactiver.',
     ],
     'ejecuciones' => [
         'iniciada' => 'Début',
@@ -482,8 +481,6 @@ return [
         'tarifa_no_reembolsable_texto' => 'La même chambre, 10 % moins chère, en payant tout à la réservation.',
         'tarifa_desayuno' => 'Double avec petit-déjeuner',
         'tarifa_desayuno_texto' => 'Comprend le petit-déjeuner de chaque jour.',
-        'entidad' => 'Hotel Bahía Serena SA de CV (fictif)',
-        'domicilio' => 'Av. del Mar 123, Bahía de Banderas (fictif)',
     ],
     'usuarios' => [
         'modelo' => 'utilisateur',
@@ -588,7 +585,7 @@ return [
         'incluido' => 'Déjà compris dans le prix',
         'incluido_ayuda' => 'Sinon, elle s’ajoute au total de la réservation.',
         'codigo' => 'Code',
-        'codigo_ayuda' => 'Facultatif ; il sert à la facturation.',
+        'codigo_ayuda' => 'Facultatif ; un code pour l’identifier.',
         'vacio' => 'Aucune taxe pour l’instant',
     ],
     'cargos' => [

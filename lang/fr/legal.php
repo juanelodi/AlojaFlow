@@ -23,7 +23,6 @@ return [
         'procedencia' => 'Ville de provenance',
         'motivo_viaje' => 'Motif du voyage',
         'placas' => 'Plaque d’immatriculation',
-        'rfc' => 'RFC (si vous avez besoin d’une facture)',
         'soporte' => 'Numéro de support',
         'parentesco' => 'Lien de parenté (pour les mineurs)',
     ],

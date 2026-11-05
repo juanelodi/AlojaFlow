@@ -4,6 +4,7 @@
 @section('titulo', __($pago->importe < 0 ? 'documentos.devolucion' : 'documentos.recibo'))
 @section('contenido')
     <table class="datos">
+        <tr><th>{{ __('documentos.recibo_numero') }}</th><td>{{ $pago->id }}</td></tr>
         <tr><th>{{ __('ui.comun.huesped') }}</th><td>{{ $reserva->titular?->nombreCompleto() ?? '—' }}</td></tr>
         <tr><th>{{ __('ui.pagos.fecha') }}</th><td>{{ Formato::fecha($pago->fecha, 'LL') }}</td></tr>
         <tr><th>{{ __('ui.pagos.metodo') }}</th><td>{{ $pago->metodo->etiqueta() }}</td></tr>

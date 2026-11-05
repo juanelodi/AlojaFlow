@@ -39,11 +39,6 @@ return [
         'ayuda' => 'Données libres de cette fiche, comme « Type : VIP ». Si elles correspondent à une couleur de Couleurs des clients, ses réservations sont ainsi marquées dans le calendrier.',
         'agregar' => 'Ajouter une donnée',
     ],
-    'facturas' => [
-        'formato' => 'Format',
-        'excel' => 'À ouvrir dans Excel',
-        'csv' => 'CSV standard, pour d’autres logiciels (virgule, point décimal)',
-    ],
     'franja' => [
         'dias' => 'Jours de copie',
         'dias_ayuda' => 'Sans aucun coché, tous les jours.',

@@ -13,6 +13,7 @@ return [
     'codigo' => 'Code',
     'confirmacion' => 'Buchungsbestätigung',
     'recibo' => 'Zahlungsbeleg',
+    'recibo_numero' => 'Beleg-Nr.',
     'devolucion' => 'Rückerstattungsbeleg',
     'estancia' => 'Aufenthalt',
     'importes' => 'Beträge',

@@ -36,6 +36,7 @@ construyen después. Las tablas que aporta el framework y sus paquetes (`users`,
 
 Lo programado sigue este diseño, salvo:
 
+- **Facturación:** retirada en la 1.0.31; de un pago sale un recibo (D-131).
 - **`plantillas`:** sin columna `canal` ni fila «de la instalación»: cada propiedad tiene las suyas y se mandan por
   el canal que se elija. El texto va en JSON por idioma, sin `spatie/laravel-translatable` (D-045).
 - **`automatizaciones`:** sin acción `webhook`; los avisos a otros sistemas se configuran aparte, en `webhooks`.
@@ -654,7 +655,9 @@ Propuesta D-022.
   Un bloqueo externo que coincide con un bloqueo que **ya creó la principal** (misma unidad y
   mismas fechas, `tipo = bloqueo`) no es un choque.
 
-### 4.10 Dinero y facturación (M8)
+### 4.10 Dinero (M8)
+
+> **Las tablas de facturación de esta sección se retiraron en la 1.0.31 (D-131):** `entidades_fiscales`, `series_facturacion`, `receptores_fiscales`, `facturas`, `facturas_lineas`, `facturas_impuestos`, `facturas_reservas` y `eventos_fiscales`. Se conserva la descripción por si se retoma.
 
 - **`politicas` (O):**
   - `propiedad_id` y `nombre` (traducible);

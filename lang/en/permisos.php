@@ -40,8 +40,8 @@ return [
         'huespedes' => [
             'gestionar' => 'Guest registration, documents and privacy',
         ],
-        'facturacion' => [
-            'gestionar' => 'Tax details, invoices and exports',
+        'cuentas' => [
+            'gestionar' => 'Owner statements and payment schedules',
         ],
     ],
     'roles' => [

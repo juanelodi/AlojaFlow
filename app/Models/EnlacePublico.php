@@ -18,7 +18,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 
 /**
- * Un enlace con token: iCal, llegada en línea, factura… (D-022).
+ * Un enlace con token: iCal, llegada en línea, pago… (D-022).
  *
  * @property int $id
  * @property int $propiedad_id

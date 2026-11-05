@@ -17,7 +17,6 @@ use App\Enums\BaseCargo;
 use App\Enums\EntidadCampo;
 use App\Enums\EstadoReserva;
 use App\Enums\MetodoPago;
-use App\Enums\ModoFiscal;
 use App\Enums\ModoPropiedad;
 use App\Enums\ModoTarifa;
 use App\Enums\PaquetePais;
@@ -35,7 +34,6 @@ use App\Models\Canal;
 use App\Models\ConceptoCargo;
 use App\Models\Cupon;
 use App\Models\DocumentoLegal;
-use App\Models\EntidadFiscal;
 use App\Models\Huesped;
 use App\Models\Impuesto;
 use App\Models\Movimiento;
@@ -44,7 +42,6 @@ use App\Models\Propiedad;
 use App\Models\Propietario;
 use App\Models\RegistroAuditoria;
 use App\Models\Reserva;
-use App\Models\SerieFacturacion;
 use App\Models\Tarifa;
 use App\Models\Unidad;
 use App\Propiedades\BorradorPropiedad;
@@ -158,8 +155,7 @@ final class GeneradorDemo
             return false;
         }
         RegistroAuditoria::anotar('demo.eliminar', $propiedad);
-        // Con facturas: son de mentira, y nadie las necesita conservar.
-        app(BorradorPropiedad::class)->borrar($propiedad, conFacturas: true);
+        app(BorradorPropiedad::class)->borrar($propiedad);
 
         return true;
     }
@@ -262,9 +258,6 @@ final class GeneradorDemo
         }
         Caja::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.caja')]);
         Politica::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.politica'), 'dias_cancelacion_gratuita' => 3, 'penalizacion_porcentaje' => 50, 'no_show_porcentaje' => 100, 'deposito_porcentaje' => 30, 'deposito_plazo_dias' => 2, 'predeterminada' => true]);
-        // El RFC es el de pruebas que publica el SAT.
-        $entidad = EntidadFiscal::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.entidad'), 'pais' => 'MX', 'identificador_fiscal' => 'EKU9003173C9', 'regimen_fiscal' => '601', 'codigo_postal' => '48300', 'domicilio' => __('ui.demo.domicilio'), 'modo' => ModoFiscal::Pruebas]);
-        SerieFacturacion::query()->create(['entidad_fiscal_id' => $entidad->id, 'serie' => 'A']);
         Cupon::query()->create(['propiedad_id' => $propiedad->id, 'codigo' => 'BIENVENIDA10', 'descripcion' => __('ui.demo.cupon'), 'tipo' => TipoCupon::Porcentaje, 'porcentaje' => 10]);
 
         $hoy = $propiedad->hoy();

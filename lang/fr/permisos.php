@@ -40,8 +40,8 @@ return [
         'huespedes' => [
             'gestionar' => 'Enregistrement des arrivées, documents et confidentialité',
         ],
-        'facturacion' => [
-            'gestionar' => 'Données fiscales, factures et exportations',
+        'cuentas' => [
+            'gestionar' => 'Relevés des propriétaires et calendriers de paiements',
         ],
     ],
     'roles' => [

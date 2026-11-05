@@ -10,9 +10,6 @@ declare(strict_types=1);
 
 namespace App\Paises;
 
-use App\Facturacion\Cfdi40;
-use App\Facturacion\GeneradorFiscal;
-
 /**
  * México: sin registro nacional de viajeros conocido; es una tarjeta de registro del propio hotel.
  * Hay que revisar con un abogado el aviso de privacidad y los requisitos de cada estado
@@ -28,11 +25,6 @@ final class Mexico extends PaisBase
     public function sugerenciasImpuesto(): array
     {
         return CatalogoIsh::todas();
-    }
-
-    public function generadorFiscal(): GeneradorFiscal
-    {
-        return new Cfdi40();
     }
 
     public function tiposDocumento(): array
@@ -52,7 +44,6 @@ final class Mexico extends PaisBase
             'procedencia' => ['etiqueta' => __('legal.campos.procedencia'), 'requerido' => true, 'solo_titular' => true],
             'motivo_viaje' => ['etiqueta' => __('legal.campos.motivo_viaje'), 'requerido' => false, 'solo_titular' => true],
             'placas' => ['etiqueta' => __('legal.campos.placas'), 'requerido' => false, 'solo_titular' => true],
-            'rfc' => ['etiqueta' => __('legal.campos.rfc'), 'requerido' => false, 'solo_titular' => true],
         ];
     }
 }

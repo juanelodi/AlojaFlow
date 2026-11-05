@@ -22,8 +22,6 @@ use App\Models\ContactoHuesped;
 use App\Models\CuotaGrupo;
 use App\Models\Cupon;
 use App\Models\Empresa;
-use App\Models\EntidadFiscal;
-use App\Models\Factura;
 use App\Models\FuenteIcal;
 use App\Models\Grupo;
 use App\Models\Huesped;
@@ -62,7 +60,7 @@ final class AuditoriaModelos
 {
     private const MODELOS = [
         AccesoUsuario::class, Automatizacion::class, Caja::class, Canal::class, CargoReserva::class, ConceptoCargo::class, ConexionCompartida::class, ContactoHuesped::class,
-        Cupon::class, Empresa::class, EntidadFiscal::class, Factura::class, FuenteIcal::class, Grupo::class, Huesped::class, Impuesto::class, ListaComprobacion::class, MantenimientoRecurrente::class,
+        Cupon::class, Empresa::class, FuenteIcal::class, Grupo::class, Huesped::class, Impuesto::class, ListaComprobacion::class, MantenimientoRecurrente::class,
         Movimiento::class, NotaBitacora::class, Omision::class, Pago::class, Plantilla::class, Politica::class, Principal::class, Propiedad::class, RegistroTuristico::class, CuotaGrupo::class, ReglaLimpieza::class, Reserva::class, Restriccion::class, Tarea::class, Tarifa::class,
         TemporadaTarifa::class, Unidad::class, User::class, Webhook::class,
     ];
@@ -74,7 +72,7 @@ final class AuditoriaModelos
     ];
 
     /** Fichas de personas: de ellas ningún valor se copia. */
-    private const SOLO_CAMPOS = [ContactoHuesped::class, Empresa::class, EntidadFiscal::class, Factura::class, Grupo::class, Huesped::class];
+    private const SOLO_CAMPOS = [ContactoHuesped::class, Empresa::class, Grupo::class, Huesped::class];
 
     /** Cambian solos: no son algo que alguien haya decidido. */
     private const IGNORADOS = ['actualizado_en', 'updated_at', 'remember_token', 'ultimo_acceso_en', 'ultimo_uso_en', 'consecutivo_reserva', 'huella_datos', 'pagado', 'version'];

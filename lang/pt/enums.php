@@ -134,8 +134,6 @@ return [
         'copia_aceptacion' => 'Cópia assinada',
         'foto_tarea' => 'Foto',
         'plano' => 'Planta',
-        'factura_xml' => 'Fatura (XML)',
-        'factura_pdf' => 'Fatura (PDF)',
         'exportacion' => 'Exportação',
         'comprobante' => 'Comprovativo de pagamento',
         'foto_publica' => 'Foto da página pública',
@@ -179,7 +177,6 @@ return [
         'ical' => 'Calendário iCal',
         'llegada' => 'Check-in online',
         'contrato' => 'Contrato',
-        'factura' => 'Fatura',
         'grupo' => 'Grupo',
         'mi_reserva' => 'A minha reserva',
         'propietario' => 'Portal do proprietário',
@@ -214,19 +211,6 @@ return [
         'exportacion' => 'Exportação',
         'anonimizacion' => 'Anonimização',
     ],
-    'EstadoFactura' => [
-        'emitida' => 'Emitida',
-        'registrada' => 'Timbrada',
-        'cancelada' => 'Cancelada',
-    ],
-    'TipoDocumentoFiscal' => [
-        'factura' => 'Fatura',
-        'recibo' => 'Recibo sem valor fiscal',
-    ],
-    'ModoFiscal' => [
-        'pruebas' => 'Testes',
-        'produccion' => 'Produção',
-    ],
     'EstadoGrupo' => [
         'tentativo' => 'Provisório',
         'confirmado' => 'Confirmado',
@@ -241,12 +225,6 @@ return [
         'por_confirmar' => 'Por confirmar',
         'confirmado' => 'Confirmado',
         'rechazado' => 'Rejeitado',
-    ],
-    'MotivoCancelacionCfdi' => [
-        '01' => '01 · Com erros, com fatura que a substitui',
-        '02' => '02 · Com erros, sem fatura que a substitua',
-        '03' => '03 · A operação não se realizou',
-        '04' => '04 · Operação incluída numa fatura global',
     ],
     'EstadoEnvioAutoridad' => [
         'pendiente' => 'Por enviar',

@@ -6,8 +6,8 @@
 
 - Identificaciones: licencia de conducir, pasaporte y otra. Placas del vehículo.
 - Textos de partida genéricos: hay que adaptarlos a CCPA/CPRA y a las leyes de cada estado.
-- Recibos con impuestos, sin factura electrónica. Los impuestos por capas (estado, condado, ciudad) se dan de
-  alta uno por uno en **Impuestos**.
+- Impuestos por capas (estado, condado, ciudad): se dan de alta uno por uno en **Impuestos**. De cada pago sale un
+  recibo.
 
 ## Qué falta
 

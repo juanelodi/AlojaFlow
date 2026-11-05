@@ -20,14 +20,11 @@ use App\Enums\MetodoPago;
 use App\Enums\ModoPropiedad;
 use App\Enums\PaquetePais;
 use App\Enums\TipoContacto;
-use App\Facturacion\GestorFacturas;
 use App\Filament\Pages\MotorDeReservas;
 use App\Filament\Resources\EnviosAutoridad\EnvioAutoridadResource;
 use App\Filament\Resources\EnviosAutoridad\Pages\ListEnviosAutoridad;
-use App\Filament\Resources\Facturas\Pages\ListFacturas;
 use App\Filament\Resources\Impuestos\Pages\ListImpuestos;
 use App\Models\Aviso;
-use App\Models\EntidadFiscal;
 use App\Models\EnvioAutoridad;
 use App\Models\Huesped;
 use App\Models\Impuesto;
@@ -36,7 +33,6 @@ use App\Models\PersonaLlegada;
 use App\Models\Propiedad;
 use App\Models\RegistroLlegada;
 use App\Models\Reserva;
-use App\Models\SerieFacturacion;
 use App\Models\Tarifa;
 use App\Models\Unidad;
 use App\Models\User;
@@ -672,24 +668,6 @@ describe('tasa turística', function (): void {
         expect($diez->impuestos[0]['importe'])->toBe(400 * 8 + 200 * 2);
     });
 
-    it('en la factura va aparte, con unidades y tarifa, y sin IVA encima', function (): void {
-        Impuesto::query()->create(['propiedad_id' => $this->propiedad->id, 'codigo' => 'IVA', 'nombre' => 'IVA', 'base' => BaseCargo::PorcentajeAlojamiento, 'tasa' => 10, 'incluido_en_precio' => true, 'activo' => true]);
-        Impuesto::query()->create(['propiedad_id' => $this->propiedad->id, 'codigo' => 'IEET', 'nombre' => 'IEET', 'base' => BaseCargo::PorPersonaNoche, 'importe' => 175, 'incluido_en_precio' => false, 'activo' => true]);
-        $entidad = EntidadFiscal::query()->create(['propiedad_id' => $this->propiedad->id, 'nombre' => 'Hostal SL', 'pais' => 'ES', 'identificador_fiscal' => 'B00000000']);
-        $serie = SerieFacturacion::query()->create(['entidad_fiscal_id' => $entidad->id, 'serie' => 'A', 'tipo_documento' => App\Enums\TipoDocumentoFiscal::Recibo])->refresh();
-        $reserva = ($this->reservar)(5, ['personas' => 2, 'total' => 22700]);
-
-        $factura = app(GestorFacturas::class)->emitir($reserva->load('propiedad'), $serie->refresh(), ['identificador_fiscal' => 'B11111111', 'nombre' => 'Empresa']);
-
-        $lineas = $factura->lineas()->with('impuestos')->orderBy('orden')->get();
-        expect($lineas)->toHaveCount(2)
-            ->and($lineas[1]->importe)->toBe(700)
-            ->and($lineas[1]->concepto)->toContain('IEET')->toContain('4')
-            ->and($lineas[1]->impuestos)->toBeEmpty()
-            ->and($lineas[0]->importe + $lineas[0]->impuestos->sum('importe'))->toBe(22000)
-            ->and($factura->total)->toBe(22700);
-    });
-
     it('el informe dice cuántas estancias, y el archivo para la ATC sale con su cabecera', function (): void {
         Impuesto::query()->create(['propiedad_id' => $this->propiedad->id, 'codigo' => 'IEET', 'nombre' => 'IEET', 'base' => BaseCargo::PorPersonaNoche, 'importe' => 175, 'incluido_en_precio' => false, 'edad_minima' => 17, 'activo' => true]);
         $reserva = ($this->reservar)(5, ['personas' => 3, 'ninos' => 1, 'total' => 22000]);
@@ -874,30 +852,7 @@ describe('Redsys y Bizum', function (): void {
     });
 });
 
-describe('libro de facturas y formulario de llegada', function (): void {
-    it('exporta por tipo de impuesto para un programa de facturación, solo si el país lo usa', function (): void {
-        Impuesto::query()->create(['propiedad_id' => $this->propiedad->id, 'codigo' => 'IVA', 'nombre' => 'IVA', 'base' => BaseCargo::PorcentajeAlojamiento, 'tasa' => 10, 'incluido_en_precio' => true, 'activo' => true]);
-        $entidad = EntidadFiscal::query()->create(['propiedad_id' => $this->propiedad->id, 'nombre' => 'Hostal SL', 'pais' => 'ES', 'identificador_fiscal' => 'B00000000']);
-        $serie = SerieFacturacion::query()->create(['entidad_fiscal_id' => $entidad->id, 'serie' => 'A', 'tipo_documento' => App\Enums\TipoDocumentoFiscal::Recibo])->refresh();
-        app(GestorFacturas::class)->emitir(($this->reservar)()->load('propiedad'), $serie, ['identificador_fiscal' => 'B11111111', 'nombre' => 'Empresa']);
-
-        $respuesta = Livewire::actingAs($this->admin)->test(ListFacturas::class)
-            ->callAction('exportar', ['desde' => $this->hoy->subDay()->format('Y-m-d'), 'hasta' => $this->hoy->addDay()->format('Y-m-d'), 'formato' => 'libro']);
-
-        $respuesta->assertFileDownloaded();
-        $pagina = new ListFacturas();
-        $metodo = new ReflectionMethod($pagina, 'libro');
-        ob_start();
-        $metodo->invoke($pagina, $this->hoy->subDay()->format('Y-m-d'), $this->hoy->addDay()->format('Y-m-d'))->sendContent();
-        $filas = explode("\n", trim(substr((string) ob_get_clean(), 3)));
-        expect(str_getcsv($filas[0], ';'))->toContain(__('autoridad.libro.nif_emisor'), __('autoridad.libro.cuota'))
-            ->and(str_getcsv($filas[1], ';'))->toContain('B00000000', 'A', 'F1', 'B11111111', 'IVA', '10', '200,00');
-        $this->propiedad->update(['paquete_pais' => PaquetePais::Mexico]);
-        Livewire::actingAs($this->admin)->test(ListFacturas::class)
-            ->mountAction('exportar')
-            ->assertDontSee(__('autoridad.libro.formato'));
-    });
-
+describe('formulario de llegada', function (): void {
     it('a un niño no se le exige documento en el formulario; a un adulto, sí', function (): void {
         $reserva = ($this->reservar)(5, ['personas' => 2]);
         $url = app(App\Llegada\GestorLlegadas::class)->urlDe($reserva);

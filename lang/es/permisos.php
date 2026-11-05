@@ -40,8 +40,8 @@ return [
         'huespedes' => [
             'gestionar' => 'Registro de llegada, documentos y privacidad',
         ],
-        'facturacion' => [
-            'gestionar' => 'Datos fiscales, facturas y exportaciones',
+        'cuentas' => [
+            'gestionar' => 'Estados de cuenta y calendario de cobros',
         ],
     ],
     'roles' => [

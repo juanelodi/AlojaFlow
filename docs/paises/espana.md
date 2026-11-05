@@ -7,7 +7,7 @@
 - Identificaciones: DNI, NIE, pasaporte y otra, con número de soporte. Se pide el documento a todas las personas mayores de edad.
 - Textos de partida genéricos: hay que adaptarlos al RGPD y a la LOPDGDD, y decir que los datos se comunican a las Fuerzas y Cuerpos de Seguridad.
 - Recibos sin valor fiscal.
-- **SES.Hospedajes**, **tasa turística**, **Redsys y Bizum**, y **exportación para un programa de facturación**: abajo.
+- **SES.Hospedajes**, **tasa turística** y **Redsys y Bizum**: abajo.
 
 ## SES.Hospedajes
 
@@ -38,7 +38,7 @@ Cómo se comunica: documento [«Interfaz servicios externos, Servicio de Comunic
 
 ## Tasa turística
 
-En **Impuestos → Proponer por lugar**. Se crean impuestos normales, que se pueden cambiar. Se suman al precio y van en una línea aparte de la factura, con unidades y tarifa, sin IVA encima.
+En **Impuestos → Proponer por lugar**. Se crean impuestos normales, que se pueden cambiar. Se suman al precio y van aparte, con unidades y tarifa, sin IVA encima.
 
 **Cataluña, impuesto sobre las estancias (IEET).** [Ley 2/2026](https://www.boe.es/boe/dias/2026/03/23/pdfs/BOE-A-2026-6642.pdf), [Ley 5/2017](https://www.boe.es/buscar/doc.php?id=BOE-A-2017-7353) y [cuota de la ATC](https://atc.gencat.cat/es/tributs/ieet/quota-tributaria), consultadas el 2026-11-05:
 
@@ -68,8 +68,6 @@ Hay que configurar la **notificación online** en su módulo de administración;
 
 **Lo que está comprobado (2026-11-05), con su entorno de pruebas real:** un cobro completo, con el comercio de pruebas que publican y su tarjeta de pruebas: del botón de la reserva a su página, autenticación simulada, autorización, vuelta con el resultado firmado, firma comprobada y reserva confirmada con el código de autorización que dio su página. Con Bizum, su entorno abre sin error, sin llegar a pagar. Una firma mala da SIS0042. **Lo que no:** su aviso (la notificación online) no llega a un equipo local y está simulado, y ningún cobro con un comercio de verdad.
 
-## Facturación
+## Facturas
 
-AlojaFlow emite en España **recibos sin valor fiscal**. El documento fiscal lo emite un programa de facturación: **Facturas → Exportar → Para tu programa de facturación** da una fila por factura y tipo de impuesto (D-103).
-
-**VeriFactu no está.** No se genera el registro encadenado ni el QR, y AlojaFlow no presenta declaración responsable. La ley fija el 1 de enero de 2027 para sociedades y el 1 de julio de 2027 para el resto (Real Decreto-ley 15/2025); [Hacienda anunció](https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu.html) el 5 de octubre de 2026 llevarlo a octubre de 2028, y a la fecha de esta nota no se ha encontrado en el BOE. Se hará cuando esté publicado y lo revise un asesor. **Pregunta abierta para el asesor:** si un sistema que solo da recibos cuenta como sistema de facturación. TicketBAI, que sustituye a VeriFactu con domicilio fiscal vasco, tampoco está.
+AlojaFlow no las hace (D-131): de cada pago sale un recibo sin valor fiscal. Si te corresponde facturar, usa un programa aparte.

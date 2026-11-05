@@ -134,8 +134,6 @@ return [
         'copia_aceptacion' => 'Copie signée',
         'foto_tarea' => 'Photo',
         'plano' => 'Plan',
-        'factura_xml' => 'Facture (XML)',
-        'factura_pdf' => 'Facture (PDF)',
         'exportacion' => 'Exportation',
         'comprobante' => 'Justificatif de paiement',
         'foto_publica' => 'Photo de la page publique',
@@ -179,7 +177,6 @@ return [
         'ical' => 'Calendrier iCal',
         'llegada' => 'Enregistrement en ligne',
         'contrato' => 'Contrat',
-        'factura' => 'Facture',
         'grupo' => 'Groupe',
         'mi_reserva' => 'Ma réservation',
         'propietario' => 'Portail du propriétaire',
@@ -214,19 +211,6 @@ return [
         'exportacion' => 'Exportation',
         'anonimizacion' => 'Anonymisation',
     ],
-    'EstadoFactura' => [
-        'emitida' => 'Émise',
-        'registrada' => 'Timbrée',
-        'cancelada' => 'Annulée',
-    ],
-    'TipoDocumentoFiscal' => [
-        'factura' => 'Facture',
-        'recibo' => 'Reçu sans valeur fiscale',
-    ],
-    'ModoFiscal' => [
-        'pruebas' => 'Test',
-        'produccion' => 'Production',
-    ],
     'EstadoGrupo' => [
         'tentativo' => 'Provisoire',
         'confirmado' => 'Confirmé',
@@ -241,12 +225,6 @@ return [
         'por_confirmar' => 'À confirmer',
         'confirmado' => 'Confirmé',
         'rechazado' => 'Refusé',
-    ],
-    'MotivoCancelacionCfdi' => [
-        '01' => '01 · Avec erreurs, avec facture de remplacement',
-        '02' => '02 · Avec erreurs, sans facture de remplacement',
-        '03' => '03 · L’opération n’a pas eu lieu',
-        '04' => '04 · Opération incluse dans une facture globale',
     ],
     'EstadoEnvioAutoridad' => [
         'pendiente' => 'À envoyer',

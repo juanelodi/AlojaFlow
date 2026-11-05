@@ -21,8 +21,6 @@ enum ClaseArchivo: string
     case CopiaAceptacion = 'copia_aceptacion';
     case FotoTarea = 'foto_tarea';
     case Plano = 'plano';
-    case FacturaXml = 'factura_xml';
-    case FacturaPdf = 'factura_pdf';
     case Exportacion = 'exportacion';
     case Comprobante = 'comprobante';
     case FotoPublica = 'foto_publica';
@@ -38,7 +36,6 @@ enum ClaseArchivo: string
             self::Plano => Acceso::OPERACION,
             self::Comprobante, self::ComprobanteGasto => Acceso::RESERVAS,
             self::FotoPublica => Acceso::CATALOGO,
-            self::FacturaXml, self::FacturaPdf => Acceso::FACTURACION,
             self::DocumentoIdentidad, self::Firma, self::CopiaAceptacion, self::Exportacion => Acceso::HUESPEDES,
         };
     }

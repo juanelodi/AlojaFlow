@@ -11,13 +11,10 @@ declare(strict_types=1);
 return [
 
     // Versión instalada; la usa el enlace «Código fuente» (regla 8).
-    'version' => '1.0.30',
+    'version' => '1.0.31',
 
     // Idiomas de la interfaz (regla 7). El español es la fuente.
     'idiomas' => ['es', 'en', 'fr', 'it', 'pt', 'de'],
-
-    // Quién timbra los CFDI. Para conectar un PAC: implementar App\Facturacion\ConectorPac (D-049).
-    'pac' => App\Facturacion\SinPac::class,
 
     // Registro de auditoría: lleva dirección y navegador del personal (modelo-datos.md §8).
     'dias_conservar_auditoria' => 365,

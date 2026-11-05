@@ -37,7 +37,6 @@ enum Modulo: string
     case Propietarios = 'propietarios';
     case Documentos = 'documentos';
     case Caja = 'caja';
-    case Facturacion = 'facturacion';
     case Informes = 'informes';
     case Integraciones = 'integraciones';
 
@@ -79,7 +78,7 @@ enum Modulo: string
             self::VariasPropiedades, self::Subordinacion => 'propiedades',
             self::Motor, self::Pagos, self::Ical, self::Cupones, self::Grupos, self::EstanciasLargas, self::Camping, self::Empresas => 'reservas',
             self::Limpieza, self::AvisoEquipo, self::Plano, self::Llegada, self::Mensajes, self::Bitacora, self::Opiniones, self::Portal, self::Documentos => 'operacion',
-            self::Caja, self::Facturacion, self::Informes, self::Propietarios => 'dinero',
+            self::Caja, self::Informes, self::Propietarios => 'dinero',
             self::Integraciones => 'sistema',
         };
     }

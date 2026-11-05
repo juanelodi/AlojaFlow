@@ -41,7 +41,7 @@ Estados Unidos y Latinoamérica (D-006).
 | Dueño / gerente | Ocupación, cobros e indicadores de todas sus propiedades; configurar | PC y móvil |
 | Recepción | Llegadas, salidas, saldos, mensajes a huéspedes, cierre del día | PC del mostrador |
 | Limpieza / mantenimiento | Qué habitaciones limpiar hoy, marcar estados, reportar incidencias | Móvil |
-| Contador | Facturas y exportaciones | PC |
+| Contador | Estados de cuenta y exportaciones | PC |
 | Huésped | Llenar su registro antes de llegar, firmar el contrato, recibir mensajes en su idioma | Móvil |
 | Operador del servicio | Instalar, actualizar, respaldar y dar soporte a cada cliente | Panel |
 
@@ -55,7 +55,7 @@ Uso repartido entre PC y móvil, más o menos a partes iguales.
   —también lo de cada módulo— dentro de la base de datos y de la copia de seguridad.
 - **Se adopta sin migrar.** Quien ya usa HotelDruid instala AlojaFlow al lado y lo aprovecha
   desde el primer día; la migración completa llega con la fase 2.
-- **Cumplimiento local.** Facturación, registro de viajeros, impuestos y privacidad por país.
+- **Cumplimiento local.** Registro de viajeros, impuestos y privacidad por país. Por ahora no se factura (D-131).
 - **En el idioma de cada quien.** Personal y huéspedes eligen su idioma por separado.
 
 **Qué no es en la fase 1:** no crea ni modifica reservas, no es un channel manager por API, no
@@ -66,7 +66,7 @@ es un motor de reservas y no procesa pagos.
 AGPL más servicios: servicio alojado (una instalación por cliente, D-005), instalación,
 migración de datos, soporte, formación y personalizaciones. **Precios: pendiente.**
 
-Costos de terceros que paga el alojamiento cuando los usa: timbrado de CFDI (PAC), envío de
+Costos de terceros que paga el alojamiento cuando los usa: envío de
 correo, dominio y hosting; más adelante, channel manager y pasarela de pagos.
 
 ## 6. Principios de producto
@@ -102,7 +102,7 @@ Principal (HotelDruid 3.0.8 / AlojaFlow 1.2.x)
 AlojaFlow
    ├─ Lector de la copia (texto, nunca se ejecuta) → tablas espejo      [solo la sincronización]
    ├─ Proyección al modelo propio: propiedades, unidades, reservas…    [solo lectura en fase 1]
-   └─ Datos propios: limpieza, check-in, contratos, facturas, plantillas, bloqueos iCal…
+   └─ Datos propios: limpieza, check-in, contratos, plantillas, bloqueos iCal…
                                                                        [la sincronización no los toca]
 ```
 
@@ -129,7 +129,7 @@ Las funciones repetidas quedan en un solo módulo.
 | M5 | **Huéspedes y llegada en línea** | Ficha del huésped (de la copia) con documentos, preferencias y notas propias; pre-check-in en línea con enlace firmado; contrato y aviso de privacidad con versión, huella y aceptación con OTP; registro de viajeros del país | Catálogo, `precheckin`, aceptación de contrato de `grupos` |
 | M6 | **Comunicación y automatización** | Plantillas por idioma con variables; correos automáticos por evento; mensajes de WhatsApp con texto listo (enlace); webhooks firmados; historial de envíos | Catálogo, `mensajes`, `automatizacion` |
 | M7 | **Canales iCal** | Un calendario iCal por unidad para los portales (sin datos personales); importación de los calendarios de Airbnb, Booking.com y Vrbo como bloqueos propios de AlojaFlow; aviso de choques con las reservas de la principal | Catálogo, `ical` (adaptado a solo lectura) |
-| M8 | **Dinero y facturación** | Estado de cuenta de cada reserva (total, pagado, pendiente); políticas de cancelación, no-show y depósito (calculadora, depósitos pendientes, marca de no-show propia); facturación por país; exportación para el contador | Catálogo, `politicas`, `facturas_csv` |
+| M8 | **Dinero** | Estado de cuenta de cada reserva (total, pagado, pendiente); políticas de cancelación, no-show y depósito (calculadora, depósitos pendientes, marca de no-show propia); recibo en PDF de cada pago (D-131) | Catálogo, `politicas`, `facturas_csv` |
 | M9 | **Informes e indicadores** | Ocupación, ADR, RevPAR, ingresos por canal (netos de comisión), por unidad, contra el año anterior, reservas a futuro, cobros, estancia y anticipación, día de la semana, cancelaciones, limpieza, huéspedes; por propiedad y total; CSV | Catálogo, `kpi`, estadísticas de `multipropiedad` |
 | M10 | **Privacidad** | Exportar todos los datos de un huésped; anonimizar o borrar los datos propios; plazos de conservación (sobre todo documentos de identidad); avisos de privacidad por país | `rgpd` (la parte que no escribe en la principal) |
 | M11 | **Plataforma** | Instalador web; usuarios, roles y permisos por propiedad; 2FA; registro de auditoría; idiomas, zonas horarias y formatos; copias de seguridad y actualizaciones desde el panel; enlace «Código fuente»; «Acerca de» con créditos | Catálogo, `doble_factor`, `auditoria` |
@@ -152,7 +152,6 @@ antes de programarlo.
 
 | | México | España | Estados Unidos | Genérico |
 |---|---|---|---|---|
-| Facturación | CFDI 4.0, timbrado con un PAC (servicio de pago por folio) | VeriFactu (registro encadenado, QR); obligaciones del productor del software | Sin factura electrónica: folio o recibo con impuestos | Recibo sin valor fiscal |
 | Registro de viajeros | Sin registro nacional conocido; revisar requisitos estatales | SES.Hospedajes (Ministerio del Interior) | Sin registro nacional; revisar ordenanzas locales | Ficha exportable |
 | Impuestos al hospedaje | IVA e impuesto estatal sobre hospedaje (tasa por estado) | IVA de alojamiento y tasas turísticas autonómicas o municipales donde existan | Impuestos de ocupación y de ventas por estado, condado y ciudad, en capas | Capas configurables |
 | Privacidad | LFPDPPP (verificar la versión vigente) | RGPD y LOPDGDD | CCPA/CPRA y leyes estatales | Aviso editable |
@@ -181,10 +180,10 @@ Cada entrega sale en varias versiones 1.0.x (D-030).
 
 | Entrega | Módulos | Resultado |
 |---|---|---|
-| **Base** | M11 (sin facturación), M1, M2, M3, M9 básico (ocupación, ADR, RevPAR, ingresos por canal) | Ver todas las propiedades, su calendario, el día y los indicadores principales |
+| **Base** | M11, M1, M2, M3, M9 básico (ocupación, ADR, RevPAR, ingresos por canal) | Ver todas las propiedades, su calendario, el día y los indicadores principales |
 | **Operación** | M4, M6, M7 | Limpieza desde el móvil, mensajes y correos automáticos, iCal con aviso de choques |
 | **Huéspedes** | M5, M10 | Llegada en línea, contrato con OTP, registro de viajeros, privacidad |
-| **Dinero** | M8, M9 completo | Facturación por país, políticas, exportación contable, todos los informes |
+| **Dinero** | M8, M9 completo | Recibos, políticas, todos los informes |
 
 ## 10. Métricas de éxito (propuestas)
 
@@ -216,7 +215,7 @@ Cada entrega sale en varias versiones 1.0.x (D-030).
 | Copias grandes en hosting compartido | Lectura por partes, carga por lotes, límites de tamaño y tiempo |
 | Reservas borradas o con identificador reutilizado en la principal dejan huérfanos los datos propios | Clave estable y reglas de conciliación en la especificación; nunca borrar datos propios en automático |
 | Funciones duplicadas entre la principal 1.2.x y AlojaFlow | Guía de convivencia (§8.6) |
-| Obligaciones legales por país (VeriFactu, CFDI, SES.Hospedajes, privacidad) | Documento por país con fuentes oficiales; revisión con un asesor antes de publicar cada paquete |
+| Obligaciones legales por país (SES.Hospedajes, privacidad) | Documento por país con fuentes oficiales; revisión con un asesor antes de publicar cada paquete |
 | iCal tiene retrasos (los portales leen cada cierto tiempo) | Avisar al usuario, sincronizar a menudo, detectar choques |
 | Documentos de identidad de huéspedes | Cifrados en reposo, fuera de la carpeta pública, con plazo de conservación |
 | Alcance grande de la fase 1 | Entregas de §9 |
@@ -226,5 +225,5 @@ Cada entrega sale en varias versiones 1.0.x (D-030).
 
 - Precios y modelo de venta.
 - Titular del copyright en las cabeceras (nombre legal o razón social).
-- PAC para CFDI, proveedor de correo y canal del OTP (correo; WhatsApp o SMS si hay proveedor).
+- Proveedor de correo y canal del OTP (correo; WhatsApp o SMS si hay proveedor).
 - Inventario, almacenes y punto de venta: fase 2 o posterior.
