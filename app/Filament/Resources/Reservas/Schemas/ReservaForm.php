@@ -24,6 +24,7 @@ use App\Models\Empresa;
 use App\Models\Huesped;
 use App\Models\Impuesto;
 use App\Models\Propiedad;
+use App\Models\Propietario;
 use App\Models\Reserva;
 use App\Models\Unidad;
 use App\Modulos\Modulo;
@@ -189,6 +190,13 @@ class ReservaForm
                     TextInput::make('equipo.largo')->label(fn (Get $get): string => __('camping.equipo.largo_panel', ['unidad' => self::unidadLargo($get('propiedad_id'))]))->numeric()->minValue(0)->maxValue(1000)->step('any')->live(onBlur: true),
                     TextInput::make('equipo.vehiculos')->label(__('camping.equipo.vehiculos'))->numeric()->integer()->minValue(0)->maxValue(20),
                     TextInput::make('equipo.placas')->label(__('camping.equipo.placas'))->maxLength(100),
+                ]),
+            Section::make(__('propietarios.reserva.titulo'))->description(__('propietarios.reserva.ayuda'))->columnSpanFull()
+                ->visible(fn (Get $get): bool => ! $esReserva($get) && Modulos::activo(Modulo::Propietarios))
+                ->schema([
+                    Select::make('propietario_id')->label(__('propietarios.modelo'))->native(false)
+                        ->options(fn (Get $get): array => Propietario::query()->where('propiedad_id', self::propiedadPermitida($get('propiedad_id')))
+                            ->whereIn('id', Unidad::query()->whereKey((int) $get('unidad_id'))->select('propietario_id'))->pluck('nombre', 'id')->all()),
                 ]),
             Hidden::make('sin_catalogo')->dehydrated(false),
             Hidden::make('esta_reserva')->dehydrated(false),

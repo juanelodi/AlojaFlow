@@ -4,10 +4,10 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-05): versión de prueba 1.0.23**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-05): versión de prueba 1.0.24**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
-  D-029) y D-036 se revisan con el usuario. En curso: el plan de [docs/plan-paridad.md](docs/plan-paridad.md), hasta la 1.0.24.
+  D-029) y D-036 se revisan con el usuario. El plan de [docs/plan-paridad.md](docs/plan-paridad.md) quedó completo en la 1.0.24; falta decidir qué entra del núcleo heredado ([docs/nucleo-heredado.md](docs/nucleo-heredado.md)).
 - **Idioma:** español de México en la conversación, la documentación, el código
   (identificadores y comentarios) y los mensajes de commit. Interfaz en español y en los
   idiomas de la regla 7.
@@ -212,6 +212,7 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 - `app/Paises/` — **todo lo que cambia por país** va detrás de `Pais` (D-048). `app/Facturacion/`,
   facturas y CFDI (D-049). `app/Dinero/`, políticas (D-050).
 - `app/Autoridades/` — registro de viajeros: `GestorEnvios` concilia reservas con lo comunicado y `Ses/` es SES.Hospedajes (D-100).
+- `app/Propietarios/` — propiedades de terceros: `CalculadorEstado` y `GestorEstados` (D-114, D-115), `AccesoPropietario` y `PortalPropietario` (D-116). `app/Seguridad/AccesoConClave.php`, enlace y clave de quien no es usuario del panel.
 - `app/Camping/` — lo de un camping: `AtributosLugar` y `FiltroLugares` (D-110), `GestorLecturas` (D-111), `CupoExtras` (D-113). `app/Servicios/Residentes.php` (D-112).
 - `app/Publico/` — lo que ve el huésped sin cuenta: `PaginaPublica` y `GestorFotos` (D-104), `MiReserva` (D-105), `GuiaDigital` (D-106).
 - `app/Archivos/GestorArchivos.php` — archivos privados, cifrados si llevan datos personales.

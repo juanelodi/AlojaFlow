@@ -51,6 +51,12 @@ footer a{color:inherit}
 .lugar{position:absolute;min-width:32px;min-height:32px;padding:0 8px;border-radius:16px;font-size:.8125rem;line-height:32px;text-align:center;text-decoration:none;box-shadow:0 1px 3px rgb(0 0 0 / .35)}
 .lugar.libre{background:var(--marca);color:#fff;font-weight:700}
 .lugar.ocupado{background:#fff;color:var(--gris)}
+.franja{display:grid;grid-template-columns:repeat(30,1fr);gap:1px}
+.dia{display:block;height:20px;background:var(--borde)}
+.dia.reserva{background:var(--marca)}
+.dia.dueno{background:#0b1f2a}
+.dia.bloqueo{background:#94a3b8}
+.dia.muestra{display:inline-block;width:12px;height:12px;vertical-align:middle;margin-left:8px;border-radius:2px}
 details.filtros{margin-top:12px}
 details.filtros summary{cursor:pointer;font-weight:600;min-height:32px}
 </style>

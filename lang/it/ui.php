@@ -427,6 +427,8 @@ return [
         'no_hay' => 'Non c’è nessuna struttura dimostrativa.',
         'ya_existe' => 'Esiste già una struttura dimostrativa. Rimuovila prima con --quitar.',
         'nombre_propiedad' => 'Hotel Bahía Serena (demo)',
+        'propietario' => 'Famiglia Proprietaria (fittizia)',
+        'gasto_dueno' => 'Riparazione del bungalow',
         'kayak' => 'Noleggio kayak',
         'estancia_larga' => 'Soggiorno di tre mesi, con calendario dei pagamenti',
         'temporada_primavera' => 'Primavera',

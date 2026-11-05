@@ -17,6 +17,7 @@ use App\Enums\TipoDocumentoFiscal;
 use App\Facturacion\DatosTimbre;
 use App\Models\Aceptacion;
 use App\Models\DocumentoLegal;
+use App\Models\EstadoCuenta;
 use App\Models\Factura;
 use App\Models\Grupo;
 use App\Models\Pago;
@@ -36,6 +37,11 @@ final class GeneradorPdf
     public function confirmacion(Reserva $reserva): string
     {
         return $this->pdf('documentos.confirmacion', $this->datos($reserva), $reserva->idioma);
+    }
+
+    public function estadoCuenta(EstadoCuenta $estado): string
+    {
+        return $this->pdf('documentos.estado-cuenta', ['estado' => $estado, 'propiedad' => $estado->propiedad], $estado->propietario->idioma ?? $estado->propiedad->idioma);
     }
 
     public function recibo(Pago $pago): string

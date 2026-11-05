@@ -675,6 +675,15 @@ No hay otro tipo de reserva: es quien se queda 28 noches o más, con el calendar
 ### D-113 · 2026-11-05 · El cupo se cuenta por noche
 Un extra apartado ocupa cada noche de la estancia, y para unas fechas manda el peor día. Se comprueba con las filas bloqueadas, para no vender dos veces la última bicicleta. **El motor no vende de más; el panel solo avisa**, como con las restricciones: un caso especial lo decide quien atiende. Marcar la casilla de un extra con cupo también pasa por la comprobación, por si alguien arma el formulario a mano.
 
+### D-114 · 2026-11-05 · Un dueño es un acuerdo sobre unas unidades
+Una unidad tiene un solo dueño y lo dice en su fila: varios dueños de una misma unidad o participaciones complican todo lo demás y nadie lo ha pedido. El acuerdo es comisión, si va sobre lo que queda tras el portal, y un cargo fijo; una unidad puede tener su propia comisión, y un cargo del catálogo puede ser del administrador. Solo en independientes: en una subordinada, los números los lleva la principal. **El lado fiscal no entra:** la factura de la comisión, las retenciones y los formularios de cada país necesitan un asesor que nadie ha consultado, y el informe tampoco los investigó. Tampoco contabilidad fiduciaria. **Como la unidad no guarda de quién fue antes,** quien la cambia de dueño cambia lo que se calcule desde entonces, también para meses pasados: lo ya mandado no se mueve, pero avisa que difiere.
+
+### D-115 · 2026-11-05 · Un estado de cuenta es una foto
+Se calcula por mes, y **una estancia entre dos meses se reparte por noches, redondeando lo acumulado**: si no, los meses no sumarían lo cobrado. Solo cuenta lo confirmado: lo que sigue sin confirmar puede vencerse. El ingreso del dueño es el total sin impuestos cobrados ni cargos del administrador. Se guarda lo calculado, para que lo que el dueño ya vio no cambie solo cuando alguien mueva una reserva: el borrador se recalcula, lo mandado no. Si después difiere, se avisa, y reabrirlo lo vuelve a borrador con lo de hoy: los ajustes automáticos entre periodos son justo lo que hace frágiles a estos módulos. Anotar el pago no mueve dinero. El PDF se hace de la foto, sin guardarlo. No lleva el nombre del huésped, porque el dueño ve este mismo detalle.
+
+### D-116 · 2026-11-05 · El portal del dueño es el del coordinador
+Enlace secreto y clave, sin ser usuario del panel: los permisos del panel son por propiedad y un dueño es solo una parte de ella. Por eso `AccesoConClave` salió de `AccesoCoordinador`, y los dos comparten todo. Ve lo de sus unidades sin datos de huéspedes, y no hay un ajuste para verlos: quien se hospeda no contrató con él. **Sus estancias son bloqueos que dicen de quién son**, con la misma comprobación de noches ocupadas que cualquier reserva; se le avisa al alojamiento, porque esas noches dejan de venderse. Las libera mientras no hayan empezado, y también se avisa. Mientras siga con la clave que le dieron, que también conoce el alojamiento, no entra a nada de su cuenta. El comprobante de un gasto baja como archivo, sin abrirse en la página.
+
 ---
 
 ## Pendientes

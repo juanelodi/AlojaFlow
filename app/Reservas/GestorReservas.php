@@ -481,6 +481,11 @@ final class GestorReservas
         ];
 
         if ($tipo === TipoReserva::Bloqueo) {
+            if (array_key_exists('propietario_id', $datos)) {
+                // Solo el dueño de esa unidad: la estancia sale en su estado de cuenta, y él puede liberarla.
+                $base['propietario_id'] = (int) $datos['propietario_id'] === $unidad->propietario_id ? $unidad->propietario_id : null;
+            }
+
             return $base + [
                 'titular_id' => null, 'estado' => EstadoReserva::Confirmada, 'personas' => 0, 'tarifa_nombre' => null,
                 'total' => 0, 'deposito' => 0, 'descuento' => 0, 'comision' => 0,

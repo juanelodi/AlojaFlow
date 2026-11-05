@@ -37,12 +37,14 @@ use App\Models\Impuesto;
 use App\Models\Movimiento;
 use App\Models\Politica;
 use App\Models\Propiedad;
+use App\Models\Propietario;
 use App\Models\RegistroAuditoria;
 use App\Models\Reserva;
 use App\Models\SerieFacturacion;
 use App\Models\Tarifa;
 use App\Models\Unidad;
 use App\Propiedades\BorradorPropiedad;
+use App\Propietarios\GestorEstados;
 use App\Reservas\Cotizador;
 use App\Reservas\GestorReservas;
 use App\Reservas\Mensualidades;
@@ -134,6 +136,7 @@ final class GeneradorDemo
             foreach ($unidades as $indice => $unidad) {
                 $this->llenarUnidad($propiedad, $unidad, $indice, $huespedes);
             }
+            $this->crearPropietario($propiedad);
 
             return $propiedad;
         }));
@@ -310,6 +313,19 @@ final class GeneradorDemo
             $this->crearEstancia($propiedad, $unidad, $llegada, $cursor, $huespedes);
             $cursor = $llegada->subDays($this->azar->getInt(0, 3));
         }
+    }
+
+    /**
+     * Las cabañas son de un dueño, con su estado de cuenta del mes pasado (D-114).
+     */
+    private function crearPropietario(Propiedad $propiedad): void
+    {
+        $dueno = Propietario::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.propietario'), 'correo' => 'dueno@example.com', 'comision_porcentaje' => 20, 'cargo_fijo' => 50000]);
+        Unidad::query()->where('propiedad_id', $propiedad->id)->where('edificio', 'Jardín')->update(['propietario_id' => $dueno->id]);
+        $hoy = $propiedad->hoy();
+        $mesPasado = $hoy->startOfMonth()->subDay();
+        Movimiento::query()->create(['propiedad_id' => $propiedad->id, 'propietario_id' => $dueno->id, 'fecha' => $mesPasado, 'tipo' => TipoMovimiento::Gasto, 'categoria' => 'Mantenimiento', 'concepto' => __('ui.demo.gasto_dueno'), 'metodo' => MetodoPago::Transferencia, 'importe' => 120000, 'moneda' => $propiedad->moneda]);
+        app(GestorEstados::class)->generar($dueno, $mesPasado);
     }
 
     /**

@@ -436,6 +436,8 @@ return [
         'no_hay' => 'No hay ninguna propiedad de demostración.',
         'ya_existe' => 'Ya hay una propiedad de demostración. Quítala primero con --quitar.',
         'nombre_propiedad' => 'Hotel Bahía Serena (demo)',
+        'propietario' => 'Familia Dueña (ficticia)',
+        'gasto_dueno' => 'Reparación de la cabaña',
         'kayak' => 'Renta de kayak',
         'estancia_larga' => 'Estancia de tres meses, con calendario de cobros',
         'temporada_primavera' => 'Primavera',

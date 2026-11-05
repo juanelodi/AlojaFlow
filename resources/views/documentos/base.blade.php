@@ -36,14 +36,18 @@
             </td>
             <td class="derecha">
                 <strong style="font-size: 14px">@yield('titulo')</strong><br>
-                <span class="gris">{{ __('documentos.numero') }} {{ $reserva->numero }}</span><br>
-                <span class="gris">{{ __('documentos.codigo') }} {{ $reserva->codigo_publico }}</span>
+                @isset($reserva)
+                    <span class="gris">{{ __('documentos.numero') }} {{ $reserva->numero }}</span><br>
+                    <span class="gris">{{ __('documentos.codigo') }} {{ $reserva->codigo_publico }}</span>
+                @endisset
             </td>
         </tr>
     </table>
     @yield('contenido')
-    <div class="gris" style="margin-top: 16px">
-        @include('componentes.registro-turistico', ['registros' => \App\Propiedades\RegistrosTuristicos::visibles($propiedad, $reserva)])
-    </div>
+    @isset($reserva)
+        <div class="gris" style="margin-top: 16px">
+            @include('componentes.registro-turistico', ['registros' => \App\Propiedades\RegistrosTuristicos::visibles($propiedad, $reserva)])
+        </div>
+    @endisset
 </body>
 </html>

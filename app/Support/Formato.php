@@ -95,6 +95,14 @@ final class Formato
         return $valor === null ? '—' : number_format($valor * 100, 1, ',' === self::separadorDecimal() ? ',' : '.', '').' %';
     }
 
+    /**
+     * Un porcentaje que alguien escribió, como la comisión de un acuerdo: tal cual, sin decimales de más.
+     */
+    public static function tasa(float|string|null $valor): string
+    {
+        return str_replace('.', self::separadorDecimal(), (string) (float) $valor).' %';
+    }
+
     public static function separadorDecimal(): string
     {
         return in_array(app()->getLocale(), ['en', 'es'], true) ? '.' : ',';

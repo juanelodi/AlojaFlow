@@ -69,6 +69,7 @@ return [
         'exportacion' => 'Exportación',
         'comprobante' => 'Comprobante de pago',
         'foto_publica' => 'Foto de la página pública',
+        'comprobante_gasto' => 'Comprobante de gasto',
     ],
 
     'CanalEnvio' => [
@@ -116,6 +117,7 @@ return [
         'factura' => 'Factura',
         'grupo' => 'Grupo',
         'mi_reserva' => 'Mi reserva',
+        'propietario' => 'Portal del propietario',
         'guia' => 'Guía',
     ],
 
@@ -234,5 +236,10 @@ return [
         'luz' => 'Luz',
         'agua' => 'Agua',
         'gas' => 'Gas',
+    ],
+    'FaseEstadoCuenta' => [
+        'borrador' => 'Borrador',
+        'enviado' => 'Enviado',
+        'pagado' => 'Pagado',
     ],
 ];

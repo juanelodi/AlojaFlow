@@ -136,6 +136,7 @@ return [
         'exportacion' => 'Export',
         'comprobante' => 'Zahlungsbeleg',
         'foto_publica' => 'Foto der öffentlichen Seite',
+        'comprobante_gasto' => 'Ausgabenbeleg',
     ],
     'CanalEnvio' => [
         'correo' => 'E-Mail',
@@ -178,6 +179,7 @@ return [
         'factura' => 'Rechnung',
         'grupo' => 'Gruppe',
         'mi_reserva' => 'Meine Buchung',
+        'propietario' => 'Eigentümerportal',
         'guia' => 'Führer',
     ],
     'EstadoFuenteIcal' => [
@@ -287,5 +289,10 @@ return [
         'luz' => 'Strom',
         'agua' => 'Wasser',
         'gas' => 'Gas',
+    ],
+    'FaseEstadoCuenta' => [
+        'borrador' => 'Entwurf',
+        'enviado' => 'Gesendet',
+        'pagado' => 'Bezahlt',
     ],
 ];

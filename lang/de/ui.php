@@ -427,6 +427,8 @@ return [
         'no_hay' => 'Es gibt keine Demo-Unterkunft.',
         'ya_existe' => 'Es gibt bereits eine Demo-Unterkunft. Entfernen Sie sie zuerst mit --quitar.',
         'nombre_propiedad' => 'Hotel Bahía Serena (Demo)',
+        'propietario' => 'Familie Eigentümer (fiktiv)',
+        'gasto_dueno' => 'Reparatur der Hütte',
         'kayak' => 'Kajakverleih',
         'estancia_larga' => 'Aufenthalt von drei Monaten, mit Zahlungsplan',
         'temporada_primavera' => 'Frühling',

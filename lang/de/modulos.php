@@ -43,6 +43,7 @@ return [
         'llegada' => ['nombre' => 'Online-Anreise', 'descripcion' => 'Der Gast trägt seine Daten ein und akzeptiert die Dokumente vor der Ankunft.'],
         'mensajes' => ['nombre' => 'Nachrichten an Gäste', 'descripcion' => 'Vorlagen, Versand per E-Mail und WhatsApp sowie automatische Nachrichten.'],
         'camping' => ['nombre' => 'Campingplätze', 'descripcion' => 'Was jeder Platz bietet, die Ausrüstung des Gastes, Wahl auf dem Plan, Strom- und Wasserstände, Saisongäste und begrenzte Extras.'],
+        'propietarios' => ['nombre' => 'Eigentümer', 'descripcion' => 'Wenn Sie Einheiten für Dritte verwalten: Eigentümer und Provision, Ausgaben, Abrechnungen, ihr Portal und ihre Aufenthalte.'],
         'estancias_largas' => ['nombre' => 'Langzeitaufenthalte und Monatszahlungen', 'descripcion' => 'Wochen- und Monatspreise, Zahlungsplan mit Erinnerungen und eine Rechnung pro Zahlung.'],
         'portal' => ['nombre' => 'Meine Buchung und digitaler Führer', 'descripcion' => 'Eine Seite für jeden Gast mit seiner Buchung und allem Wissenswerten, und ein QR-Code in jeder Einheit.'],
         'bitacora' => ['nombre' => 'Schichtbuch', 'descripcion' => 'Was eine Schicht der nächsten hinterlässt. Wichtiges erscheint unter Heute.'],

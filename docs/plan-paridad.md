@@ -22,7 +22,7 @@ en [decisiones.md](decisiones.md), de la D-069 en adelante.
 | 1.0.23 | Campings: atributos y datos del equipo, elegir lugar en el mapa, lecturas con cargo, temporada y residentes, extras con cupo. Sin modo sin conexión |
 | 1.0.24 | Propietarios: dueños y comisión, gastos, estados de cuenta y liquidaciones, portal, estancias del dueño |
 
-Al terminar, se le entrega al usuario la lista completa del núcleo heredado de HotelDruid para que decida qué entra.
+Al terminar, se le entrega al usuario la lista completa del núcleo heredado de HotelDruid para que decida qué entra: [nucleo-heredado.md](nucleo-heredado.md).
 
 **Sin cuentas de prueba todavía.** Cobros y PAC se prueban con respuestas simuladas, y cada versión lo dice.
 

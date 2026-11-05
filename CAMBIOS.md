@@ -2,6 +2,37 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.24 — 2026-11-05
+
+**Propietarios: si administras unidades de otras personas.** Es un módulo nuevo y llega apagado: se prende en Sistema → Módulos. Con esta versión termina el plan de funciones.
+
+**Dueños y su acuerdo (Dinero → Propietarios)**
+- La ficha del dueño, con su comisión, si es sobre lo que queda tras el portal o sobre todo el ingreso, y un cargo fijo al mes.
+- Sus unidades, y una comisión distinta para la que la tenga. Si una unidad cambia de dueño, lo que ya mandaste no cambia, pero te avisa que difiere.
+- En cada cargo del catálogo puedes decir que es tuyo y no del dueño, como la limpieza.
+
+**Gastos (Dinero → Gastos e ingresos)**
+- Un gasto se le puede cargar a un dueño y a una unidad, con su comprobante. Se descuenta en su estado de cuenta de ese mes.
+
+**Estados de cuenta (Dinero → Estados de cuenta)**
+- **Se generan solos para el mes que digas**, para todos los dueños: ingresos, comisión de portales, tu comisión, gastos, cargo fijo y lo que le toca. Solo cuenta lo confirmado.
+- **Una estancia entre dos meses se reparte por noches**, y los meses suman justo lo cobrado. Los impuestos no cuentan como ingreso del dueño.
+- **Borrador, revisión y envío:** al mandarlo queda en su portal y le llega un aviso. Después ya no cambia; si cambió una reserva o se anotó un gasto, te lo avisa y puedes volver a abrirlo.
+- Anotas lo que le pagaste, con fecha y referencia. **AlojaFlow no mueve dinero.** Se baja en PDF y CSV.
+
+**Su portal**
+- Un enlace y una clave que cambia la primera vez, como el coordinador de un grupo. No es un usuario del panel.
+- Ve los próximos 30 días de sus unidades, sus estancias, ocupación e ingresos del mes, sus gastos con comprobante y sus estados de cuenta.
+- **Nunca ve quién se queda en su unidad**, ni nada de otras unidades.
+
+**Estancias del dueño**
+- Desde su portal se aparta sus fechas, si el acuerdo lo deja, y las libera mientras no hayan empezado. En los dos casos te llega un aviso.
+- En el panel, un bloqueo puede ser «estancia del dueño». Sale en su estado de cuenta, sin ingreso.
+
+**Demostración:** las cabañas son de un dueño ficticio, con su estado de cuenta del mes pasado.
+
+**Sin verificar:** nada de esto lo ha revisado un contador. **No hace el lado fiscal:** ni la factura de tu comisión, ni retenciones, ni los formularios de cada país: confírmalo con el tuyo. No lleva contabilidad fiduciaria ni cuentas separadas por dueño. El correo al dueño se revisó en la cola de envíos, sin mandarlo. No se ha probado con un dueño real ni en un teléfono de verdad.
+
 ## 1.0.23 — 2026-11-05
 
 **Campings.** Es un módulo nuevo y llega apagado: se prende en Sistema → Módulos. Todo es opcional, y varias cosas sirven también a cabañas y casas de huéspedes.

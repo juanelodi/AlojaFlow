@@ -19,6 +19,7 @@ use App\Http\Controllers\LlegadaController;
 use App\Http\Controllers\MotorReservasController;
 use App\Http\Controllers\OpinionController;
 use App\Http\Controllers\PortalController;
+use App\Http\Controllers\PropietarioPublicoController;
 use App\Http\Middleware\MismoOrigen;
 use App\Http\Middleware\ModuloActivo;
 use App\Http\Middleware\UsuarioActivo;
@@ -71,6 +72,18 @@ Route::prefix('llegada/{token}')->where(['token' => '[0-9a-f]{40}'])->name('lleg
     Route::post('/verificar', [LlegadaController::class, 'comprobar'])->middleware('throttle:publico-envio')->name('comprobar');
     Route::post('/reenviar', [LlegadaController::class, 'reenviar'])->middleware(['throttle:publico-codigo', 'throttle:llegada-codigo'])->name('reenviar');
     Route::get('/listo', [LlegadaController::class, 'listo'])->name('listo');
+});
+
+// El portal del dueño: enlace secreto y clave (D-116).
+Route::prefix('propietario/{token}')->where(['token' => '[0-9a-f]{40}'])->name('propietario.')->middleware([ModuloActivo::class.':propietarios', 'throttle:publico'])->group(function (): void {
+    Route::get('/', [PropietarioPublicoController::class, 'ver'])->name('ver');
+    Route::post('/entrar', [PropietarioPublicoController::class, 'entrar'])->middleware('throttle:publico-envio')->name('entrar');
+    Route::post('/salir', [PropietarioPublicoController::class, 'salir'])->name('salir');
+    Route::post('/clave', [PropietarioPublicoController::class, 'cambiarClave'])->middleware('throttle:publico-envio')->name('clave');
+    Route::post('/bloquear', [PropietarioPublicoController::class, 'bloquear'])->middleware('throttle:publico-envio')->name('bloquear');
+    Route::post('/bloqueo/{reserva}', [PropietarioPublicoController::class, 'quitarBloqueo'])->whereNumber('reserva')->middleware('throttle:publico-envio')->name('quitar');
+    Route::get('/estado/{estado}', [PropietarioPublicoController::class, 'estadoPdf'])->whereNumber('estado')->name('estado');
+    Route::get('/comprobante/{movimiento}', [PropietarioPublicoController::class, 'comprobante'])->whereNumber('movimiento')->name('comprobante');
 });
 
 // La página del huésped y la guía de cada unidad (D-105, D-106). Las fotos, para el motor y para la guía.

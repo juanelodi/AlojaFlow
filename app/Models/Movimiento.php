@@ -25,6 +25,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $principal_id
  * @property string|null $clave_origen
  * @property int|null $caja_id
+ * @property int|null $propietario_id
+ * @property int|null $unidad_id
+ * @property int|null $comprobante_archivo_id
  * @property CarbonImmutable $fecha
  * @property TipoMovimiento $tipo
  * @property string|null $categoria
@@ -53,6 +56,24 @@ class Movimiento extends ModeloBase
             'importe' => 'integer',
             'sincronizada' => 'boolean',
         ];
+    }
+
+    /** @return BelongsTo<Unidad, $this> */
+    public function unidad(): BelongsTo
+    {
+        return $this->belongsTo(Unidad::class);
+    }
+
+    /** @return BelongsTo<Propietario, $this> */
+    public function propietario(): BelongsTo
+    {
+        return $this->belongsTo(Propietario::class);
+    }
+
+    /** @return BelongsTo<Archivo, $this> */
+    public function comprobante(): BelongsTo
+    {
+        return $this->belongsTo(Archivo::class, 'comprobante_archivo_id');
     }
 
     /** @return BelongsTo<Propiedad, $this> */

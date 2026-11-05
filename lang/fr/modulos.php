@@ -43,6 +43,7 @@ return [
         'llegada' => ['nombre' => 'Arrivée en ligne', 'descripcion' => 'Le client remplit ses données et accepte les documents avant d\'arriver.'],
         'mensajes' => ['nombre' => 'Messages aux clients', 'descripcion' => 'Modèles, envois par e-mail et WhatsApp, et messages automatiques.'],
         'camping' => ['nombre' => 'Campings et emplacements', 'descripcion' => 'Ce qu’offre chaque emplacement, l’équipement du client, le choix sur le plan, les relevés d’électricité et d’eau, les résidents saisonniers et les extras limités.'],
+        'propietarios' => ['nombre' => 'Propriétaires', 'descripcion' => 'Si vous gérez des unités pour des tiers : propriétaires et commission, dépenses, relevés, leur portail et leurs séjours.'],
         'estancias_largas' => ['nombre' => 'Longs séjours et mensualités', 'descripcion' => 'Prix à la semaine et au mois, calendrier de paiements avec rappels et une facture par paiement.'],
         'portal' => ['nombre' => 'Ma réservation et guide numérique', 'descripcion' => 'Une page pour chaque client, avec sa réservation et ce qu’il doit savoir, et un code QR dans chaque unité.'],
         'bitacora' => ['nombre' => 'Journal des équipes', 'descripcion' => 'Ce qu’une équipe laisse à la suivante. L’important apparaît dans Aujourd’hui.'],

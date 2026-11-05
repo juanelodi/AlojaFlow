@@ -436,6 +436,8 @@ return [
         'no_hay' => 'There is no demo property.',
         'ya_existe' => 'There is already a demo property. Remove it first with --quitar.',
         'nombre_propiedad' => 'Serene Bay Hotel (demo)',
+        'propietario' => 'The Owner family (fictional)',
+        'gasto_dueno' => 'Cabin repair',
         'kayak' => 'Kayak rental',
         'estancia_larga' => 'Three-month stay, with a payment schedule',
         'temporada_primavera' => 'Spring',

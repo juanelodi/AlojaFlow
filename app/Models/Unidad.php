@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $id
  * @property int $propiedad_id
  * @property int|null $tarifa_id
+ * @property int|null $propietario_id
+ * @property string|null $comision_propietario
  * @property string $codigo
  * @property string $nombre
  * @property string|null $piso
@@ -48,6 +50,7 @@ class Unidad extends ModeloBase
         return [
             'activa' => 'boolean',
             'atributos' => 'array',
+            'comision_propietario' => 'decimal:2',
             'origen' => OrigenFila::class,
             'sincronizada' => 'boolean',
         ];
@@ -71,6 +74,12 @@ class Unidad extends ModeloBase
     public function propiedad(): BelongsTo
     {
         return $this->belongsTo(Propiedad::class);
+    }
+
+    /** @return BelongsTo<Propietario, $this> */
+    public function propietario(): BelongsTo
+    {
+        return $this->belongsTo(Propietario::class);
     }
 
     /** @return BelongsTo<Tarifa, $this> */

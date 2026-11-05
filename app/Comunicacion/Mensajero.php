@@ -31,6 +31,7 @@ use App\Models\Envio;
 use App\Models\EventoReserva;
 use App\Models\NotaBitacora;
 use App\Models\Plantilla;
+use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Tarea;
 use App\Models\Webhook;
@@ -298,6 +299,25 @@ final class Mensajero
             'idioma' => $idioma,
             'asunto' => mb_substr(VariablesMensaje::aplicar(__('mensajes.aviso_portal.asunto', [], $idioma), $variables), 0, 255),
             'cuerpo' => VariablesMensaje::aplicar(__('mensajes.aviso_portal.cuerpo', [], $idioma), $variables),
+            'estado' => $this->correo->configurado() ? EstadoEnvio::Pendiente : EstadoEnvio::Manual,
+        ]);
+    }
+
+    /**
+     * Lo que no es de una reserva, como el aviso al dueño de que ya está su estado de cuenta. Sin correo configurado queda para mandarlo a mano.
+     */
+    public function avisarSinReserva(Propiedad $propiedad, string $clave, ?string $destino, string $asunto, string $cuerpo, string $idioma): void
+    {
+        if (blank($destino) || $propiedad->es_demo) {
+            return;
+        }
+        $this->crearUnaVez('aviso:'.$propiedad->id.':'.$clave, [
+            'propiedad_id' => $propiedad->id,
+            'canal' => CanalEnvio::Correo,
+            'destino' => $destino,
+            'idioma' => $idioma,
+            'asunto' => mb_substr($asunto, 0, 255),
+            'cuerpo' => $cuerpo,
             'estado' => $this->correo->configurado() ? EstadoEnvio::Pendiente : EstadoEnvio::Manual,
         ]);
     }

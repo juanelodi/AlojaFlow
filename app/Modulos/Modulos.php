@@ -20,6 +20,7 @@ use App\Models\FuenteIcal;
 use App\Models\Grupo;
 use App\Models\Lectura;
 use App\Models\Propiedad;
+use App\Models\Propietario;
 use App\Models\Webhook;
 use App\Sincronizacion\HotelDruid\Sincronizador;
 use App\Support\Ajustes;
@@ -169,6 +170,7 @@ final class Modulos
             Modulo::Grupos => Grupo::query()->count(),
             Modulo::EstanciasLargas => CuotaReserva::query()->count(),
             Modulo::Camping => Lectura::query()->count(),
+            Modulo::Propietarios => Propietario::query()->count(),
             Modulo::Integraciones => Webhook::query()->where('activo', true)->count(),
             default => 0,
         };

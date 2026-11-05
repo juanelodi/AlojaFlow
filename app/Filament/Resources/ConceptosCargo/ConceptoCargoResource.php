@@ -78,6 +78,8 @@ class ConceptoCargoResource extends RecursoDePropiedad
                     ->required($esPorcentaje)->visible($esPorcentaje),
                 TextInput::make('cupo_diario')->label(__('camping.extras.cupo'))->helperText(__('camping.extras.cupo_ayuda'))->numeric()->integer()->minValue(0)->maxValue(100000)
                     ->visible(fn (): bool => Modulos::activo(Modulo::Camping)),
+                Toggle::make('para_administrador')->label(__('propietarios.cargo.para_administrador'))->helperText(__('propietarios.cargo.para_administrador_ayuda'))
+                    ->visible(fn (): bool => Modulos::activo(Modulo::Propietarios)),
                 Toggle::make('obligatorio')->label(__('ui.cargos.obligatorio'))->helperText(__('ui.cargos.obligatorio_ayuda')),
                 Toggle::make('visible_motor')->label(__('ui.cargos.visible_motor'))->helperText(__('ui.cargos.visible_motor_ayuda'))->default(true),
                 TextInput::make('orden')->label(__('ui.unidades.orden'))->numeric()->default(0),

@@ -26,6 +26,7 @@ enum ClaseArchivo: string
     case Exportacion = 'exportacion';
     case Comprobante = 'comprobante';
     case FotoPublica = 'foto_publica';
+    case ComprobanteGasto = 'comprobante_gasto';
 
     /**
      * El permiso que hace falta para verlo.
@@ -35,7 +36,7 @@ enum ClaseArchivo: string
         return match ($this) {
             self::FotoTarea => Acceso::LIMPIEZA,
             self::Plano => Acceso::OPERACION,
-            self::Comprobante => Acceso::RESERVAS,
+            self::Comprobante, self::ComprobanteGasto => Acceso::RESERVAS,
             self::FotoPublica => Acceso::CATALOGO,
             self::FacturaXml, self::FacturaPdf => Acceso::FACTURACION,
             self::DocumentoIdentidad, self::Firma, self::CopiaAceptacion, self::Exportacion => Acceso::HUESPEDES,
