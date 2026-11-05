@@ -27,6 +27,7 @@ return [
         'aplicado' => [
             'semana' => 'With weekly price',
             'mes' => 'With monthly price',
+            'temporada' => 'With full-season price',
         ],
     ],
     'cuotas' => [

@@ -17,6 +17,8 @@ use App\Filament\Resources\ConceptosCargo\Pages\CreateConceptoCargo;
 use App\Filament\Resources\ConceptosCargo\Pages\EditConceptoCargo;
 use App\Filament\Resources\ConceptosCargo\Pages\ListConceptosCargo;
 use App\Models\ConceptoCargo;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Support\Formato;
 use BackedEnum;
 use Filament\Actions\EditAction;
@@ -74,6 +76,8 @@ class ConceptoCargoResource extends RecursoDePropiedad
                     ->required(fn (Get $get): bool => ! $esPorcentaje($get))->visible(fn (Get $get): bool => ! $esPorcentaje($get)),
                 TextInput::make('porcentaje')->label(__('ui.cargos.porcentaje'))->numeric()->minValue(0)->maxValue(100)->step('any')->suffix('%')
                     ->required($esPorcentaje)->visible($esPorcentaje),
+                TextInput::make('cupo_diario')->label(__('camping.extras.cupo'))->helperText(__('camping.extras.cupo_ayuda'))->numeric()->integer()->minValue(0)->maxValue(100000)
+                    ->visible(fn (): bool => Modulos::activo(Modulo::Camping)),
                 Toggle::make('obligatorio')->label(__('ui.cargos.obligatorio'))->helperText(__('ui.cargos.obligatorio_ayuda')),
                 Toggle::make('visible_motor')->label(__('ui.cargos.visible_motor'))->helperText(__('ui.cargos.visible_motor_ayuda'))->default(true),
                 TextInput::make('orden')->label(__('ui.unidades.orden'))->numeric()->default(0),

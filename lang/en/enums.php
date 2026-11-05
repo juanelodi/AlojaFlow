@@ -216,4 +216,23 @@ return [
         'salida' => 'Before you leave',
         'otro' => 'Other',
     ],
+    'TipoLugar' => [
+        'tienda' => 'Tent',
+        'vehiculo' => 'RV or camper',
+        'cabana' => 'Cabin',
+        'glamping' => 'Glamping',
+        'otro' => 'Other',
+    ],
+    'TipoEquipo' => [
+        'tienda' => 'Tent',
+        'camper' => 'Camper or van',
+        'remolque' => 'Trailer',
+        'casa_rodante' => 'Motorhome',
+        'otro' => 'Other',
+    ],
+    'ServicioMedido' => [
+        'luz' => 'Electricity',
+        'agua' => 'Water',
+        'gas' => 'Gas',
+    ],
 ];

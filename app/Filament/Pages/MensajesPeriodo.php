@@ -17,8 +17,10 @@ use App\Filament\Concerns\ConPropiedadSeleccionada;
 use App\Models\Plantilla;
 use App\Models\Reserva;
 use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Seguridad\Acceso;
 use App\Servicios\Operacion;
+use App\Servicios\Residentes;
 use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -109,8 +111,10 @@ class MensajesPeriodo extends Page
             return [];
         }
         $columna = $this->por === 'salida' ? 'salida' : 'llegada';
-        $reservas = Operacion::reservas([$plantilla->propiedad_id])
-            ->whereBetween($columna, [$this->desde, $this->hasta])->orderBy($columna)->orderBy('unidad_id')->limit(self::FILAS_MAXIMAS)->get();
+        $reservas = ($this->por === 'residentes' && Modulos::activo(Modulo::Camping)
+            ? Residentes::consulta([$plantilla->propiedad_id])
+            : Operacion::reservas([$plantilla->propiedad_id])->whereBetween($columna, [$this->desde, $this->hasta])->orderBy($columna)->orderBy('unidad_id'))
+            ->limit(self::FILAS_MAXIMAS)->get();
 
         return $reservas->map(function (Reserva $reserva) use ($plantilla): array {
             $texto = Mensajero::textoDe($plantilla, $reserva, Mensajero::idiomaDe($reserva));

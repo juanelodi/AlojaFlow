@@ -10,8 +10,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Reservas\Schemas;
 
+use App\Camping\AtributosLugar;
+use App\Camping\CupoExtras;
 use App\Enums\EstadoReserva;
 use App\Enums\TipoContacto;
+use App\Enums\TipoEquipo;
 use App\Enums\TipoReserva;
 use App\Filament\Campos\CampoDinero;
 use App\Filament\Resources\Reservas\ReservaResource;
@@ -178,6 +181,17 @@ class ReservaForm
                                 ->afterStateUpdated(self::recalcularDesdeLinea()),
                         ]),
                 ]),
+            Section::make(__('camping.equipo.titulo'))->columnSpanFull()->collapsible()
+                ->visible(fn (Get $get): bool => $esReserva($get) && Modulos::activo(Modulo::Camping))
+                ->columns(['default' => 1, 'md' => 2])
+                ->schema([
+                    Select::make('equipo.tipo')->label(__('camping.equipo.tipo'))->native(false)->options(TipoEquipo::opciones()),
+                    TextInput::make('equipo.largo')->label(fn (Get $get): string => __('camping.equipo.largo_panel', ['unidad' => self::unidadLargo($get('propiedad_id'))]))->numeric()->minValue(0)->maxValue(1000)->step('any')->live(onBlur: true),
+                    TextInput::make('equipo.vehiculos')->label(__('camping.equipo.vehiculos'))->numeric()->integer()->minValue(0)->maxValue(20),
+                    TextInput::make('equipo.placas')->label(__('camping.equipo.placas'))->maxLength(100),
+                ]),
+            Hidden::make('sin_catalogo')->dehydrated(false),
+            Hidden::make('esta_reserva')->dehydrated(false),
             Section::make(__('ui.reservas.dinero'))->columnSpanFull()
                 ->visible($esReserva)
                 ->columns(['default' => 1, 'md' => 2, 'lg' => 4])
@@ -230,7 +244,8 @@ class ReservaForm
             return;
         }
         $moneda = CampoDinero::moneda($get($ruta.'propiedad_id'));
-        $set($ruta.'total', Dinero::aDecimal($presupuesto->total(), $moneda));
+        // Lo que no viene del catálogo, como lo que marcó un medidor, sigue en la reserva aunque cambien las fechas.
+        $set($ruta.'total', Dinero::aDecimal($presupuesto->total() + (int) $get($ruta.'sin_catalogo'), $moneda));
 
         $canal = Canal::query()->where('propiedad_id', self::propiedadPermitida($get($ruta.'propiedad_id')))->where('nombre', (string) $get($ruta.'origen_texto'))->first();
         if ($canal !== null && $canal->comision_porcentaje !== null) {
@@ -452,6 +467,40 @@ class ReservaForm
         return Cotizador::presupuesto($unidad, $llegada, $salida, max(1, (int) $get($ruta.'personas')), $elegidos, null, $descuento, max(0, (int) $get($ruta.'ninos')), $canalCobra);
     }
 
+    /**
+     * Si el equipo no cabe en el lugar, o si un extra ya no alcanza para esas noches (D-110, D-113).
+     *
+     * @return list<string>
+     */
+    private static function avisosCamping(Get $get, Unidad $unidad, CarbonImmutable $llegada, CarbonImmutable $salida): array
+    {
+        if (! Modulos::activo(Modulo::Camping)) {
+            return [];
+        }
+        $avisos = [];
+        $largo = $get('equipo.largo');
+        $maximo = $unidad->atributo('largo_maximo');
+        if (is_numeric($largo) && is_numeric($maximo) && (float) $largo > (float) $maximo) {
+            $avisos[] = __('camping.equipo.no_cabe', ['lugar' => $unidad->nombre, 'maximo' => (float) $maximo, 'unidad' => AtributosLugar::unidadLargo($unidad->propiedad)]);
+        }
+        $esta = blank($get('esta_reserva')) ? null : (int) $get('esta_reserva');
+        foreach ((array) $get('cargos') as $linea) {
+            $concepto = ConceptoCargo::query()->where('propiedad_id', $unidad->propiedad_id)->whereNotNull('cupo_diario')->find((int) ($linea['concepto_cargo_id'] ?? 0));
+            if ($concepto !== null && (float) ($linea['cantidad'] ?? 1) > (CupoExtras::libres($concepto, $llegada, $salida, $esta) ?? 0)) {
+                $avisos[] = __('camping.extras.agotado', ['extra' => $concepto->nombre]);
+            }
+        }
+
+        return $avisos;
+    }
+
+    private static function unidadLargo(mixed $propiedadId): string
+    {
+        $propiedad = blank($propiedadId) ? null : Propiedad::query()->find((int) $propiedadId);
+
+        return $propiedad === null ? 'm' : AtributosLugar::unidadLargo($propiedad);
+    }
+
     private static function avisoEstancia(Get $get): ?string
     {
         $avisos = [];
@@ -464,7 +513,7 @@ class ReservaForm
             : Unidad::query()->with('propiedad')->where('propiedad_id', self::propiedadPermitida($get('propiedad_id')))->find((int) $get('unidad_id'));
         if ($unidad !== null) {
             // Solo un aviso: un caso especial lo decide quien atiende, no el sistema.
-            $avisos = [...$avisos, ...Restricciones::deUnidad($unidad, $llegada, $salida, $unidad->propiedad->hoy())];
+            $avisos = [...$avisos, ...Restricciones::deUnidad($unidad, $llegada, $salida, $unidad->propiedad->hoy()), ...self::avisosCamping($get, $unidad, $llegada, $salida)];
         }
 
         return $avisos === [] ? null : implode(' ', $avisos);

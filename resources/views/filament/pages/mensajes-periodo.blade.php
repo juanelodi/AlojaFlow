@@ -22,6 +22,9 @@
                     <x-filament::input.select wire:model.live="por">
                         <option value="llegada">{{ __('ui.comun.llegada') }}</option>
                         <option value="salida">{{ __('ui.comun.salida') }}</option>
+                        @if (\App\Modulos\Modulos::activo(\App\Modulos\Modulo::Camping))
+                            <option value="residentes">{{ __('camping.residentes.opcion') }}</option>
+                        @endif
                     </x-filament::input.select>
                 </x-filament::input.wrapper>
             </label>

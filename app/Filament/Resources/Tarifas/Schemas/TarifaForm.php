@@ -86,6 +86,9 @@ class TarifaForm
                             Grid::make(['default' => 1, 'md' => 2])->columnSpanFull()
                                 ->visible(fn (): bool => Modulos::activo(Modulo::EstanciasLargas))
                                 ->schema(self::preciosLargos('../../propiedad_id')),
+                            CampoDinero::make('precio_completa', '../../propiedad_id')->label(__('camping.temporada.completa'))->helperText(__('camping.temporada.completa_ayuda'))->columnSpanFull()
+                                ->visible(fn (): bool => Modulos::activo(Modulo::Camping))
+                                ->dehydrateStateUsing(fn (mixed $state, Get $get): ?int => blank($state) ? null : \App\Support\Dinero::aUnidadMenor((string) $state, CampoDinero::moneda($get('../../propiedad_id')))),
                         ]),
                 ]),
         ]);

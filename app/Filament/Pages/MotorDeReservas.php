@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Demo\ModoDemo;
+use App\Models\ConceptoCargo;
 use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
 use App\Modulos\Modulo;
@@ -19,6 +20,7 @@ use App\Motor\AjustesMotor;
 use App\Motor\Pasarelas;
 use App\Seguridad\Acceso;
 use BackedEnum;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -137,6 +139,12 @@ class MotorDeReservas extends Page
                     Toggle::make('acepta_comprobantes')->label(__('grupos.comprobante.acepta'))->helperText(__('grupos.comprobante.acepta_ayuda'))->columnSpanFull(),
                     Textarea::make('condiciones')->label(__('motor.panel.condiciones'))->rows(3)->maxLength(5000)->columnSpanFull(),
                 ]),
+                Section::make(__('camping.panel.seccion'))->description(__('camping.panel.seccion_ayuda'))->columns(['default' => 1, 'md' => 2])->visible(fn (): bool => Modulos::activo(Modulo::Camping))->schema([
+                    Toggle::make('pide_equipo')->label(__('camping.panel.pide_equipo'))->helperText(__('camping.panel.pide_equipo_ayuda'))->columnSpanFull(),
+                    Toggle::make('elegir_lugar')->label(__('camping.panel.elegir_lugar'))->helperText(__('camping.panel.elegir_lugar_ayuda'))->disabled(fn (): bool => ! Modulos::activo(Modulo::Plano))->columnSpanFull(),
+                    Select::make('cargo_lugar_id')->label(__('camping.panel.cargo_lugar'))->helperText(__('camping.panel.cargo_lugar_ayuda'))->native(false)
+                        ->options(fn (): array => ConceptoCargo::query()->where('propiedad_id', $this->propiedad()?->id)->where('obligatorio', false)->orderBy('nombre')->pluck('nombre', 'id')->all()),
+                ]),
                 Section::make(__('motor.panel.stripe'))->description(__('motor.panel.stripe_ayuda'))->hidden(fn (): bool => ModoDemo::activo() || ! Modulos::activo(Modulo::Pagos))->collapsible()->columns(['default' => 1, 'md' => 2])->schema([
                     TextInput::make('stripe_secreta')->label(__('motor.panel.stripe_secreta'))->password()->revealable()->autocomplete('new-password')->maxLength(300)
                         ->helperText(fn (): string => $ayudaLlave('stripe_secreta')),
@@ -184,6 +192,9 @@ class MotorDeReservas extends Page
             'dias_antelacion' => (int) $datos['dias_antelacion'],
             'instrucciones' => $datos['instrucciones'] ?? null,
             'acepta_comprobantes' => (bool) ($datos['acepta_comprobantes'] ?? false),
+            'pide_equipo' => (bool) ($datos['pide_equipo'] ?? false),
+            'elegir_lugar' => (bool) ($datos['elegir_lugar'] ?? false),
+            'cargo_lugar_id' => blank($datos['cargo_lugar_id'] ?? null) ? null : (int) $datos['cargo_lugar_id'],
             'stripe_oxxo' => (bool) ($datos['stripe_oxxo'] ?? false),
             'stripe_oxxo_dias' => (int) ($datos['stripe_oxxo_dias'] ?? 3),
             'stripe_meses' => (bool) ($datos['stripe_meses'] ?? false),
@@ -225,6 +236,9 @@ class MotorDeReservas extends Page
             'dias_antelacion' => $motor['dias_antelacion'] ?? 0,
             'instrucciones' => $motor['instrucciones'] ?? null,
             'acepta_comprobantes' => (bool) ($motor['acepta_comprobantes'] ?? true),
+            'pide_equipo' => (bool) ($motor['pide_equipo'] ?? false),
+            'elegir_lugar' => (bool) ($motor['elegir_lugar'] ?? false),
+            'cargo_lugar_id' => $motor['cargo_lugar_id'] ?? null,
             'stripe_oxxo' => (bool) ($motor['stripe_oxxo'] ?? false),
             'stripe_oxxo_dias' => (int) ($motor['stripe_oxxo_dias'] ?? 3),
             'stripe_meses' => (bool) ($motor['stripe_meses'] ?? false),

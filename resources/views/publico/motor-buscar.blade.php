@@ -1,6 +1,7 @@
 {{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
 @use('App\Support\Formato')
 @use('App\Enums\ModoTarifa')
+@use('App\Enums\TipoLugar')
 @extends('publico.layout')
 @section('titulo', __('motor.titulo'))
 @section('cabeza')
@@ -44,6 +45,29 @@
             </div>
             <div><button type="submit">{{ __('motor.buscar') }}</button></div>
         </div>
+        @if ($conFiltros)
+            <details class="filtros" @if ($filtro->parametros() !== []) open @endif>
+                <summary>{{ __('camping.motor.filtros') }}</summary>
+                <div class="rejilla" style="margin-top:8px">
+                    <div>
+                        <label for="tipo_lugar">{{ __('camping.atributos.tipo') }}</label>
+                        <select id="tipo_lugar" name="tipo_lugar">
+                            <option value="">{{ __('camping.motor.cualquiera') }}</option>
+                            @foreach (TipoLugar::opciones() as $valor => $etiqueta)
+                                <option value="{{ $valor }}" @selected($filtro->tipo?->value === $valor)>{{ $etiqueta }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="largo">{{ __('camping.equipo.largo', ['unidad' => $unidadLargo]) }}</label>
+                        <input type="number" id="largo" name="largo" min="0" max="1000" step="any" value="{{ $filtro->largo }}">
+                    </div>
+                </div>
+                @foreach (['luz', 'agua', 'drenaje', 'mascotas', 'accesible'] as $casilla)
+                    <label class="casilla"><input type="checkbox" name="con_{{ $casilla }}" value="1" @checked(in_array($casilla, $filtro->casillas, true))> <span>{{ __('camping.atributos.'.$casilla) }}</span></label>
+                @endforeach
+            </details>
+        @endif
     </form>
 
     @if ($error)
@@ -51,6 +75,7 @@
     @endif
 
     @if ($ofertas !== null)
+        @include('publico.plano-lugares')
         @forelse ($ofertas as $oferta)
             <section class="tarjeta">
                 @include('publico.fotos', ['fotos' => $fotosTarifa->get($oferta->tarifa->id, collect()), 'nombre' => $oferta->tarifa->nombre])
@@ -63,6 +88,9 @@
                         <span class="gris">{{ __('motor.capacidad', ['personas' => $oferta->capacidad]) }}</span>
                         @if ($oferta->libres <= 2)
                             <span class="gris"> · {{ trans_choice('motor.quedan', $oferta->libres) }}</span>
+                        @endif
+                        @if ($oferta->etiquetas !== [])
+                            <p class="gris" style="margin:4px 0 0">{{ implode(' · ', $oferta->etiquetas) }}</p>
                         @endif
                         @if ($conEstanciasLargas && ($oferta->tarifa->precio_semana !== null || $oferta->tarifa->precio_mes !== null))
                             <p class="gris" style="margin:4px 0 0">
@@ -80,7 +108,7 @@
                             <div class="gris">{{ __('estancias.motor.aplicado.'.$oferta->presupuesto->cotizacion->estanciaLarga) }}</div>
                         @endif
                         @if ($oferta->cumpleEstancia)
-                            <a class="boton" style="margin-top:8px" href="{{ route('motor.datos', ['codigo' => $propiedad->codigo, 'tarifa' => $oferta->tarifa->id, 'llegada' => $llegada, 'salida' => $salida, 'personas' => $personas, 'idioma' => app()->getLocale()]) }}">{{ __('motor.reservar') }}</a>
+                            <a class="boton" style="margin-top:8px" href="{{ route('motor.datos', ['codigo' => $propiedad->codigo, 'tarifa' => $oferta->tarifa->id, 'llegada' => $llegada, 'salida' => $salida, 'personas' => $personas, 'idioma' => app()->getLocale()] + $filtro->parametros()) }}">{{ __('motor.reservar') }}</a>
                         @else
                             <div class="gris">{{ __('motor.error.estancia_minima', ['noches' => $oferta->estanciaMinima]) }}</div>
                         @endif

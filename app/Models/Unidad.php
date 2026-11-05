@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string|null $piso
  * @property string|null $edificio
  * @property int $capacidad
+ * @property array<string, mixed>|null $atributos
  * @property int $orden
  * @property bool $activa
  * @property OrigenFila $origen
@@ -46,9 +47,18 @@ class Unidad extends ModeloBase
     {
         return [
             'activa' => 'boolean',
+            'atributos' => 'array',
             'origen' => OrigenFila::class,
             'sincronizada' => 'boolean',
         ];
+    }
+
+    /**
+     * Lo que dice de sí un lugar de un camping (D-110).
+     */
+    public function atributo(string $clave): mixed
+    {
+        return ((array) $this->atributos)[$clave] ?? null;
     }
 
     /** @return HasOne<EstadoUnidad, $this> */

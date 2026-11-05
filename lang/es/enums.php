@@ -216,4 +216,23 @@ return [
         'salida' => 'Antes de irte',
         'otro' => 'Otro',
     ],
+    'TipoLugar' => [
+        'tienda' => 'Tienda de campaña',
+        'vehiculo' => 'Casa rodante o camper',
+        'cabana' => 'Cabaña',
+        'glamping' => 'Glamping',
+        'otro' => 'Otro',
+    ],
+    'TipoEquipo' => [
+        'tienda' => 'Tienda de campaña',
+        'camper' => 'Camper o van',
+        'remolque' => 'Remolque',
+        'casa_rodante' => 'Casa rodante',
+        'otro' => 'Otro',
+    ],
+    'ServicioMedido' => [
+        'luz' => 'Luz',
+        'agua' => 'Agua',
+        'gas' => 'Gas',
+    ],
 ];

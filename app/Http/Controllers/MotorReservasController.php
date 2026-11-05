@@ -10,17 +10,23 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Archivos\GestorArchivos;
+use App\Camping\AtributosLugar;
+use App\Camping\FiltroLugares;
 use App\Comprobantes\GestorComprobantes;
 use App\Dinero\GestorPoliticas;
 use App\Documentos\GeneradorPdf;
 use App\Enums\EstadoReserva;
+use App\Enums\TipoEquipo;
 use App\Http\Controllers\Concerns\RecibeComprobante;
 use App\Models\Foto;
 use App\Models\PagoEnLinea;
+use App\Models\Plano;
 use App\Models\Politica;
 use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Tarifa;
+use App\Models\Unidad;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Motor\AjustesMotor;
@@ -63,6 +69,19 @@ class MotorReservasController extends Controller
         'cupon' => ['nullable', 'string', 'max:40'],
         'cargos' => ['nullable', 'array', 'max:50'],
         'cargos.*' => ['integer'],
+        'cantidades' => ['nullable', 'array', 'max:50'],
+        'cantidades.*' => ['integer', 'min:0', 'max:50'],
+        'unidad_id' => ['nullable', 'integer'],
+        'tipo_lugar' => ['nullable', 'string', 'max:20'],
+        'con_luz' => ['nullable', 'boolean'],
+        'con_agua' => ['nullable', 'boolean'],
+        'con_drenaje' => ['nullable', 'boolean'],
+        'con_mascotas' => ['nullable', 'boolean'],
+        'con_accesible' => ['nullable', 'boolean'],
+        'largo' => ['nullable', 'numeric', 'min:0', 'max:1000'],
+        'tipo_equipo' => ['nullable', 'string', 'max:20'],
+        'vehiculos' => ['nullable', 'integer', 'min:0', 'max:20'],
+        'placas' => ['nullable', 'string', 'max:100'],
         'acepto' => ['accepted'],
         // Campo trampa: las personas no lo ven; los programas que llenan formularios sí.
         'sitio_web' => ['prohibited'],
@@ -81,10 +100,13 @@ class MotorReservasController extends Controller
         $personas = max(1, min(100, $request->integer('personas', 2)));
         $error = null;
         $ofertas = null;
+        $filtro = $this->filtro($request->query());
+        $mapas = [];
         if ($llegada !== null && $salida !== null) {
             $error = $this->motor->motivoFechas($propiedad, $llegada, $salida);
             if ($error === null) {
-                $ofertas = $this->motor->ofertas($propiedad, $llegada, $salida, $personas);
+                $ofertas = $this->motor->ofertas($propiedad, $llegada, $salida, $personas, $filtro);
+                $mapas = $this->motor->mapas($propiedad, $ofertas, $llegada, $salida, $personas, $filtro);
             }
         }
 
@@ -101,6 +123,10 @@ class MotorReservasController extends Controller
             'personas' => $personas,
             'ofertas' => $ofertas,
             'conEstanciasLargas' => Modulos::activo(Modulo::EstanciasLargas),
+            'filtro' => $filtro,
+            'conFiltros' => Modulos::activo(Modulo::Camping) && AtributosLugar::hayQueFiltrar($propiedad),
+            'mapas' => $mapas,
+            'unidadLargo' => AtributosLugar::unidadLargo($propiedad),
             'noches' => $llegada !== null && $salida !== null && $salida->gt($llegada) ? (int) $llegada->diffInDays($salida) : 0,
             'error' => $error,
             'minimoFecha' => $hoy->format('Y-m-d'),
@@ -111,7 +137,7 @@ class MotorReservasController extends Controller
     {
         $propiedad = $this->propiedad($request, $codigo);
 
-        return $this->formularioDatos($propiedad, $request->query('llegada'), $request->query('salida'), $request->integer('personas', 1), $request->integer('tarifa'), [], new MessageBag());
+        return $this->formularioDatos($propiedad, $request->query('llegada'), $request->query('salida'), $request->integer('personas', 1), $request->integer('tarifa'), $request->query(), new MessageBag());
     }
 
     public function reservar(Request $request, string $codigo): Response
@@ -144,7 +170,11 @@ class MotorReservasController extends Controller
                 'comentario' => $datos['comentario'] ?? null,
                 'cupon' => $datos['cupon'] ?? null,
                 'cargos' => array_map('intval', array_values((array) ($datos['cargos'] ?? []))),
+                'cantidades' => array_map('intval', (array) ($datos['cantidades'] ?? [])),
                 'idioma' => app()->getLocale(),
+                'filtro' => $this->filtro($datos),
+                'unidad_id' => (int) ($datos['unidad_id'] ?? 0),
+                'equipo' => (new AjustesMotor($propiedad))->pideEquipo() ? ['tipo' => TipoEquipo::tryFrom((string) ($datos['tipo_equipo'] ?? ''))?->value, 'largo' => $datos['largo'] ?? null, 'vehiculos' => $datos['vehiculos'] ?? null, 'placas' => $datos['placas'] ?? null] : null,
             ]);
         } catch (ReservaRechazada $e) {
             return $this->respuestaConError($reenviar(new MessageBag([$e->campo === 'cupon' ? 'cupon' : 'tarifa_id' => $e->getMessage()])));
@@ -313,24 +343,57 @@ class MotorReservasController extends Controller
         if ($llegada === null || $salida === null || ! $this->motor->rangoCotizable($propiedad, $llegada, $salida) || $tarifa === null) {
             return redirect()->route('motor.buscar', ['codigo' => $propiedad->codigo]);
         }
-        $oferta = collect($this->motor->ofertas($propiedad, $llegada, $salida, $personas))->first(fn ($o): bool => $o->tarifa->id === $tarifa->id);
+        $filtro = $this->filtro($valores);
+        $oferta = collect($this->motor->ofertas($propiedad, $llegada, $salida, $personas, $filtro))->first(fn ($o): bool => $o->tarifa->id === $tarifa->id);
+        $ajustes = new AjustesMotor($propiedad);
+        $lugar = null;
+        $unidadId = (int) ($valores['unidad_id'] ?? $valores['unidad'] ?? 0);
+        if ($oferta !== null && $unidadId > 0 && $ajustes->elegirLugar()) {
+            $lugar = $this->motor->libres($propiedad, $llegada, $salida, $personas, $filtro)->first(fn (Unidad $u): bool => $u->id === $unidadId && $u->tarifa_id === $tarifa->id);
+            $oferta = $lugar === null ? null : $this->motor->conLugar($oferta, $lugar, $llegada, $salida, $personas);
+        }
         if ($oferta === null) {
             return redirect()->route('motor.buscar', ['codigo' => $propiedad->codigo, 'llegada' => $llegada->format('Y-m-d'), 'salida' => $salida->format('Y-m-d'), 'personas' => $personas, 'aviso' => 'sin_lugar']);
         }
 
         return view('publico.motor-datos', [
             'propiedad' => $propiedad,
-            'ajustes' => new AjustesMotor($propiedad),
+            'ajustes' => $ajustes,
             'oferta' => $oferta,
             'tarifa' => $tarifa,
+            'filtro' => $filtro,
+            'lugar' => $lugar,
+            'cupos' => $this->motor->cupos($cargos = $this->motor->cargosOpcionales($propiedad), $llegada, $salida),
+            'unidadLargo' => AtributosLugar::unidadLargo($propiedad),
             'llegada' => $llegada,
             'salida' => $salida,
             'personas' => $personas,
             'noches' => (int) $llegada->diffInDays($salida),
-            'cargos' => $this->motor->cargosOpcionales($propiedad),
+            'cargos' => $cargos,
             'valores' => $valores,
             'errores' => $errores,
         ]);
+    }
+
+    /**
+     * El plano del lugar, para el que elige en el motor. Solo imágenes comunes: un SVG puede llevar código, y esto lo abre cualquiera.
+     */
+    public function plano(Request $request, string $codigo, int $plano, GestorArchivos $archivos): Response
+    {
+        $propiedad = $this->propiedad($request, $codigo);
+        abort_unless((new AjustesMotor($propiedad))->elegirLugar(), 404);
+        $archivo = Plano::query()->with('archivo')->where('propiedad_id', $propiedad->id)->find($plano)?->archivo;
+        abort_unless($archivo !== null && in_array($archivo->tipo_mime, ['image/jpeg', 'image/png', 'image/webp'], true), 404);
+
+        return response($archivos->contenido($archivo), 200, ['Content-Type' => $archivo->tipo_mime, 'Cache-Control' => 'public, max-age=3600']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $datos
+     */
+    private function filtro(array $datos): FiltroLugares
+    {
+        return Modulos::activo(Modulo::Camping) ? FiltroLugares::desde($datos) : new FiltroLugares();
     }
 
     private function respuestaConError(View|RedirectResponse $respuesta): Response

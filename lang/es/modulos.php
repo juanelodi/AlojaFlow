@@ -42,6 +42,7 @@ return [
         'plano' => ['nombre' => 'Plano de la propiedad', 'descripcion' => 'Ver las unidades acomodadas en un dibujo de tu alojamiento.'],
         'llegada' => ['nombre' => 'Llegada en línea', 'descripcion' => 'El huésped llena sus datos y acepta los documentos antes de llegar.'],
         'mensajes' => ['nombre' => 'Mensajes a huéspedes', 'descripcion' => 'Plantillas, envíos por correo y WhatsApp, y mensajes automáticos.'],
+        'camping' => ['nombre' => 'Campings y parcelas', 'descripcion' => 'Qué tiene cada lugar, el equipo del huésped, elegir en el plano, lecturas de luz y agua, residentes de temporada y extras con cupo.'],
         'estancias_largas' => ['nombre' => 'Estancias largas y mensualidades', 'descripcion' => 'Precio por semana y por mes, calendario de cobros con recordatorios y una factura por cada pago.'],
         'portal' => ['nombre' => 'Mi reserva y guía digital', 'descripcion' => 'Una página para cada huésped, con su reserva y lo que necesita saber, y un código QR en cada unidad.'],
         'bitacora' => ['nombre' => 'Bitácora de turnos', 'descripcion' => 'Lo que un turno le deja dicho al siguiente. Lo importante aparece en Hoy.'],

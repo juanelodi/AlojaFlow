@@ -68,6 +68,11 @@ interface Pais
     public function exportaLibroFiscal(): bool;
 
     /**
+     * En qué se dicen los largos de un lugar y de un equipo. Se usa como llega: no se convierte.
+     */
+    public function unidadLargo(): string;
+
+    /**
      * Impuestos al hospedaje que se pueden proponer, por estado o provincia. Vacío si no se tiene un catálogo.
      *
      * @return list<SugerenciaImpuesto>

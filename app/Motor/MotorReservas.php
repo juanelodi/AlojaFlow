@@ -10,6 +10,9 @@ declare(strict_types=1);
 
 namespace App\Motor;
 
+use App\Camping\AtributosLugar;
+use App\Camping\CupoExtras;
+use App\Camping\FiltroLugares;
 use App\Comunicacion\Mensajero;
 use App\Enums\EstadoReserva;
 use App\Enums\NivelAviso;
@@ -19,6 +22,8 @@ use App\Models\ConceptoCargo;
 use App\Models\ContactoHuesped;
 use App\Models\Cupon;
 use App\Models\Huesped;
+use App\Models\Plano;
+use App\Models\PlanoUnidad;
 use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Tarifa;
@@ -80,12 +85,10 @@ final class MotorReservas
     /**
      * @return list<Oferta>
      */
-    public function ofertas(Propiedad $propiedad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas): array
+    public function ofertas(Propiedad $propiedad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas, ?FiltroLugares $filtro = null): array
     {
         $ofertas = [];
-        $libres = Disponibilidad::libres([$propiedad->id], $llegada->format('Y-m-d'), $salida->format('Y-m-d'), $personas)
-            ->filter(fn (Unidad $u): bool => $u->tarifa_id !== null && Restricciones::deUnidad($u, $llegada, $salida, $propiedad->hoy()) === [])
-            ->groupBy('tarifa_id');
+        $libres = $this->libres($propiedad, $llegada, $salida, $personas, $filtro)->groupBy('tarifa_id');
 
         foreach (Tarifa::query()->where('propiedad_id', $propiedad->id)->where('activa', true)->where('visible_motor', true)->orderBy('precio_noche')->get() as $tarifa) {
             $unidades = $libres->get($tarifa->id);
@@ -105,10 +108,68 @@ final class MotorReservas
                 $presupuesto,
                 $presupuesto->cotizacion->estanciaMinima,
                 $presupuesto->cotizacion->cumpleEstanciaMinima(),
+                Modulos::activo(Modulo::Camping) ? AtributosLugar::comunes($unidades) : [],
             );
         }
 
         return $ofertas;
+    }
+
+    /**
+     * Los lugares que se pueden reservar en esas fechas.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, Unidad>
+     */
+    public function libres(Propiedad $propiedad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas, ?FiltroLugares $filtro = null): \Illuminate\Database\Eloquent\Collection
+    {
+        return Disponibilidad::libres([$propiedad->id], $llegada->format('Y-m-d'), $salida->format('Y-m-d'), $personas)
+            ->filter(fn (Unidad $u): bool => $u->tarifa_id !== null && Restricciones::deUnidad($u, $llegada, $salida, $propiedad->hoy()) === [] && ($filtro === null || $filtro->cumple($u)));
+    }
+
+    /**
+     * Los planos publicados, con cada lugar y, si está libre, lo que cuesta. De los demás solo se dice que no se pueden elegir: nunca quién está (D-110).
+     *
+     * @param  list<Oferta>  $ofertas
+     * @return list<array{plano: Plano, lugares: list<array{unidad: Unidad, x: float, y: float, oferta: Oferta|null}>}>
+     */
+    public function mapas(Propiedad $propiedad, array $ofertas, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas, ?FiltroLugares $filtro = null): array
+    {
+        if (! (new AjustesMotor($propiedad))->elegirLugar()) {
+            return [];
+        }
+        $libres = $this->libres($propiedad, $llegada, $salida, $personas, $filtro)->keyBy('id');
+        $porTarifa = collect($ofertas)->filter(fn (Oferta $o): bool => $o->cumpleEstancia)->keyBy(fn (Oferta $o): int => $o->tarifa->id);
+        $mapas = [];
+        foreach (Plano::query()->with('posiciones.unidad.propiedad')->where('propiedad_id', $propiedad->id)->whereNotNull('archivo_id')->orderBy('orden')->orderBy('nombre')->get() as $plano) {
+            $lugares = [];
+            foreach ($plano->posiciones as $posicion) {
+                /** @var PlanoUnidad $posicion */
+                $lugares[] = [
+                    'unidad' => $posicion->unidad,
+                    'x' => (float) $posicion->x,
+                    'y' => (float) $posicion->y,
+                    'oferta' => $libres->has($posicion->unidad_id) ? $porTarifa->get((int) $posicion->unidad->tarifa_id) : null,
+                ];
+            }
+            if ($lugares !== []) {
+                $mapas[] = ['plano' => $plano, 'lugares' => $lugares];
+            }
+        }
+
+        return $mapas;
+    }
+
+    /**
+     * La misma oferta con el cargo de elegir un lugar concreto, si lo tiene.
+     */
+    public function conLugar(Oferta $oferta, Unidad $unidad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas): Oferta
+    {
+        $cargo = (new AjustesMotor($unidad->propiedad))->cargoLugarId();
+        if ($cargo === null) {
+            return $oferta;
+        }
+
+        return new Oferta($oferta->tarifa, $oferta->libres, $oferta->capacidad, Cotizador::presupuesto($unidad, $llegada, $salida, $personas, [$cargo => 1.0]), $oferta->estanciaMinima, $oferta->cumpleEstancia, AtributosLugar::etiquetas($unidad));
     }
 
     /**
@@ -119,13 +180,33 @@ final class MotorReservas
     public function cargosOpcionales(Propiedad $propiedad): \Illuminate\Database\Eloquent\Collection
     {
         return ConceptoCargo::query()->where('propiedad_id', $propiedad->id)->where('activo', true)
-            ->where('obligatorio', false)->where('visible_motor', true)->orderBy('orden')->orderBy('nombre')->get();
+            ->where('obligatorio', false)->where('visible_motor', true)->when((new AjustesMotor($propiedad))->cargoLugarId(), fn ($q, int $cargo) => $q->whereKeyNot($cargo))
+            ->orderBy('orden')->orderBy('nombre')->get();
+    }
+
+    /**
+     * Cuántos quedan de los extras con cupo, para esas noches.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, ConceptoCargo>  $cargos
+     * @return array<int, int>
+     */
+    public function cupos(\Illuminate\Database\Eloquent\Collection $cargos, CarbonImmutable $llegada, CarbonImmutable $salida): array
+    {
+        if (! Modulos::activo(Modulo::Camping)) {
+            return [];
+        }
+        $cupos = [];
+        foreach ($cargos->whereNotNull('cupo_diario') as $cargo) {
+            $cupos[$cargo->id] = (int) CupoExtras::libres($cargo, $llegada, $salida);
+        }
+
+        return $cupos;
     }
 
     /**
      * Crea la reserva. Si otra petición se lleva la unidad en el último momento, prueba la siguiente.
      *
-     * @param  array{tarifa_id: int, llegada: string, salida: string, personas: int, nombre: string, apellido: string|null, correo: string, telefono: string|null, comentario: string|null, cupon: string|null, cargos: list<int>, idioma: string}  $datos
+     * @param  array{tarifa_id: int, llegada: string, salida: string, personas: int, nombre: string, apellido: string|null, correo: string, telefono: string|null, comentario: string|null, cupon: string|null, cargos: list<int>, idioma: string, filtro?: FiltroLugares|null, unidad_id?: int, cantidades?: array<int, int>, equipo?: array<string, mixed>|null}  $datos
      */
     public function reservar(Propiedad $propiedad, array $datos): Reserva
     {
@@ -145,10 +226,17 @@ final class MotorReservas
         if ($tarifa === null) {
             throw new ReservaRechazada(__('motor.error.sin_lugar'));
         }
-        $candidatas = Disponibilidad::libres([$propiedad->id], $llegada->format('Y-m-d'), $salida->format('Y-m-d'), $datos['personas'])
-            ->filter(fn (Unidad $u): bool => $u->tarifa_id === $tarifa->id && Restricciones::deUnidad($u, $llegada, $salida, $propiedad->hoy()) === []);
+        $candidatas = $this->libres($propiedad, $llegada, $salida, $datos['personas'], $datos['filtro'] ?? null)->filter(fn (Unidad $u): bool => $u->tarifa_id === $tarifa->id);
         if ($candidatas->isEmpty()) {
             throw new ReservaRechazada(__('motor.error.sin_lugar'));
+        }
+        // El lugar que eligió en el plano, y ningún otro: si ya se ocupó, decide él.
+        $elegida = $ajustes->elegirLugar() ? (int) ($datos['unidad_id'] ?? 0) : 0;
+        if ($elegida > 0) {
+            $candidatas = $candidatas->where('id', $elegida);
+            if ($candidatas->isEmpty()) {
+                throw new ReservaRechazada(__('camping.motor.lugar_ocupado'));
+            }
         }
 
         $cupon = null;
@@ -161,10 +249,20 @@ final class MotorReservas
         }
 
         $permitidos = $this->cargosOpcionales($propiedad)->pluck('id')->all();
-        $cargos = array_values(array_intersect($datos['cargos'], $permitidos));
-        $elegidos = array_fill_keys($cargos, 1.0);
+        $elegidos = array_fill_keys(array_values(array_intersect($datos['cargos'], $permitidos)), 1.0);
+        foreach ((array) ($datos['cantidades'] ?? []) as $concepto => $cantidad) {
+            if ($cantidad > 0 && in_array((int) $concepto, $permitidos, true)) {
+                $elegidos[(int) $concepto] = (float) $cantidad;
+            }
+        }
+        if ($elegida > 0 && $ajustes->cargoLugarId() !== null) {
+            $elegidos[$ajustes->cargoLugarId()] = 1.0;
+        }
 
-        $reserva = DB::transaction(function () use ($propiedad, $ajustes, $datos, $candidatas, $llegada, $salida, $cupon, $cargos, $elegidos): Reserva {
+        $reserva = DB::transaction(function () use ($propiedad, $ajustes, $datos, $candidatas, $llegada, $salida, $cupon, $elegidos): Reserva {
+            if (Modulos::activo(Modulo::Camping)) {
+                CupoExtras::apartar($elegidos, $llegada, $salida);
+            }
             // Con la fila bloqueada, dos reservas a la vez no rebasan los usos permitidos del cupón.
             if ($cupon !== null) {
                 Cupon::query()->whereKey($cupon->id)->lockForUpdate()->first();
@@ -205,7 +303,8 @@ final class MotorReservas
                             ! $confirmada && $ajustes->horasRevision() > 0 => now('UTC')->addHours($ajustes->horasRevision()),
                             default => null,
                         },
-                        'cargos' => array_map(fn (int $id): array => ['concepto_cargo_id' => $id, 'cantidad' => 1], $cargos),
+                        'cargos' => array_map(fn (int $id): array => ['concepto_cargo_id' => $id, 'cantidad' => $elegidos[$id]], array_keys($elegidos)),
+                        'equipo' => $datos['equipo'] ?? null,
                     ]);
                 } catch (ReservaRechazada $e) {
                     if ($e->campo === 'cupon_codigo') {

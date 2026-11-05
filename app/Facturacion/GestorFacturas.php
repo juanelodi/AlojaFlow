@@ -19,6 +19,7 @@ use App\Enums\EstadoReserva;
 use App\Enums\MotivoCancelacionCfdi;
 use App\Enums\TipoDocumentoFiscal;
 use App\Models\Archivo;
+use App\Models\CargoReserva;
 use App\Models\CuotaReserva;
 use App\Models\EventoFiscal;
 use App\Models\Factura;
@@ -274,20 +275,28 @@ final class GestorFacturas
         $hospedaje = $cuota === null
             ? __('dinero.facturas.concepto_hospedaje', ['unidad' => $reserva->unidad->nombre ?? '', 'noches' => $noches, 'numero' => $reserva->numero], $idioma)
             : __('estancias.cuotas.concepto_factura', ['unidad' => $reserva->unidad->nombre ?? '', 'periodo' => $cuota->periodo($idioma), 'numero' => $reserva->numero], $idioma);
+        // Lo de un medidor tiene su propio pago y se factura tal cual; lo demás no lo reparte.
+        $conPago = $cuota === null ? collect() : $reserva->cuotas()->whereNotNull('cargo_id')->pluck('cargo_id');
+        $sinPago = $reserva->cargos->reject(fn (CargoReserva $cargo): bool => $conPago->contains($cargo->id));
+        $repartible = $reserva->total - (int) $reserva->cargos->sum('importe') + (int) $sinPago->sum('importe');
         $brutos = [[$hospedaje, $reserva->total - $cargos]];
-        foreach ($reserva->cargos as $cargo) {
+        foreach ($sinPago as $cargo) {
             $brutos[] = [$cargo->nombre, $cargo->importe];
+        }
+        if ($cuota?->cargo_id !== null) {
+            $brutos = [[$cuota->periodo($idioma), $cuota->importe]];
+            $porEstancia = $porEstancia->take(0);
         }
 
         // Una cuota lleva lo mismo que la reserva, en proporción. Se redondea lo acumulado, para que la suma dé justo lo de la cuota.
         $acumulado = 0;
         $repartido = 0;
-        $parte = function (int $importe) use ($cuota, $reserva, &$acumulado, &$repartido): int {
-            if ($cuota === null) {
+        $parte = function (int $importe) use ($cuota, $repartible, &$acumulado, &$repartido): int {
+            if ($cuota === null || $cuota->cargo_id !== null) {
                 return $importe;
             }
             $acumulado += $importe;
-            $hasta = (int) round($acumulado * $cuota->importe / $reserva->total);
+            $hasta = (int) round($acumulado * $cuota->importe / $repartible);
             $resultado = $hasta - $repartido;
             $repartido = $hasta;
 

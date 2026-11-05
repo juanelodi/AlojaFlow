@@ -11,6 +11,8 @@ declare(strict_types=1);
 namespace App\Motor;
 
 use App\Models\Propiedad;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Support\Ajustes;
 use SensitiveParameter;
 
@@ -105,6 +107,32 @@ final class AjustesMotor
     public function aceptaComprobantes(): bool
     {
         return $this->instrucciones() !== null && (bool) $this->valor('acepta_comprobantes', true);
+    }
+
+    /**
+     * Si le pregunta al huésped con qué equipo viene (D-110).
+     */
+    public function pideEquipo(): bool
+    {
+        return Modulos::activo(Modulo::Camping) && (bool) $this->valor('pide_equipo', false);
+    }
+
+    /**
+     * Si el huésped elige su lugar en el plano (D-110).
+     */
+    public function elegirLugar(): bool
+    {
+        return Modulos::activo(Modulo::Camping) && Modulos::activo(Modulo::Plano) && (bool) $this->valor('elegir_lugar', false);
+    }
+
+    /**
+     * El cargo del catálogo que se suma al elegir un lugar concreto. Sin él, elegir no cuesta.
+     */
+    public function cargoLugarId(): ?int
+    {
+        $id = $this->valor('cargo_lugar_id', null);
+
+        return is_numeric($id) ? (int) $id : null;
     }
 
     public function condiciones(): ?string

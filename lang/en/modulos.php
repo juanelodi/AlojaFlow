@@ -42,6 +42,7 @@ return [
         'plano' => ['nombre' => 'Property map', 'descripcion' => 'See the units laid out on a drawing of your place.'],
         'llegada' => ['nombre' => 'Online check-in', 'descripcion' => 'The guest fills in their details and accepts the documents before arriving.'],
         'mensajes' => ['nombre' => 'Messages to guests', 'descripcion' => 'Templates, sending by email and WhatsApp, and automatic messages.'],
+        'camping' => ['nombre' => 'Campsites', 'descripcion' => 'What each site has, the guest’s equipment, choosing on the map, electricity and water readings, seasonal residents and limited extras.'],
         'estancias_largas' => ['nombre' => 'Long stays and monthly payments', 'descripcion' => 'Weekly and monthly prices, a payment schedule with reminders and one invoice per payment.'],
         'portal' => ['nombre' => 'My booking and digital guide', 'descripcion' => 'A page for each guest with their booking and what they need to know, and a QR code in each unit.'],
         'bitacora' => ['nombre' => 'Shift log', 'descripcion' => 'What one shift leaves for the next. Important notes appear on Today.'],

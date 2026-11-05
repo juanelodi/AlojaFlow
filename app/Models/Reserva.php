@@ -92,6 +92,7 @@ class Reserva extends ModeloBase
     protected function casts(): array
     {
         return [
+            'equipo' => 'encrypted:array',
             'tipo' => TipoReserva::class,
             'estado' => EstadoReserva::class,
             'llegada' => 'immutable_date',

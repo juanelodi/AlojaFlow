@@ -173,7 +173,7 @@ class CuotasRelationManager extends RelationManager
                     Action::make('editarCuota')
                         ->label(__('estancias.cuotas.editar'))
                         ->icon(Heroicon::OutlinedPencilSquare)
-                        ->visible(fn (CuotaReserva $record): bool => $this->puedeCambiar() && $record->facturaVigente === null)
+                        ->visible(fn (CuotaReserva $record): bool => $this->puedeCambiar() && $record->facturaVigente === null && $record->cargo_id === null)
                         ->fillForm(fn (CuotaReserva $record): array => ['concepto' => $record->concepto, 'importe' => Dinero::aDecimal($record->importe, $this->reserva()->moneda), 'vence_en' => $record->vence_en->format('Y-m-d')])
                         ->schema(fn (CuotaReserva $record): array => $this->campos($record->desde === null))
                         ->action(function (CuotaReserva $record, array $data): void {
@@ -190,7 +190,7 @@ class CuotasRelationManager extends RelationManager
                         ->icon(Heroicon::OutlinedTrash)
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->visible(fn (CuotaReserva $record): bool => $this->puedeCambiar() && $record->facturaVigente === null)
+                        ->visible(fn (CuotaReserva $record): bool => $this->puedeCambiar() && $record->facturaVigente === null && $record->cargo_id === null)
                         ->action(function (CuotaReserva $record): void {
                             if ($record->facturaVigente()->exists()) {
                                 return;

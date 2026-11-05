@@ -67,7 +67,7 @@ final class GestorPrivacidad
             'campos' => $huesped->campos->pluck('valor', 'campo')->all(),
             'reservas' => $reservas->map(fn (Reserva $r): array => [
                 'numero' => $r->numero, 'estado' => $r->estado->value, 'llegada' => $r->llegada->format('Y-m-d'), 'salida' => $r->salida->format('Y-m-d'), 'unidad' => $r->unidad->nombre ?? null,
-                'total' => $r->total, 'pagado' => $r->pagado, 'moneda' => $r->moneda, 'comentario' => $r->comentario,
+                'total' => $r->total, 'pagado' => $r->pagado, 'moneda' => $r->moneda, 'comentario' => $r->comentario, 'equipo' => $r->equipo,
                 'pagos' => $r->pagos->map(fn ($p): array => ['fecha' => $p->fecha->format('Y-m-d'), 'importe' => $p->importe, 'metodo' => $p->metodo->value])->all(),
             ])->all(),
             'opiniones' => Opinion::query()->whereIn('reserva_id', $idsReservas)->get(['calificacion', 'comentario', 'respondida_en'])->toArray(),
@@ -179,7 +179,7 @@ final class GestorPrivacidad
 
             $anonimizada = ! $huesped->sincronizada;
             if ($anonimizada) {
-                DB::table('reservas')->where('titular_id', $huesped->id)->where('sincronizada', false)->update(['comentario' => null]);
+                DB::table('reservas')->where('titular_id', $huesped->id)->where('sincronizada', false)->update(['comentario' => null, 'equipo' => null]);
                 $huesped->contactos()->delete();
                 $huesped->campos()->delete();
                 $huesped->forceFill($this->camposHuespedVacios() + ['nombre' => $marca])->save();

@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Demo;
 
+use App\Camping\AjustesCamping;
 use App\Comunicacion\PlantillasBase;
 use App\Enums\BaseCargo;
 use App\Enums\EstadoReserva;
@@ -21,6 +22,7 @@ use App\Enums\PaquetePais;
 use App\Enums\TipoContacto;
 use App\Enums\TipoCupon;
 use App\Enums\TipoDocumentoLegal;
+use App\Enums\TipoLugar;
 use App\Enums\TipoMovimiento;
 use App\Enums\TipoReserva;
 use App\Llegada\GestorDocumentosLegales;
@@ -188,6 +190,7 @@ final class GeneradorDemo
                 $unidades[] = Unidad::query()->create([
                     'propiedad_id' => $propiedad->id, 'tarifa_id' => $tarifa->id, 'codigo' => $unidad, 'nombre' => $unidad,
                     'capacidad' => $capacidad, 'piso' => $piso, 'edificio' => $edificio, 'orden' => ++$orden, 'activa' => true,
+                    'atributos' => $piso === null ? ['tipo' => TipoLugar::Cabana->value, 'luz' => true, 'agua' => true, 'drenaje' => true, 'mascotas' => true] : null,
                 ]);
             }
         }
@@ -214,6 +217,8 @@ final class GeneradorDemo
         ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Cama extra', 'base' => BaseCargo::PorNoche, 'importe' => 30000, 'orden' => 1]);
         ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Desayuno', 'base' => BaseCargo::PorPersonaNoche, 'importe' => 15000, 'orden' => 2]);
         ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => 'Traslado al aeropuerto', 'base' => BaseCargo::PorEstancia, 'importe' => 45000, 'orden' => 3]);
+        ConceptoCargo::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => __('ui.demo.kayak'), 'base' => BaseCargo::PorNoche, 'importe' => 25000, 'cupo_diario' => 3, 'orden' => 4]);
+        (new AjustesCamping($propiedad))->guardarTarifas(['luz' => '3.50', 'agua' => '25', 'gas' => '14']);
         foreach (['Directo' => null, 'Booking' => 15, 'Airbnb' => 3, 'Teléfono' => null] as $nombre => $comision) {
             Canal::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => $nombre, 'comision_porcentaje' => $comision]);
         }

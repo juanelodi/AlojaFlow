@@ -10,9 +10,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Reservas\Schemas;
 
+use App\Camping\AtributosLugar;
+use App\Enums\TipoEquipo;
 use App\Models\EventoReserva;
 use App\Models\Huesped;
 use App\Models\Reserva;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Support\Formato;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
@@ -87,6 +91,15 @@ class ReservaInfolist
                     TextEntry::make('creado_en')->label(__('ui.reservas.creada'))->formatStateUsing(fn (Reserva $record): string => Formato::momento($record->getAttribute('creado_en'), self::zona($record)))
                         ->visible(fn (Reserva $record): bool => ! $record->sincronizada),
                     TextEntry::make('comentario')->label(__('ui.reservas.comentario'))->columnSpanFull()->placeholder('—'),
+                ]),
+            Section::make(__('camping.equipo.titulo'))->columnSpanFull()
+                ->visible(fn (Reserva $record): bool => Modulos::activo(Modulo::Camping) && filled($record->equipo))
+                ->columns(['default' => 1, 'md' => 2])
+                ->schema([
+                    TextEntry::make('equipo.tipo')->label(__('camping.equipo.tipo'))->placeholder('—')->formatStateUsing(fn (mixed $state): string => TipoEquipo::tryFrom((string) $state)?->etiqueta() ?? '—'),
+                    TextEntry::make('equipo.largo')->label(fn (Reserva $record): string => __('camping.equipo.largo_panel', ['unidad' => AtributosLugar::unidadLargo($record->propiedad)]))->placeholder('—'),
+                    TextEntry::make('equipo.vehiculos')->label(__('camping.equipo.vehiculos'))->placeholder('—'),
+                    TextEntry::make('equipo.placas')->label(__('camping.equipo.placas'))->placeholder('—'),
                 ]),
             Section::make(__('ui.reservas.eventos'))->columnSpanFull()
                 ->collapsible()

@@ -19,6 +19,8 @@ final readonly class Cotizacion
 
     public const NOCHES_MES = 28;
 
+    public const TEMPORADA = 'temporada';
+
     /**
      * @param  list<int>  $noches  precio de cada noche
      * @param  int  $estanciaMinima  noches mínimas que pide la tarifa o la temporada de la llegada

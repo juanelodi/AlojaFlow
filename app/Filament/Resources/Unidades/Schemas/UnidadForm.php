@@ -10,9 +10,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Unidades\Schemas;
 
+use App\Camping\AtributosLugar;
+use App\Enums\TipoLugar;
 use App\Filament\Resources\Unidades\UnidadResource;
 use App\Models\Propiedad;
 use App\Models\Tarifa;
+use App\Modulos\Modulo;
+use App\Modulos\Modulos;
 use App\Seguridad\Acceso;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -26,6 +30,13 @@ use Illuminate\Validation\Rules\Unique;
 
 class UnidadForm
 {
+    private static function unidadLargo(mixed $propiedadId): string
+    {
+        $propiedad = blank($propiedadId) ? null : Propiedad::query()->find((int) $propiedadId);
+
+        return $propiedad === null ? 'm' : AtributosLugar::unidadLargo($propiedad);
+    }
+
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
@@ -51,6 +62,20 @@ class UnidadForm
                     TextInput::make('orden')->label(__('ui.unidades.orden'))->helperText(__('ui.unidades.orden_ayuda'))->numeric()->minValue(-100000)->maxValue(100000)->default(0),
                     Toggle::make('activa')->label(__('ui.unidades.activa'))->helperText(__('ui.unidades.activa_ayuda'))->default(true),
                     Textarea::make('notas')->label(__('ui.unidades.notas'))->rows(3)->maxLength(5000)->columnSpanFull(),
+                ]),
+            Section::make(__('camping.atributos.titulo'))->description(__('camping.atributos.ayuda'))->columnSpanFull()->collapsible()
+                ->visible(fn (): bool => Modulos::activo(Modulo::Camping))
+                ->columns(['default' => 1, 'md' => 2])
+                ->schema([
+                    Select::make('atributos.tipo')->label(__('camping.atributos.tipo'))->native(false)->options(TipoLugar::opciones()),
+                    Select::make('atributos.acceso')->label(__('camping.atributos.acceso'))->native(false)->options(['atravesado' => __('camping.atributos.acceso_atravesado'), 'reversa' => __('camping.atributos.acceso_reversa')]),
+                    TextInput::make('atributos.largo_maximo')->label(fn (Get $get): string => __('camping.atributos.largo', ['unidad' => self::unidadLargo($get('propiedad_id'))]))->numeric()->minValue(0)->maxValue(1000)->step('any'),
+                    TextInput::make('atributos.amperes')->label(__('camping.atributos.amperes'))->numeric()->integer()->minValue(0)->maxValue(1000)->visible(fn (Get $get): bool => (bool) $get('atributos.luz')),
+                    Toggle::make('atributos.luz')->label(__('camping.atributos.luz'))->live(),
+                    Toggle::make('atributos.agua')->label(__('camping.atributos.agua')),
+                    Toggle::make('atributos.drenaje')->label(__('camping.atributos.drenaje')),
+                    Toggle::make('atributos.mascotas')->label(__('camping.atributos.mascotas')),
+                    Toggle::make('atributos.accesible')->label(__('camping.atributos.accesible')),
                 ]),
         ]);
     }

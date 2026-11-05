@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  *
  * @property int $id
  * @property int $reserva_id
+ * @property int|null $cargo_id
  * @property string|null $concepto
  * @property CarbonImmutable|null $desde
  * @property CarbonImmutable|null $hasta

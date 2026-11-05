@@ -92,6 +92,7 @@ Route::prefix('reservar/{codigo}')->name('motor.')->middleware([ModuloActivo::cl
     Route::get('/', [MotorReservasController::class, 'buscar'])->name('buscar');
     Route::get('/datos', [MotorReservasController::class, 'datos'])->name('datos');
     Route::post('/', [MotorReservasController::class, 'reservar'])->middleware([MismoOrigen::class, 'throttle:motor-reserva'])->name('reservar');
+    Route::get('/plano/{plano}', [MotorReservasController::class, 'plano'])->whereNumber('plano')->name('plano');
     Route::get('/r/{publico}', [MotorReservasController::class, 'reserva'])->name('reserva');
     Route::get('/r/{publico}/confirmacion.pdf', [MotorReservasController::class, 'confirmacionPdf'])->name('pdf');
     Route::post('/r/{publico}/pagar/{pasarela}', [MotorReservasController::class, 'pagar'])->middleware([ModuloActivo::class.':pagos', MismoOrigen::class, 'throttle:publico-envio'])->name('pagar');

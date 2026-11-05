@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property BaseCargo $base
  * @property int $importe
  * @property string|null $porcentaje
+ * @property int|null $cupo_diario
  * @property bool $obligatorio
  * @property bool $visible_motor
  * @property bool $activo
@@ -39,6 +40,7 @@ class ConceptoCargo extends ModeloBase
             'base' => BaseCargo::class,
             'importe' => 'integer',
             'porcentaje' => 'decimal:4',
+            'cupo_diario' => 'integer',
             'obligatorio' => 'boolean',
             'visible_motor' => 'boolean',
             'activo' => 'boolean',

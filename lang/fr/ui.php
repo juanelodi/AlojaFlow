@@ -427,6 +427,7 @@ return [
         'no_hay' => 'Il n’y a aucun établissement de démonstration.',
         'ya_existe' => 'Il existe déjà un établissement de démonstration. Retirez-le d’abord avec --quitar.',
         'nombre_propiedad' => 'Hôtel Bahía Serena (démo)',
+        'kayak' => 'Location de kayak',
         'estancia_larga' => 'Séjour de trois mois, avec calendrier de paiements',
         'temporada_primavera' => 'Printemps',
         'temporada_verano' => 'Été',

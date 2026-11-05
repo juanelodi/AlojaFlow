@@ -36,4 +36,9 @@ final class EstadosUnidos extends PaisBase
             'placas' => ['etiqueta' => __('legal.campos.placas'), 'requerido' => false, 'solo_titular' => true],
         ];
     }
+
+    public function unidadLargo(): string
+    {
+        return 'ft';
+    }
 }

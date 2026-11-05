@@ -34,6 +34,8 @@ class EditReserva extends EditRecord
         /** @var Reserva $reserva */
         $reserva = $this->record;
         $data['cupon_codigo'] = $reserva->cupon?->codigo;
+        $data['sin_catalogo'] = (int) $reserva->cargos()->whereNull('concepto_cargo_id')->sum('importe');
+        $data['esta_reserva'] = $reserva->id;
         // Las obligatorias se añaden solas: en el formulario solo van las elegidas.
         $data['cargos'] = $reserva->cargos()->with('concepto')->get()
             ->filter(fn (CargoReserva $c): bool => $c->concepto !== null && ! $c->concepto->obligatorio)

@@ -2,6 +2,43 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.23 — 2026-11-05
+
+**Campings.** Es un módulo nuevo y llega apagado: se prende en Sistema → Módulos. Todo es opcional, y varias cosas sirven también a cabañas y casas de huéspedes.
+
+**Qué tiene cada lugar (en Unidades)**
+- Tipo, luz con sus amperes, agua, drenaje, acceso, largo máximo, mascotas y accesibilidad. Se le enseña al huésped.
+- **El motor filtra por eso:** qué necesita y cuánto mide su equipo. Lo que no cabe no se le ofrece.
+- En Estados Unidos, los largos van en pies; en los demás países, en metros.
+
+**El equipo del huésped**
+- Tipo, largo, vehículos y placas, en el formulario de reservar si lo prendes en Motor de reservas, y en la reserva del panel.
+- Si no cabe en el lugar, el motor no se lo ofrece y el panel te avisa. Las placas quedan cifradas, salen en la copia de sus datos y se borran al anonimizar.
+
+**Elegir el lugar en el plano**
+- Los planos de Operación → Plano se pueden publicar en el motor: los lugares libres en sus fechas salen en color, y hay una lista con lo mismo para quien no quiera atinarle a un punto en el teléfono.
+- **De lo ocupado solo dice que no se puede elegir. Nunca quién está.** Solo se publica el dibujo del plano.
+- Puedes cobrar por elegir: uno de tus cargos, que se suma solo a quien elige un lugar concreto.
+
+**Lecturas de luz, agua y gas (Operación → Lecturas de medidor)**
+- Capturas en una sola pantalla lo que marca cada medidor, y ves lo que se va a cobrar antes de guardar.
+- **Se cobra a quien está en el lugar, y nunca lo que gastó el de antes:** la primera lectura de cada huésped es su punto de partida. Conviene leer al llegar y al salir.
+- Se suma a su reserva. **Con calendario de cobros, va como un pago aparte**, que se factura tal cual.
+- Si te equivocas, quitas la última lectura y lo cobrado se devuelve al total. Lo ya facturado no.
+
+**Temporada y residentes (Operación → Residentes)**
+- Un precio de temporada completa en cada temporada: quien se queda toda paga eso.
+- La lista de quienes se quedan un mes o más, con lo que deben, lo que toca pagar y si firmaron el reglamento. Si falta, un botón le manda el enlace por WhatsApp.
+- **Escribirles a todos:** Mensajes por periodo ahora también tiene «Residentes».
+
+**Extras con cupo (en Cargos)**
+- Bicicletas, kayaks, leña: cuántos hay cada día. El motor ofrece lo que queda y no vende de más, ni con dos huéspedes a la vez.
+- En el panel solo te avisa: un caso especial lo decides tú.
+
+**Corregido:** editar una reserva y guardarla borraba cualquier cargo que no viniera del catálogo. Hasta hoy no había ninguno, pero las lecturas lo serían.
+
+**Sin verificar:** no se ha probado en un camping de verdad, ni el plano en un teléfono de verdad con un dibujo real. No hay lectura automática de medidores: se capturan a mano. No hay modo sin conexión, como acordamos. Lo cobrado por consumo puede tener reglas o impuestos propios en tu lugar: confírmalo con tu contador.
+
 ## 1.0.22 — 2026-11-05
 
 **Estancias largas y mensualidades.** Es un módulo nuevo y llega apagado: se prende en Sistema → Módulos.

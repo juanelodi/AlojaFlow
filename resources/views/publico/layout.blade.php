@@ -18,7 +18,7 @@ header.marca h1{font-size:1.35rem;margin:0}
 h2{font-size:1.1rem;margin:0 0 8px}
 .tarjeta{background:var(--tarjeta);border:1px solid var(--borde);border-radius:12px;padding:18px;margin-bottom:14px}
 label{display:block;font-size:.875rem;font-weight:600;margin:0 0 4px}
-input[type=text],input[type=email],input[type=tel],input[type=date],input[type=number],input[type=password],input[type=file],textarea{width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:8px;font:inherit;background:var(--campo);color:var(--tinta)}
+input[type=text],input[type=email],input[type=tel],input[type=date],input[type=number],input[type=password],input[type=file],textarea,select{width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:8px;font:inherit;background:var(--campo);color:var(--tinta)}
 input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid var(--marca);outline-offset:2px}
 .rejilla{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end}
 .campo{margin-bottom:12px}
@@ -46,6 +46,13 @@ footer a{color:inherit}
 .galeria a{flex:0 0 82%;max-width:420px;scroll-snap-align:start}
 .galeria img{display:block;width:100%;height:220px;object-fit:cover;border-radius:10px;background:var(--borde)}
 .galeria:focus-visible{outline:3px solid var(--marca);outline-offset:2px}
+.plano{position:relative;overflow:hidden;border-radius:8px}
+.plano img{display:block;width:100%;height:auto}
+.lugar{position:absolute;min-width:32px;min-height:32px;padding:0 8px;border-radius:16px;font-size:.8125rem;line-height:32px;text-align:center;text-decoration:none;box-shadow:0 1px 3px rgb(0 0 0 / .35)}
+.lugar.libre{background:var(--marca);color:#fff;font-weight:700}
+.lugar.ocupado{background:#fff;color:var(--gris)}
+details.filtros{margin-top:12px}
+details.filtros summary{cursor:pointer;font-weight:600;min-height:32px}
 </style>
 @yield('cabeza')
 </head>

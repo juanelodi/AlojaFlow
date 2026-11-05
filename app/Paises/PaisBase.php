@@ -67,6 +67,11 @@ abstract class PaisBase implements Pais
         return null;
     }
 
+    public function unidadLargo(): string
+    {
+        return 'm';
+    }
+
     public function exportaLibroFiscal(): bool
     {
         return false;

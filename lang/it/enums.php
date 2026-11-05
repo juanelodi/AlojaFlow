@@ -269,4 +269,23 @@ return [
         'salida' => 'Prima di partire',
         'otro' => 'Altro',
     ],
+    'TipoLugar' => [
+        'tienda' => 'Tenda',
+        'vehiculo' => 'Camper o roulotte',
+        'cabana' => 'Bungalow',
+        'glamping' => 'Glamping',
+        'otro' => 'Altro',
+    ],
+    'TipoEquipo' => [
+        'tienda' => 'Tenda',
+        'camper' => 'Camper o furgone',
+        'remolque' => 'Roulotte',
+        'casa_rodante' => 'Autocaravan',
+        'otro' => 'Altro',
+    ],
+    'ServicioMedido' => [
+        'luz' => 'Elettricità',
+        'agua' => 'Acqua',
+        'gas' => 'Gas',
+    ],
 ];

@@ -129,7 +129,8 @@ final class Mensualidades
     }
 
     /**
-     * Reparte el total en pagos iguales, y el último cubre lo que no llena un periodo. Lo ya facturado no se toca: es un documento emitido.
+     * Reparte el total en pagos iguales, y el último cubre lo que no llena un periodo. No se toca lo ya facturado, que es un documento
+     * emitido, ni lo de un medidor, que se cobra aparte.
      *
      * @return int cuotas creadas
      */
@@ -140,10 +141,10 @@ final class Mensualidades
             if ($actual->estado === EstadoReserva::Cancelada) {
                 throw new ReservaRechazada(__('ui.reservas.error_cancelada'));
             }
-            $actual->cuotas()->whereDoesntHave('facturaVigente')->delete();
-            $facturadas = $actual->cuotas()->get();
-            $importe = $actual->total - (int) $facturadas->sum('importe');
-            $filas = $importe > 0 ? $this->plan($actual, $importe, $this->inicio($actual, $facturadas->max('hasta')), $periodo, $primerVencimiento) : [];
+            $actual->cuotas()->whereNull('cargo_id')->whereDoesntHave('facturaVigente')->delete();
+            $quedan = $actual->cuotas()->get();
+            $importe = $actual->total - (int) $quedan->sum('importe');
+            $filas = $importe > 0 ? $this->plan($actual, $importe, $this->inicio($actual, $quedan->max('hasta')), $periodo, $primerVencimiento) : [];
             foreach ($filas as $fila) {
                 $actual->cuotas()->create($fila);
             }

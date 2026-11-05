@@ -16,6 +16,7 @@ use App\Enums\OrigenFila;
 use App\Enums\TipoEventoReserva;
 use App\Enums\TipoReserva;
 use App\Limpieza\GestorLimpieza;
+use App\Models\CargoReserva;
 use App\Models\Empresa;
 use App\Models\EventoReserva;
 use App\Models\Huesped;
@@ -211,6 +212,32 @@ final class GestorReservas
             $this->anotar($actual, TipoEventoReserva::Modificada, 'reserva.modificar', ['antes' => $antes, 'despues' => $this->resumen($actual)]);
 
             return $actual;
+        });
+    }
+
+    /**
+     * Un cargo que no viene del catálogo, como lo que marcó un medidor. Sube el total.
+     */
+    public function agregarCargo(Reserva $reserva, string $nombre, float $cantidad, int $importe): CargoReserva
+    {
+        return DB::transaction(function () use ($reserva, $nombre, $cantidad, $importe): CargoReserva {
+            $actual = $this->bloquear($reserva);
+            if ($actual->estado === EstadoReserva::Cancelada) {
+                throw new ReservaRechazada(__('ui.reservas.error_cancelada'));
+            }
+            $cargo = $actual->cargos()->create(['concepto_cargo_id' => null, 'nombre' => mb_substr($nombre, 0, 100), 'cantidad' => $cantidad, 'importe' => $importe]);
+            $this->cambiarTotal($actual, $actual->total + $importe);
+
+            return $cargo;
+        });
+    }
+
+    public function quitarCargo(CargoReserva $cargo): void
+    {
+        DB::transaction(function () use ($cargo): void {
+            $actual = $this->bloquear($cargo->reserva);
+            $this->cambiarTotal($actual, max(0, $actual->total - $cargo->importe));
+            $cargo->delete();
         });
     }
 
@@ -503,6 +530,10 @@ final class GestorReservas
         if (array_key_exists('idioma', $datos)) {
             $fila['idioma'] = $datos['idioma'];
         }
+        if (array_key_exists('equipo', $datos)) {
+            $equipo = array_filter(array_intersect_key((array) $datos['equipo'], array_flip(['tipo', 'largo', 'vehiculos', 'placas'])), fn (mixed $valor): bool => filled($valor));
+            $fila['equipo'] = $equipo === [] ? null : $equipo;
+        }
         if (array_key_exists('expira_en', $datos)) {
             $fila['expira_en'] = $datos['expira_en'];
         }
@@ -560,7 +591,8 @@ final class GestorReservas
             }
         }
         $presupuesto = Cotizador::presupuesto($reserva->unidad, $reserva->llegada, $reserva->salida, $reserva->personas, $elegidos);
-        $reserva->cargos()->delete();
+        // Lo que no viene del catálogo, como lo que marcó un medidor, no está en el formulario: se queda.
+        $reserva->cargos()->whereNotNull('concepto_cargo_id')->delete();
         foreach ($presupuesto->cargos as $cargo) {
             $reserva->cargos()->create($cargo);
         }

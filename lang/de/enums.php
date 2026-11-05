@@ -269,4 +269,23 @@ return [
         'salida' => 'Vor der Abreise',
         'otro' => 'Sonstiges',
     ],
+    'TipoLugar' => [
+        'tienda' => 'Zelt',
+        'vehiculo' => 'Wohnmobil oder Wohnwagen',
+        'cabana' => 'Hütte',
+        'glamping' => 'Glamping',
+        'otro' => 'Sonstiges',
+    ],
+    'TipoEquipo' => [
+        'tienda' => 'Zelt',
+        'camper' => 'Campingbus',
+        'remolque' => 'Wohnwagen',
+        'casa_rodante' => 'Wohnmobil',
+        'otro' => 'Sonstiges',
+    ],
+    'ServicioMedido' => [
+        'luz' => 'Strom',
+        'agua' => 'Wasser',
+        'gas' => 'Gas',
+    ],
 ];

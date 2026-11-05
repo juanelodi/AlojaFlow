@@ -34,6 +34,8 @@ use Illuminate\Database\Eloquent\Collection;
  */
 final class Cotizador
 {
+    private const ORDEN_LARGOS = [Mensualidades::SEMANA => 1, Mensualidades::MES => 2, Cotizacion::TEMPORADA => 3];
+
     public static function cotizar(Unidad $unidad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas = 1): ?Cotizacion
     {
         // Las temporadas son fechas sin zona: una llegada con la zona de la propiedad caería en el día de al lado.
@@ -64,8 +66,8 @@ final class Cotizador
             if ($dia->equalTo($llegada) && $temporada?->estancia_minima !== null) {
                 $estanciaMinima = max($estanciaMinima, $temporada->estancia_minima);
             }
-            [$largo, $tipo] = self::precioLargo($temporada ?? $tarifa, count($nochesDeSuMes), $nochesDeSuMes[$i]);
-            $estanciaLarga = $tipo === Mensualidades::MES ? $tipo : ($estanciaLarga ?? $tipo);
+            [$largo, $tipo] = self::precioDeTemporadaCompleta($temporada, $llegada, $salida) ?? self::precioLargo($temporada ?? $tarifa, count($nochesDeSuMes), $nochesDeSuMes[$i]);
+            $estanciaLarga = (self::ORDEN_LARGOS[(string) $tipo] ?? 0) > (self::ORDEN_LARGOS[(string) $estanciaLarga] ?? 0) ? $tipo : $estanciaLarga;
             $exacto += self::precioNoche($tarifa, $temporada, $dia, $personas, $largo);
             $noches[] = (int) round($exacto) - $sumado;
             $sumado += $noches[$i];
@@ -87,6 +89,20 @@ final class Cotizador
         }
 
         return $lista;
+    }
+
+    /**
+     * Quien se queda toda la temporada paga ese precio, repartido entre sus noches (D-112).
+     *
+     * @return array{0: float, 1: string}|null
+     */
+    private static function precioDeTemporadaCompleta(?TemporadaTarifa $temporada, CarbonImmutable $llegada, CarbonImmutable $salida): ?array
+    {
+        if ($temporada?->precio_completa === null || ! Modulos::activo(Modulo::Camping) || $llegada->gt($temporada->desde) || $salida->lte($temporada->hasta)) {
+            return null;
+        }
+
+        return [$temporada->precio_completa / ((int) $temporada->desde->diffInDays($temporada->hasta) + 1), Cotizacion::TEMPORADA];
     }
 
     /**

@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $precio_fin_semana
  * @property int|null $precio_semana
  * @property int|null $precio_mes
+ * @property int|null $precio_completa
  * @property int|null $estancia_minima
  */
 class TemporadaTarifa extends ModeloBase
@@ -44,6 +45,7 @@ class TemporadaTarifa extends ModeloBase
             'precio_fin_semana' => 'integer',
             'precio_semana' => 'integer',
             'precio_mes' => 'integer',
+            'precio_completa' => 'integer',
             'estancia_minima' => 'integer',
         ];
     }

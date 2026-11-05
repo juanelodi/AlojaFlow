@@ -427,6 +427,7 @@ return [
         'no_hay' => 'Não há nenhum alojamento de demonstração.',
         'ya_existe' => 'Já existe um alojamento de demonstração. Retire-o primeiro com --quitar.',
         'nombre_propiedad' => 'Hotel Bahía Serena (demonstração)',
+        'kayak' => 'Aluguer de caiaque',
         'estancia_larga' => 'Estadia de três meses, com calendário de pagamentos',
         'temporada_primavera' => 'Primavera',
         'temporada_verano' => 'Verão',

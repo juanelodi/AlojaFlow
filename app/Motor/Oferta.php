@@ -18,6 +18,9 @@ use App\Reservas\Presupuesto;
  */
 final readonly class Oferta
 {
+    /**
+     * @param  list<string>  $etiquetas  lo que tienen todos sus lugares
+     */
     public function __construct(
         public Tarifa $tarifa,
         public int $libres,
@@ -25,6 +28,7 @@ final readonly class Oferta
         public Presupuesto $presupuesto,
         public int $estanciaMinima,
         public bool $cumpleEstancia,
+        public array $etiquetas = [],
     ) {
     }
 }
