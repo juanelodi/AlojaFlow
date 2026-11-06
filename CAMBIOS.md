@@ -2,6 +2,13 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.33 — 2026-11-06
+
+**Clientes omitidos respeta a quien solo ve lo suyo.** Un usuario con ese límite en una propiedad independiente podía buscar ahí a todos los huéspedes y ver a quién omitieron los demás.
+
+- **Ahora** solo encuentra a sus propios huéspedes, no ve lo que omitieron otros y no puede abrirlo. Lo omitido por tipo de cliente lo sigue viendo, porque no señala a nadie.
+- **No cambia** para los administradores ni para quien no tiene ese límite.
+
 ## 1.0.32 — 2026-11-06
 
 **Tres correcciones para quien trabaja con una instalación principal de HotelDruid, y una para buscar huéspedes.**
