@@ -754,6 +754,15 @@ Al sacar las capturas en inglés de la wiki se vio que dos pantallas seguían en
 
 **Demo:** nace en el idioma de quien la crea, también sus plantillas y documentos. Sigue siendo un hotel en México con sus impuestos, porque es lo que está probado. El español no cambia.
 
+### D-134 · 2026-11-05 · alojaflow.com de noche, con vectores y animaciones
+El usuario pidió la portada y el wiki «más modernos, con efectos, vectores y animaciones», oscuros por omisión o con modo noche, porque el sitio se veía seco. Solo el sitio: el sistema se queda como está.
+
+**Oscuro por omisión**, sin mirar la preferencia del sistema del visitante, con un interruptor que recuerda lo elegido. El modo claro es el mismo pueblo de día. Se rehízo el sitio sobre tokens de tema (`DESIGN.md` del sitio).
+
+**El mundo es la recepción de noche:** un pueblo vectorial cuyas ventanas se encienden, con el techo en A y la ola del logo, y un tablero de fichas que voltean. Lo que se mueve demuestra algo del producto: entra una reserva, se avisa de un choque, se rechaza la segunda venta de una noche.
+
+**D-132 sigue en pie:** nada ligado a la posición del scroll. Las animaciones van por tiempo o se disparan una vez, solo con `transform` y `opacity`, por capas enteras, y se pausan fuera de la vista. Sin JavaScript todo se lee, y con el movimiento reducido todo está quieto. Falta probarlo en un teléfono de verdad.
+
 ---
 
 ## Pendientes
