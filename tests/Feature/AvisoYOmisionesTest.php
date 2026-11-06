@@ -21,11 +21,13 @@ use App\Enums\TipoContacto;
 use App\Enums\TipoTarea;
 use App\Filament\Pages\AvisoEntradasSalidas;
 use App\Filament\Pages\Limpieza;
+use App\Filament\Resources\Huespedes\Pages\ViewHuesped;
 use App\Filament\Resources\ListasComprobacion\ListaComprobacionResource;
 use App\Filament\Resources\ListasComprobacion\Pages\CreateListaComprobacion;
 use App\Filament\Resources\MantenimientosRecurrentes\MantenimientoRecurrenteResource;
 use App\Filament\Resources\Omisiones\OmisionResource;
 use App\Filament\Resources\Omisiones\Pages\CreateOmision;
+use App\Filament\Resources\Omisiones\Pages\ListOmisiones;
 use App\Limpieza\AvisoEquipo;
 use App\Limpieza\GestorLimpieza;
 use App\Limpieza\Omisiones;
@@ -171,6 +173,54 @@ describe('clientes omitidos', function () {
             ->and($selector->getSearchResults('%'))->toBe([]);
     });
 
+    describe('quien solo ve lo suyo', function () {
+        beforeEach(function () {
+            $this->limitado = User::factory()->create(['activo' => true, 'idioma' => 'es']);
+            Acceso::asignarRoles($this->limitado, [['propiedad_id' => $this->propiedad->id, 'rol' => 'recepcion', 'solo_propias' => true]]);
+            $this->suyo = Huesped::query()->forceCreate(['propiedad_id' => $this->propiedad->id, 'nombre' => 'Marta', 'apellido1' => 'Propia', 'creado_por' => $this->limitado->id]);
+            $this->ajeno = Huesped::query()->forceCreate(['propiedad_id' => $this->propiedad->id, 'nombre' => 'Marta', 'apellido1' => 'Ajena', 'creado_por' => $this->super->id]);
+        });
+
+        it('solo encuentra a sus huéspedes', function () {
+            $selector = fn (array $datos): object => collect(Livewire::actingAs($this->limitado)->test(CreateOmision::class)
+                ->fillForm(['propiedad_id' => $this->propiedad->id, ...$datos])->instance()->getSchema('form')->getFlatComponents(withHidden: true))
+                ->first(fn (object $campo): bool => method_exists($campo, 'getName') && $campo->getName() === 'huesped_id');
+
+            expect(array_keys($selector([])->getSearchResults('Marta')))->toBe([$this->suyo->id])
+                ->and($selector(['huesped_id' => $this->ajeno->id])->getOptionLabel(withDefault: false))->toBeNull()
+                ->and($selector(['huesped_id' => $this->suyo->id])->getOptionLabel(withDefault: false))->toBe('Marta Propia');
+        });
+
+        it('enviar a mano a un huésped ajeno se rechaza', function () {
+            Livewire::actingAs($this->limitado)->test(CreateOmision::class)
+                ->fillForm(['propiedad_id' => $this->propiedad->id, 'por' => 'huesped', 'huesped_id' => $this->ajeno->id])
+                ->call('create')->assertHasFormErrors(['huesped_id']);
+            expect(Omision::query()->count())->toBe(0);
+
+            Livewire::actingAs($this->limitado)->test(CreateOmision::class)
+                ->fillForm(['propiedad_id' => $this->propiedad->id, 'por' => 'huesped', 'huesped_id' => $this->suyo->id])
+                ->call('create')->assertHasNoFormErrors();
+            expect(Omision::query()->pluck('huesped_id')->all())->toBe([$this->suyo->id]);
+        });
+
+        it('no ve ni abre lo omitido de otro, y sí lo omitido por tipo', function () {
+            $ajena = Omision::query()->create(['propiedad_id' => $this->propiedad->id, 'huesped_id' => $this->ajeno->id]);
+            $suya = Omision::query()->create(['propiedad_id' => $this->propiedad->id, 'huesped_id' => $this->suyo->id]);
+            $tipo = Omision::query()->create(['propiedad_id' => $this->propiedad->id, 'campo' => 'Tipo de cliente', 'valor' => 'Familia']);
+
+            Livewire::actingAs($this->limitado)->test(ListOmisiones::class)
+                ->assertCanSeeTableRecords([$suya, $tipo])->assertCanNotSeeTableRecords([$ajena]);
+            $this->actingAs($this->limitado)->get(OmisionResource::getUrl('edit', ['record' => $ajena]))->assertNotFound();
+
+            Livewire::actingAs($this->super)->test(ListOmisiones::class)->assertCanSeeTableRecords([$ajena, $suya, $tipo]);
+        });
+
+        it('fusionar no se le ofrece, y a quien no tiene el límite sí', function () {
+            Livewire::actingAs($this->limitado)->test(ViewHuesped::class, ['record' => $this->suyo->getKey()])->assertActionHidden('fusionar');
+            Livewire::actingAs($this->super)->test(ViewHuesped::class, ['record' => $this->suyo->getKey()])->assertActionVisible('fusionar');
+        });
+    });
+
     it('no salen en el aviso, y sus fechas siguen ocupadas', function () {
         $reserva = ($this->reservar)($this->u1, $this->ana, 1, 3);
         Omision::query()->create(['propiedad_id' => $this->propiedad->id, 'huesped_id' => $this->ana->id, 'en_aviso' => true]);
@@ -252,7 +302,8 @@ describe('clientes omitidos', function () {
 
         Livewire::actingAs($this->super)->test(CreateOmision::class)
             ->fillForm(['propiedad_id' => $this->propiedad->id, 'por' => 'huesped', 'huesped_id' => $ajeno->id])
-            ->call('create')->assertForbidden();
+            ->call('create')->assertHasFormErrors(['huesped_id']);
+        expect(Omision::query()->count())->toBe(0);
     });
 });
 

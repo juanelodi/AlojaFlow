@@ -17,6 +17,7 @@ use App\Filament\Resources\Omisiones\Pages\ListOmisiones;
 use App\Models\Huesped;
 use App\Models\Omision;
 use App\Seguridad\Acceso;
+use App\Seguridad\Limites;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Radio;
@@ -59,6 +60,25 @@ class OmisionResource extends RecursoDeCualquierPropiedad
         return ['huesped_id' => Huesped::class];
     }
 
+    /**
+     * Quien solo ve lo suyo no ve a quién omitieron los demás; lo omitido por tipo no señala a nadie y sí lo ve.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->where(fn (Builder $query): Builder => $query->whereNull('huesped_id')
+            ->orWhereHas('huesped', fn (Builder $huesped): Builder => Limites::huespedesVisibles($huesped, Acceso::usuarioActual())));
+    }
+
+    /**
+     * A quien busca y a quien se valida: Filament rechaza el valor si `getOptionLabelUsing` no le da etiqueta.
+     *
+     * @return Builder<Huesped>
+     */
+    private static function huespedesElegibles(int $propiedadId): Builder
+    {
+        return Limites::huespedesVisibles(Huesped::query(), Acceso::usuarioActual())->where('propiedad_id', $propiedadId);
+    }
+
     public static function getNavigationGroup(): ?string
     {
         return __('ui.nav.reservas');
@@ -88,10 +108,10 @@ class OmisionResource extends RecursoDeCualquierPropiedad
                 Select::make('huesped_id')->label(__('ui.comun.huesped'))->native(false)->searchable()->columnSpanFull()
                     ->visible($porHuesped)->required($porHuesped)
                     ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', self::propiedadDe($get)))
-                    ->getSearchResultsUsing(fn (string $search, Get $get): array => Huesped::query()->where('propiedad_id', self::propiedadDe($get))
+                    ->getSearchResultsUsing(fn (string $search, Get $get): array => self::huespedesElegibles(self::propiedadDe($get))
                         ->conNombre($search)
                         ->orderBy('apellido1')->limit(15)->get()->mapWithKeys(fn (Huesped $h): array => [$h->id => $h->nombreCompleto()])->all())
-                    ->getOptionLabelUsing(fn (mixed $value): ?string => Huesped::query()->find($value)?->nombreCompleto()),
+                    ->getOptionLabelUsing(fn (mixed $value, Get $get): ?string => self::huespedesElegibles(self::propiedadDe($get))->find((int) $value)?->nombreCompleto()),
                 TextInput::make('campo')->label(__('equipo.omisiones.campo'))->helperText(__('equipo.omisiones.campo_ayuda'))->maxLength(100)
                     ->visible(fn (Get $get): bool => ! $porHuesped($get))->required(fn (Get $get): bool => ! $porHuesped($get)),
                 TextInput::make('valor')->label(__('equipo.omisiones.valor'))->maxLength(255)
