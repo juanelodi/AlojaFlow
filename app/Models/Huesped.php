@@ -128,30 +128,16 @@ class Huesped extends ModeloBase
 
     /**
      * Quien busca escribe el nombre completo, y va repartido en tres columnas: cada palabra basta con que esté en una.
+     * Las tablas de Filament no lo necesitan: ya separan la búsqueda por palabras.
      *
      * @param  Builder<Huesped>  $consulta
      */
     public function scopeConNombre(Builder $consulta, string $busqueda): void
     {
-        self::filtrarPorNombre($consulta, $busqueda);
-    }
-
-    /**
-     * Lo mismo para una consulta que el análisis estático no sabe que es de huéspedes, como la de un `whereHas`.
-     *
-     * @template TConsulta of Builder
-     *
-     * @param  TConsulta  $consulta
-     * @return TConsulta
-     */
-    public static function filtrarPorNombre(Builder $consulta, string $busqueda): Builder
-    {
         foreach (preg_split('/\s+/u', trim($busqueda), -1, PREG_SPLIT_NO_EMPTY) ?: [] as $palabra) {
             $patron = '%'.addcslashes($palabra, '%_\\').'%';
             $consulta->where(fn (Builder $q): Builder => $q->where('nombre', 'like', $patron)->orWhere('apellido1', 'like', $patron)->orWhere('apellido2', 'like', $patron));
         }
-
-        return $consulta;
     }
 
     public function nombreCompleto(): string

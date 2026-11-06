@@ -13,7 +13,6 @@ namespace App\Filament\Resources\Reservas\Tables;
 use App\Enums\EstadoReserva;
 use App\Enums\TipoReserva;
 use App\Filament\Resources\Reservas\ReservaResource;
-use App\Models\Huesped;
 use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Support\Formato;
@@ -37,7 +36,8 @@ class ReservasTable
                     ->searchable(query: fn (Builder $query, string $search): Builder => $query->where('numero', 'like', $search.'%')),
                 TextColumn::make('titular.apellido1')->label(__('ui.comun.huesped'))
                     ->formatStateUsing(fn (mixed $state, Reserva $record): string => $record->titular?->nombreCompleto() ?? '—')
-                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->whereHas('titular', fn (Builder $h): Builder => Huesped::filtrarPorNombre($h, $search))),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->whereHas('titular', fn (Builder $h): Builder => $h
+                        ->where('apellido1', 'like', '%'.$search.'%')->orWhere('nombre', 'like', '%'.$search.'%')->orWhere('apellido2', 'like', '%'.$search.'%'))),
                 TextColumn::make('propiedad.nombre')->label(__('ui.comun.propiedad'))
                     ->visible(fn (): bool => count(ReservaResource::propiedadesPermitidas()) > 1),
                 TextColumn::make('unidad.nombre')->label(__('ui.comun.unidad')),
