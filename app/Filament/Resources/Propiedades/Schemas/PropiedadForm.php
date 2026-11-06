@@ -14,6 +14,7 @@ use App\Enums\MetodoPeticion;
 use App\Enums\ModoPropiedad;
 use App\Enums\PaquetePais;
 use App\Enums\TipoPrincipal;
+use App\Models\Principal;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Paises\CatalogoPaises;
@@ -128,6 +129,8 @@ class PropiedadForm
                         ->visible(fn (Get $get): bool => ! self::esDeAlojaFlow($get))
                         ->required()->maxLength(255)->url()->regex('#^https?://[^?\#]+/$#')->columnSpanFull(),
                     TextInput::make('usuario')->label(__('ui.propiedades.usuario'))->maxLength(100)->autocomplete('off')
+                        // El modelo lo oculta al convertirse en arreglo, y el formulario se llena así: sin esto saldría vacío y al guardar se borraría.
+                        ->formatStateUsing(fn (?Principal $record): ?string => $record?->usuario)
                         ->visible(fn (Get $get): bool => ! self::esDeAlojaFlow($get)),
                     TextInput::make('contrasena')->label(__('ui.propiedades.contrasena'))->helperText(__('ui.propiedades.contrasena_ayuda'))
                         ->visible(fn (Get $get): bool => ! self::esDeAlojaFlow($get))

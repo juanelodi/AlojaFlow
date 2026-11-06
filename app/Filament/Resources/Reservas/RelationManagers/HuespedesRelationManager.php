@@ -24,7 +24,6 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -66,7 +65,7 @@ class HuespedesRelationManager extends RelationManager
                     ->schema([
                         Select::make('huesped_id')->label(__('ui.comun.huesped'))->helperText(__('ui.huespedes.acompanante_ayuda'))->searchable()->native(false)
                             ->getSearchResultsUsing(fn (string $search): array => Limites::huespedesVisibles(Huesped::query(), Acceso::usuarioActual())->where('propiedad_id', $this->reserva()->propiedad_id)
-                                ->where(fn (Builder $q): Builder => $q->where('nombre', 'like', '%'.$search.'%')->orWhere('apellido1', 'like', '%'.$search.'%'))
+                                ->conNombre($search)
                                 ->limit(30)->get()->mapWithKeys(fn (Huesped $h): array => [$h->id => $h->nombreCompleto()])->all())
                             ->getOptionLabelUsing(fn (mixed $value): ?string => Huesped::query()->where('propiedad_id', $this->reserva()->propiedad_id)->find((int) $value)?->nombreCompleto()),
                         TextInput::make('nombre')->label(__('ui.huespedes.nombre_nuevo'))->maxLength(100),

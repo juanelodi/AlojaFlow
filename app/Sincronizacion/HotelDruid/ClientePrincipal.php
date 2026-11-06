@@ -42,6 +42,9 @@ class ClientePrincipal
 
     private const BOTON_COPIA = 'name="crea_backup"';
 
+    /** Está en includes/head.php y en la de cada tema, también con la marca de HotelDruid oculta. */
+    private const MARCA_CABECERA = '--t1color:';
+
     private const TEXTO_ANIO_INEXISTENTE = 'The requested year does not exist';
 
     // Mensajes de la principal en italiano, español e inglés (idiomas de 1.2.x).
@@ -60,16 +63,22 @@ class ClientePrincipal
     }
 
     /**
-     * Paso 0: la página de copias responde con su formulario si las credenciales valen.
+     * Paso 0: entró y puede hacer copias. La cabecera de la página solo sale con el privilegio de copia, y el
+     * formulario, además, si el usuario tiene activado el año que se consulta: sin él, las copias funcionan igual.
      */
     public function probarConexion(): void
     {
         $cuerpo = $this->peticion([], 'probar')->body();
         $this->detectarErroresComunes($cuerpo, 'probar');
 
-        if (! str_contains($cuerpo, self::BOTON_COPIA)) {
-            throw new ErrorSincronizacion(CodigoError::RespuestaDesconocida, 'probar', $this->extracto($cuerpo));
+        if (str_contains($cuerpo, self::BOTON_COPIA) || str_contains($cuerpo, self::MARCA_CABECERA)) {
+            return;
         }
+        if (trim($cuerpo) === '') {
+            throw new ErrorSincronizacion(CodigoError::Credenciales, 'probar');
+        }
+
+        throw new ErrorSincronizacion(CodigoError::RespuestaDesconocida, 'probar', $this->extracto($cuerpo));
     }
 
     /**
@@ -269,7 +278,9 @@ class ClientePrincipal
      */
     private function extracto(string $html): string
     {
-        $texto = trim((string) preg_replace('/\s+/u', ' ', strip_tags($html)));
+        $sinCodigo = (string) preg_replace('#<(style|script)\b.*?</\1>#is', ' ', $html);
+        $legible = html_entity_decode(strip_tags($sinCodigo), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $texto = trim((string) preg_replace('/[\s\x{00A0}]+/u', ' ', $legible));
 
         return $this->limpiar(mb_substr($texto, 0, 500));
     }

@@ -127,7 +127,7 @@ Todos van a `<URL base>crea_backup.php`, por POST, con `nome_utente_phpr`, `pass
 
 | Paso | Parámetros adicionales | Correcto si… | Errores reconocibles |
 |---|---|---|---|
-| **0. Prueba de conexión** (solo al configurar) | ninguno | La página trae el formulario de copias, con un botón de nombre `crea_backup` | Formulario de acceso (campo `password_phpr`) → SUB-003; año → SUB-006 |
+| **0. Prueba de conexión** (solo al configurar) | ninguno | La página trae el formulario de copias, con un botón de nombre `crea_backup`, o solo su cabecera (`--t1color`): un usuario con el privilegio de copia que no tiene activado el año no ve el formulario, pero las copias le funcionan **[visto: `upstream-3.0.8`, `crea_backup.php:96`, `:779`]** | Formulario de acceso (campo `password_phpr`) o respuesta vacía, sin el privilegio de copia → SUB-003; año → SUB-006; otro → SUB-099 |
 | **1. Crear** | `azione=SI`, `crea_backup=SI` | La respuesta contiene el marcador `<!-- Backup_created -->` **[visto: `crea_backup.php:421-422`]** | Formulario de acceso → SUB-003; límite diario → SUB-005 **[visto: `:156`]**; sin permiso de escritura → SUB-007 **[visto: `:424`]**; otro → SUB-099 |
 | **2. Descargar** | `azione=SI`, `mostra_header=NO`, `salva_backup=SI`, `compresso=SI` | Cuerpo gzip (empieza por `1F 8B`) o texto que empieza por `<?php exit(); ?>` y contiene `<versione>` **[visto: `crea_backup.php:526-585`]** | HTML sin `<versione>` → SUB-003 o SUB-010; tamaño excedido → SUB-008 |
 | **3. Borrar** | `azione=SI`, `cancella_backup=SI` | Respuesta sin el texto de error de borrado **[visto: `crea_backup.php:589-594`]** | Error de borrado → SUB-013 (aviso, no falla la sincronización) |

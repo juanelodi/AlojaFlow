@@ -27,6 +27,8 @@ use App\Models\Reserva;
 use App\Models\Unidad;
 use App\Propiedades\Independizador;
 use App\Sincronizacion\HotelDruid\ClientePrincipal;
+use App\Sincronizacion\HotelDruid\CodigoError;
+use App\Sincronizacion\HotelDruid\ErrorSincronizacion;
 use App\Sincronizacion\HotelDruid\Sincronizador;
 use App\Sincronizacion\HotelDruid\ValidadorDestino;
 use Illuminate\Http\Client\Request;
@@ -219,6 +221,42 @@ it('pausa la principal sin reintentar si rechaza las credenciales', function () 
         ->and($principal->toca(now()->addDay()))->toBeFalse()
         ->and(Aviso::query()->whereNull('resuelto_en')->where('tipo', 'sincronizacion_fallida')->exists())->toBeTrue();
     Http::assertSentCount(1); // ni descarga ni borrado
+});
+
+describe('probar la conexión', function () {
+    /** Lo que manda includes/head.php de HotelDruid: su estilo en línea y el aviso de cookies. */
+    $cabecera = '<html><head><title> HotelDruid: Backup </title><style type="text/css">:root { --t1color: #b9ccd4; }</style></head><body>Solo cookies esenciales.&nbsp; ¡Entendido!&nbsp;&nbsp;</body></html>';
+
+    $probar = function (string $cuerpo): ?ErrorSincronizacion {
+        Http::fake(['*' => Http::response($cuerpo)]);
+
+        try {
+            app(Sincronizador::class)->probar(test()->principal);
+
+            return null;
+        } catch (ErrorSincronizacion $e) {
+            return $e;
+        }
+    };
+
+    it('vale con el formulario de copias', function () use ($probar) {
+        expect($probar('<form><button class="abkp" name="crea_backup" value="1"></button></form>'))->toBeNull();
+    });
+
+    it('vale con la página sin formulario: el usuario no tiene activado el año, y las copias le funcionan', function () use ($probar, $cabecera) {
+        expect($probar($cabecera))->toBeNull();
+    });
+
+    it('sin el privilegio de copia la principal no responde nada, y lo dice', function () use ($probar) {
+        expect($probar('')?->codigo)->toBe(CodigoError::Credenciales);
+    });
+
+    it('otra página no vale, y el aviso se lee sin estilos ni entidades', function () use ($probar) {
+        $error = $probar('<html><head><style>a:link { color: red; }</style><script>x()</script></head><body>Sitio&nbsp;en mantenimiento</body></html>');
+
+        expect($error?->codigo)->toBe(CodigoError::RespuestaDesconocida)
+            ->and($error?->getMessage())->toBe('Sitio en mantenimiento');
+    });
 });
 
 it('abre un aviso si la principal no tiene activado el inicio de sesión', function () {

@@ -89,7 +89,7 @@ class OmisionResource extends RecursoDeCualquierPropiedad
                     ->visible($porHuesped)->required($porHuesped)
                     ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', self::propiedadDe($get)))
                     ->getSearchResultsUsing(fn (string $search, Get $get): array => Huesped::query()->where('propiedad_id', self::propiedadDe($get))
-                        ->where(fn (Builder $query): Builder => $query->where('nombre', 'like', "%{$search}%")->orWhere('apellido1', 'like', "%{$search}%"))
+                        ->conNombre($search)
                         ->orderBy('apellido1')->limit(15)->get()->mapWithKeys(fn (Huesped $h): array => [$h->id => $h->nombreCompleto()])->all())
                     ->getOptionLabelUsing(fn (mixed $value): ?string => Huesped::query()->find($value)?->nombreCompleto()),
                 TextInput::make('campo')->label(__('equipo.omisiones.campo'))->helperText(__('equipo.omisiones.campo_ayuda'))->maxLength(100)

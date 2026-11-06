@@ -205,7 +205,7 @@ return [
         'idioma' => 'Idioma para los huéspedes',
         'activa' => 'Activa',
         'principal' => 'Instalación principal',
-        'principal_ayuda' => 'Esta instalación copia sus datos y nunca escribe en ella. En HotelDruid o AlojaFlow 1.2.x, el usuario debe ser el administrador y no tener la verificación en dos pasos.',
+        'principal_ayuda' => 'Esta instalación copia sus datos y nunca escribe en ella. En HotelDruid basta un usuario con el privilegio de copia, y es lo más seguro; en AlojaFlow 1.2.x debe ser el administrador. En ambos, sin la verificación en dos pasos.',
         'url_base' => 'Dirección de la instalación',
         'url_base_ayuda' => 'La carpeta donde está HotelDruid, terminada en «/». Por ejemplo: https://mihotel.com/hoteldruid/',
         'usuario' => 'Usuario',

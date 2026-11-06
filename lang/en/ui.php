@@ -205,7 +205,7 @@ return [
         'idioma' => 'Language for guests',
         'activa' => 'Active',
         'principal' => 'Main installation',
-        'principal_ayuda' => 'This installation copies its data and never writes to it. In HotelDruid or AlojaFlow 1.2.x, the user must be the administrator and must not have two-step verification.',
+        'principal_ayuda' => 'This installation copies its data and never writes to it. In HotelDruid, a user with the backup privilege is enough, and it is the safest choice; in AlojaFlow 1.2.x it must be the administrator. In both, without two-step verification.',
         'url_base' => 'Installation address',
         'url_base_ayuda' => 'The folder where HotelDruid lives, ending with “/”. For example: https://myhotel.com/hoteldruid/',
         'usuario' => 'User',

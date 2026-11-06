@@ -497,3 +497,38 @@ it('la pantalla Hoy registra la entrada y el calendario abre una reserva nueva',
     $this->get('/calendario')->assertOk()->assertSee('/reservas/create?unidad='.$this->unidad->id, false);
     $this->get('/hoy')->assertDontSee(__('ui.comun.solo_consulta'));
 });
+
+it('los listados de huéspedes y de reservas encuentran el nombre completo', function () {
+    $this->actingAs(administrador());
+    $marta = Huesped::query()->create(['propiedad_id' => $this->propiedad->id, 'nombre' => 'Marta', 'apellido1' => 'Solís', 'apellido2' => 'Vega']);
+    $otro = Huesped::query()->create(['propiedad_id' => $this->propiedad->id, 'nombre' => 'Marta', 'apellido1' => 'Pérez']);
+
+    Livewire::test(ListHuespedes::class)->searchTable('Marta Solís')
+        ->assertCanSeeTableRecords([$marta])->assertCanNotSeeTableRecords([$otro]);
+
+    $deMarta = $this->gestor->crear($this->propiedad, ($this->datos)(1, 3, ['titular_id' => $marta->id]));
+    $deOtro = $this->gestor->crear($this->propiedad, ($this->datos)(5, 7, ['titular_id' => $otro->id]));
+
+    Livewire::test(ListReservas::class)->searchTable('Marta Solís')
+        ->assertCanSeeTableRecords([$deMarta])->assertCanNotSeeTableRecords([$deOtro]);
+});
+
+it('guardar la propiedad conserva el usuario y la contraseña de la principal', function () {
+    $this->actingAs(administrador());
+    $propiedad = Propiedad::query()->create(['nombre' => 'Sub', 'codigo' => 'sub', 'zona_horaria' => 'UTC', 'moneda' => 'MXN', 'idioma' => 'es', 'paquete_pais' => 'mexico', 'color' => '#0f766e', 'modo' => ModoPropiedad::Subordinada]);
+    $principal = $propiedad->principal()->create(['url_base' => 'https://hotel.example/hd/', 'usuario' => 'backup', 'contrasena' => 'clave']);
+
+    $pantalla = Livewire::test(EditPropiedad::class, ['record' => $propiedad->getKey()]);
+
+    // El usuario se ve; la contraseña nunca.
+    expect($pantalla->get('data.principal.usuario'))->toBe('backup')
+        ->and($pantalla->get('data.principal.contrasena'))->toBe('');
+
+    $pantalla->call('save')->assertHasNoFormErrors();
+    $principal->refresh();
+    expect($principal->usuario)->toBe('backup')->and($principal->contrasena)->toBe('clave');
+
+    Livewire::test(EditPropiedad::class, ['record' => $propiedad->getKey()])
+        ->fillForm(['principal.usuario' => 'otro'])->call('save')->assertHasNoFormErrors();
+    expect($principal->refresh()->usuario)->toBe('otro');
+});

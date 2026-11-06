@@ -32,7 +32,7 @@ class HuespedesTable
                 TextColumn::make('apellido1')->label(__('ui.huespedes.nombre'))->sortable()
                     ->formatStateUsing(fn (Huesped $record): string => $record->nombreCompleto())
                     ->searchable(query: fn (Builder $query, string $search): Builder => $query->where(fn (Builder $q): Builder => $q
-                        ->where('apellido1', 'like', '%'.$search.'%')->orWhere('apellido2', 'like', '%'.$search.'%')->orWhere('nombre', 'like', '%'.$search.'%')
+                        ->where(fn (Builder $n): Builder => Huesped::filtrarPorNombre($n, $search))
                         ->orWhereHas('contactos', fn (Builder $c): Builder => $c->where('valor_normalizado', 'like', '%'.mb_strtolower($search).'%')))),
                 TextColumn::make('contactos.valor')->label(__('ui.huespedes.contactos'))
                     ->state(fn (Huesped $record): array => $record->contactos->pluck('valor')->take(2)->all())

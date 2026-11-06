@@ -156,6 +156,21 @@ describe('aviso de entradas y salidas', function () {
 });
 
 describe('clientes omitidos', function () {
+    it('un huésped se encuentra por su nombre completo, repartido en varias columnas', function () {
+        $marta = Huesped::query()->create(['propiedad_id' => $this->propiedad->id, 'nombre' => 'Marta', 'apellido1' => 'Solís']);
+        $conDos = Huesped::query()->create(['propiedad_id' => $this->propiedad->id, 'nombre' => 'Marta', 'apellido1' => 'Solís', 'apellido2' => 'Vega']);
+
+        $pantalla = Livewire::actingAs($this->super)->test(CreateOmision::class)->fillForm(['propiedad_id' => $this->propiedad->id]);
+        $selector = collect($pantalla->instance()->getSchema('form')->getFlatComponents(withHidden: true))
+            ->first(fn (object $campo): bool => method_exists($campo, 'getName') && $campo->getName() === 'huesped_id');
+
+        expect(array_keys($selector->getSearchResults('Marta Solís')))->toEqualCanonicalizing([$marta->id, $conDos->id])
+            ->and(array_keys($selector->getSearchResults('  solís   vega ')))->toBe([$conDos->id])
+            ->and(array_keys($selector->getSearchResults('Solís Marta')))->toEqualCanonicalizing([$marta->id, $conDos->id])
+            ->and($selector->getSearchResults('Marta Pérez'))->toBe([])
+            ->and($selector->getSearchResults('%'))->toBe([]);
+    });
+
     it('no salen en el aviso, y sus fechas siguen ocupadas', function () {
         $reserva = ($this->reservar)($this->u1, $this->ana, 1, 3);
         Omision::query()->create(['propiedad_id' => $this->propiedad->id, 'huesped_id' => $this->ana->id, 'en_aviso' => true]);

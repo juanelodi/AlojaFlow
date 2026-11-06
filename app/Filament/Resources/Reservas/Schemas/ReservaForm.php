@@ -606,7 +606,7 @@ class ReservaForm
         $texto = '%'.trim($busqueda).'%';
 
         return Limites::huespedesVisibles(Huesped::query(), Acceso::usuarioActual())->where('propiedad_id', $propiedadId)
-            ->where(fn (Builder $q): Builder => $q->where('nombre', 'like', $texto)->orWhere('apellido1', 'like', $texto)->orWhere('apellido2', 'like', $texto)
+            ->where(fn (Builder $q): Builder => $q->where(fn (Builder $n): Builder => $n->conNombre($busqueda))
                 ->orWhereHas('contactos', fn (Builder $c): Builder => $c->where('valor_normalizado', 'like', mb_strtolower($texto))))
             ->orderBy('apellido1')->orderBy('nombre')->limit(30)->get()
             ->mapWithKeys(fn (Huesped $h): array => [$h->id => $h->nombreCompleto()])->all();
