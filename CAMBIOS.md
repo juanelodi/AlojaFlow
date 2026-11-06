@@ -2,6 +2,15 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.32 — 2026-11-06
+
+**Tres correcciones para quien trabaja con una instalación principal de HotelDruid, y una para buscar huéspedes.**
+
+- **Guardar una propiedad subordinada borraba el usuario de la principal.** El campo salía vacío y, al guardar, se perdía; la siguiente sincronización se pausaba con SUB-003. Ahora se ve y se conserva. **Si guardaste la propiedad con esa versión y la sincronización se pausó, escribe el usuario otra vez.**
+- **«Probar conexión» daba SUB-099 aunque todo estuviera bien**, con un usuario de HotelDruid que tiene el privilegio de copia pero no tiene activado el año. Las copias le funcionan, y la prueba ahora lo reconoce. Un usuario sin ese privilegio ve SUB-003, que lo explica, y los demás avisos ya no muestran código de la página.
+- **Qué usuario hace falta:** en HotelDruid basta uno con el privilegio de copia, y es lo más seguro; en AlojaFlow 1.2.x debe ser el administrador. La ayuda del formulario decía que siempre el administrador.
+- **Buscar un huésped por su nombre completo no encontraba nada** en Clientes omitidos, Nueva reserva, Acompañantes, Coordinador de un grupo y Fusionar huéspedes. Ahora se encuentra con el nombre y los apellidos en cualquier orden.
+
 ## 1.0.31 — 2026-11-05
 
 **Por ahora no se factura, en ningún país.** De cada pago sale un recibo normal en PDF, con su número, y ese es el único documento de cobro.
