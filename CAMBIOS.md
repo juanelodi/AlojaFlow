@@ -2,6 +2,14 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## Próxima versión (sin publicar)
+
+**Tres pantallas diarias, cómodas en el teléfono:**
+
+- **Hoy:** cada reserva es un renglón con el huésped, las fechas, la unidad y lo pendiente, con registrar la entrada o la salida, llamar y WhatsApp a un toque. Las cifras del día ya no empujan las llegadas hacia abajo.
+- **Calendario:** en el teléfono abre por día y dice, unidad por unidad, quién sale, quién sigue, quién llega y qué está libre, con un botón para reservar ahí. El calendario por habitaciones sigue igual en la computadora, y «Día» y «Mes» se pueden elegir en cualquier pantalla.
+- **Ficha de la reserva:** el título es el huésped, y arriba están las fechas, el estado, el saldo y sus contactos. Lo que toca hacer va primero; la limpieza durante la estancia pasó a «Más».
+
 ## 1.0.34 — 2026-11-07
 
 **La sincronización con HotelDruid 3.0.8 en español ya no se queda en SUB-099 por el límite diario.** Ese aviso de HotelDruid lleva un acento distinto y no se reconocía: ahora sale como SUB-005, que pausa hasta el día siguiente y pide bajar la frecuencia.
@@ -27,12 +35,6 @@ Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, 
 - **Las fechas** se escriben «3 feb 2027».
 
 **Informes y tablas propias:** se ordenan con un clic en el título.
-
-**Tres pantallas diarias, cómodas en el teléfono:**
-
-- **Hoy:** cada reserva es un renglón con el huésped, las fechas, la unidad y lo pendiente, con registrar la entrada o la salida, llamar y WhatsApp a un toque. Las cifras del día ya no empujan las llegadas hacia abajo.
-- **Calendario:** en el teléfono abre por día y dice, unidad por unidad, quién sale, quién sigue, quién llega y qué está libre, con un botón para reservar ahí. El calendario por habitaciones sigue igual en la computadora, y «Día» y «Mes» se pueden elegir en cualquier pantalla.
-- **Ficha de la reserva:** el título es el huésped, y arriba están las fechas, el estado, el saldo y sus contactos. Lo que toca hacer va primero; la limpieza durante la estancia pasó a «Más».
 
 **Aviso de entradas y salidas:** «desde» y «hasta» con calendario, y rangos rápidos. El formato se elige y se guarda por propiedad: fecha (por omisión, «Viernes 06/11/26»), iconos, separador, textos, qué va primero, unidades seguidas o una por renglón, y negritas para WhatsApp.
 
