@@ -29,8 +29,10 @@ use App\Support\Formato;
 use Carbon\CarbonImmutable;
 use Database\Seeders\RolesYPermisosSeeder;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Select;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Columns\Column;
+use Illuminate\Support\Once;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -128,8 +130,19 @@ describe('los filtros de reservas', function () {
             ->and(array_keys($tabla->getFilter('titular_domicilio_ciudad')->getOptions()))->toContain('Cancún')->not->toContain('Ciudad secreta');
     });
 
-    it('sin subordinadas no ofrece ocultar lo eliminado en la principal', function () {
+    it('sin nada eliminado en una principal no ofrece ocultarlo', function () {
         expect(array_keys($this->lista->instance()->getTable()->getFilters()))->not->toContain('vigentes');
+    });
+
+    it('una propiedad que pasó a independiente sigue ocultando lo eliminado en la principal', function () {
+        // La lista ya se abrió, sin nada que ocultar, y recuerda sus filtros: aun así no debe aparecer.
+        $borrada = ($this->reservar)($this->luis, '2027-03-01', '2027-03-03', ['eliminada_en_principal_en' => now()]);
+        Once::flush();
+
+        $lista = Livewire::actingAs($this->admin)->test(ListReservas::class)
+            ->assertCanSeeTableRecords([$this->dic])->assertCanNotSeeTableRecords([$borrada]);
+        $lista->filterTable('vigentes', true)->assertCanSeeTableRecords([$this->dic, $borrada]);
+        $lista->filterTable('vigentes', false)->assertCanSeeTableRecords([$borrada])->assertCanNotSeeTableRecords([$this->dic]);
     });
 });
 
@@ -168,6 +181,21 @@ describe('las listas', function () {
 
         expect($columnas(ListReservas::class))->toContain('numero', 'titular.apellido1', 'unidad.nombre', 'llegada', 'total', 'pendiente', 'origen_texto')->not->toContain('tarjeta')
             ->and($columnas(ListHuespedes::class))->toContain('id', 'apellido1', 'domicilio_ciudad', 'reservas_como_titular_count')->not->toContain('contactos.valor');
+    });
+
+    it('el código de cliente se ordena por lo que se ve', function () {
+        $this->ana->forceFill(['sincronizada' => true, 'clave_origen' => '30'])->saveQuietly();
+        $this->luis->forceFill(['sincronizada' => true, 'clave_origen' => '4'])->saveQuietly();
+
+        Livewire::actingAs($this->admin)->test(ListHuespedes::class)
+            ->call('sortTable', 'id', 'asc')
+            ->assertCanSeeTableRecords([$this->luis, $this->ana], inOrder: true);
+    });
+
+    it('un campo obligatorio solo pierde la X si no es nativo', function () {
+        expect(Select::make('a')->required()->native(false)->canSelectPlaceholder())->toBeFalse()
+            ->and(Select::make('b')->native(false)->canSelectPlaceholder())->toBeTrue()
+            ->and(Select::make('c')->required()->canSelectPlaceholder())->toBeTrue();
     });
 
     it('la fecha de las tablas no lleva relleno', function () {

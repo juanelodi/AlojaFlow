@@ -278,6 +278,8 @@ return [
         'con_saldo' => 'Avec un solde dû',
         'buscar' => 'Rechercher : nom, téléphone, ville, origine, numéro…',
         'solo_vigentes' => 'Masquer celles supprimées dans l’installation principale',
+        'con_eliminadas' => 'Inclure aussi celles supprimées',
+        'solo_eliminadas' => 'Seulement celles supprimées',
         'nueva' => 'Nouvelle réservation',
         'creada' => 'Créée',
         'motivo' => 'Motif du blocage',

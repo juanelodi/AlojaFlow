@@ -282,6 +282,8 @@ return [
         'con_saldo' => 'With a balance due',
         'buscar' => 'Search: name, phone, city, source, number…',
         'solo_vigentes' => 'Hide deleted in the main installation',
+        'con_eliminadas' => 'Include deleted ones too',
+        'solo_eliminadas' => 'Only deleted ones',
         'nueva' => 'New booking',
         'creada' => 'Created',
         'motivo' => 'Reason for the block',

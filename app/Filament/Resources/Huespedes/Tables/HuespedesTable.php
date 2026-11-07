@@ -19,10 +19,11 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class HuespedesTable
 {
@@ -36,7 +37,9 @@ class HuespedesTable
             ->searchUsing(fn (Builder $query, string $search): Builder => Buscador::huespedes($query, $search))
             ->searchPlaceholder(__('ui.huespedes.buscar'))
             ->columns([
-                TextColumn::make('id')->label(__('ui.huespedes.codigo'))->state(fn (Huesped $record): string => $record->codigo())->toggleable(),
+                TextColumn::make('id')->label(__('ui.huespedes.codigo'))->state(fn (Huesped $record): string => $record->codigo())->toggleable()
+                    // Por lo que se ve: en una ficha sincronizada, el número de la principal.
+                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query->orderBy(DB::raw('CAST(COALESCE(clave_origen, huespedes.id) AS UNSIGNED)'), $direction)),
                 TextColumn::make('apellido1')->label(__('ui.huespedes.nombre'))->sortable()->wrap()
                     ->formatStateUsing(fn (Huesped $record): string => $record->nombreCompleto()),
                 TextColumn::make('contactos.valor')->label(__('ui.huespedes.contactos'))
@@ -54,10 +57,15 @@ class HuespedesTable
             ->filtersFormWidth(Width::FourExtraLarge)
             ->filtersFormColumns(['default' => 1, 'sm' => 2, 'lg' => 3])
             ->filters([
-                Filter::make('vigentes')->label(__('ui.reservas.solo_vigentes'))->default()
-                    ->visible(fn (): bool => ReservaResource::haySubordinadas())
-                    ->indicateUsing(fn (): array => [])
-                    ->query(fn (Builder $query): Builder => $query->whereNull('eliminado_en_principal_en')),
+                // Se mira si existen y no el modo: una propiedad que pasó a independiente los conserva. Por qué no es una casilla, en ReservasTable.
+                TernaryFilter::make('vigentes')->label(__('ui.reservas.eliminada'))
+                    ->visible(fn (): bool => once(fn (): bool => Huesped::query()->whereIn('propiedad_id', ReservaResource::propiedadesPermitidas())->whereNotNull('eliminado_en_principal_en')->exists()))
+                    ->placeholder(__('ui.reservas.solo_vigentes'))->trueLabel(__('ui.reservas.con_eliminadas'))->falseLabel(__('ui.reservas.solo_eliminadas'))
+                    ->queries(
+                        true: fn (Builder $query): Builder => $query,
+                        false: fn (Builder $query): Builder => $query->whereNotNull('eliminado_en_principal_en'),
+                        blank: fn (Builder $query): Builder => $query->whereNull('eliminado_en_principal_en'),
+                    ),
                 SelectFilter::make('propiedad_id')->label(__('ui.comun.propiedad'))->multiple()
                     ->visible(fn (): bool => count(ReservaResource::propiedadesPermitidas()) > 1)
                     ->options(fn (): array => Propiedad::query()->whereIn('id', ReservaResource::propiedadesPermitidas())->orderBy('nombre')->pluck('nombre', 'id')->all()),

@@ -278,6 +278,8 @@ return [
         'con_saldo' => 'Con saldo da pagare',
         'buscar' => 'Cerca: nome, telefono, città, origine, numero…',
         'solo_vigentes' => 'Nascondi quelle eliminate nell’installazione principale',
+        'con_eliminadas' => 'Includi anche quelle eliminate',
+        'solo_eliminadas' => 'Solo quelle eliminate',
         'nueva' => 'Nuova prenotazione',
         'creada' => 'Creata',
         'motivo' => 'Motivo del blocco',

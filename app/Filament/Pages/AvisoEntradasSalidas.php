@@ -120,8 +120,17 @@ class AvisoEntradasSalidas extends Page
         $this->armar();
     }
 
+    /**
+     * El formato guardado es de todo el equipo: limpieza y mantenimiento pueden probar otro, pero no cambiarlo para los demás.
+     */
+    public function puedeGuardarFormato(): bool
+    {
+        return $this->puedeVerContacto();
+    }
+
     public function guardarFormato(): void
     {
+        abort_unless($this->puedeGuardarFormato(), 403);
         $propiedad = $this->propiedad();
         if ($propiedad === null) {
             return;
@@ -133,6 +142,7 @@ class AvisoEntradasSalidas extends Page
 
     public function restablecerFormato(): void
     {
+        abort_unless($this->puedeGuardarFormato(), 403);
         $propiedad = $this->propiedad();
         if ($propiedad === null) {
             return;

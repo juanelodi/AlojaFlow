@@ -278,6 +278,8 @@ return [
         'con_saldo' => 'Mit offenem Betrag',
         'buscar' => 'Suchen: Name, Telefon, Stadt, Herkunft, Nummer…',
         'solo_vigentes' => 'In der Hauptinstallation gelöschte ausblenden',
+        'con_eliminadas' => 'Auch gelöschte einbeziehen',
+        'solo_eliminadas' => 'Nur gelöschte',
         'nueva' => 'Neue Buchung',
         'creada' => 'Erstellt',
         'motivo' => 'Grund der Sperre',

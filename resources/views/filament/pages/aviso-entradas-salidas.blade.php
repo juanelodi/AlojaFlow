@@ -105,11 +105,13 @@
                         @endforeach
                         <label class="af-casilla af-formato__ancho"><x-filament::input.checkbox wire:model.live="formato.negritas" /><span>{{ __('equipo.aviso.negritas') }}</span></label>
                     </div>
-                    <div class="af-grupo-botones">
-                        <x-filament::button size="sm" wire:click="guardarFormato">{{ __('equipo.aviso.guardar_formato') }}</x-filament::button>
-                        <x-filament::button size="sm" color="gray" wire:click="restablecerFormato">{{ __('equipo.aviso.restablecer') }}</x-filament::button>
-                    </div>
-                    <p class="af-nota">{{ __('equipo.aviso.formato_ayuda') }}</p>
+                    @if ($this->puedeGuardarFormato())
+                        <div class="af-grupo-botones">
+                            <x-filament::button size="sm" wire:click="guardarFormato">{{ __('equipo.aviso.guardar_formato') }}</x-filament::button>
+                            <x-filament::button size="sm" color="gray" wire:click="restablecerFormato">{{ __('equipo.aviso.restablecer') }}</x-filament::button>
+                        </div>
+                        <p class="af-nota">{{ __('equipo.aviso.formato_ayuda') }}</p>
+                    @endif
                 </details>
             </div>
 

@@ -11,7 +11,6 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Reservas;
 
 use App\Enums\EstadoReserva;
-use App\Enums\ModoPropiedad;
 use App\Filament\Resources\Reservas\Pages\CreateReserva;
 use App\Filament\Resources\Reservas\Pages\EditReserva;
 use App\Filament\Resources\Reservas\Pages\ListReservas;
@@ -25,7 +24,6 @@ use App\Filament\Resources\Reservas\RelationManagers\PagosRelationManager;
 use App\Filament\Resources\Reservas\Schemas\ReservaForm;
 use App\Filament\Resources\Reservas\Schemas\ReservaInfolist;
 use App\Filament\Resources\Reservas\Tables\ReservasTable;
-use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Seguridad\Acceso;
 use App\Seguridad\Limites;
@@ -121,11 +119,11 @@ class ReservaResource extends Resource
     }
 
     /**
-     * Si alguna de las que puede ver copia de otra instalación: solo entonces hay reservas borradas allá.
+     * Si hay reservas borradas en una principal. Se mira si existen y no el modo: una propiedad que pasó a independiente las conserva.
      */
-    public static function haySubordinadas(): bool
+    public static function hayEliminadasEnPrincipal(): bool
     {
-        return once(fn (): bool => Propiedad::query()->whereIn('id', self::propiedadesPermitidas())->where('modo', ModoPropiedad::Subordinada->value)->exists());
+        return once(fn (): bool => Reserva::query()->whereIn('propiedad_id', self::propiedadesPermitidas())->whereNotNull('eliminada_en_principal_en')->exists());
     }
 
     public static function canView(Model $record): bool
