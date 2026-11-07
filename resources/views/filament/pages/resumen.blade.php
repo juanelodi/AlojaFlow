@@ -104,6 +104,9 @@
                     @foreach (\App\Seguridad\Acceso::puede(\App\Seguridad\Acceso::usuarioActual(), \App\Seguridad\Acceso::DATOS, $propiedad->id) ? $t['avisos'] : [] as $aviso)
                         <div @class(['af-aviso', 'af-aviso--error' => $aviso->nivel === \App\Enums\NivelAviso::Error]) role="status">
                             {{ $aviso->mensaje() }}
+                            @if ($aviso->tipo === \App\Sincronizacion\HotelDruid\Sincronizador::AVISO_FALLO && \App\Filament\Resources\Propiedades\PropiedadResource::canEdit($propiedad))
+                                <a class="af-enlace" href="{{ \App\Filament\Resources\Propiedades\PropiedadResource::getUrl('edit', ['record' => $propiedad]) }}">{{ __('ui.ejecuciones.ver_historial') }}</a>
+                            @endif
                             @if (in_array($aviso->tipo, \App\Models\Aviso::SE_CIERRAN_A_MANO, true))
                                 <button type="button" class="af-enlace" wire:click="atenderAviso({{ $aviso->id }})">{{ __('ui.resumen.aviso_atendido') }}</button>
                             @endif

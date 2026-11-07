@@ -21,6 +21,17 @@ return [
         'sin_resolver' => 'Der Server :host wurde nicht gefunden.',
         'red_local' => 'Der Server :host befindet sich in einem lokalen Netz; das ist nur erlaubt, wenn die Installation es zulässt und bei der Hauptinstallation „Lokales Netz erlauben“ aktiviert ist.',
     ],
+    'respondio' => 'Das geschah :paso, und die Antwort war: „:detalle“.',
+    'pasos' => [
+        'probar' => 'beim Testen der Verbindung',
+        'validar' => 'beim Prüfen der Adresse',
+        'crear' => 'beim Anfordern der Sicherung',
+        'descargar' => 'beim Herunterladen der Sicherung',
+        'borrar' => 'beim Löschen der Sicherung',
+        'descomprimir' => 'beim Entpacken der Sicherung',
+        'leer' => 'beim Lesen der Sicherung',
+        'interno' => 'beim Verarbeiten der Sicherung',
+    ],
     'errores' => [
         'SUB-001' => 'Keine Verbindung zur Hauptinstallation möglich.',
         'SUB-002' => 'Das HTTPS-Zertifikat der Hauptinstallation ist ungültig.',
@@ -39,6 +50,7 @@ return [
         'SUB-016' => 'Die Adresse der Hauptinstallation ist nicht erlaubt.',
         'SUB-017' => 'Die andere Installation hat nicht wie erwartet geantwortet. Prüfen Sie, ob sie AlojaFlow 1.0.12 oder neuer hat und das Modul Unterordnung eingeschaltet ist.',
         'SUB-018' => 'Die andere Installation hat den Verbindungscode abgelehnt. Er wurde vielleicht widerrufen: Fordern Sie einen neuen an.',
+        'SUB-098' => 'AlojaFlow konnte nicht verarbeiten, was es von der Hauptinstallation erhalten hat. Der Fehler liegt bei AlojaFlow, nicht bei der Hauptinstallation: Er wurde im Protokoll vermerkt.',
         'SUB-099' => 'Die Hauptinstallation hat eine Antwort gegeben, die AlojaFlow nicht erkennt.',
     ],
 

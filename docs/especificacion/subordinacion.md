@@ -136,8 +136,8 @@ Todos van a `<URL base>crea_backup.php`, por POST, con `nome_utente_phpr`, `pass
   queda `dati/hoteld_backup.php` con todos los datos y los hashes de contraseñas.
 - **Los mensajes de error de la principal salen en su idioma.** AlojaFlow se apoya en marcadores
   y estructuras: `<!-- Backup_created -->`, el campo `password_phpr`, `<versione>`, la firma gzip.
-  Solo para clasificar SUB-005 y SUB-007 compara textos conocidos en italiano, español e inglés
-  **[por verificar en cada idioma]**. Lo que no reconoce se guarda como SUB-099, con un extracto
+  Solo para clasificar SUB-005 y SUB-007 compara textos conocidos en italiano, español e inglés,
+  sin distinguir acentos: HotelDruid 3.0.8 en español escribe «lìmite» **[visto: `includes/lang/es/crea_backup.php:86`]**. Lo que no reconoce se guarda como SUB-099, con un extracto
   del HTML sin etiquetas de 500 caracteres como máximo.
 - **Reutilizar la sesión (opcional, «puede»):** el paso 1 podría devolver un `id_sessione` en los
   formularios de la página, y los pasos 2 y 3 lo usarían en lugar de la contraseña. La sesión
@@ -217,7 +217,8 @@ Las pantallas muestran «Datos de la principal al …» con esa hora convertida 
 | SUB-014 | Ya hay una sincronización en marcha | Nada |
 | SUB-015 | Tiempo agotado | Como SUB-001 |
 | SUB-016 | Dirección no permitida: http sin red local, IP privada, credenciales o consulta en la URL (D-029) | **Pausa** y avisa |
-| SUB-099 | Respuesta no reconocida | Avisa con el extracto; reintenta |
+| SUB-098 | Falla de AlojaFlow al procesar lo recibido: la principal respondió bien | Avisa, se anota en el registro; reintenta |
+| SUB-099 | Respuesta no reconocida | Avisa con el extracto, también en el resumen; reintenta |
 
 - **Siempre se conserva la última carga buena.** Un fallo nunca vacía ni deja a medias el espejo
   ni la proyección.

@@ -16,6 +16,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Str;
 use LogicException;
 use Throwable;
 
@@ -47,8 +48,8 @@ class ClientePrincipal
 
     private const TEXTO_ANIO_INEXISTENTE = 'The requested year does not exist';
 
-    // Mensajes de la principal en italiano, español e inglés (idiomas de 1.2.x).
-    private const TEXTOS_LIMITE = ['limite giornaliero di backup', 'límite de backups diarios', 'limit of daily backups'];
+    // Mensajes de la principal en italiano, español e inglés (idiomas de 1.2.x), sin acentos: HotelDruid 3.0.8 escribe «lìmite», con acento grave.
+    private const TEXTOS_LIMITE = ['limite giornaliero di backup', 'limite de backups diarios', 'limit of daily backups'];
 
     private const TEXTOS_SIN_ESCRITURA = ['permesso di scrittura sul file', 'permiso de escritura sobre el archivo', 'write permissions on the file'];
 
@@ -250,9 +251,9 @@ class ClientePrincipal
      */
     private function contiene(string $cuerpo, array $textos): bool
     {
-        $minusculas = mb_strtolower(html_entity_decode($cuerpo, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $normalizado = mb_strtolower(Str::ascii(html_entity_decode($cuerpo, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
         foreach ($textos as $texto) {
-            if (str_contains($minusculas, mb_strtolower($texto))) {
+            if (str_contains($normalizado, $texto)) {
                 return true;
             }
         }

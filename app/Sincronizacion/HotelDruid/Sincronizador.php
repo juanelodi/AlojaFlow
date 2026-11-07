@@ -113,7 +113,7 @@ class Sincronizador implements Subordinador
         } catch (Throwable $error) {
             // Con los valores ya ocultos en la conexión (config/database.php): no van datos de huéspedes al registro.
             report($error);
-            $this->terminarMal($principal, $ejecucion, new ErrorSincronizacion(CodigoError::RespuestaDesconocida, 'interno', class_basename($error)), $incidencias);
+            $this->terminarMal($principal, $ejecucion, new ErrorSincronizacion(CodigoError::ErrorInterno, 'interno', class_basename($error)), $incidencias);
         } finally {
             File::delete([$descarga, $texto]);
             $candado->release();

@@ -21,6 +21,17 @@ return [
         'sin_resolver' => 'Server :host was not found.',
         'red_local' => 'Server :host is on a local network; this is only allowed if the installation permits it and “Allow local network” is enabled.',
     ],
+    'respondio' => 'It happened :paso, and the answer was: “:detalle”.',
+    'pasos' => [
+        'probar' => 'while testing the connection',
+        'validar' => 'while checking the address',
+        'crear' => 'while requesting the backup',
+        'descargar' => 'while downloading the backup',
+        'borrar' => 'while deleting the backup',
+        'descomprimir' => 'while decompressing the backup',
+        'leer' => 'while reading the backup',
+        'interno' => 'while processing the backup',
+    ],
     'errores' => [
         'SUB-001' => 'Could not connect to the main installation.',
         'SUB-002' => 'The HTTPS certificate of the main installation is not valid.',
@@ -39,6 +50,7 @@ return [
         'SUB-016' => 'The address of the main installation is not allowed.',
         'SUB-017' => 'The other installation did not respond as expected. Check that it has AlojaFlow 1.0.12 or later and the subordination module turned on.',
         'SUB-018' => 'The other installation rejected the connection code. It may have been revoked: ask for a new one.',
+        'SUB-098' => 'AlojaFlow could not process what it received from the main installation. The fault is in AlojaFlow, not in the main installation: it has been written to the log.',
         'SUB-099' => 'The main installation gave an answer AlojaFlow does not recognise.',
     ],
 

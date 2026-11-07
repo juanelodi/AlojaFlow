@@ -32,6 +32,7 @@ enum CodigoError: string
     case DestinoNoPermitido = 'SUB-016';
     case PrincipalSinCompartir = 'SUB-017';
     case ConexionRechazada = 'SUB-018';
+    case ErrorInterno = 'SUB-098';
     case RespuestaDesconocida = 'SUB-099';
 
     /**

@@ -61,7 +61,10 @@ class EjecucionesRelationManager extends RelationManager
                         EstadoEjecucion::Omitida => 'gray',
                     }),
                 TextColumn::make('codigo_error')->label(__('ui.ejecuciones.codigo'))->placeholder('—'),
-                TextColumn::make('detalle')->label(__('ui.ejecuciones.detalle'))->limit(80)->wrap()->placeholder('—'),
+                TextColumn::make('paso_fallido')->label(__('ui.ejecuciones.paso'))->placeholder('—')
+                    ->formatStateUsing(fn (?string $state): string => $state === null ? '—' : __('sincronizacion.pasos.'.$state)),
+                // Completo: es lo que hace falta para saber qué respondió la principal.
+                TextColumn::make('detalle')->label(__('ui.ejecuciones.detalle'))->wrap()->placeholder('—'),
                 TextColumn::make('duracion')->label(__('ui.ejecuciones.duracion'))
                     ->state(fn (EjecucionSincronizacion $record): ?string => $record->duracionSegundos() === null ? null : __('ui.ejecuciones.segundos', ['segundos' => $record->duracionSegundos()]))
                     ->placeholder('—'),

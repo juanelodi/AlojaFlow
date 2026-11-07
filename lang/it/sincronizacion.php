@@ -21,6 +21,17 @@ return [
         'sin_resolver' => 'Il server :host non è stato trovato.',
         'red_local' => 'Il server :host è in una rete locale; è consentito solo se l’installazione lo autorizza e l’installazione principale ha attivato «Consenti rete locale».',
     ],
+    'respondio' => 'È successo :paso, e la risposta è stata: «:detalle».',
+    'pasos' => [
+        'probar' => 'provando la connessione',
+        'validar' => 'controllando l’indirizzo',
+        'crear' => 'richiedendo la copia',
+        'descargar' => 'scaricando la copia',
+        'borrar' => 'cancellando la copia',
+        'descomprimir' => 'decomprimendo la copia',
+        'leer' => 'leggendo la copia',
+        'interno' => 'elaborando la copia',
+    ],
     'errores' => [
         'SUB-001' => 'Impossibile connettersi all’installazione principale.',
         'SUB-002' => 'Il certificato HTTPS dell’installazione principale non è valido.',
@@ -39,6 +50,7 @@ return [
         'SUB-016' => 'L’indirizzo dell’installazione principale non è consentito.',
         'SUB-017' => 'L’altra installazione non ha risposto come previsto. Controlla che abbia AlojaFlow 1.0.12 o successivo e il modulo di subordinazione attivo.',
         'SUB-018' => 'L’altra installazione ha rifiutato il codice di connessione. Potrebbe essere stato revocato: chiedine uno nuovo.',
+        'SUB-098' => 'AlojaFlow non è riuscito a elaborare ciò che ha ricevuto dall’installazione principale. Il guasto è di AlojaFlow, non dell’installazione principale: è stato annotato nel registro.',
         'SUB-099' => 'L’installazione principale ha dato una risposta che AlojaFlow non riconosce.',
     ],
 

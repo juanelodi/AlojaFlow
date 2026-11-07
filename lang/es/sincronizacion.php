@@ -21,6 +21,17 @@ return [
         'sin_resolver' => 'No se encontró el servidor :host.',
         'red_local' => 'El servidor :host está en una red local; solo se permite si la instalación lo autoriza y la principal tiene activado «Permitir red local».',
     ],
+    'respondio' => 'Eso pasó :paso, y respondió: «:detalle».',
+    'pasos' => [
+        'probar' => 'al probar la conexión',
+        'validar' => 'al revisar la dirección',
+        'crear' => 'al pedir la copia',
+        'descargar' => 'al descargar la copia',
+        'borrar' => 'al borrar la copia',
+        'descomprimir' => 'al descomprimir la copia',
+        'leer' => 'al leer la copia',
+        'interno' => 'al procesar la copia',
+    ],
     'errores' => [
         'SUB-001' => 'No se pudo conectar con la principal.',
         'SUB-002' => 'El certificado HTTPS de la principal no es válido.',
@@ -39,6 +50,7 @@ return [
         'SUB-016' => 'La dirección de la principal no está permitida.',
         'SUB-017' => 'La otra instalación no respondió como se esperaba. Revisa que tenga AlojaFlow 1.0.12 o posterior y el módulo de subordinación prendido.',
         'SUB-018' => 'La otra instalación rechazó el código de conexión. Pudieron haberlo revocado: pide uno nuevo.',
+        'SUB-098' => 'AlojaFlow no pudo procesar lo que recibió de la principal. La falla es de AlojaFlow, no de la principal: quedó anotada en el registro.',
         'SUB-099' => 'La principal dio una respuesta que AlojaFlow no reconoce.',
     ],
 

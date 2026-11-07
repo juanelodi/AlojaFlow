@@ -245,6 +245,8 @@ return [
         'origen' => 'Origin',
         'estado' => 'Status',
         'codigo' => 'Code',
+        'paso' => 'Step',
+        'ver_historial' => 'View history',
         'detalle' => 'Detail',
         'duracion' => 'Duration',
         'segundos' => ':segundos s',

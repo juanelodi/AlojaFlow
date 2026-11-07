@@ -29,11 +29,13 @@ use App\Propiedades\Independizador;
 use App\Sincronizacion\HotelDruid\ClientePrincipal;
 use App\Sincronizacion\HotelDruid\CodigoError;
 use App\Sincronizacion\HotelDruid\ErrorSincronizacion;
+use App\Sincronizacion\HotelDruid\Proyector;
 use App\Sincronizacion\HotelDruid\Sincronizador;
 use App\Sincronizacion\HotelDruid\ValidadorDestino;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Lang;
 use Tests\Support\ConstructorCopia;
 
 beforeEach(function () {
@@ -401,4 +403,49 @@ it('lo que la principal tiene cerrado se ve como bloqueo, y se va cuando lo abre
     expect(sincronizar($this->principal->refresh())->estado)->toBe(EstadoEjecucion::Correcta);
     expect($cierre->refresh()->eliminada_en_principal_en)->not->toBeNull()
         ->and(DB::table('reservas_noches')->where('reserva_id', $cierre->id)->count())->toBe(0);
+});
+
+describe('lo que dice el aviso cuando falla', function () {
+    beforeEach(function () {
+        config(['alojaflow.subordinacion.fallos_para_avisar' => 1]);
+    });
+
+    it('reconoce el límite diario de HotelDruid 3.0.8 en español, que lleva otro acento', function () {
+        Http::fake(['*' => Http::response('<html>Se ha alcanzado el lìmite de backups diarios (5).<br></html>')]);
+
+        $ejecucion = sincronizar($this->principal);
+
+        expect($ejecucion->codigo_error)->toBe(CodigoError::LimiteDiario->value)
+            ->and($this->principal->refresh()->estado)->toBe(EstadoPrincipal::Pausada);
+    });
+
+    it('una falla de AlojaFlow no culpa a la principal', function () {
+        fingirPrincipal(copiaBase());
+        $this->mock(Proyector::class)->shouldReceive('proyectar')->andThrow(new RuntimeException('roto'));
+
+        $ejecucion = sincronizar($this->principal);
+
+        expect($ejecucion->codigo_error)->toBe(CodigoError::ErrorInterno->value)
+            ->and($ejecucion->paso_fallido)->toBe('interno')
+            ->and(Aviso::query()->where('tipo', Sincronizador::AVISO_FALLO)->sole()->mensaje())->toContain(CodigoError::ErrorInterno->value);
+    });
+
+    it('dice en qué paso falló y qué respondió, y se pone al día si cambia la respuesta', function () {
+        Http::fake(['*' => Http::sequence()
+            ->push('<html><body>Sitio en mantenimiento</body></html>')
+            ->push('<html><body>Vuelva pronto</body></html>')]);
+
+        sincronizar($this->principal);
+        $aviso = Aviso::query()->where('tipo', Sincronizador::AVISO_FALLO)->sole();
+        expect($aviso->mensaje())->toContain('Sitio en mantenimiento')->toContain(__('sincronizacion.pasos.crear'));
+
+        sincronizar($this->principal);
+        expect($aviso->refresh()->mensaje())->toContain('Vuelva pronto')->not->toContain('Sitio en mantenimiento');
+    });
+
+    it('cada paso que puede fallar tiene su texto', function () {
+        foreach (['probar', 'validar', 'crear', 'descargar', 'borrar', 'descomprimir', 'leer', 'interno'] as $paso) {
+            expect(Lang::has('sincronizacion.pasos.'.$paso))->toBeTrue();
+        }
+    });
 });

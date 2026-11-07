@@ -20,6 +20,7 @@ use App\Sincronizacion\HotelDruid\CodigoError;
 use App\Sincronizacion\HotelDruid\ErrorSincronizacion;
 use App\Sincronizacion\HotelDruid\Sincronizador;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Str;
 
 /**
  * Lo que pasa cuando una sincronización falla: se anota, se pausa si reintentar no sirve y se avisa.
@@ -55,10 +56,25 @@ trait ConFallosDeEjecucion
         $principal->forceFill($cambios)->save();
 
         if ($error->codigo->pausaLaPrincipal() || $fallos >= (int) config('alojaflow.subordinacion.fallos_para_avisar')) {
-            Aviso::abrir($principal->propiedad_id, Sincronizador::AVISO_FALLO, NivelAviso::Error, [
-                'codigo' => $error->codigo->value,
-                'mensaje' => $error->codigo->etiqueta(),
-            ]);
+            $datos = ['codigo' => $error->codigo->value, 'mensaje' => $this->explicar($error)];
+            // Si ya estaba abierto se pone al día: el fallo de ahora puede no ser el de hace una semana.
+            Aviso::abrir($principal->propiedad_id, Sincronizador::AVISO_FALLO, NivelAviso::Error, $datos)->update(['datos' => $datos]);
         }
+    }
+
+    /**
+     * Lo que se lee en el resumen. Con lo que respondió la principal, cuando el código por sí solo no dice qué hacer.
+     */
+    private function explicar(ErrorSincronizacion $error): string
+    {
+        $etiqueta = $error->codigo->etiqueta();
+        if (! in_array($error->codigo, [CodigoError::RespuestaDesconocida, CodigoError::FormatoInvalido], true) || $error->getMessage() === $etiqueta) {
+            return $etiqueta;
+        }
+
+        return $etiqueta.' '.__('sincronizacion.respondio', [
+            'paso' => __('sincronizacion.pasos.'.$error->paso),
+            'detalle' => Str::limit($error->getMessage(), 160),
+        ]);
     }
 }
