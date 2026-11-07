@@ -26,7 +26,7 @@
 
         @php($cifras = $this->cifrasDelDia($listas))
         @if ($cifras['pendiente'] !== [] || $cifras['por_limpiar'] !== null)
-            <dl class="af-kpis">
+            <dl class="af-kpis af-kpis--compactas">
                 @foreach ($cifras['pendiente'] as $moneda => $importe)
                     <div class="af-kpi"><dt>{{ __('operacion.hoy.pendiente') }}</dt><dd>{{ \App\Support\Formato::dinero($importe, $moneda) }}</dd></div>
                 @endforeach
@@ -52,7 +52,7 @@
         @endif
 
         @foreach (['llegan', 'salen', 'continuan'] as $lista)
-            <x-filament::section :heading="__('ui.hoy.'.$lista).' ('.$listas[$lista]->count().')'">
+            <x-filament::section class="af-seccion-lista" :heading="__('ui.hoy.'.$lista).' ('.$listas[$lista]->count().')'">
                 <x-tabla-reservas
                     :reservas="$listas[$lista]"
                     :titulo="__('ui.hoy.'.$lista)"

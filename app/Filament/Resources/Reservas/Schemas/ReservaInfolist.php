@@ -13,6 +13,7 @@ namespace App\Filament\Resources\Reservas\Schemas;
 use App\Camping\AtributosLugar;
 use App\Documentos\CamposPropios;
 use App\Enums\TipoEquipo;
+use App\Enums\TipoReserva;
 use App\Models\EventoReserva;
 use App\Models\Huesped;
 use App\Models\Reserva;
@@ -20,6 +21,7 @@ use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Support\Formato;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ViewEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -30,16 +32,13 @@ class ReservaInfolist
         $dinero = fn (string $campo): \Closure => fn (Reserva $record): string => Formato::dinero((int) $record->{$campo}, $record->moneda);
 
         return $schema->components([
+            // Sin título: es la cabecera de la ficha. Lo que ya se lee aquí no se repite abajo.
+            Section::make()->columnSpanFull()
+                ->schema([ViewEntry::make('resumen')->label(__('ui.reservas.estancia'))->hiddenLabel()->view('filament.reservas.resumen')]),
             Section::make(__('ui.reservas.estancia'))->columnSpanFull()
                 ->columns(['default' => 1, 'sm' => 2, 'lg' => 4])
                 ->schema([
                     TextEntry::make('propiedad.nombre')->label(__('ui.comun.propiedad')),
-                    TextEntry::make('unidad.nombre')->label(__('ui.comun.unidad')),
-                    TextEntry::make('llegada')->label(__('ui.comun.llegada'))->formatStateUsing(fn (Reserva $record): string => Formato::fecha($record->llegada, 'dddd ll')),
-                    TextEntry::make('salida')->label(__('ui.comun.salida'))->formatStateUsing(fn (Reserva $record): string => Formato::fecha($record->salida, 'dddd ll')),
-                    TextEntry::make('noches')->label(__('ui.comun.noches')),
-                    TextEntry::make('personas')->label(__('ui.comun.personas')),
-                    TextEntry::make('estado')->label(__('ui.comun.estado'))->badge()->formatStateUsing(fn (Reserva $record): string => $record->estado->etiqueta()),
                     TextEntry::make('tipo')->label(__('ui.reservas.tipo'))->formatStateUsing(fn (Reserva $record): string => $record->tipo->etiqueta()),
                     TextEntry::make('entrada_registrada_en')->label(__('ui.reservas.entrada'))->formatStateUsing(fn (Reserva $record): string => Formato::momento($record->entrada_registrada_en, self::zona($record)))->placeholder('—'),
                     TextEntry::make('salida_registrada_en')->label(__('ui.reservas.salida_registrada'))->formatStateUsing(fn (Reserva $record): string => Formato::momento($record->salida_registrada_en, self::zona($record)))->placeholder('—'),
@@ -47,16 +46,10 @@ class ReservaInfolist
                         ->formatStateUsing(fn (Reserva $record): string => Formato::momento($record->eliminada_en_principal_en, self::zona($record)))
                         ->visible(fn (Reserva $record): bool => $record->eliminada_en_principal_en !== null),
                 ]),
-            Section::make(__('ui.comun.huesped'))->columnSpanFull()
-                ->columns(['default' => 1, 'sm' => 2])
+            Section::make(__('ui.reservas.acompanantes'))->columnSpanFull()
+                ->visible(fn (Reserva $record): bool => $record->huespedes->contains(fn (Huesped $h): bool => $h->id !== $record->titular_id))
                 ->schema([
-                    TextEntry::make('titular.apellido1')->label(__('ui.comun.huesped'))
-                        ->formatStateUsing(fn (Reserva $record): string => $record->titular?->nombreCompleto() ?? '—')
-                        ->url(fn (Reserva $record): ?string => $record->titular ? \App\Filament\Resources\Huespedes\HuespedResource::getUrl('view', ['record' => $record->titular]) : null),
-                    TextEntry::make('contacto')->label(__('ui.comun.contacto'))
-                        ->state(fn (Reserva $record): array => $record->titular?->contactos->pluck('valor')->all() ?? [])
-                        ->listWithLineBreaks()->placeholder('—'),
-                    TextEntry::make('acompanantes')->label(__('ui.reservas.acompanantes'))
+                    TextEntry::make('acompanantes')->label(__('ui.reservas.acompanantes'))->hiddenLabel()
                         // HotelDruid guarda también al titular entre los huéspedes de la reserva.
                         ->state(fn (Reserva $record): array => $record->huespedes->reject(fn (Huesped $h): bool => $h->id === $record->titular_id)
                             ->map(function (Huesped $h): string {
@@ -67,12 +60,9 @@ class ReservaInfolist
                         ->listWithLineBreaks()->placeholder('—'),
                 ]),
             Section::make(__('ui.reservas.dinero'))->columnSpanFull()
-                ->columns(['default' => 1, 'sm' => 2, 'lg' => 4])
+                ->visible(fn (Reserva $record): bool => $record->tipo !== TipoReserva::Bloqueo)
+                ->columns(['default' => 2, 'lg' => 4])
                 ->schema([
-                    TextEntry::make('total')->label(__('ui.comun.total'))->formatStateUsing($dinero('total')),
-                    TextEntry::make('pagado')->label(__('ui.comun.pagado'))->formatStateUsing($dinero('pagado')),
-                    TextEntry::make('pendiente')->label(__('ui.comun.pendiente'))->formatStateUsing($dinero('pendiente'))
-                        ->color(fn (Reserva $record): ?string => $record->pendiente > 0 ? 'warning' : null)->weight('bold'),
                     TextEntry::make('deposito')->label(__('ui.reservas.deposito'))->formatStateUsing($dinero('deposito')),
                     TextEntry::make('descuento')->label(__('ui.reservas.descuento'))->formatStateUsing($dinero('descuento')),
                     TextEntry::make('comision')->label(__('ui.reservas.comision'))->formatStateUsing($dinero('comision')),

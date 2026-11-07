@@ -45,6 +45,7 @@ return [
         'huesped' => 'Huésped',
         'noches' => 'Noches',
         'n_noches' => ':count noche|:count noches',
+        'n_personas' => ':count persona|:count personas',
         'personas' => 'Personas',
         'origen' => 'Origen',
         'total' => 'Total',
@@ -120,6 +121,24 @@ return [
     ],
 
     'calendario' => [
+
+        'vista' => 'Vista',
+
+        'dia' => 'Día',
+
+        'libre' => 'Libre',
+
+        'libre_noche' => 'Libre esta noche',
+
+        'libres' => 'Libres',
+
+        'ocupadas' => 'Ocupadas',
+
+        'llega' => 'Llega',
+
+        'sale' => 'Sale',
+
+        'sigue' => 'Sigue',
         'titulo' => 'Calendario',
         'mes' => 'Mes',
         'este_mes' => 'Este mes',
@@ -258,6 +277,8 @@ return [
     ],
 
     'reservas' => [
+
+        'ver_huesped' => 'Abrir la ficha de :nombre',
         'modelo' => 'reserva',
         'modelos' => 'Reservas',
         'numero' => 'Número',

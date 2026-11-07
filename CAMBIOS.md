@@ -28,6 +28,12 @@ Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, 
 
 **Informes y tablas propias:** se ordenan con un clic en el título.
 
+**Tres pantallas diarias, cómodas en el teléfono:**
+
+- **Hoy:** cada reserva es un renglón con el huésped, las fechas, la unidad y lo pendiente, con registrar la entrada o la salida, llamar y WhatsApp a un toque. Las cifras del día ya no empujan las llegadas hacia abajo.
+- **Calendario:** en el teléfono abre por día y dice, unidad por unidad, quién sale, quién sigue, quién llega y qué está libre, con un botón para reservar ahí. El calendario por habitaciones sigue igual en la computadora, y «Día» y «Mes» se pueden elegir en cualquier pantalla.
+- **Ficha de la reserva:** el título es el huésped, y arriba están las fechas, el estado, el saldo y sus contactos. Lo que toca hacer va primero; la limpieza durante la estancia pasó a «Más».
+
 **Aviso de entradas y salidas:** «desde» y «hasta» con calendario, y rangos rápidos. El formato se elige y se guarda por propiedad: fecha (por omisión, «Viernes 06/11/26»), iconos, separador, textos, qué va primero, unidades seguidas o una por renglón, y negritas para WhatsApp.
 
 **Documentos y plantillas:** la lista de variables está junto al texto. Cada una dice qué hace, se busca, y al tocarla queda donde está el cursor. Nuevas: `{pagina_propiedad}`, `{whatsapp_propiedad}` y `{mapa_propiedad}`.

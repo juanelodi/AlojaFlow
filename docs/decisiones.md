@@ -785,6 +785,10 @@ Es un parte de un equipo: que cada quien lo saque distinto confunde. Va en `Ajus
 
 `CatalogoVariables` es la lista que se ofrece al escribir, con lo que hace cada una, y una prueba comprueba que todas se sustituyen de verdad. Se prefirió a las *merge tags* de Filament: dejan otra marca en el texto y habrían obligado a cambiar los documentos ya escritos, y no explican cada variable.
 
+### D-140 · 2026-11-06 · En el teléfono, el calendario abre por día
+
+Las barras exigen precisión y arrastrar choca con desplazar, así que el teléfono abre una vista de día, unidad por unidad. La computadora sigue abriendo por habitaciones, y «Día» y «Mes» se pueden elegir en cualquier pantalla. Mientras nadie elija lo decide el ancho, con CSS: se ve bien antes de que arranque Alpine, y el teléfono carga el mes solo la primera vez. Se prefirió a saber el teléfono por el navegador (*user agent*), que falla, y a pedir la vista con JavaScript, que dibuja dos veces. No se añadió cambiar reservas de día desde esa vista: se hace desde su ficha.
+
 ## Pendientes
 
 - Precios y modelo de venta.
