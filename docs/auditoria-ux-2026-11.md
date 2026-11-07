@@ -1,6 +1,6 @@
 # Auditoría de experiencia de uso
 
-**Fecha:** 2026-11-06 · **Sobre:** la rama `mejoras-ux-1.0.34`, a partir de la 1.0.33 · **Decisiones:** D-135 a D-139
+**Fecha:** 2026-11-06 · **Sobre:** la rama `mejoras-ux-1.0.34`, a partir de la 1.0.33 · **Decisiones:** D-135 a D-140
 
 ## Cómo se hizo y qué no cubre
 
@@ -47,6 +47,9 @@ Por eso lo de abajo son hallazgos de una revisión experta y de mediciones, no r
 | Mayor | Informes y tablas propias | No se podían ordenar | Clic en el título, con los meses en orden de tiempo |
 | Mayor | Documentos y plantillas | Las variables eran una lista de nombres sin explicar | Lista junto al texto: dice qué hace cada una, se busca, y se pone al tocarla |
 | Mayor | Ficha del huésped | Una lista de texto, sin código | Código, cuentas y reservas por año, con llamar, WhatsApp y correo |
+| Mayor | Hoy en el teléfono | Cada llegada era una tarjeta dentro de otra, con etiquetas y botones chicos | Un renglón por reserva dentro de la sección, con lo esencial de un vistazo y botones de 44 px; las cifras del día van en un renglón para que las llegadas se vean sin desplazar |
+| Mayor | Calendario en el teléfono | Las barras exigían precisión y arrastrar chocaba con desplazar | Vista de día, unidad por unidad: quién sale, sigue o llega, qué está libre y un botón para reservar ahí. Se abre sola en el teléfono; las dos vistas se pueden elegir. La computadora sigue abriendo por habitaciones |
+| Mayor | Ficha de la reserva | Título «Reserva N», acciones en tres renglones y el saldo muy abajo | El huésped de título; luego fechas, estado, total, pagado, pendiente y contactos, con la línea visual de la ficha del huésped. Lo que toca hacer va primero y la limpieza pasa a «Más» |
 | Menor | Aviso de entradas y salidas | Fecha larga fija, días contados a mano | Dos calendarios y formato elegible |
 | Menor | Mensualidades | La página se desbordaba en el teléfono | Corregido en todas: lo oculto de una tabla ya no se sale |
 | Menor | Disponibilidad | «1 noches» | «1 noche» |
@@ -64,9 +67,6 @@ Ordenado por lo que más ayudaría a quien trabaja a diario. Nada de esto está 
 | Módulo | Prioridad | Qué falta |
 |---|---|---|
 | **Actualizaciones** | Mayor | Actualizar desde la pantalla, sin subir el zip. Espera la decisión de abajo |
-| **Calendario** | Mayor | En el teléfono las barras se tocan con precisión y arrastrar choca con desplazar. Falta una vista de lista o de día |
-| **Hoy** | Mayor | En el teléfono cada llegada es una tarjeta dentro de otra tarjeta: conviene el mismo trato que Reservas |
-| **Ficha de la reserva** | Mayor | Mismo tratamiento que la del huésped: título sin «Ver», y lo importante arriba |
 | **Crear reserva** | Mayor | El formulario es largo en el teléfono: conviene pedir primero fechas y unidad |
 | **Motor público** | Mayor | No se revisó en esta pasada, y es lo que ve el huésped |
 | **Instalador** | Menor | Mostrar la contraseña en vez de pedirla dos veces. Falta recorrerlo completo |

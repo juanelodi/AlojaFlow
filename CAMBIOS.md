@@ -11,6 +11,12 @@ Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, 
 - **Lo ve solo el super administrador**, en Actualizaciones y en el inicio.
 - **Si tu servidor no sale a internet,** sigues subiendo el zip a mano. Esta versión se instala todavía de la manera de siempre; el botón aparece a partir de la siguiente.
 
+**Tres pantallas diarias, cómodas en el teléfono:**
+
+- **Hoy:** cada reserva es un renglón con el huésped, las fechas, la unidad y lo pendiente, con registrar la entrada o la salida, llamar y WhatsApp a un toque. Las cifras del día ya no empujan las llegadas hacia abajo.
+- **Calendario:** en el teléfono abre por día y dice, unidad por unidad, quién sale, quién sigue, quién llega y qué está libre, con un botón para reservar ahí. El calendario por habitaciones sigue igual en la computadora, y «Día» y «Mes» se pueden elegir en cualquier pantalla.
+- **Ficha de la reserva:** el título es el huésped, y arriba están las fechas, el estado, el saldo y sus contactos. Lo que toca hacer va primero; la limpieza durante la estancia pasó a «Más».
+
 ## 1.0.34 — 2026-11-07
 
 **La sincronización con HotelDruid 3.0.8 en español ya no se queda en SUB-099 por el límite diario.** Ese aviso de HotelDruid lleva un acento distinto y no se reconocía: ahora sale como SUB-005, que pausa hasta el día siguiente y pide bajar la frecuencia.

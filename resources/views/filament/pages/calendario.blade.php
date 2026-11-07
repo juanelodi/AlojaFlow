@@ -2,7 +2,9 @@
 @use('App\Support\Formato')
 <x-filament-panels::page>
     @php
-        $datos = $this->datos();
+        $vista = $this->vistaElegida();
+        // Lo que no se va a ver no se calcula: elegido el día, el teléfono deja de cargar miles de celdas en cada cambio.
+        $datos = $vista === 'dia' ? ['dias' => [], 'filas' => []] : $this->datos();
         $dias = $datos['dias'];
         $hoy = $this->hoy()->format('Y-m-d');
         $propiedadAnterior = null;
@@ -21,16 +23,41 @@
             ];
         }
     @endphp
-    <div class="af-pila">
+    {{-- En el teléfono, lo que siga ya pide solo el día, sin una petición de más: lo lleva la siguiente. --}}
+    <div class="af-pila af-cal-vistas af-cal-vistas--{{ $vista ?? 'auto' }}"
+         x-data
+         x-init="if (! $wire.vista && window.matchMedia('(max-width: 39.99rem)').matches) { $wire.$set('vista', 'dia', false); $el.querySelector('[data-vista=dia]').setAttribute('aria-pressed', 'true'); $el.querySelector('[data-vista=mes]').setAttribute('aria-pressed', 'false') }">
         <div class="af-barra-herramientas">
             @include('filament.partes.selector-propiedad')
-            <label class="af-campo">
+            <div class="af-campo" style="min-width: 0">
+                <span id="af-cal-vista">{{ __('ui.calendario.vista') }}</span>
+                <div class="af-segmentado" role="group" aria-labelledby="af-cal-vista">
+                    <button type="button" data-vista="dia" wire:click="cambiarVista('dia')" aria-pressed="{{ $vista === 'dia' ? 'true' : 'false' }}">{{ __('ui.calendario.dia') }}</button>
+                    <button type="button" data-vista="mes" wire:click="cambiarVista('mes')" aria-pressed="{{ $vista !== 'dia' ? 'true' : 'false' }}">{{ __('ui.calendario.mes') }}</button>
+                </div>
+            </div>
+            <label class="af-campo af-solo-vista-dia">
+                <span>{{ __('ui.hoy.fecha') }}</span>
+                <x-filament::input.wrapper>
+                    <x-filament::input type="date" :value="$this->diaElegido()->format('Y-m-d')" wire:model.live="dia" />
+                </x-filament::input.wrapper>
+            </label>
+            <div class="af-grupo-botones af-solo-vista-dia">
+                <x-filament::button color="gray" icon="heroicon-m-chevron-left" wire:click="moverDia(-1)" :label-sr-only="true" :tooltip="__('ui.comun.anterior')">
+                    {{ __('ui.comun.anterior') }}
+                </x-filament::button>
+                <x-filament::button color="gray" wire:click="irAHoy">{{ __('ui.comun.hoy') }}</x-filament::button>
+                <x-filament::button color="gray" icon="heroicon-m-chevron-right" wire:click="moverDia(1)" :label-sr-only="true" :tooltip="__('ui.comun.siguiente')">
+                    {{ __('ui.comun.siguiente') }}
+                </x-filament::button>
+            </div>
+            <label class="af-campo af-solo-vista-mes">
                 <span>{{ __('ui.calendario.mes') }}</span>
                 <x-filament::input.wrapper>
                     <x-filament::input type="month" :value="$this->mes" wire:model.live="mes" />
                 </x-filament::input.wrapper>
             </label>
-            <div class="af-grupo-botones">
+            <div class="af-grupo-botones af-solo-vista-mes">
                 <x-filament::button color="gray" icon="heroicon-m-chevron-left" wire:click="moverMes(-1)" :label-sr-only="true" :tooltip="__('ui.comun.anterior')">
                     {{ __('ui.comun.anterior') }}
                 </x-filament::button>
@@ -41,6 +68,14 @@
             </div>
         </div>
 
+        @if ($vista !== 'mes')
+            <div class="af-solo-vista-dia">
+                @include('filament.partes.calendario-dia')
+            </div>
+        @endif
+
+        @if ($vista !== 'dia')
+        <div class="af-solo-vista-mes af-pila">
         <div class="af-leyenda" aria-label="{{ __('ui.calendario.leyenda') }}">
             <span><i class="af-barra--confirmada"></i>{{ __('ui.calendario.confirmada') }}</span>
             <span><i class="af-barra--sin-confirmar"></i>{{ __('ui.calendario.sin_confirmar') }}</span>
@@ -139,7 +174,7 @@
                         @foreach ($fila['barras'] as $barra)
                             @php($reserva = $barra['reserva'])
                             @php($ajena = ! \App\Seguridad\Limites::puedeVer(\App\Seguridad\Acceso::usuarioActual(), $reserva))
-                            @php($texto = $ajena ? __('permisos.limites.ocupada') : ($reserva->tipo === \App\Enums\TipoReserva::Bloqueo ? ($reserva->origen_texto ?? __('ui.calendario.bloqueo')) : ($reserva->habitacionGrupo?->responsable ?: ($reserva->titular?->nombreCompleto() ?? $reserva->numero))))
+                            @php($texto = \App\Servicios\Calendario::textoDe($reserva, \App\Seguridad\Acceso::usuarioActual()))
                             {{-- Sin permiso de datos, la barra no lleva a la ficha: un enlace sin destino no se puede seguir. --}}
                             <a @if (! $ajena && \App\Seguridad\Acceso::puede(\App\Seguridad\Acceso::usuarioActual(), \App\Seguridad\Acceso::DATOS, $reserva->propiedad_id)) href="{{ \App\Filament\Resources\Reservas\ReservaResource::getUrl('view', ['record' => $reserva]) }}" @endif
                                @if (! $ajena && ! $reserva->sincronizada && $gestionable && $reserva->salida_registrada_en === null)
@@ -154,6 +189,8 @@
                     </div>
                 @endforeach
             </div>
+        @endif
+        </div>
         @endif
     </div>
 </x-filament-panels::page>

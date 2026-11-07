@@ -798,6 +798,10 @@ Subir un zip de 30 MB era el paso más pesado para quien no es técnico, y compr
 - **Subir a mano se queda,** para el servidor que no sale a internet.
 - **Límite conocido:** las notas de la publicación salen en el idioma en que se escribieron (español), no en el de quien las lee; igual que las de `CAMBIOS.md`.
 
+### D-140 · 2026-11-06 · En el teléfono, el calendario abre por día
+
+Las barras exigen precisión y arrastrar choca con desplazar, así que el teléfono abre una vista de día, unidad por unidad. La computadora sigue abriendo por habitaciones, y «Día» y «Mes» se pueden elegir en cualquier pantalla. Mientras nadie elija lo decide el ancho, con CSS: se ve bien antes de que arranque Alpine, y el teléfono carga el mes solo la primera vez. Se prefirió a saber el teléfono por el navegador (*user agent*), que falla, y a pedir la vista con JavaScript, que dibuja dos veces. No se añadió cambiar reservas de día desde esa vista: se hace desde su ficha.
+
 ## Pendientes
 
 - Precios y modelo de venta.

@@ -21,6 +21,7 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Str;
 
 class ViewReserva extends ViewRecord
@@ -32,17 +33,40 @@ class ViewReserva extends ViewRecord
         return Str::ucfirst(__('ui.reservas.modelo')).' '.$this->getRecord()->getAttribute('numero');
     }
 
+    /**
+     * El huésped, como en su ficha: es lo primero que se busca. Un bloqueo no tiene huésped.
+     */
+    public function getHeading(): string|Htmlable
+    {
+        $reserva = $this->getRecord();
+
+        return $reserva instanceof Reserva && $reserva->titular !== null ? $reserva->titular->nombreCompleto() : $this->getTitle();
+    }
+
+    public function getSubheading(): string|Htmlable|null
+    {
+        $reserva = $this->getRecord();
+
+        return $reserva instanceof Reserva && $reserva->titular !== null ? $this->getTitle() : null;
+    }
+
+    public function getBreadcrumb(): string
+    {
+        return $this->getTitle();
+    }
+
     protected function getHeaderActions(): array
     {
         return [
+            // Primero lo que toca hacer ahora: en el teléfono, estos botones van antes que todo lo demás.
             AccionesReserva::confirmar(),
-            AccionesReserva::mandarMensaje(),
-            AccionesReserva::limpiezaEstancia(),
             AccionesReserva::entrada(),
             AccionesReserva::salida(),
+            AccionesReserva::mandarMensaje(),
             EditAction::make()->visible(fn (Reserva $record): bool => ReservaResource::canEdit($record)),
             AccionesReserva::reactivar(),
             ActionGroup::make([
+                AccionesReserva::limpiezaEstancia(),
                 AccionesReserva::enlaceLlegada(),
                 AccionesReserva::enlacePago(),
                 AccionesReserva::noShow(),

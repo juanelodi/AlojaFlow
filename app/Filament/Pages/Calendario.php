@@ -57,6 +57,15 @@ class Calendario extends Page
     #[Url]
     public ?string $mes = null;
 
+    /**
+     * «dia» o «mes». Mientras nadie elija, lo decide el ancho de la pantalla: la página lleva las dos vistas.
+     */
+    #[Url(except: null)]
+    public ?string $vista = null;
+
+    #[Url]
+    public ?string $dia = null;
+
     protected static function permiso(): string
     {
         return Acceso::OPERACION;
@@ -80,6 +89,7 @@ class Calendario extends Page
     public function mount(): void
     {
         $this->mes ??= Operacion::hoyDe($this->propiedadUnica())->format('Y-m');
+        $this->dia ??= $this->diaDelMes()->format('Y-m-d');
     }
 
     public function inicioMes(): CarbonImmutable
@@ -94,11 +104,77 @@ class Calendario extends Page
     public function moverMes(int $meses): void
     {
         $this->mes = $this->inicioMes()->addMonths($meses)->format('Y-m');
+        $this->updatedMes();
     }
 
     public function irAEsteMes(): void
     {
         $this->mes = Operacion::hoyDe($this->propiedadUnica())->format('Y-m');
+        $this->updatedMes();
+    }
+
+    public function updatedMes(): void
+    {
+        $this->dia = $this->diaDelMes()->format('Y-m-d');
+    }
+
+    public function vistaElegida(): ?string
+    {
+        return in_array($this->vista, ['dia', 'mes'], true) ? $this->vista : null;
+    }
+
+    public function cambiarVista(string $vista): void
+    {
+        if (in_array($vista, ['dia', 'mes'], true)) {
+            $this->mes = $this->diaElegido()->format('Y-m');
+            $this->vista = $vista;
+        }
+    }
+
+    public function diaElegido(): CarbonImmutable
+    {
+        try {
+            return CarbonImmutable::createFromFormat('!Y-m-d', (string) $this->dia) ?: $this->diaDelMes();
+        } catch (Throwable) {
+            return $this->diaDelMes();
+        }
+    }
+
+    /**
+     * Con qué día se abre un mes: hoy si es este, y el primero si es otro.
+     */
+    private function diaDelMes(): CarbonImmutable
+    {
+        return $this->inicioMes()->isSameMonth($this->hoy()) ? $this->hoy() : $this->inicioMes();
+    }
+
+    public function moverDia(int $dias): void
+    {
+        $this->irAlDia($this->diaElegido()->addDays($dias));
+    }
+
+    public function irAHoy(): void
+    {
+        $this->irAlDia($this->hoy());
+    }
+
+    public function updatedDia(): void
+    {
+        $this->irAlDia($this->diaElegido());
+    }
+
+    private function irAlDia(CarbonImmutable $dia): void
+    {
+        $this->dia = $dia->format('Y-m-d');
+        $this->mes = $dia->format('Y-m');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function datosDelDia(): array
+    {
+        return ServicioCalendario::dia($this->propiedadesElegidas(), $this->diaElegido(), Acceso::usuarioActual());
     }
 
     /**

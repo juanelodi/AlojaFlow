@@ -101,6 +101,14 @@ final class Formato
     }
 
     /**
+     * Como la corta, con el año: una reserva puede ser de otro.
+     */
+    public static function fechaCortaConAnio(?CarbonInterface $fecha): string
+    {
+        return str_replace('.', '', self::fecha($fecha, 'ddd D MMM YYYY'));
+    }
+
+    /**
      * 06/11/26 en México y 11/06/26 en Estados Unidos: el orden y el separador los da el idioma de quien mira.
      */
     public static function fechaNumerica(?CarbonInterface $fecha, bool $anioCompleto = false, bool $conAnio = true): string

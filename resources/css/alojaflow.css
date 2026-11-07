@@ -273,15 +273,32 @@
 .dark .af-barra--grupo { outline-color: var(--af-grupo, var(--gray-100)); }
 .af-barra--marcada::before { content: ""; flex: none; width: .625rem; height: .625rem; margin-inline-end: .375rem; border-radius: 50%; background: var(--af-marca); box-shadow: 0 0 0 1.5px rgb(255 255 255 / .85); }
 
-/* La lista de una reserva, en tarjetas cuando no cabe como tabla */
+/* «Hoy»: la tabla en la computadora y, donde no cabe, un renglón por reserva dentro de la misma tarjeta. */
+.af-lista-reservas { display: none; margin: 0; padding: 0; list-style: none; }
+.af-lista-reservas > li { padding-block: .875rem; border-block-end: 1px solid var(--gray-200); }
+.dark .af-lista-reservas > li { border-color: var(--gray-800); }
+.af-lista-reservas > li:first-child { padding-block-start: 0; }
+.af-lista-reservas > li:last-child { padding-block-end: 0; border-block-end: 0; }
 @container (width < 40rem) {
-    .af-tabla--apilable, .af-tabla--apilable tbody, .af-tabla--apilable tr, .af-tabla--apilable td { display: block; }
-    .af-tabla--apilable thead { display: none; }
-    .af-tabla--apilable tr { padding: .75rem; margin-block-end: .75rem; border: 1px solid var(--gray-200); border-radius: .5rem; }
-    .dark .af-tabla--apilable tr { border-color: var(--gray-800); }
-    .af-tabla--apilable tr:last-child { margin-block-end: 0; }
-    .af-tabla .af-tabla--apilable td, .af-tabla--apilable td, .af-tabla--apilable td.af-num { padding: .125rem 0; border: 0; text-align: start; white-space: normal; }
-    .af-tabla--apilable td[data-etiqueta]::before { content: attr(data-etiqueta) ": "; font-size: .75rem; color: var(--af-suave); }
+    .af-lista-reservas { display: block; }
+    .af-tabla--apilable { display: none; }
+}
+.af-tarjeta-reserva__nombre { min-width: 0; font-weight: 600; overflow-wrap: anywhere; color: var(--gray-950); }
+.dark .af-tarjeta-reserva__nombre { color: white; }
+a.af-tarjeta-reserva__nombre { display: inline-block; padding-block: .625rem; margin-block: -.625rem; color: var(--primary-700); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.dark a.af-tarjeta-reserva__nombre { color: var(--primary-400); }
+.af-tarjeta-reserva .fi-badge { flex: none; }
+.af-tarjeta-reserva__acciones { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-block-start: .5rem; }
+.af-tarjeta-reserva__acciones .af-iconos a { border: 1px solid var(--gray-300); color: var(--gray-700); }
+.dark .af-tarjeta-reserva__acciones .af-iconos a { border-color: var(--gray-700); color: var(--gray-200); }
+.af-iconos a:focus-visible { outline: 2px solid var(--primary-600); outline-offset: 2px; }
+@media (max-width: 39.99rem) {
+    .af-seccion-lista .fi-section-content { padding: .875rem 1rem; }
+    .af-seccion-lista .fi-section-header { padding: .75rem 1rem; }
+    /* Las cifras del día, en un renglón: lo que importa en «Hoy» son las llegadas, y tienen que verse sin desplazar. */
+    .af-kpis--compactas { grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: .5rem; }
+    .af-kpis--compactas .af-kpi { padding: .5rem .75rem; }
+    .af-kpis--compactas .af-kpi dd { margin-block-start: 0; font-size: 1.125rem; }
 }
 
 /* Objetivos táctiles de al menos 24 px (WCAG 2.5.8), también en lo que dibuja Filament */
@@ -569,4 +586,58 @@ th[aria-sort="descending"] .af-orden::after { opacity: 1; clip-path: polygon(10%
     .af-tabla-contenedor .af-tabla:not(.af-tabla--tarjetas) td:first-child { position: sticky; inset-inline-start: 0; z-index: 1; background: white; box-shadow: 6px 0 6px -6px rgb(15 23 42 / .18); }
     .dark .af-tabla-contenedor .af-tabla:not(.af-tabla--tarjetas) th:first-child,
     .dark .af-tabla-contenedor .af-tabla:not(.af-tabla--tarjetas) td:first-child { background: var(--gray-900); }
+}
+
+/* Calendario: día por día en el teléfono, por habitaciones en la computadora. Sin elegir, lo decide el ancho, sin esperar a Alpine. */
+.af-cal-vistas--dia .af-solo-vista-mes, .af-cal-vistas--mes .af-solo-vista-dia { display: none; }
+@media (min-width: 40rem) { .af-cal-vistas--auto .af-solo-vista-dia { display: none; } }
+@media (max-width: 39.99rem) { .af-cal-vistas--auto .af-solo-vista-mes { display: none; } }
+.af-segmentado { display: inline-flex; border: 1px solid var(--gray-300); border-radius: .5rem; overflow: hidden; }
+.dark .af-segmentado { border-color: var(--gray-700); }
+.af-segmentado button { min-height: 2.25rem; padding-inline: .875rem; border: 0; background: white; color: var(--gray-700); font-size: .875rem; font-weight: 500; cursor: pointer; }
+.dark .af-segmentado button { background: var(--gray-900); color: var(--gray-200); }
+.af-segmentado button + button { border-inline-start: 1px solid var(--gray-300); }
+.dark .af-segmentado button + button { border-color: var(--gray-700); }
+.af-segmentado button:focus-visible { outline: 2px solid var(--primary-600); outline-offset: -2px; }
+.af-cal-vistas--dia .af-segmentado [data-vista="dia"],
+.af-cal-vistas--mes .af-segmentado [data-vista="mes"] { background: var(--primary-700); color: white; }
+@media (min-width: 40rem) { .af-cal-vistas--auto .af-segmentado [data-vista="mes"] { background: var(--primary-700); color: white; } }
+@media (max-width: 39.99rem) {
+    .af-cal-vistas--auto .af-segmentado [data-vista="dia"] { background: var(--primary-700); color: white; }
+    .af-segmentado button { min-height: 2.75rem; }
+}
+.af-dia__fecha { font-size: 1rem; font-weight: 600; color: var(--gray-950); }
+.dark .af-dia__fecha { color: white; }
+.af-dia__cifras { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-block-start: .5rem; }
+.af-dia__cifras dd { font-size: 1.125rem; }
+.af-dia-lista { margin: 0; padding: 0; list-style: none; border: 1px solid var(--gray-200); border-radius: .75rem; background: white; }
+.dark .af-dia-lista { background: var(--gray-900); border-color: var(--gray-800); }
+.af-dia-unidad { display: flex; flex-direction: column; gap: .375rem; padding: .625rem 1rem .875rem; }
+.af-dia-unidad--libre { padding-block-end: .625rem; }
+.af-dia-unidad + .af-dia-unidad { border-block-start: 1px solid var(--gray-200); }
+.dark .af-dia-unidad + .af-dia-unidad { border-color: var(--gray-800); }
+.af-dia-unidad > .af-tarjeta-reserva + .af-tarjeta-reserva { padding-block-start: .625rem; border-block-start: 1px dashed var(--gray-200); }
+.dark .af-dia-unidad > .af-tarjeta-reserva + .af-tarjeta-reserva { border-color: var(--gray-800); }
+.af-dia-unidad__cabecera { display: flex; align-items: center; justify-content: space-between; gap: .75rem; min-height: 1.5rem; }
+.af-dia-unidad--libre .af-dia-unidad__cabecera { min-height: 2.75rem; }
+.af-dia-unidad__nombre { font-size: .8125rem; font-weight: 600; color: var(--gray-700); overflow-wrap: anywhere; }
+.dark .af-dia-unidad__nombre { color: var(--gray-300); }
+.af-dia-unidad--libre .af-dia-unidad__nombre { color: var(--gray-950); font-size: .875rem; }
+.dark .af-dia-unidad--libre .af-dia-unidad__nombre { color: white; }
+.af-dia-unidad__libre { display: flex; align-items: center; gap: .5rem; flex: none; }
+.af-dia-externo { font-size: .875rem; color: var(--gray-950); }
+.dark .af-dia-externo { color: var(--gray-100); }
+
+/* Ficha de la reserva: lo mismo que la del huésped, con lo importante primero. */
+.af-resumen-reserva__fechas { font-size: 1.0625rem; font-weight: 600; color: var(--gray-950); }
+.af-resumen-reserva__estado { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .625rem; margin-block-start: .375rem; }
+.af-resumen-reserva .af-cifras { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.af-resumen-reserva .af-cifra dd { overflow-wrap: anywhere; }
+.dark .af-resumen-reserva__fechas { color: white; }
+.af-resumen-reserva__contactos { padding-block-start: 1rem; border-block-start: 1px solid var(--gray-200); }
+.dark .af-resumen-reserva__contactos { border-color: var(--gray-800); }
+.af-resumen-reserva__huesped { margin-block-end: .5rem; }
+.af-resumen-reserva .af-contactos { flex-flow: row wrap; gap: .5rem 1.5rem; }
+@media (max-width: 39.99rem) {
+    .af-resumen-reserva .af-cifra dd { font-size: 1rem; }
 }

@@ -16,10 +16,12 @@ use App\Models\BloqueoExterno;
 use App\Models\ColorTipoCliente;
 use App\Models\Reserva;
 use App\Models\Unidad;
+use App\Models\User;
+use App\Seguridad\Limites;
 use Carbon\CarbonImmutable;
 
 /**
- * Calendario por habitaciones de un mes, en modo consulta (M2).
+ * Calendario por habitaciones de un mes, en modo consulta (M2), y lo que pasa en cada unidad un día (la vista del teléfono).
  */
 final class Calendario
 {
@@ -36,11 +38,7 @@ final class Calendario
             $dias[] = $dia;
         }
 
-        $unidades = Unidad::query()->with('propiedad')
-            ->whereIn('unidades.propiedad_id', $propiedades)->where('unidades.activa', true)
-            ->join('propiedades', 'propiedades.id', '=', 'unidades.propiedad_id')
-            ->orderBy('propiedades.nombre')->orderBy('unidades.orden')->orderBy('unidades.nombre')
-            ->select('unidades.*')->get();
+        $unidades = self::unidades($propiedades);
 
         $reservas = Reserva::query()->vigentes()->with(['titular.campos', 'grupo', 'habitacionGrupo'])
             ->whereIn('propiedad_id', $propiedades)
@@ -95,6 +93,77 @@ final class Calendario
         }
 
         return ['dias' => $dias, 'filas' => $filas];
+    }
+
+    /**
+     * Cada unidad en un día: quién sale, quién sigue y quién llega, en ese orden, que es el de la jornada. Una unidad es libre si nadie
+     * duerme esa noche, aunque alguien salga de ella ese día: lo mismo que una celda libre del mes.
+     *
+     * @param  list<int>  $propiedades
+     * @return array{filas: list<array{unidad: Unidad, reservas: list<array{reserva: Reserva, momento: string}>, externos: list<BloqueoExterno>, libre: bool}>, libres: int, ocupadas: int, llegan: int, salen: int}
+     */
+    public static function dia(array $propiedades, CarbonImmutable $dia, ?User $usuario): array
+    {
+        $fecha = $dia->format('Y-m-d');
+        $reservas = Reserva::query()->vigentes()->with(['unidad', 'propiedad', 'titular.contactos', 'habitacionGrupo'])
+            ->whereIn('propiedad_id', $propiedades)
+            ->where('llegada', '<=', $fecha)->where('salida', '>=', $fecha)
+            ->orderBy('llegada')->get()->groupBy('unidad_id');
+        $externos = BloqueoExterno::query()->with('fuente')->whereIn('propiedad_id', $propiedades)->whereNull('eliminado_en')
+            ->where('llegada', '<=', $fecha)->where('salida', '>', $fecha)->orderBy('llegada')->get()->groupBy('unidad_id');
+
+        $orden = ['sale' => 0, 'sigue' => 1, 'llega' => 2];
+        $filas = [];
+        $libres = $ocupadas = $llegan = $salen = 0;
+        foreach (self::unidades($propiedades) as $unidad) {
+            $renglones = [];
+            foreach ($reservas->get($unidad->id, collect()) as $reserva) {
+                /** @var Reserva $reserva */
+                $momento = match ($fecha) {
+                    $reserva->salida->format('Y-m-d') => 'sale',
+                    $reserva->llegada->format('Y-m-d') => 'llega',
+                    default => 'sigue',
+                };
+                $renglones[] = ['reserva' => $reserva, 'momento' => $momento];
+                // Lo que un usuario no puede ver no se suma: las cifras dirían más que las tarjetas.
+                if ($reserva->tipo === TipoReserva::Reserva && Limites::puedeVer($usuario, $reserva)) {
+                    $llegan += $momento === 'llega' ? 1 : 0;
+                    $salen += $momento === 'sale' ? 1 : 0;
+                }
+            }
+            usort($renglones, fn (array $a, array $b): int => $orden[$a['momento']] <=> $orden[$b['momento']]);
+            $deUnidad = $externos->get($unidad->id, collect())->values()->all();
+            $libre = $deUnidad === [] && array_filter($renglones, fn (array $r): bool => $r['momento'] !== 'sale') === [];
+            $libre ? $libres++ : $ocupadas++;
+            $filas[] = ['unidad' => $unidad, 'reservas' => $renglones, 'externos' => $deUnidad, 'libre' => $libre];
+        }
+
+        return ['filas' => $filas, 'libres' => $libres, 'ocupadas' => $ocupadas, 'llegan' => $llegan, 'salen' => $salen];
+    }
+
+    /**
+     * Lo que se escribe de una reserva en el calendario. Lo ajeno solo dice que está ocupado.
+     */
+    public static function textoDe(Reserva $reserva, ?User $usuario): string
+    {
+        return match (true) {
+            ! Limites::puedeVer($usuario, $reserva) => __('permisos.limites.ocupada'),
+            $reserva->tipo === TipoReserva::Bloqueo => $reserva->origen_texto ?? __('ui.calendario.bloqueo'),
+            default => $reserva->habitacionGrupo?->responsable ?: ($reserva->titular?->nombreCompleto() ?? $reserva->numero),
+        };
+    }
+
+    /**
+     * @param  list<int>  $propiedades
+     * @return \Illuminate\Database\Eloquent\Collection<int, Unidad>
+     */
+    private static function unidades(array $propiedades): \Illuminate\Database\Eloquent\Collection
+    {
+        return Unidad::query()->with('propiedad')
+            ->whereIn('unidades.propiedad_id', $propiedades)->where('unidades.activa', true)
+            ->join('propiedades', 'propiedades.id', '=', 'unidades.propiedad_id')
+            ->orderBy('propiedades.nombre')->orderBy('unidades.orden')->orderBy('unidades.nombre')
+            ->select('unidades.*')->get();
     }
 
     /**

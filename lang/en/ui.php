@@ -45,6 +45,7 @@ return [
         'huesped' => 'Guest',
         'noches' => 'Nights',
         'n_noches' => ':count night|:count nights',
+        'n_personas' => ':count person|:count people',
         'personas' => 'Guests',
         'origen' => 'Source',
         'total' => 'Total',
@@ -120,6 +121,24 @@ return [
     ],
 
     'calendario' => [
+
+        'vista' => 'View',
+
+        'dia' => 'Day',
+
+        'libre' => 'Free',
+
+        'libre_noche' => 'Free tonight',
+
+        'libres' => 'Free',
+
+        'ocupadas' => 'Occupied',
+
+        'llega' => 'Arrives',
+
+        'sale' => 'Leaves',
+
+        'sigue' => 'Staying',
         'titulo' => 'Calendar',
         'mes' => 'Month',
         'este_mes' => 'This month',
@@ -258,6 +277,8 @@ return [
     ],
 
     'reservas' => [
+
+        'ver_huesped' => 'Open the record of :nombre',
         'modelo' => 'booking',
         'modelos' => 'Bookings',
         'numero' => 'Number',

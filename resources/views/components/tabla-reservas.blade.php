@@ -1,7 +1,6 @@
 {{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
 @props(['reservas', 'vacio', 'titulo', 'mostrarPropiedad' => false, 'gestionables' => []])
 @use('App\Support\Formato')
-@use('App\Enums\EstadoReserva')
 @use('App\Seguridad\Acceso')
 {{-- Teléfono, saldo y ficha, solo con permiso de datos: limpieza y mantenimiento no los necesitan. --}}
 @php($conDatos = Acceso::propiedades(Acceso::usuarioActual(), Acceso::DATOS))
@@ -9,6 +8,19 @@
     @if ($reservas->isEmpty())
         <p class="af-vacio-tabla">{{ $vacio }}</p>
     @else
+        {{-- Una sola tarjeta por sección, y dentro un renglón por reserva: lo decide el ancho de este contenedor. --}}
+        <ul class="af-lista-reservas">
+            @foreach ($reservas as $reserva)
+                <li wire:key="tarjeta-{{ $reserva->id }}">
+                    <x-tarjeta-reserva
+                        :reserva="$reserva"
+                        :ver-datos="in_array($reserva->propiedad_id, $conDatos, true)"
+                        :gestionable="in_array($reserva->propiedad_id, $gestionables, true)"
+                        :mostrar-propiedad="$mostrarPropiedad"
+                    />
+                </li>
+            @endforeach
+        </ul>
         <table class="af-tabla af-tabla--apilable">
             <caption class="af-sr">{{ $titulo }}</caption>
             <thead>
@@ -68,15 +80,7 @@
                             </td>
                         @endif
                         <td data-etiqueta="{{ __('ui.comun.estado') }}">
-                            @if ($reserva->estado === EstadoReserva::SinConfirmar)
-                                <x-filament::badge color="warning">{{ __('ui.hoy.sin_confirmar') }}</x-filament::badge>
-                            @elseif ($reserva->salida_registrada_en)
-                                <x-filament::badge color="gray">{{ __('ui.comun.salio') }}</x-filament::badge>
-                            @elseif ($reserva->entrada_registrada_en)
-                                <x-filament::badge color="success">{{ __('ui.comun.en_casa') }}</x-filament::badge>
-                            @else
-                                <x-filament::badge color="info">{{ $reserva->estado->etiqueta() }}</x-filament::badge>
-                            @endif
+                            <x-estado-estancia :reserva="$reserva" />
                         </td>
                         @if ($conDatos !== [])
                         <td data-etiqueta="{{ __('ui.comun.contacto') }}">
