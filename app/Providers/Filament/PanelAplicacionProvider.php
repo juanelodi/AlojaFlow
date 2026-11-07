@@ -11,12 +11,14 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Actualizacion\Actualizador;
+use App\Actualizacion\UltimaVersion;
 use App\Demo\ModoDemo;
 use App\Filament\AvatarLocal;
 use App\Filament\Pages\Actualizaciones;
 use App\Filament\Pages\EditarPerfil;
 use App\Filament\Pages\IniciarSesion;
 use App\Filament\Pages\PedirRecuperacion;
+use App\Filament\Pages\Resumen;
 use App\Filament\Pages\SesionesDispositivos;
 use App\Http\Middleware\AplicarIdioma;
 use App\Http\Middleware\RecordarDispositivo;
@@ -133,6 +135,7 @@ class PanelAplicacionProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::BODY_START, fn (): View|string => ModoDemo::activo() ? view('componentes.banner-demo') : '')
             ->renderHook(PanelsRenderHook::FOOTER, fn () => view('componentes.pie'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn (): View|string => self::avisoActualizacionSinTerminar())
+            ->renderHook(PanelsRenderHook::CONTENT_START, fn (): View|string => self::avisoVersionNueva(), scopes: Resumen::class)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -149,6 +152,19 @@ class PanelAplicacionProvider extends PanelProvider
                 Authenticate::class,
                 AplicarIdioma::class,
             ]);
+    }
+
+    /**
+     * Hay una versión nueva: en el inicio, solo para quien puede instalarla (D-140).
+     */
+    public static function avisoVersionNueva(): View|string
+    {
+        if (! Actualizaciones::canAccess()) {
+            return '';
+        }
+        $nueva = app(UltimaVersion::class)->disponible();
+
+        return $nueva === null ? '' : view('filament.avisos.version-nueva', ['version' => $nueva['version'], 'enlace' => Actualizaciones::getUrl()]);
     }
 
     /**

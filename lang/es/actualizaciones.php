@@ -11,7 +11,7 @@ declare(strict_types=1);
 return [
     'titulo' => 'Actualizaciones',
     'version_instalada' => 'Versión instalada: :version',
-    'explicacion' => 'Sube el zip de una versión de AlojaFlow. Antes de cambiar nada se comprueban su firma y cada archivo; se hace una copia de la base de datos y de los archivos que se sustituyen, y si algo falla todo vuelve a como estaba. Tus datos, el archivo .env y la carpeta storage nunca se tocan.',
+    'explicacion' => 'Actualiza con un clic cuando salga una versión nueva, o sube su zip a mano si tu servidor no sale a internet. Antes de cambiar nada se comprueban su firma y cada archivo; se hace una copia de la base de datos y de los archivos que se sustituyen, y si algo falla todo vuelve a como estaba. Tus datos, el archivo .env y la carpeta storage nunca se tocan.',
     'paso_subir' => '1. Subir el paquete',
     'subir' => 'Zip de la versión (alojaflow-x.y.z.zip)',
     'subir_boton' => 'Subir',
@@ -62,10 +62,30 @@ return [
     'eliminar_texto' => 'Se borra el zip del servidor; no cambia nada de la instalación.',
     'eliminado' => 'Paquete eliminado: :paquete',
 
+    'hay_version' => 'Hay una versión nueva: la :version',
+    'al_dia' => 'Tienes la última versión.',
+    'ver_que_cambia' => 'Ver qué cambia',
+    'ver_publicacion' => 'Ver la publicación en GitHub',
+    'actualizar_ahora' => 'Actualizar ahora',
+    'actualizar_ahora_nota' => 'Se baja de GitHub y se comprueba su firma. Después ves qué cambia y confirmas con tu contraseña: nada se instala sin eso.',
+    'bajando' => 'Bajando el paquete… :porcentaje %. No cierres esta página.',
+    'bajada_terminada' => 'Ya se bajó. Espera un momento: estamos revisando el paquete.',
+    'avisar' => 'Avisarme cuando salga una versión nueva',
+    'avisar_ayuda' => 'Una vez al día se pregunta a GitHub cuál es la última versión, sin mandar ningún dato de esta instalación; GitHub solo ve la dirección del servidor. Nunca se instala sola.',
+    'aviso_prendido' => 'Te avisaremos cuando salga una versión nueva.',
+    'aviso_apagado' => 'Ya no se consulta a GitHub cada día. Puedes buscar a mano cuando quieras.',
+    'buscar_ahora' => 'Buscar ahora',
+    'sin_consulta' => 'Todavía no se ha consultado la última versión.',
+    'ultima_consulta' => 'Última consulta: :fecha.',
+    'consulta_fallida' => 'GitHub no respondió (:fecha). Se vuelve a preguntar mañana; mientras tanto puedes subir el zip a mano.',
+    'consulta_fallida_ahora' => 'GitHub no respondió. Inténtalo más tarde.',
+
     'consola' => [
         'aplicando' => 'Aplicando los archivos…',
         'terminando' => 'Terminando la actualización con el código nuevo…',
         'nada_pendiente' => 'No hay ninguna actualización pendiente.',
+        'aviso_apagado' => 'El aviso de versiones está apagado.',
+        'consulta_fallida' => 'GitHub no respondió. Se vuelve a preguntar mañana.',
     ],
 
     'error' => [
@@ -102,6 +122,12 @@ return [
         'no_borra' => 'No se pudo borrar el archivo obsoleto :ruta.',
         'interrumpida' => 'La actualización se cortó a medias (se detuvo el proceso) y se volvieron a poner los archivos anteriores.',
         'migraciones' => 'Las migraciones de la base de datos fallaron y se volvieron a poner los archivos anteriores. Si la aplicación da errores, restaura la copia de la base de datos de esta actualización. Detalle: :detalle',
+        'sin_version_nueva' => 'No hay una versión nueva que bajar.',
+        'descarga_red' => 'Se cortó la descarga. Pulsa Reintentar para seguir desde donde iba.',
+        'descarga_http' => 'El servidor de descargas respondió con el código :codigo. Inténtalo más tarde, o baja el zip y súbelo a mano.',
+        'descarga_host' => 'La descarga llevó a :host, que no está permitido. No se ha cambiado nada.',
+        'descarga_rango' => 'El servidor mandó algo distinto de lo pedido. Pulsa Reintentar para empezar de nuevo.',
+        'descarga_en_curso' => 'Ya se está bajando el paquete.',
     ],
 
     'aviso' => [

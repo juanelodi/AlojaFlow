@@ -3,8 +3,8 @@
 **Estado:** borrador 2026-11-03 · decisiones D-032 a D-034 · desde la versión 1.0.2
 
 Una sola pieza, el **paquete de versión** `alojaflow-x.y.z.zip`, sirve para instalar desde cero
-y para actualizar. Pensado para hosting compartido sin SSH: el zip se sube por el panel o por
-FTP.
+y para actualizar. Pensado para hosting compartido sin SSH: el panel avisa de la versión nueva y la baja
+solo (§3.1.1), y también se puede subir el zip por el panel o por FTP.
 
 ## 1. El paquete
 
@@ -148,6 +148,42 @@ apaga solo. **Sistema → Estado del sistema** dice cuál de los dos está funci
 El historial muestra la fecha, las versiones, el estado, el usuario y el detalle de cada
 actualización, con su copia de la base de datos para descargar.
 
+### 3.1.1 En línea (D-140)
+
+Se añade solo lo que faltaba, **avisar** y **bajar**. Lo que da la seguridad es la firma, no el sitio de donde baja:
+después de bajar se sigue el mismo camino de §3.1 (revisar, contraseña, las dos fases de §4). **Nunca se instala sola.**
+
+**Avisar** (`App\Actualizacion\UltimaVersion`, comando `alojaflow:buscar-version`):
+
+- Una vez al día (03:50, o por visitas si no hay cron) se hace un `GET` a `actualizaciones.url_ultima_version`, que por omisión es
+  `https://api.github.com/repos/juanelodi/AlojaFlow/releases/latest`. Sin parámetros ni cuerpo: no viaja ningún dato de la
+  instalación ni su versión. GitHub solo ve la dirección del servidor, y eso lo dice la pantalla.
+- La respuesta se guarda en el ajuste `actualizaciones.ultima_version`: versión, notas de la publicación y enlace, además de cuándo se preguntó.
+  Si la versión no es más nueva que la instalada, no se avisa. Al instalarla, el aviso se va solo, sin borrar nada.
+- **Se apaga** con la casilla de Sistema → Actualizaciones (ajuste `actualizaciones.avisar`). «Buscar ahora» funciona aunque esté apagada.
+- **Si GitHub no responde** (sin red, 500, límite de la API, otra cosa en lugar de la respuesta): el comando termina bien, queda anotado en la pantalla y en el
+  registro, y se conserva lo último que se supo. En la demo no se pregunta.
+- **Quién lo ve:** solo el super administrador. En Actualizaciones, con lo que cambia; en el inicio (`Resumen`), un aviso con enlace, y una insignia en el menú.
+- Las notas son texto de fuera: se muestran como las de `CAMBIOS.md`, sin HTML ni enlaces inseguros, y el enlace solo se acepta si es `https://`.
+
+**Bajar** (`App\Actualizacion\DescargaPorPedazos`, `POST /actualizaciones/descargar-pedazo`), con el botón «Actualizar ahora»:
+
+- **Por pedazos de 8 MB, uno por petición,** como el instalador: el JavaScript de la pantalla los pide uno tras otro y muestra el avance. Una descarga larga la
+  cortaría el hosting.
+- **Se reanuda:** lo bajado queda en `storage/app/private/actualizaciones/descargas/alojaflow-x.y.z.zip.parcial`, y su tamaño dice desde dónde seguir, aunque se cierre la
+  página. Cada pedazo se escribe aparte y se suma solo si es el rango pedido y llegó completo. Si un pedazo falla, el navegador lo intenta dos veces más antes de avisar.
+- **No se elige qué bajar:** el servidor usa la última versión conocida; la petición no lleva parámetros.
+- **De dónde:** solo la dirección de `actualizaciones.url_paquete`. Cada redirección se comprueba con su host, y siempre con `App\Seguridad\ClienteExterno`: https, redes
+  públicas y la IP fija en la conexión. La única excepción es necesaria para que funcione: GitHub guarda los archivos de sus versiones en
+  `*.githubusercontent.com` (hoy `release-assets.githubusercontent.com`) y redirige ahí, así que ese dominio vale cuando el paquete viene de `github.com`, y solo entonces.
+  Quien ponga otro `ALOJAFLOW_URL_PAQUETE` debe servir el zip sin redirigir a otro host.
+- **Antes de la lista de paquetes:** al completarse se comprueba la firma, y que el manifiesto sea justo de esa versión (`Revisor::firmadoPorQuienPublica`). Si no, se borra y otro
+  intento empieza de cero. Así, un zip dañado o una versión vieja con firma buena nunca llegan a `entrada/`. Cada archivo y los requisitos los revisa después `Revisor::revisar`.
+- **Otros casos:** un servidor que no entiende de rangos (200) deja el archivo completo; lo que pase del tope de 300 MB se corta y se borra. En una copia de desarrollo o con una actualización en marcha no se baja.
+- Lo que nadie terminó de bajar lo borra `alojaflow:limpiar` a los 7 días; también se borra lo que quedó de otra versión.
+
+Al terminar, el zip está en `entrada/` igual que uno subido a mano y se revisa sin otro clic. **Subir el zip a mano se conserva** para el servidor que no sale a internet.
+
 ### 3.2 Desde la consola
 
 ```bash
@@ -253,6 +289,7 @@ Si alguna vez hace falta cambiarlo, la versión nueva tiene que aceptar las dos 
 |---|---|
 | `alojaflow:empaquetar [--permitir-cambios] [--clave=] [--composer=] [--salida=]` | Construye y revisa el zip firmado de la versión de `config/alojaflow.php` (§1.1) |
 | `alojaflow:actualizar {zip} [--reinstalar] [--force]` | Actualiza desde la consola (§3.2) |
+| `alojaflow:buscar-version` | Pregunta cuál es la última versión para avisar (§3.1.1). No instala nada. Una vez al día, si no se apagó. |
 | `alojaflow:finalizar-actualizacion [--actualizacion=ID] [--pendientes]` | Termina una actualización con los archivos puestos o deshace una que se cortó. El programador la lanza cada minuto con `--pendientes`, también en mantenimiento. |
 
 ## 7. Seguridad
@@ -261,7 +298,7 @@ Si alguna vez hace falta cambiarlo, la versión nueva tiene que aceptar las dos 
   caducan (30 minutos la primera y 1 hora la segunda).
 - Auditoría: `actualizacion.preparar`, `actualizacion.completada`, `actualizacion.revertida` y
   `actualizacion.recuperada`.
-- El zip subido se guarda con un nombre saneado en una carpeta privada. Nunca se ejecuta y no se
+- El zip subido o bajado se guarda con un nombre saneado en una carpeta privada. Nunca se ejecuta y no se
   extrae nada sin firma válida; solo se extrae lo que lista el manifiesto, con su ruta validada.
 - La cookie que deja pasar al administrador durante el mantenimiento (`laravel_maintenance`) va
   sin cifrar, porque la lee `storage/framework/maintenance.php` antes de arrancar Laravel. Va
@@ -273,12 +310,17 @@ Si alguna vez hace falta cambiarlo, la versión nueva tiene que aceptar las dos 
   - `tests/Feature/ActualizacionTest.php`: actualización completa, reversión por migraciones,
     paquetes alterados, versiones, copia de git, interrupción, programador, panel, subida, aviso
     y limpieza;
+  - `tests/Feature/ActualizacionEnLineaTest.php`: aviso, GitHub caído, descarga cortada y reanudada, firma inválida, redirecciones y permisos, con `Http::fake`;
   - `tests/Unit/PaqueteActualizacionTest.php`: rutas, manifiesto y firma;
   - los paquetes de prueba se firman con una clave de prueba (`tests/Support/ConstructorPaquete.php`).
 - **Instalación de prueba en Windows** (la copia de desarrollo no se actualiza, D-034):
   - descomprimir el zip en `E:\AlojaFlow-prueba` con su propia base `alojaflow_prueba`;
   - servirla con `desarrollo/servidor-instalacion.php`, que sube los límites de subida
     (configuración `alojaflow-prueba` de `.claude/launch.json`, http://localhost:8001).
+- **Comprobado el 2026-11-06** contra GitHub de verdad, con una instalación local que simulaba la 1.0.32: preguntó, avisó de la 1.0.33 y bajó su zip de
+  30 MB en 4 pedazos, siguiendo la redirección, con la firma real y sin pasar de 66 MB de memoria. La pantalla muestra el avance y la revisión. No se instaló: el aplicar
+  es el de siempre. Falta probarla en un hosting de verdad. El PHP de Wamp no trae certificados: para esta prueba en Windows hay que darle `curl.cainfo` y
+  `openssl.cafile`, o la pantalla dirá que GitHub no respondió.
 - **Comprobado el 2026-11-03** con una clave de prueba:
   - instalación desde el zip de la 1.0.2;
   - de la 1.0.2 a la 1.0.3 por consola, con una migración nueva y un archivo borrado;

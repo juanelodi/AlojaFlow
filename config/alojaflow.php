@@ -49,6 +49,8 @@ return [
         'clave_publica' => env('ALOJAFLOW_CLAVE_PUBLICA_ACTUALIZACIONES', 'lC/ZImhUArZodVfJSVyjddbGKVsJp1b47kDSMdCql10='),
         // De dónde baja el zip el instalador chico. El paquete va firmado: el lugar no tiene por qué ser de confianza (D-071).
         'url_paquete' => env('ALOJAFLOW_URL_PAQUETE', 'https://github.com/juanelodi/AlojaFlow/releases/download/v:version/alojaflow-:version.zip'),
+        // Dónde se pregunta cuál es la última versión (D-140). Es un GET sin ningún dato de la instalación.
+        'url_ultima_version' => env('ALOJAFLOW_URL_ULTIMA_VERSION', 'https://api.github.com/repos/juanelodi/AlojaFlow/releases/latest'),
         // En una copia de desarrollo (con .git) el código se actualiza con git, no desde el panel.
         'permitir_en_copia_git' => filter_var(env('ALOJAFLOW_ACTUALIZAR_COPIA_GIT', false), FILTER_VALIDATE_BOOLEAN),
         'tamano_maximo_paquete' => 300 * 1024 * 1024,

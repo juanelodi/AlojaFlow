@@ -26,6 +26,7 @@ Schedule::command('alojaflow:limpiar')->dailyAt('03:30');
 Schedule::command('alojaflow:autoridades')->everyTenMinutes();
 Schedule::command('alojaflow:grupos')->dailyAt('03:40')->when(fn (): bool => Modulos::activo(Modulo::Grupos));
 Schedule::command('alojaflow:copia --programada')->dailyAt('03:10')->withoutOverlapping(60)->skip(fn (): bool => ModoDemo::activo());
+Schedule::command('alojaflow:buscar-version')->dailyAt('03:50')->skip(fn (): bool => ModoDemo::activo());
 Schedule::command('alojaflow:demo-reiniciar')->dailyAt('04:00')->when(fn (): bool => ModoDemo::activo());
 
 // Una actualización que se quedó sin terminar (se cerró el navegador entre las dos fases) o que

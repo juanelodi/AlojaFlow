@@ -785,6 +785,19 @@ Es un parte de un equipo: que cada quien lo saque distinto confunde. Va en `Ajus
 
 `CatalogoVariables` es la lista que se ofrece al escribir, con lo que hace cada una, y una prueba comprueba que todas se sustituyen de verdad. Se prefirió a las *merge tags* de Filament: dejan otra marca en el texto y habrían obligado a cambiar los documentos ya escritos, y no explican cada variable.
 
+### D-140 · 2026-11-06 · La actualización en línea avisa y baja; lo demás ya existía
+
+Subir un zip de 30 MB era el paso más pesado para quien no es técnico, y comprobar la firma, hacer copia y volver atrás ya estaba hecho. Se añaden solo dos piezas: una consulta diaria a GitHub Releases y una descarga por pedazos de 8 MB. De ahí se sigue por el mismo camino, con su revisión y la contraseña (`instalacion-actualizaciones.md` §3.1.1).
+
+- **La firma da la seguridad, no el sitio.** Por eso lo que responde GitHub solo sirve para avisar: ni la versión ni las notas deciden qué se instala.
+- **No se manda ningún dato.** Es un `GET` sin parámetros. Se usa `releases/latest` de la API pública de GitHub en lugar de un servidor propio: no hay que mantenerlo, y no hay manera de contar instalaciones. El aviso se apaga con una casilla.
+- **La excepción al «solo desde el host de `url_paquete`»:** GitHub redirige los archivos de sus versiones a `release-assets.githubusercontent.com`, así que sin ella no bajaría nada. Vale solo si el paquete viene de `github.com`.
+- **La firma se comprueba antes de llegar a `entrada/`,** además de al revisar. Un zip dañado o una versión vieja con firma buena se borran ahí, y otro intento empieza de cero: si no, pulsar otra vez encontraría el mismo zip malo.
+- **El servidor decide qué versión baja:** la petición no lleva parámetros, para que nadie pueda pedirle otra.
+- **Nunca se instala sola.** Primero un clic; más adelante, quizá una opción para las de seguridad.
+- **Subir a mano se queda,** para el servidor que no sale a internet.
+- **Límite conocido:** las notas de la publicación salen en el idioma en que se escribieron (español), no en el de quien las lee; igual que las de `CAMBIOS.md`.
+
 ## Pendientes
 
 - Precios y modelo de venta.

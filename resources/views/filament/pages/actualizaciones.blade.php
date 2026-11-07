@@ -25,7 +25,59 @@
             @if ($this->bloqueadaPorGit())
                 <p class="af-aviso" style="margin-top: .75rem">{{ __('actualizaciones.error.copia_git') }}</p>
             @endif
+            <div class="af-barra-herramientas" style="margin-top: 1rem">
+                <label class="af-campo" style="flex-direction: row; align-items: center; gap: .5rem; min-width: auto">
+                    <x-filament::input.checkbox wire:model.live="avisoActivo" />
+                    <span>{{ __('actualizaciones.avisar') }}</span>
+                </label>
+                <x-filament::button color="gray" icon="heroicon-m-arrow-path" wire:click="buscarAhora" wire:target="buscarAhora">{{ __('actualizaciones.buscar_ahora') }}</x-filament::button>
+            </div>
+            <p class="af-nota">{{ __('actualizaciones.avisar_ayuda') }}</p>
+            <p class="af-nota">{{ $this->estadoConsulta() }}</p>
         </x-filament::section>
+
+        @if ($nueva = $this->versionDisponible())
+            <x-filament::section id="version-nueva" :heading="__('actualizaciones.hay_version', ['version' => $nueva['version']])">
+                <div class="af-pila">
+                    @if ($nueva['notas'] !== '')
+                        <div class="af-prosa">{!! Str::markdown($nueva['notas'], ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
+                    @endif
+                    @if ($nueva['enlace'] !== null)
+                        <p class="af-nota"><a href="{{ $nueva['enlace'] }}" target="_blank" rel="noopener noreferrer">{{ __('actualizaciones.ver_publicacion') }}</a></p>
+                    @endif
+                    @unless ($this->bloqueadaPorGit())
+                        {{-- Cada pedazo es una petición aparte, como las partes de la subida (D-140); lo bajado se queda en el servidor. --}}
+                        <div class="af-pila" wire:ignore
+                            x-data="descargaPorPedazos({
+                                url: @js(route('actualizaciones.descargar-pedazo')),
+                                token: @js(csrf_token()),
+                                textos: @js([
+                                    'bajando' => __('actualizaciones.bajando'),
+                                    'terminada' => __('actualizaciones.bajada_terminada'),
+                                    'red' => __('actualizaciones.error.descarga_red'),
+                                    'recarga' => __('actualizaciones.error.subida_recarga'),
+                                ]),
+                            })">
+                            <div>
+                                <x-filament::button icon="heroicon-m-arrow-down-tray" x-on:click="bajar()" x-bind:disabled="estado === 'bajando' || estado === 'revisando'">
+                                    <span x-text="estado === 'error' ? @js(__('actualizaciones.reintentar')) : @js(__('actualizaciones.actualizar_ahora'))">{{ __('actualizaciones.actualizar_ahora') }}</span>
+                                </x-filament::button>
+                            </div>
+                            <div x-show="estado === 'bajando'" x-cloak role="status" class="af-subida">
+                                <div class="af-subida__barra" aria-hidden="true"><div x-bind:style="`inline-size: ${porcentaje}%`"></div></div>
+                                <p class="af-nota" x-text="mensaje"></p>
+                            </div>
+                            <p x-show="estado === 'revisando'" x-cloak role="status" class="af-esperando">
+                                <x-filament::loading-indicator class="af-esperando__icono" />
+                                <span x-text="mensaje"></span>
+                            </p>
+                            <p x-show="estado === 'error'" x-cloak role="alert" class="af-aviso af-aviso--error" x-text="mensaje"></p>
+                        </div>
+                        <p class="af-nota">{{ __('actualizaciones.actualizar_ahora_nota') }}</p>
+                    @endunless
+                </div>
+            </x-filament::section>
+        @endif
 
         <ol class="af-pasos-barra" aria-label="{{ __('actualizaciones.pasos') }}">
             @foreach ([1 => 'barra_subir', 2 => 'barra_revisar', 3 => 'barra_instalar'] as $numero => $texto)
@@ -183,6 +235,76 @@
 
     @script
     <script>
+        Alpine.data('descargaPorPedazos', ({ url, token, textos }) => ({
+            estado: 'libre',
+            porcentaje: 0,
+            mensaje: '',
+
+            async bajar() {
+                this.estado = 'bajando';
+                this.mostrar(0);
+                // Pulsar otra vez sigue desde donde iba: lo que ya bajó está en el servidor.
+                while (true) {
+                    const respuesta = await this.pedir();
+                    if (! respuesta?.ok) {
+                        return this.fallo(respuesta?.error ?? textos.red);
+                    }
+                    this.mostrar(respuesta.total > 0 ? Math.floor((100 * respuesta.llevamos) / respuesta.total) : 0);
+                    if (respuesta.paquete) {
+                        return this.terminar(respuesta.paquete);
+                    }
+                }
+            },
+
+            mostrar(porcentaje) {
+                this.porcentaje = porcentaje;
+                this.mensaje = textos.bajando.replace(':porcentaje', porcentaje);
+            },
+
+            async pedir() {
+                // Un corte de red o un hosting ocupado no debe tirar la descarga: dos intentos más antes de avisar.
+                for (let intento = 0; intento < 3; intento++) {
+                    try {
+                        const respuesta = await fetch(url, {
+                            method: 'POST',
+                            headers: { Accept: 'application/json', 'X-CSRF-TOKEN': token },
+                            credentials: 'same-origin',
+                        });
+                        const contenido = await respuesta.json().catch(() => null);
+                        if (contenido !== null && (respuesta.ok || respuesta.status === 422)) {
+                            return contenido;
+                        }
+                        if ([401, 403, 419].includes(respuesta.status)) {
+                            return { ok: false, error: textos.recarga };
+                        }
+                    } catch (error) {
+                        // Se reintenta abajo.
+                    }
+                    await new Promise((listo) => setTimeout(listo, 1500 * (intento + 1)));
+                }
+
+                return null;
+            },
+
+            async terminar(paquete) {
+                this.estado = 'revisando';
+                this.mensaje = textos.terminada;
+                try {
+                    await $wire.subidaTerminada(paquete);
+                    this.estado = 'libre';
+                    document.getElementById('paso-revisar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } catch (error) {
+                    // El zip ya está arriba: al recargar sale en la lista.
+                    this.fallo(textos.recarga);
+                }
+            },
+
+            fallo(texto) {
+                this.estado = 'error';
+                this.mensaje = texto;
+            },
+        }));
+
         Alpine.data('subidaPorPartes', ({ url, token, tamano, maximo, textos }) => ({
             archivo: null,
             estado: 'libre',
