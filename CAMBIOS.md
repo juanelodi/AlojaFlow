@@ -2,6 +2,22 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## Próxima versión (sin publicar)
+
+**Crear una reserva, más cómodo en el teléfono:**
+
+- **Primero fechas, personas y unidad.** En cuanto hay fechas dice cuántas unidades quedan libres.
+- **Lo poco usado va plegado:** descuento, depósito y comisión; estado y comentario; cargos y equipo. Se abre solo si trae datos o un error.
+- **Con una sola propiedad no se pregunta,** y «Elegir la primera libre» explica por qué no eligió ninguna.
+
+**El motor de reservas, para el huésped:**
+
+- **Los errores dicen qué hacer,** junto a cada campo, y la página vuelve abierta en el formulario con lo que ya se escribió, incluida la casilla de condiciones.
+- **El formulario y los resultados van primero;** la descripción y, al buscar, las fotos pasan abajo.
+- **En la confirmación, primero el pago,** y antes de enviar se aclara que todavía no se cobra nada.
+- **Se ve bien en oscuro:** los enlaces ya se leen, y el calendario y el botón de archivo cambian de color.
+- **El teléfono debe tener al menos siete dígitos.** Se quedan el idioma, los filtros y las personas de una página a otra. «1 persona» ya no sale en plural.
+
 ## 1.0.34 — 2026-11-07
 
 **La sincronización con HotelDruid 3.0.8 en español ya no se queda en SUB-099 por el límite diario.** Ese aviso de HotelDruid lleva un acento distinto y no se reconocía: ahora sale como SUB-005, que pausa hasta el día siguiente y pide bajar la frecuencia.
@@ -25,20 +41,6 @@ Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, 
 - **Al volver a una lista** sigue con la búsqueda, los filtros y el orden que tenía.
 - **«Ver» y «Editar»** se quedan a la vista aunque la tabla no quepa, y en el teléfono son más grandes. Una reserva es una tarjeta, no una pantalla entera.
 - **Las fechas** se escriben «3 feb 2027».
-
-**Crear una reserva, más cómodo en el teléfono:**
-
-- **Primero fechas, personas y unidad.** En cuanto hay fechas dice cuántas unidades quedan libres.
-- **Lo poco usado va plegado:** descuento, depósito y comisión; estado y comentario; cargos y equipo. Se abre solo si trae datos o un error.
-- **Con una sola propiedad no se pregunta,** y «Elegir la primera libre» explica por qué no eligió ninguna.
-
-**El motor de reservas, para el huésped:**
-
-- **Los errores dicen qué hacer,** junto a cada campo, y la página vuelve abierta en el formulario con lo que ya se escribió, incluida la casilla de condiciones.
-- **El formulario y los resultados van primero;** la descripción y, al buscar, las fotos pasan abajo.
-- **En la confirmación, primero el pago,** y antes de enviar se aclara que todavía no se cobra nada.
-- **Se ve bien en oscuro:** los enlaces ya se leen, y el calendario y el botón de archivo cambian de color.
-- **El teléfono debe tener al menos siete dígitos.** Se quedan el idioma, los filtros y las personas de una página a otra. «1 persona» ya no sale en plural.
 
 **Informes y tablas propias:** se ordenan con un clic en el título.
 
