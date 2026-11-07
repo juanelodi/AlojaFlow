@@ -2,7 +2,7 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
-## Próxima versión (sin publicar)
+## 1.0.35 — 2026-11-07
 
 **Actualizar ya no pide subir un zip.** Sistema → Actualizaciones avisa cuando sale una versión nueva y dice lo que cambia. Con «Actualizar ahora» se baja sola, con una barra de avance, y si se corta sigue desde donde iba.
 
