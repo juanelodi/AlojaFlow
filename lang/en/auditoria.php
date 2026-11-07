@@ -184,6 +184,7 @@ return [
         'Caja' => 'Cash register',
         'CampoPropio' => 'Custom field',
         'Canal' => 'Channel',
+        'CanalCargo' => 'Channel charge',
         'CargoReserva' => 'Booking charge',
         'CierreDia' => 'End of day',
         'ColorTipoCliente' => 'Guest color',

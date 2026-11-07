@@ -824,7 +824,7 @@ Se busca al cliente y se eligen sus reservas vigentes sin grupo, que no hayan sa
 
 ### D-147 · 2026-11-07 · Plantillas y documentos ya vienen creados
 
-Se amplían a 11 mensajes y 5 documentos, a partir de los de HotelDruid y de lo habitual en otros PMS. Una propiedad nueva los recibe al crearse, y una existente al actualizar, sin tocar lo que ya tenga. **Ningún mensaje sale solo:** crear la plantilla no crea un envío. «Activar envíos recomendados» prende tres (confirmación, recordatorio y gracias), solo si alguien lo pide.
+Se amplían a 11 mensajes y 5 documentos, a partir de lo habitual en PMS como HotelDruid. Una propiedad nueva los recibe al crearse. Una existente que ya los usaba recibe al actualizar solo los nuevos, para no regresar lo que renombró o borró. **Ningún mensaje sale solo:** crear la plantilla no crea un envío. «Activar envíos recomendados» prende tres (confirmación, recordatorio y gracias), solo si alguien lo pide y si en ese momento no sale ya otro mensaje: serían correos dobles.
 
 ### D-148 · 2026-11-07 · Calendario de tarifas
 
@@ -834,7 +834,7 @@ Una fila por tarifa y una columna por día, agrupadas por propiedad, como las ta
 
 Cada canal lleva los cargos que quiera (porcentaje o fijo; sobre tarifa base, total sin impuestos, total final o sobre la comisión) y su comisión dice sobre qué se calcula. **Utilidad bruta:** lo que paga el huésped, menos impuestos cobrados por cuenta de otro, comisión y cargos. **Neta:** la bruta menos retenciones, que van aparte porque no son un gasto sino impuesto adelantado. Es criterio nuestro, sin revisar por un contador. Los gastos del alojamiento no entran: no son de una reserva.
 
-Se calcula con los cargos de hoy, sin foto en cada reserva: cambiar un cargo cambia también las cifras de las pasadas. La comisión sí es la guardada en la reserva. Un canal se liga a la reserva por el nombre de su origen, como ya hacían los impuestos. Canales pasa a valer también en subordinadas: son datos propios.
+Se calcula con los cargos de hoy, sin foto en cada reserva: cambiar un cargo cambia también las cifras de las pasadas. La comisión es la guardada en la reserva y, si está en cero, la del canal: una reserva anterior a configurarlo también la paga. Los impuestos son los guardados al vender. Un canal se liga a la reserva por el nombre de su origen, como ya hacían los impuestos. Canales pasa a valer también en subordinadas: son datos propios.
 
 **Sugerencias, con lo que se pudo comprobar (2026-11-07, casi todo fuentes secundarias):** Booking, comisión de 15 % (10 a 25 %) sobre el total con limpieza, y cargo de pago de 1.1 a 3.1 % solo con Payments by Booking.com (llega apagado). Airbnb, tarifa única de 15.5 %, 16 % en México según una fuente; las fechas de la transición no coinciden entre fuentes. Expedia: no hay cifra pública, va por contrato, y se deja vacía. México: 4 % de ISR y 8 % de IVA con RFC, 20 % y 16 % sin él (LISR 113-A, LIVA 18-J), para persona física; no se leyó el texto oficial vigente, y el IVA de 16 % sobre la comisión es un supuesto a confirmar con la factura del portal. Lo de cada país va en `Pais::cargosDeCanales`.
 

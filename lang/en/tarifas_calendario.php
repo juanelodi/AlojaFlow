@@ -9,6 +9,7 @@
 declare(strict_types=1);
 
 return [
+    'noches_corto' => ':n n.',
     'tarifa' => 'Rate',
     'titulo' => 'Rate calendar',
     'fijar' => 'Set a price for some dates',

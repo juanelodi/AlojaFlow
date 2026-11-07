@@ -40,10 +40,13 @@ final class PlantillasBase
         'cuota_vencida' => [DisparadorAutomatizacion::CuotaVencida, 1],
     ];
 
-    public static function sembrar(Propiedad $propiedad): int
+    /**
+     * @param  list<string>|null  $solo  los códigos a crear; sin decir, todos
+     */
+    public static function sembrar(Propiedad $propiedad, ?array $solo = null): int
     {
         $creadas = 0;
-        foreach (self::CODIGOS as $codigo) {
+        foreach ($solo === null ? self::CODIGOS : array_intersect(self::CODIGOS, $solo) as $codigo) {
             $creadas += self::plantilla($propiedad, $codigo, 'mensajes.base.'.$codigo)->wasRecentlyCreated ? 1 : 0;
         }
 
@@ -104,8 +107,9 @@ final class PlantillasBase
         $creados = 0;
         foreach (self::RECOMENDADOS as [$codigo, $disparador, $dias, $hora, $condiciones]) {
             $automatizacion = Automatizacion::query()->firstOrCreate(
-                ['propiedad_id' => $propiedad->id, 'disparador' => $disparador->value, 'plantilla_id' => $plantillas[$codigo]],
-                ['nombre' => __('mensajes.base.'.$codigo.'.nombre', [], $propiedad->idioma), 'dias' => $dias, 'hora' => $hora, 'condiciones' => $condiciones, 'accion' => AccionAutomatizacion::CorreoHuesped],
+                // Por disparador: si ya manda algo en ese momento, otro sería un correo doble.
+                ['propiedad_id' => $propiedad->id, 'disparador' => $disparador->value],
+                ['plantilla_id' => $plantillas[$codigo], 'nombre' => __('mensajes.base.'.$codigo.'.nombre', [], $propiedad->idioma), 'dias' => $dias, 'hora' => $hora, 'condiciones' => $condiciones, 'accion' => AccionAutomatizacion::CorreoHuesped],
             );
             $creados += $automatizacion->wasRecentlyCreated ? 1 : 0;
         }

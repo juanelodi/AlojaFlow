@@ -30,16 +30,17 @@ final class DocumentosDePartida
     /**
      * Los que falten: los que ya existan, quizá cambiados, se quedan.
      *
+     * @param  list<string>|null  $solo  las claves a crear; sin decir, todas
      * @return int cuántos creó
      */
-    public static function sembrar(Propiedad $propiedad): int
+    public static function sembrar(Propiedad $propiedad, ?array $solo = null): int
     {
         $creados = 0;
         $orden = 0;
         foreach (self::DOCUMENTOS as $clave => $alcance) {
             $nombre = __('documentos_propios.base.'.$clave.'.nombre', [], $propiedad->idioma);
             $orden++;
-            if (DocumentoPropio::query()->where('propiedad_id', $propiedad->id)->where('nombre', $nombre)->exists()) {
+            if (($solo !== null && ! in_array($clave, $solo, true)) || DocumentoPropio::query()->where('propiedad_id', $propiedad->id)->where('nombre', $nombre)->exists()) {
                 continue;
             }
             DocumentoPropio::query()->create(['propiedad_id' => $propiedad->id, 'nombre' => $nombre, 'alcance' => $alcance, 'cuerpo' => self::textos($clave), 'orden' => $orden]);

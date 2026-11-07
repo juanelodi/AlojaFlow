@@ -184,6 +184,7 @@ return [
         'Caja' => 'Caja',
         'CampoPropio' => 'Campo propio',
         'Canal' => 'Canal',
+        'CanalCargo' => 'Cargo de canal',
         'CargoReserva' => 'Cargo de reserva',
         'CierreDia' => 'Cierre del día',
         'ColorTipoCliente' => 'Color de cliente',

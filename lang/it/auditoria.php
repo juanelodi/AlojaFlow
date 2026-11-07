@@ -184,6 +184,7 @@ return [
         'Caja' => 'Cassa',
         'CampoPropio' => 'Campo personalizzato',
         'Canal' => 'Canale',
+        'CanalCargo' => 'Costo del canale',
         'CargoReserva' => 'Addebito della prenotazione',
         'CierreDia' => 'Chiusura giornaliera',
         'ColorTipoCliente' => 'Colore cliente',

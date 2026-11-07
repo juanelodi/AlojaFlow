@@ -24,7 +24,7 @@ use App\Support\Dinero;
  * Cuánto le queda al alojamiento de una reserva (D-149).
  *
  * Bruta: lo que paga el huésped, menos los impuestos que cobra por cuenta de otro, menos comisión y cargos del canal.
- * Neta: la bruta menos lo que el canal retiene. Se calcula con los cargos de hoy del canal; la comisión es la guardada en la reserva.
+ * Neta: la bruta menos lo que el canal retiene. Se calcula con los cargos de hoy del canal; la comisión es la guardada en la reserva o, sin ella, la del canal.
  */
 final class UtilidadReserva
 {
@@ -39,17 +39,23 @@ final class UtilidadReserva
         if ($reserva->tipo !== TipoReserva::Reserva || $reserva->estado === EstadoReserva::Cancelada) {
             return null;
         }
-        $impuestos = (int) collect(Cotizador::impuestosDeReserva($reserva))->where('cobrado_por_canal', false)->sum('importe');
+        $impuestos = self::impuestos($reserva);
         $sinImpuestos = max(0, $reserva->total - $impuestos);
         $tarifaBase = max(0, $sinImpuestos - (int) $reserva->cargos()->sum('importe'));
         $noches = max(0, (int) $reserva->llegada->diffInDays($reserva->salida));
         $canal = $this->canal($reserva);
         $bases = [BaseCargoCanal::TarifaBase->value => $tarifaBase, BaseCargoCanal::SinImpuestos->value => $sinImpuestos, BaseCargoCanal::TotalFinal->value => $reserva->total];
 
+        // Sin comisión anotada, la del canal: una reserva anterior a configurarlo o que no pasó por el formulario también la paga.
+        $comision = $reserva->comision;
+        if ($comision === 0 && (float) $canal?->comision_porcentaje > 0) {
+            $comision = (int) round(($bases[$canal->comision_base->value] ?? $reserva->total) * (float) $canal->comision_porcentaje / 100);
+        }
+
         $filas = $canal === null ? collect() : $canal->cargos->where('activo', true);
         $cargos = [];
         $retenciones = [];
-        $comisiones = $reserva->comision;
+        $comisiones = $comision;
         // Primero lo que cobra el canal, porque el impuesto sobre sus cargos se calcula de eso.
         foreach ($filas->reject(fn (CanalCargo $c): bool => $c->clase === ClaseCargoCanal::ImpuestoSobreCargos || $c->base === BaseCargoCanal::Comisiones) as $cargo) {
             $importe = self::importe($cargo, $bases[$cargo->base->value], $noches, $reserva->moneda);
@@ -71,12 +77,12 @@ final class UtilidadReserva
         }
         $totalCargos = (int) array_sum(array_column($cargos, 'importe'));
         $totalRetenciones = (int) array_sum(array_column($retenciones, 'importe'));
-        $bruta = $reserva->total - $impuestos - $reserva->comision - $totalCargos;
+        $bruta = $reserva->total - $impuestos - $comision - $totalCargos;
 
         return [
             'ingreso' => $reserva->total,
             'impuestos' => $impuestos,
-            'comision' => $reserva->comision,
+            'comision' => $comision,
             'cargos' => $cargos,
             'total_cargos' => $totalCargos,
             'retenciones' => $retenciones,
@@ -85,6 +91,19 @@ final class UtilidadReserva
             'neta' => $bruta - $totalRetenciones,
             'canal' => $canal?->nombre,
         ];
+    }
+
+    /**
+     * Los que se guardaron al vender, sin los que cobró el canal. De una copia de la principal solo se conoce su porcentaje, incluido en el total.
+     */
+    private static function impuestos(Reserva $reserva): int
+    {
+        $porcentaje = (float) $reserva->getAttribute('impuestos_porcentaje');
+        if ($porcentaje > 0) {
+            return (int) round($reserva->total - $reserva->total / (1 + $porcentaje / 100));
+        }
+
+        return (int) $reserva->impuestos()->where('cobrado_por_canal', false)->sum('importe');
     }
 
     private static function importe(CanalCargo $cargo, int $base, int $noches, string $moneda): int

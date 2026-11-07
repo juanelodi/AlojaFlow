@@ -63,10 +63,13 @@ final class Operacion
      */
     public static function dia(array $propiedades, string $fecha): array
     {
+        $omitidos = Omisiones::huespedes($propiedades, LugarOmision::Hoy);
+        $base = fn (): Builder => Omisiones::sinEstos(self::reservas($propiedades), 'titular_id', $omitidos);
+
         return [
-            'llegan' => self::delDia($propiedades)->where('llegada', $fecha)->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
-            'salen' => self::delDia($propiedades)->where('salida', $fecha)->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
-            'continuan' => self::delDia($propiedades)->where('llegada', '<', $fecha)->where('salida', '>', $fecha)
+            'llegan' => $base()->where('llegada', $fecha)->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
+            'salen' => $base()->where('salida', $fecha)->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
+            'continuan' => $base()->where('llegada', '<', $fecha)->where('salida', '>', $fecha)
                 ->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
         ];
     }
@@ -80,7 +83,8 @@ final class Operacion
     {
         $hoy = $propiedad->hoy();
         $fecha = $hoy->format('Y-m-d');
-        $base = fn (): Builder => self::delDia([$propiedad->id])->without(['unidad', 'titular', 'propiedad', 'principal']);
+        $omitidos = Omisiones::huespedes([$propiedad->id], LugarOmision::Hoy);
+        $base = fn (): Builder => Omisiones::sinEstos(self::reservas([$propiedad->id]), 'titular_id', $omitidos)->without(['unidad', 'titular', 'propiedad', 'principal']);
 
         return [
             'propiedad' => $propiedad,

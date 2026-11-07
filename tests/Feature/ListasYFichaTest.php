@@ -213,7 +213,7 @@ describe('la ficha del huésped', function () {
         Livewire::actingAs($this->admin)->test(ViewHuesped::class, ['record' => $this->ana->id])
             ->assertSee($this->ana->codigo())->assertSee(__('ui.huespedes.codigo'))
             ->assertSee('2026')->assertSee('2027')->assertSee($reserva->numero)
-            ->assertSee('af-ficha__mes', false)->assertDontSee('<details class="af-plegable af-ficha__anio" open', false)
+            ->assertSee('af-ficha__mes', false)->assertDontSee('af-ficha__anio" wire:ignore.self open', false)
             ->assertSee('tel:+529981112222', false);
     });
 

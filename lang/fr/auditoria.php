@@ -184,6 +184,7 @@ return [
         'Caja' => 'Caisse',
         'CampoPropio' => 'Champ personnalisé',
         'Canal' => 'Canal',
+        'CanalCargo' => 'Frais de canal',
         'CargoReserva' => 'Frais de réservation',
         'CierreDia' => 'Clôture de la journée',
         'ColorTipoCliente' => 'Couleur de client',

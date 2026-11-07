@@ -2,6 +2,31 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.36 — 2026-11-07
+
+**Omitir a un cliente, de verdad.** En Clientes omitidos ahora se elige «En todo» o cada sección: Hoy y cierre del día, Calendario, Limpieza, Aviso, Informes y Mensajes.
+
+- **Ya no sale en Hoy,** ni en el Resumen, el cierre del día, depósitos y no-shows, y no se suma a sus cifras. Quien ya estaba omitido del aviso deja de salir también ahí al actualizar.
+- **Sus fechas siguen ocupadas:** en el calendario la barra dice «Ocupada», sin nombre, para no vender dos veces. Sigue en las listas de Reservas y Huéspedes para poder deshacerlo, y sus cobros siguen contando en la caja.
+
+**Calendario de tarifas.** Una pantalla nueva con una fila por tarifa y una columna por día, por propiedad, con el precio de cada noche, temporadas, estancia mínima y cierres. Pulsa un día para poner precio a un rango de fechas; lo ya vendido no cambia. La lista de tarifas también se agrupa y se filtra por propiedad.
+
+**Cuánto te queda de cada reserva.** Cada canal admite los cargos que necesites, en porcentaje o fijos, sobre la tarifa base o la final: cargos por servicio o por cobrar, impuestos sobre la comisión y retenciones.
+
+- **La reserva muestra su utilidad bruta y neta,** y hay un informe por canal.
+- **«Sugerir cargos de un portal»** propone lo habitual de Booking, Expedia y Airbnb, con las retenciones de México. Son una referencia: manda tu contrato, y conviene confirmarlo con tu contador.
+- **Canales también funciona en propiedades subordinadas.**
+
+**Grupos a partir de reservas ya hechas.** Busca al cliente y elige sus reservas: se manejan como grupo sin cambiar fechas, unidades ni precios.
+
+**Plantillas listas desde el principio.** Once mensajes y cinco documentos, en los seis idiomas: se agregan solos a cada propiedad nueva, y al actualizar llega lo nuevo sin tocar lo tuyo. Ningún mensaje sale solo: «Activar envíos recomendados» prende la confirmación, el recordatorio y las gracias, si ya no mandas algo en esos momentos.
+
+**Más orden en las pantallas:**
+
+- **Calendario:** abre siempre por habitaciones, también en el teléfono o en una ventana angosta. La vista de día sigue a un toque y tu navegador la recuerda.
+- **Ficha del huésped:** las reservas van por año y mes, plegadas, y cada grupo dice cuántas reservas, noches y dinero lleva.
+- **Aviso de entradas y salidas:** el formato va plegado y hasta abajo.
+
 ## 1.0.35 — 2026-11-07
 
 **Actualizar ya no pide subir un zip.** Sistema → Actualizaciones avisa cuando sale una versión nueva y dice lo que cambia. Con «Actualizar ahora» se baja sola, con una barra de avance, y si se corta sigue desde donde iba.

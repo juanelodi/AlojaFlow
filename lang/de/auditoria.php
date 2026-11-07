@@ -184,6 +184,7 @@ return [
         'Caja' => 'Kasse',
         'CampoPropio' => 'Eigenes Feld',
         'Canal' => 'Kanal',
+        'CanalCargo' => 'Kanalgebühr',
         'CargoReserva' => 'Buchungsgebühr',
         'CierreDia' => 'Tagesabschluss',
         'ColorTipoCliente' => 'Gästefarbe',

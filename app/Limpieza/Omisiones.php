@@ -57,7 +57,20 @@ final class Omisiones
      */
     public static function excluir(Builder $consulta, string $columnaTitular, array $propiedades, LugarOmision $lugar): Builder
     {
-        $ids = self::huespedes($propiedades, $lugar);
+        return self::sinEstos($consulta, $columnaTitular, self::huespedes($propiedades, $lugar));
+    }
+
+    /**
+     * Lo mismo con los ids ya sabidos, para quien arma varias consultas seguidas.
+     *
+     * @template T of Builder
+     *
+     * @param  T  $consulta
+     * @param  list<int>  $ids
+     * @return T
+     */
+    public static function sinEstos(Builder $consulta, string $columnaTitular, array $ids): Builder
+    {
         if ($ids !== []) {
             $consulta->where(fn ($q) => $q->whereNull($columnaTitular)->orWhereNotIn($columnaTitular, $ids));
         }

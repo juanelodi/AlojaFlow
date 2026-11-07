@@ -10,9 +10,11 @@ declare(strict_types=1);
 
 use App\Comunicacion\PlantillasBase;
 use App\Documentos\DocumentosDePartida;
+use App\Enums\AccionAutomatizacion;
 use App\Enums\BaseCargoCanal;
 use App\Enums\CalculoCargoCanal;
 use App\Enums\ClaseCargoCanal;
+use App\Enums\DisparadorAutomatizacion;
 use App\Enums\EstadoReserva;
 use App\Enums\ModoPropiedad;
 use App\Filament\Pages\CalendarioTarifas;
@@ -39,11 +41,13 @@ use App\Reservas\GestorPreciosTarifa;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
 use App\Reservas\UtilidadReserva;
+use App\Seguridad\Acceso;
 use App\Servicios\CalendarioTarifas as ServicioCalendarioTarifas;
 use App\Servicios\Informes;
 use Carbon\CarbonImmutable;
 use Database\Seeders\RolesYPermisosSeeder;
 use Filament\Facades\Filament;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -129,6 +133,20 @@ describe('plantillas de partida', function (): void {
             ->and(Automatizacion::query()->count())->toBe(3);
     });
 
+    it('con algo ya mandando en ese momento, no crea un correo doble', function (): void {
+        $propia = Plantilla::query()->create(['propiedad_id' => $this->propiedad->id, 'codigo' => 'mia', 'nombre' => 'Mía', 'asunto' => ['es' => 'A'], 'cuerpo' => ['es' => 'B']]);
+        Automatizacion::query()->create(['propiedad_id' => $this->propiedad->id, 'nombre' => 'Mía', 'disparador' => DisparadorAutomatizacion::ReservaConfirmada, 'dias' => 0, 'accion' => AccionAutomatizacion::CorreoHuesped, 'plantilla_id' => $propia->id]);
+
+        expect(PlantillasBase::prenderRecomendados($this->propiedad))->toBe(2)
+            ->and(Automatizacion::query()->where('disparador', DisparadorAutomatizacion::ReservaConfirmada->value)->count())->toBe(1);
+    });
+
+    it('se pueden crear solo las nuevas, sin regresar lo que se borró', function (): void {
+        expect(PlantillasBase::sembrar($this->propiedad, ['pide_opinion']))->toBe(1)
+            ->and(DocumentosDePartida::sembrar($this->propiedad, ['reglamento']))->toBe(1)
+            ->and(Plantilla::query()->pluck('codigo')->all())->toBe(['pide_opinion']);
+    });
+
     it('los documentos de partida traen reglamento y hoja de limpieza', function (): void {
         expect(DocumentosDePartida::sembrar($this->propiedad))->toBe(5)
             ->and(DocumentoPropio::query()->pluck('nombre')->all())->toContain(__('documentos_propios.base.reglamento.nombre'), __('documentos_propios.base.limpieza.nombre'));
@@ -193,6 +211,16 @@ describe('calendario de tarifas', function (): void {
             ->and($reserva->refresh()->total)->toBe(200000);
     });
 
+    it('entra quien maneja el catálogo sin ser administrador, y recepción no', function (): void {
+        $gerente = User::factory()->create(['activo' => true]);
+        Acceso::asignarRoles($gerente, [['propiedad_id' => $this->propiedad->id, 'rol' => 'gerente']]);
+        $recepcion = User::factory()->create(['activo' => true]);
+        Acceso::asignarRoles($recepcion, [['propiedad_id' => $this->propiedad->id, 'rol' => 'recepcion']]);
+
+        $this->actingAs($gerente)->get(CalendarioTarifas::getUrl())->assertOk()->assertSee('Normal');
+        $this->actingAs($recepcion)->get(CalendarioTarifas::getUrl())->assertForbidden();
+    });
+
     it('quien no maneja el catálogo no entra', function (): void {
         $this->actingAs(User::factory()->create(['activo' => true]))->get(CalendarioTarifas::getUrl())->assertForbidden();
     });
@@ -235,6 +263,25 @@ describe('utilidad de una reserva', function (): void {
         expect($u['canal'])->toBeNull()->and($u['bruta'])->toBe(199000)->and($u['neta'])->toBe(199000);
         $reserva->update(['estado' => EstadoReserva::Cancelada]);
         expect(app(UtilidadReserva::class)->de($reserva->refresh()))->toBeNull();
+    });
+
+    it('sin comisión anotada usa la del canal, sobre su base', function (): void {
+        $this->canal->update(['comision_base' => BaseCargoCanal::TotalFinal]);
+        $reserva = ($this->reservar)($this->unidad, '2030-03-01', '2030-03-03', ['origen_texto' => 'Booking']);
+        ($this->cargo)('IVA', ClaseCargoCanal::ImpuestoSobreCargos, 16, BaseCargoCanal::Comisiones);
+
+        $u = app(UtilidadReserva::class)->de($reserva);
+
+        expect($u['comision'])->toBe(30000)
+            ->and($u['total_cargos'])->toBe(4800)
+            ->and($u['bruta'])->toBe(200000 - 30000 - 4800);
+    });
+
+    it('resta el impuesto de una copia de la principal, que solo trae su porcentaje', function (): void {
+        $reserva = ($this->reservar)($this->unidad, '2030-03-01', '2030-03-03', ['total' => 116000]);
+        DB::table('reservas')->where('id', $reserva->id)->update(['impuestos_porcentaje' => 16]);
+
+        expect(app(UtilidadReserva::class)->de($reserva->refresh())['impuestos'])->toBe(16000);
     });
 
     it('el informe suma por canal', function (): void {

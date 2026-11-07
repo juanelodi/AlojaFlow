@@ -67,7 +67,7 @@
         </p>
 
         {{-- Casi nunca se cambia: plegado y al final, para que no estorbe al entrar. --}}
-        <details class="af-plegable">
+        <details class="af-plegable" wire:ignore.self>
             <summary>{{ __('equipo.aviso.formato') }}</summary>
             <div class="af-formato">
                 <label class="af-campo af-formato__ancho">

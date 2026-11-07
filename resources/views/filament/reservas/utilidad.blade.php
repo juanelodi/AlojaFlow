@@ -5,7 +5,7 @@
     $utilidad = app(\App\Reservas\UtilidadReserva::class)->de($reserva);
 @endphp
 @if ($utilidad !== null)
-    <details class="af-plegable">
+    <details class="af-plegable" wire:ignore.self>
         <summary>
             {{ __('canales.utilidad.titulo') }}:
             <span>{{ __('canales.utilidad.bruta') }} {{ Formato::dinero($utilidad['bruta'], $reserva->moneda) }}</span> ·

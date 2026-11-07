@@ -35,7 +35,8 @@ final class CierreDelDia
     public function resumen(Propiedad $propiedad, CarbonImmutable $fecha): array
     {
         $dia = $fecha->format('Y-m-d');
-        $reservas = fn () => Omisiones::excluir(DB::table('reservas'), 'titular_id', [$propiedad->id], LugarOmision::Hoy)->where('propiedad_id', $propiedad->id)->where('tipo', TipoReserva::Reserva->value)
+        $omitidos = Omisiones::huespedes([$propiedad->id], LugarOmision::Hoy);
+        $reservas = fn () => Omisiones::sinEstos(DB::table('reservas'), 'titular_id', $omitidos)->where('propiedad_id', $propiedad->id)->where('tipo', TipoReserva::Reserva->value)
             ->where('estado', '!=', EstadoReserva::Cancelada->value)->whereNull('eliminada_en_principal_en');
         $movimientos = fn (TipoMovimiento $tipo): int => (int) DB::table('movimientos')->where('propiedad_id', $propiedad->id)->where('fecha', $dia)->where('tipo', $tipo->value)->sum('importe');
 

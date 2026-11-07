@@ -9,6 +9,7 @@
 declare(strict_types=1);
 
 return [
+    'noches_corto' => ':n n.',
     'tarifa' => 'Tarif',
     'titulo' => 'Calendrier des tarifs',
     'fijar' => 'Fixer un prix pour des dates',

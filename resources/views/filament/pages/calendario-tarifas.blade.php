@@ -57,10 +57,10 @@
                                 @php($clases = \Illuminate\Support\Arr::toCssClasses(['af-tar-celda', 'af-tar-celda--temporada' => $celda['temporada'], 'af-tar-celda--cerrado' => $celda['cerrado_llegada'] || $celda['cerrado_salida'], 'af-tar-celda--hoy' => $celda['fecha'] === $hoy]))
                                 @php($aviso = implode(' · ', array_filter([Formato::fechaCorta($dias[$i]), Formato::dinero($celda['precio'], $moneda), $celda['temporada'], $celda['estancia_minima'] > 1 ? __('tarifas_calendario.minimo', ['noches' => $celda['estancia_minima']]) : null, $celda['cerrado_llegada'] ? __('tarifas_calendario.sin_llegadas') : null, $celda['cerrado_salida'] ? __('tarifas_calendario.sin_salidas') : null])))
                                 @if ($tarifa->base)
-                                    <div class="{{ $clases }}" style="grid-column: {{ $i + 2 }}" title="{{ $aviso }}">{{ Dinero::corto($celda['precio'], $moneda) }}@if ($celda['estancia_minima'] > 1)<small>{{ $celda['estancia_minima'] }}n</small>@endif</div>
+                                    <div class="{{ $clases }}" style="grid-column: {{ $i + 2 }}" title="{{ $aviso }}">{{ Dinero::corto($celda['precio'], $moneda) }}@if ($celda['estancia_minima'] > 1)<small>{{ __('tarifas_calendario.noches_corto', ['n' => $celda['estancia_minima']]) }}</small>@endif</div>
                                 @else
                                     <button type="button" class="{{ $clases }}" style="grid-column: {{ $i + 2 }}" title="{{ $aviso }}" aria-label="{{ $tarifa->nombre }}: {{ $aviso }}"
-                                        wire:click="mountAction('fijarPrecio', { tarifa: {{ $tarifa->id }}, fecha: '{{ $celda['fecha'] }}' })">{{ Dinero::corto($celda['precio'], $moneda) }}@if ($celda['estancia_minima'] > 1)<small>{{ $celda['estancia_minima'] }}n</small>@endif</button>
+                                        wire:click="mountAction('fijarPrecio', { tarifa: {{ $tarifa->id }}, fecha: '{{ $celda['fecha'] }}' })">{{ Dinero::corto($celda['precio'], $moneda) }}@if ($celda['estancia_minima'] > 1)<small>{{ __('tarifas_calendario.noches_corto', ['n' => $celda['estancia_minima']]) }}</small>@endif</button>
                                 @endif
                             @endforeach
                         </div>

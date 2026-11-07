@@ -65,8 +65,10 @@ final class FichaHuesped
      */
     private static function porAnioYMes(Collection $reservas, int $huespedId): array
     {
-        $noches = fn (Collection $lista): int => (int) $lista->sum(fn (Reserva $r): int => $r->estado === EstadoReserva::Cancelada ? 0 : (int) $r->llegada->diffInDays($r->salida));
-        $total = fn (Collection $lista): int => (int) $lista->sum(fn (Reserva $r): int => $r->estado !== EstadoReserva::Cancelada && $r->titular_id === $huespedId ? $r->total : 0);
+        // Las mismas que cuentan las cifras de arriba de la ficha.
+        $vigente = fn (Reserva $r): bool => $r->estado !== EstadoReserva::Cancelada && $r->eliminada_en_principal_en === null;
+        $noches = fn (Collection $lista): int => (int) $lista->sum(fn (Reserva $r): int => $vigente($r) ? (int) $r->llegada->diffInDays($r->salida) : 0);
+        $total = fn (Collection $lista): int => (int) $lista->sum(fn (Reserva $r): int => $vigente($r) && $r->titular_id === $huespedId ? $r->total : 0);
         $anios = [];
         foreach ($reservas->groupBy(fn (Reserva $r): int => (int) $r->llegada->format('Y'))->sortKeysDesc() as $anio => $delAnio) {
             $meses = [];

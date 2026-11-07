@@ -25,14 +25,14 @@
 
     {{-- Plegado de entrada: un cliente frecuente son años de reservas. Cada grupo dice lo que lleva, para saber sin abrirlo si interesa. --}}
     @forelse ($ficha['anios'] as $anio => $delAnio)
-        <details class="af-plegable af-ficha__anio">
+        <details class="af-plegable af-ficha__anio" wire:ignore.self>
             <summary>
                 <span class="af-ficha__titulo">{{ $anio }}</span>
                 <span class="af-nota">{{ trans_choice('ui.ficha.n_reservas', $delAnio['reservas'], ['n' => $delAnio['reservas']]) }} · {{ $delAnio['noches'] }} {{ mb_strtolower(__('ui.comun.noches')) }}@if ($delAnio['total'] > 0) · {{ Formato::dinero($delAnio['total'], $moneda) }}@endif</span>
             </summary>
             <div class="af-ficha__meses">
                 @foreach ($delAnio['meses'] as $mes)
-                    <details class="af-plegable af-ficha__mes">
+                    <details class="af-plegable af-ficha__mes" wire:ignore.self>
                         <summary>
                             <span class="af-ficha__mes-nombre">{{ Formato::fecha($mes['fecha'], 'MMMM') }}</span>
                             <span class="af-nota">{{ trans_choice('ui.ficha.n_reservas', $mes['reservas']->count(), ['n' => $mes['reservas']->count()]) }} · {{ $mes['noches'] }} {{ mb_strtolower(__('ui.comun.noches')) }}@if ($mes['total'] > 0) · {{ Formato::dinero($mes['total'], $moneda) }}@endif</span>
