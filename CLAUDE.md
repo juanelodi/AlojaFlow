@@ -4,7 +4,7 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-07): versión de prueba 1.0.36**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-07): versión de prueba 1.0.37**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
   D-029) y D-036 se revisan con el usuario. El plan de [docs/plan-paridad.md](docs/plan-paridad.md) quedó completo en la 1.0.24, y lo que se eligió del núcleo heredado ([docs/nucleo-heredado.md](docs/nucleo-heredado.md), D-117), en la 1.0.29.
@@ -309,6 +309,7 @@ npx license-checker --summary             # licencias npm
 - `public/.htaccess`: nada de directivas que solo admita la configuración del servidor (`DeflateCompressionLevel`) y todo
   dentro de su `IfModule`. Cualquier error ahí es un 500 en todo el sitio; `RendimientoPanelTest` lo revisa.
 - dompdf ignora `word-break: break-all`, y un texto largo sin espacios se sale de la página: `overflow-wrap: anywhere`.
+- Una columna `minmax(7.5rem, 1fr)` no crece con su contenido: un importe se sale o, con `word-break`, se parte. Las cifras son `flex-wrap` con `white-space: nowrap`, y si no cabe, pasa al renglón siguiente.
 - `@json` de Blade corta su expresión en las comas: un arreglo escrito ahí truena. Se arma en PHP y se imprime con `{!! !!}` y `JSON_HEX_TAG`.
 - `form-action` de la CSP también se aplica a una redirección: una página con un botón que acaba en una pasarela no puede llevarlo (`CabecerasSeguridad`).
 - `Http::fake` compara contra la dirección con su query: un GET con `?expand[]=…` necesita `*` al final del patrón.

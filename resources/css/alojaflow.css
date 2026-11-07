@@ -36,9 +36,12 @@
 .af-tarjeta__titulo { font-size: 1.0625rem; font-weight: 600; color: var(--gray-950); }
 .dark .af-tarjeta__titulo { color: white; }
 .af-tarjeta__fecha { font-size: .8125rem; color: var(--af-suave); }
-.af-cifras { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: .75rem; margin: 0; }
+/* Un importe no se parte ni se sale: la cifra mide al menos lo que su número, y si no cabe pasa al renglón siguiente.
+   Sin crecer, para que las cifras de varios renglones queden en columnas. */
+.af-cifras { display: flex; flex-wrap: wrap; gap: .75rem 1rem; margin: 0; }
+.af-cifra { flex: 0 1 8rem; }
 .af-cifra dt { font-size: .75rem; color: var(--af-suave); line-height: 1.2; }
-.af-cifra dd { margin: .125rem 0 0; font-size: 1.375rem; font-weight: 600; color: var(--gray-950); font-variant-numeric: tabular-nums; }
+.af-cifra dd { margin: .125rem 0 0; font-size: 1.375rem; font-weight: 600; color: var(--gray-950); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .dark .af-cifra dd { color: white; }
 .af-cifra--destacada dd { color: var(--warning-700); }
 .dark .af-cifra--destacada dd { color: var(--warning-400); }
@@ -147,13 +150,15 @@
 .af-leyenda i { display: inline-block; width: 1.25rem; height: .75rem; border-radius: .25rem; }
 
 /* Indicadores */
-.af-kpis { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr)); }
-.af-kpi { border: 1px solid var(--gray-200); border-radius: .75rem; padding: .875rem 1rem; background: white; }
+/* Como las cifras: el importe manda sobre el ancho. El elemento vacío del final evita que el último renglón se estire. */
+.af-kpis { display: flex; flex-wrap: wrap; gap: .75rem; }
+.af-kpis::after { content: ""; flex: 999 1 0; }
+.af-kpi { flex: 1 1 11rem; border: 1px solid var(--gray-200); border-radius: .75rem; padding: .875rem 1rem; background: white; }
 .dark .af-kpi { background: var(--gray-900); border-color: var(--gray-800); }
 .af-kpi dt { font-size: .75rem; color: var(--af-suave); }
-.af-kpi dd { margin: .25rem 0 0; font-size: 1.5rem; font-weight: 600; color: var(--gray-950); font-variant-numeric: tabular-nums; }
+.af-kpi dd { margin: .25rem 0 0; font-size: 1.5rem; font-weight: 600; color: var(--gray-950); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .dark .af-kpi dd { color: white; }
-.af-kpi small { display: block; font-size: .75rem; color: var(--af-suave); font-weight: 400; margin-top: .125rem; }
+.af-kpi small { display: block; font-size: .75rem; color: var(--af-suave); font-weight: 400; margin-top: .125rem; white-space: normal; }
 .af-dos-columnas { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); }
 
 /* Disponibilidad */
@@ -295,9 +300,11 @@ a.af-tarjeta-reserva__nombre { display: inline-block; padding-block: .625rem; ma
 @media (max-width: 39.99rem) {
     .af-seccion-lista .fi-section-content { padding: .875rem 1rem; }
     .af-seccion-lista .fi-section-header { padding: .75rem 1rem; }
+    /* En el teléfono casi todo va a lo ancho: una tarjeta suelta al final se vería chica. */
+    .af-kpis::after { content: none; }
     /* Las cifras del día, en un renglón: lo que importa en «Hoy» son las llegadas, y tienen que verse sin desplazar. */
-    .af-kpis--compactas { grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: .5rem; }
-    .af-kpis--compactas .af-kpi { padding: .5rem .75rem; }
+    .af-kpis--compactas { gap: .5rem; }
+    .af-kpis--compactas .af-kpi { flex-basis: 9rem; padding: .5rem .75rem; }
     .af-kpis--compactas .af-kpi dd { margin-block-start: 0; font-size: 1.125rem; }
 }
 
@@ -609,7 +616,7 @@ th[aria-sort="descending"] .af-orden::after { opacity: 1; clip-path: polygon(10%
 }
 .af-dia__fecha { font-size: 1rem; font-weight: 600; color: var(--gray-950); }
 .dark .af-dia__fecha { color: white; }
-.af-dia__cifras { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-block-start: .5rem; }
+.af-dia__cifras { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-block-start: .5rem; }
 .af-dia__cifras dd { font-size: 1.125rem; }
 .af-dia-lista { margin: 0; padding: 0; list-style: none; border: 1px solid var(--gray-200); border-radius: .75rem; background: white; }
 .dark .af-dia-lista { background: var(--gray-900); border-color: var(--gray-800); }
@@ -632,8 +639,7 @@ th[aria-sort="descending"] .af-orden::after { opacity: 1; clip-path: polygon(10%
 /* Ficha de la reserva: lo mismo que la del huésped, con lo importante primero. */
 .af-resumen-reserva__fechas { font-size: 1.0625rem; font-weight: 600; color: var(--gray-950); }
 .af-resumen-reserva__estado { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .625rem; margin-block-start: .375rem; }
-.af-resumen-reserva .af-cifras { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.af-resumen-reserva .af-cifra dd { overflow-wrap: anywhere; }
+.af-resumen-reserva .af-cifra { flex-basis: auto; }
 .dark .af-resumen-reserva__fechas { color: white; }
 .af-resumen-reserva__contactos { padding-block-start: 1rem; border-block-start: 1px solid var(--gray-200); }
 .dark .af-resumen-reserva__contactos { border-color: var(--gray-800); }
