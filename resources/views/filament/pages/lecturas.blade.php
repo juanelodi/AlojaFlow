@@ -114,8 +114,8 @@
                                     <tr wire:key="historial-{{ $lectura->id }}">
                                         <td data-orden="{{ $lectura->leida_en?->format('Y-m-d') }}">{{ Formato::fecha($lectura->leida_en) }}</td>
                                         <td>{{ $lectura->unidad->nombre }}</td>
-                                        <td>{{ (float) $lectura->actual }}</td>
-                                        <td>{{ $lectura->inicial ? __('camping.lecturas.punto_de_partida') : (float) $lectura->consumo }}</td>
+                                        <td data-orden="{{ (float) $lectura->actual }}">{{ (float) $lectura->actual }}</td>
+                                        <td data-orden="{{ $lectura->inicial ? '' : (float) $lectura->consumo }}">{{ $lectura->inicial ? __('camping.lecturas.punto_de_partida') : (float) $lectura->consumo }}</td>
                                         <td class="af-num">{{ $lectura->importe > 0 ? Formato::dinero($lectura->importe, $moneda) : '—' }}</td>
                                         <td>
                                             @if ($lectura->reserva)

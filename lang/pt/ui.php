@@ -278,6 +278,8 @@ return [
         'con_saldo' => 'Com saldo pendente',
         'buscar' => 'Pesquisar: nome, telefone, cidade, origem, número…',
         'solo_vigentes' => 'Ocultar as apagadas na instalação principal',
+        'con_eliminadas' => 'Incluir também as apagadas',
+        'solo_eliminadas' => 'Só as apagadas',
         'nueva' => 'Nova reserva',
         'creada' => 'Criada',
         'motivo' => 'Motivo do bloqueio',

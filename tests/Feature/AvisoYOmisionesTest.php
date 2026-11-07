@@ -217,6 +217,19 @@ describe('aviso de entradas y salidas', function () {
             expect(Livewire::actingAs($this->super)->test(AvisoEntradasSalidas::class)->get('formato')['icono_dia'])->toBe('📌');
         });
 
+        it('limpieza puede probar otro formato, pero no cambiarlo para todos', function () {
+            $limpieza = User::query()->create(['name' => 'Li', 'email' => 'limpia@example.com', 'password' => 'una-clave-larga-de-prueba', 'activo' => true]);
+            Acceso::asignarRoles($limpieza, [['propiedad_id' => $this->propiedad->id, 'rol' => 'limpieza']]);
+
+            $pantalla = Livewire::actingAs($limpieza)->test(AvisoEntradasSalidas::class)
+                ->assertDontSee(__('equipo.aviso.guardar_formato'))
+                ->set('formato.icono_dia', '⭐');
+            expect($pantalla->get('texto'))->toContain('⭐ ');
+
+            $pantalla->call('guardarFormato')->assertForbidden();
+            expect(FormatoAviso::de($this->propiedad->id)['icono_dia'])->toBe('📌');
+        });
+
         it('lo que no está en la lista no pasa, y los textos van en un renglón', function () {
             expect(FormatoAviso::limpiar(['icono_dia' => '<b>', 'fecha' => 'cualquiera', 'separador' => "x\ny", 'texto_salen' => "Sa\nlen"]))
                 ->toMatchArray(['icono_dia' => '📌', 'fecha' => 'dia_numerica', 'separador' => 'linea', 'texto_salen' => 'Sa len']);

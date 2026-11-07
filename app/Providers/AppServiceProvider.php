@@ -78,9 +78,9 @@ class AppServiceProvider extends ServiceProvider
         // En el teléfono, cada fila es una tarjeta con todos sus datos: una tabla ancha solo dejaba ver dos columnas.
         Table::configureUsing(fn (Table $table): Table => $table->stackedOnMobile());
 
-        // Una X para vaciar un campo obligatorio solo lleva a un error.
+        // Una X para vaciar un campo obligatorio solo lleva a un error. En uno nativo, sin esa opción vacía el navegador mostraría la primera como elegida.
         Select::configureUsing(function (Select $select): void {
-            $select->selectablePlaceholder(fn (Select $component): bool => ! $component->isRequired());
+            $select->selectablePlaceholder(fn (Select $component): bool => $component->isNative() || ! $component->isRequired());
         });
 
         // Ordenar por cualquier columna de la base, sin pedirlo una por una. Una columna puede decir lo contrario con ->sortable(false).

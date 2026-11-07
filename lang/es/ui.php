@@ -282,6 +282,8 @@ return [
         'con_saldo' => 'Con saldo pendiente',
         'buscar' => 'Buscar: nombre, teléfono, ciudad, origen, número…',
         'solo_vigentes' => 'Ocultar eliminadas en la principal',
+        'con_eliminadas' => 'Incluir también las eliminadas',
+        'solo_eliminadas' => 'Solo las eliminadas',
         'nueva' => 'Nueva reserva',
         'creada' => 'Creada',
         'motivo' => 'Motivo del bloqueo',
