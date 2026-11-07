@@ -518,3 +518,29 @@ it('subir el zip a mano sigue disponible, también sin aviso', function () {
         ->assertSee(__('actualizaciones.subir_boton'))
         ->assertDontSee(__('actualizaciones.actualizar_ahora'));
 });
+
+it('con el aviso apagado no se insiste, aunque ya se supiera de una versión', function () {
+    Ajustes::guardar(UltimaVersion::AJUSTE_CONSULTA, ['version' => '99.0.0', 'notas' => '', 'enlace' => null, 'consultada_en' => now('UTC')->toIso8601String(), 'fallo' => false]);
+    $ultima = app(UltimaVersion::class);
+    expect($ultima->paraAvisar()['version'] ?? null)->toBe('99.0.0');
+
+    $ultima->cambiarAviso(false);
+
+    expect($ultima->paraAvisar())->toBeNull()
+        // En Actualizaciones se sigue viendo: ahí se entra a buscarla.
+        ->and($ultima->disponible()['version'] ?? null)->toBe('99.0.0');
+});
+
+it('un zip a medio subir por FTP no se borra, y lo bajado y firmado lo sustituye al terminar', function () {
+    ($this->conocerVersion)();
+    File::ensureDirectoryExists(dirname(($this->entrada)()));
+    File::put(($this->entrada)(), 'a medio subir');
+
+    Http::fake([URL_ZIP => Http::response('', 500)]);
+    ($this->pedazo)()->assertStatus(422);
+    expect((string) file_get_contents(($this->entrada)()))->toBe('a medio subir');
+
+    Http::fake([URL_ZIP => Http::response($this->zip)]);
+    ($this->pedazo)()->assertOk()->assertJson(['paquete' => 'alojaflow-1.0.2.zip']);
+    expect((string) file_get_contents(($this->entrada)()))->toBe($this->zip);
+});

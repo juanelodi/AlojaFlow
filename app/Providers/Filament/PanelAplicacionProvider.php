@@ -162,7 +162,7 @@ class PanelAplicacionProvider extends PanelProvider
         if (! Actualizaciones::canAccess()) {
             return '';
         }
-        $nueva = app(UltimaVersion::class)->disponible();
+        $nueva = app(UltimaVersion::class)->paraAvisar();
 
         return $nueva === null ? '' : view('filament.avisos.version-nueva', ['version' => $nueva['version'], 'enlace' => Actualizaciones::getUrl()]);
     }

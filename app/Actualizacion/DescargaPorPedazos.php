@@ -103,7 +103,7 @@ class DescargaPorPedazos
 
                 return ['llevamos' => $tamano, 'total' => $tamano, 'paquete' => $nombre];
             }
-            @unlink($final);
+            // Puede ser un zip que alguien está subiendo por FTP: no se borra. Al terminar, lo bajado y firmado lo sustituye.
         }
 
         $carpeta = $this->carpeta();

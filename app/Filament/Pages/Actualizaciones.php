@@ -75,7 +75,7 @@ class Actualizaciones extends Page
      */
     public static function getNavigationBadge(): ?string
     {
-        return self::canAccess() ? app(UltimaVersion::class)->disponible()['version'] ?? null : null;
+        return self::canAccess() ? app(UltimaVersion::class)->paraAvisar()['version'] ?? null : null;
     }
 
     public static function getNavigationBadgeColor(): string

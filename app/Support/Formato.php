@@ -105,7 +105,7 @@ final class Formato
      */
     public static function fechaCortaConAnio(?CarbonInterface $fecha): string
     {
-        return str_replace('.', '', self::fecha($fecha, 'ddd D MMM YYYY'));
+        return self::compactar(self::fecha($fecha, 'ddd ll'));
     }
 
     /**

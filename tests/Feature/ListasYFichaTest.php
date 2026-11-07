@@ -32,6 +32,7 @@ use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Columns\Column;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Once;
 use Livewire\Livewire;
 
@@ -266,5 +267,24 @@ describe('el buscador de arriba', function () {
 
         expect(ReservaResource::getGlobalSearchResults('cancún'))->toHaveCount(0)
             ->and(HuespedResource::getGlobalSearchResults('madrid'))->toHaveCount(0);
+    });
+});
+
+describe('la fecha y el estado de la ficha de la reserva', function () {
+    it('la fecha con año sigue el orden de cada idioma', function () {
+        expect(Formato::fechaCortaConAnio(CarbonImmutable::parse('2027-02-04')))->toBe('jue 4 feb 2027');
+        app()->setLocale('en');
+        expect(Formato::fechaCortaConAnio(CarbonImmutable::parse('2027-02-04')))->toBe('Thu Feb 4, 2027');
+    });
+
+    it('una reserva cancelada o eliminada no se presenta como una estancia', function () {
+        $cancelada = ($this->reservar)($this->ana, '2026-12-15', '2026-12-18', ['estado' => EstadoReserva::Cancelada, 'salida_registrada_en' => now()]);
+        $eliminada = ($this->reservar)($this->ana, '2027-01-15', '2027-01-18', ['eliminada_en_principal_en' => now(), 'entrada_registrada_en' => now()]);
+        $this->actingAs($this->admin);
+
+        $pinta = fn (Reserva $reserva): string => Blade::render('<x-estado-estancia :reserva="$reserva" />', ['reserva' => $reserva]);
+
+        expect($pinta($cancelada))->toContain(EstadoReserva::Cancelada->etiqueta())->not->toContain(__('ui.comun.salio'))
+            ->and($pinta($eliminada))->toContain(__('ui.reservas.eliminada'))->not->toContain(__('ui.comun.en_casa'));
     });
 });

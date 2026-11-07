@@ -85,6 +85,16 @@ final class UltimaVersion
     }
 
     /**
+     * Lo que se anuncia fuera de Actualizaciones. Con el aviso apagado no se insiste, aunque ya se supiera de una versión.
+     *
+     * @return array{version: string, notas: string, enlace: ?string}|null
+     */
+    public function paraAvisar(): ?array
+    {
+        return $this->avisoActivo() ? $this->disponible() : null;
+    }
+
+    /**
      * @return array<string, mixed> lo último que se supo: version, notas, enlace, consultada_en y fallo
      */
     public function ultimaConsulta(): array
