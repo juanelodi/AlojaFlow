@@ -12,6 +12,7 @@ namespace App\Filament\Resources\Cupones;
 
 use App\Enums\TipoCupon;
 use App\Filament\Campos\CampoDinero;
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Resources\Base\RecursoDePropiedad;
 use App\Filament\Resources\Cupones\Pages\CreateCupon;
 use App\Filament\Resources\Cupones\Pages\EditCupon;
@@ -84,8 +85,8 @@ class CuponResource extends RecursoDePropiedad
                     ->required($esPorcentaje)->visible($esPorcentaje),
                 CampoDinero::make('importe')->label(__('ui.cupones.importe'))
                     ->required(fn (Get $get): bool => ! $esPorcentaje($get))->visible(fn (Get $get): bool => ! $esPorcentaje($get)),
-                DatePicker::make('valido_desde')->label(__('ui.cupones.desde'))->helperText(__('ui.cupones.fechas_ayuda')),
-                DatePicker::make('valido_hasta')->label(__('ui.cupones.hasta'))->afterOrEqual('valido_desde'),
+                DatePicker::make('valido_desde')->extraInputAttributes(RangoFechas::inicio('periodo'))->label(__('ui.cupones.desde'))->helperText(__('ui.cupones.fechas_ayuda')),
+                DatePicker::make('valido_hasta')->extraInputAttributes(RangoFechas::fin('periodo'))->label(__('ui.cupones.hasta'))->afterOrEqual('valido_desde'),
                 TextInput::make('usos_maximos')->label(__('ui.cupones.usos_maximos'))->helperText(__('ui.cupones.usos_ayuda'))->numeric()->minValue(1),
                 TextInput::make('estancia_minima')->label(__('ui.cupones.estancia_minima'))->numeric()->minValue(1)->default(1)->required(),
                 Toggle::make('activo')->label(__('ui.tarifas.activa'))->default(true),

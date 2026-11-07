@@ -17,6 +17,7 @@ use App\Documentos\GeneradorPdf;
 use App\Enums\EstadoGrupo;
 use App\Enums\MetodoPago;
 use App\Enums\TipoContacto;
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Resources\Grupos\GrupoResource;
 use App\Grupos\AccesoCoordinador;
 use App\Grupos\ListaHuespedes;
@@ -140,9 +141,9 @@ class ViewGrupo extends ViewRecord
                             ->options(['porcentaje' => __('grupos.cuotas.porcentaje'), 'importe' => __('ui.pagos.importe')]),
                         TextInput::make('anticipo')->label(__('grupos.cuotas.anticipo'))->numeric()->minValue(0)->step('any')->required()
                             ->suffix(fn (Get $get): ?string => $get('anticipo_tipo') === 'porcentaje' ? '%' : null),
-                        DatePicker::make('fecha_anticipo')->label(__('grupos.cuotas.fecha_anticipo'))->required(),
+                        DatePicker::make('fecha_anticipo')->extraInputAttributes(RangoFechas::inicio('cuotas'))->label(__('grupos.cuotas.fecha_anticipo'))->required(),
                         TextInput::make('cuotas')->label(__('grupos.cuotas.cuantas'))->numeric()->integer()->minValue(1)->maxValue(60)->required(),
-                        DatePicker::make('hasta')->label(__('grupos.cuotas.hasta'))->required()->afterOrEqual('fecha_anticipo'),
+                        DatePicker::make('hasta')->extraInputAttributes(RangoFechas::fin('cuotas'))->label(__('grupos.cuotas.hasta'))->required()->afterOrEqual('fecha_anticipo'),
                     ])
                     ->action(function (Grupo $record, array $data): void {
                         $gestor = app(GestorGrupos::class);

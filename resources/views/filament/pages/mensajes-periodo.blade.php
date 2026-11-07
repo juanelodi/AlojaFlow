@@ -30,11 +30,11 @@
             </label>
             <label class="af-campo">
                 <span>{{ __('ui.indicadores.desde') }}</span>
-                <x-filament::input.wrapper><x-filament::input type="date" :value="$this->desde" wire:model.live="desde" /></x-filament::input.wrapper>
+                <x-filament::input.wrapper><x-filament::input type="date" :value="$this->desde" wire:model.live="desde" data-af-rango-inicio="periodo" /></x-filament::input.wrapper>
             </label>
             <label class="af-campo">
                 <span>{{ __('ui.indicadores.hasta') }}</span>
-                <x-filament::input.wrapper><x-filament::input type="date" :value="$this->hasta" wire:model.live="hasta" /></x-filament::input.wrapper>
+                <x-filament::input.wrapper><x-filament::input type="date" :value="$this->hasta" wire:model.live="hasta" data-af-rango-fin="periodo" /></x-filament::input.wrapper>
             </label>
         </div>
 

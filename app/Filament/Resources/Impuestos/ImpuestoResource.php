@@ -12,6 +12,7 @@ namespace App\Filament\Resources\Impuestos;
 
 use App\Enums\BaseCargo;
 use App\Filament\Campos\CampoDinero;
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Resources\Base\RecursoDePropiedad;
 use App\Filament\Resources\Impuestos\Pages\CreateImpuesto;
 use App\Filament\Resources\Impuestos\Pages\EditImpuesto;
@@ -80,8 +81,8 @@ class ImpuestoResource extends RecursoDePropiedad
                     ->required($esPorcentaje)->visible($esPorcentaje),
                 CampoDinero::make('importe')->label(__('ui.impuestos.importe'))->required(fn (Get $get): bool => ! $esPorcentaje($get))->visible(fn (Get $get): bool => ! $esPorcentaje($get)),
                 Toggle::make('incluido_en_precio')->label(__('ui.impuestos.incluido'))->helperText(__('ui.impuestos.incluido_ayuda'))->default(true),
-                DatePicker::make('vigente_desde')->label(__('caja.impuestos.vigente_desde'))->helperText(__('caja.impuestos.vigencia_ayuda')),
-                DatePicker::make('vigente_hasta')->label(__('caja.impuestos.vigente_hasta'))->afterOrEqual('vigente_desde'),
+                DatePicker::make('vigente_desde')->extraInputAttributes(RangoFechas::inicio('periodo'))->label(__('caja.impuestos.vigente_desde'))->helperText(__('caja.impuestos.vigencia_ayuda')),
+                DatePicker::make('vigente_hasta')->extraInputAttributes(RangoFechas::fin('periodo'))->label(__('caja.impuestos.vigente_hasta'))->afterOrEqual('vigente_desde'),
                 TextInput::make('tope_noches')->label(__('caja.impuestos.tope_noches'))->helperText(__('caja.impuestos.tope_noches_ayuda'))->numeric()->minValue(1)->maxValue(3650),
                 TextInput::make('exento_desde_noches')->label(__('estancias.impuesto.exento'))->helperText(__('estancias.impuesto.exento_ayuda'))->numeric()->integer()->minValue(1)->maxValue(3650),
                 TextInput::make('edad_minima')->label(__('caja.impuestos.edad_minima'))->helperText(__('caja.impuestos.edad_minima_ayuda'))->numeric()->minValue(1)->maxValue(99)

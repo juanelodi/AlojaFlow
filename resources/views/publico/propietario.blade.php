@@ -104,8 +104,8 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="campo"><label for="llegada">{{ __('ui.comun.llegada') }}</label><input id="llegada" type="date" name="llegada" min="{{ $hoy->format('Y-m-d') }}" value="{{ old('llegada') }}" required></div>
-                    <div class="campo"><label for="salida">{{ __('ui.comun.salida') }}</label><input id="salida" type="date" name="salida" min="{{ $hoy->format('Y-m-d') }}" value="{{ old('salida') }}" required></div>
+                    <div class="campo"><label for="llegada">{{ __('ui.comun.llegada') }}</label><input id="llegada" type="date" data-af-rango-inicio="estancia" data-af-rango-dias="1" data-af-rango-llenar="1" name="llegada" min="{{ $hoy->format('Y-m-d') }}" value="{{ old('llegada') }}" required></div>
+                    <div class="campo"><label for="salida">{{ __('ui.comun.salida') }}</label><input id="salida" type="date" data-af-rango-fin="estancia" name="salida" min="{{ $hoy->format('Y-m-d') }}" value="{{ old('salida') }}" required></div>
                 </div>
                 <button type="submit">{{ __('propietarios.portal.bloquear_boton') }}</button>
             </form>

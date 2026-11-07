@@ -15,6 +15,7 @@ use App\Enums\ClaseArchivo;
 use App\Enums\MetodoPago;
 use App\Enums\TipoMovimiento;
 use App\Filament\Campos\CampoDinero;
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Resources\Base\MuestraLaCajaDeLaPrincipal;
 use App\Filament\Resources\Base\RecursoDePropiedad;
 use App\Filament\Resources\Movimientos\Pages\CreateMovimiento;
@@ -140,8 +141,8 @@ class MovimientoResource extends RecursoDePropiedad
                 SelectFilter::make('tipo')->label(__('ui.movimientos.tipo'))->options(TipoMovimiento::opciones()),
                 Filter::make('fecha')->label(__('ui.pagos.fecha'))
                     ->schema([
-                        DatePicker::make('desde')->label(__('ui.indicadores.desde')),
-                        DatePicker::make('hasta')->label(__('ui.indicadores.hasta')),
+                        DatePicker::make('desde')->extraInputAttributes(RangoFechas::inicio('filtro_fecha'))->label(__('ui.indicadores.desde')),
+                        DatePicker::make('hasta')->extraInputAttributes(RangoFechas::fin('filtro_fecha'))->label(__('ui.indicadores.hasta')),
                     ])
                     ->query(fn (Builder $query, array $data): Builder => $query
                         ->when($data['desde'] ?? null, fn (Builder $q, string $desde): Builder => $q->where('fecha', '>=', $desde))

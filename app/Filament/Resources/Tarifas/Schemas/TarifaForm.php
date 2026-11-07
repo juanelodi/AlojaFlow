@@ -12,6 +12,7 @@ namespace App\Filament\Resources\Tarifas\Schemas;
 
 use App\Enums\ModoTarifa;
 use App\Filament\Campos\CampoDinero;
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Resources\Tarifas\TarifaResource;
 use App\Models\Politica;
 use App\Models\Propiedad;
@@ -107,8 +108,8 @@ class TarifaForm
                         ->columns(['default' => 1, 'md' => 3])
                         ->schema([
                             TextInput::make('nombre')->label(__('ui.tarifas.temporada'))->required()->maxLength(100),
-                            DatePicker::make('desde')->label(__('ui.tarifas.desde'))->required(),
-                            DatePicker::make('hasta')->label(__('ui.tarifas.hasta'))->required()->afterOrEqual('desde'),
+                            DatePicker::make('desde')->extraInputAttributes(RangoFechas::inicio('temporada'))->label(__('ui.tarifas.desde'))->required(),
+                            DatePicker::make('hasta')->extraInputAttributes(RangoFechas::fin('temporada'))->label(__('ui.tarifas.hasta'))->required()->afterOrEqual('desde'),
                             CampoDinero::make('precio_noche', '../../propiedad_id')->label(__('ui.tarifas.precio_noche'))->required(),
                             CampoDinero::make('precio_fin_semana', '../../propiedad_id')->label(__('ui.tarifas.fin_semana'))
                                 ->dehydrateStateUsing(fn (mixed $state, Get $get): ?int => blank($state) ? null : \App\Support\Dinero::aUnidadMenor((string) $state, CampoDinero::moneda($get('../../propiedad_id')))),

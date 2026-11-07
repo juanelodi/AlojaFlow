@@ -29,6 +29,7 @@ use App\Filament\Resources\Omisiones\OmisionResource;
 use App\Filament\Resources\Omisiones\Pages\CreateOmision;
 use App\Filament\Resources\Omisiones\Pages\ListOmisiones;
 use App\Limpieza\AvisoEquipo;
+use App\Limpieza\FormatoAviso;
 use App\Limpieza\GestorLimpieza;
 use App\Limpieza\Omisiones;
 use App\Models\Automatizacion;
@@ -55,8 +56,10 @@ use App\Servicios\Indicadores;
 use App\Servicios\Informes;
 use App\Support\Ajustes;
 use App\Support\Contactos;
+use App\Support\Formato;
 use Database\Seeders\RolesYPermisosSeeder;
 use Filament\Facades\Filament;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 
 afterEach(fn () => Ajustes::olvidar());
@@ -144,8 +147,80 @@ describe('aviso de entradas y salidas', function () {
         expect($pantalla->set('nombre', true)->get('texto'))->toContain('Ana Uno');
     });
 
-    it('borrar el número de días no truena', function () {
-        Livewire::actingAs($this->super)->test(AvisoEntradasSalidas::class)->set('dias', null)->assertSet('dias', 7)->assertHasNoErrors();
+    it('borrar una fecha o ponerla al revés no truena', function () {
+        $pantalla = Livewire::actingAs($this->super)->test(AvisoEntradasSalidas::class);
+        $desde = $pantalla->get('desde');
+
+        $pantalla->set('hasta', '')->assertHasNoErrors();
+        expect($pantalla->get('hasta'))->toBeGreaterThanOrEqual($desde);
+
+        $pantalla->set('hasta', '2001-01-01')->assertSet('hasta', $desde)->assertHasNoErrors();
+    });
+
+    it('avisa si el rango se pasa del máximo, y lo recorta', function () {
+        $pantalla = Livewire::actingAs($this->super)->test(AvisoEntradasSalidas::class)
+            ->set('desde', '2030-01-01')->set('hasta', '2031-01-01');
+
+        $pantalla->assertSet('excedido', true)->assertSee(__('equipo.aviso.maximo', ['dias' => AvisoEquipo::DIAS_MAXIMOS]));
+        expect($pantalla->get('hasta'))->toBe('2030-04-02');
+    });
+
+    it('los rangos rápidos cuentan desde la fecha inicial', function () {
+        Livewire::actingAs($this->super)->test(AvisoEntradasSalidas::class)
+            ->set('desde', '2030-01-10')->call('rango', 7)->assertSet('hasta', '2030-01-16')
+            ->call('rango', 1)->assertSet('hasta', '2030-01-10');
+    });
+
+    describe('el formato', function () {
+        beforeEach(function () {
+            ($this->reservar)($this->u1, $this->ana, 1, 3);
+        });
+
+        it('por omisión escribe la fecha corta, con el orden de día y mes del idioma', function () {
+            $dia = $this->hoy->addDay();
+            $texto = app(AvisoEquipo::class)->generar($this->propiedad, $this->hoy, 3, []);
+
+            expect($texto)->toContain('📌 '.Str::ucfirst(Formato::fecha($dia, 'dddd')).' '.$dia->format('d/m/y'));
+
+            app()->setLocale('en');
+            expect(FormatoAviso::fecha($dia, 'numerica'))->toBe($dia->format('m/d/y'));
+            app()->setLocale('de');
+            expect(FormatoAviso::fecha($dia, 'numerica'))->toBe($dia->format('d.m.y'))
+                ->and(FormatoAviso::fecha($dia, 'dia_abreviada'))->toEndWith($dia->format('d.m'));
+        });
+
+        it('cambia iconos, textos, separador, renglones, orden y negritas', function () {
+            ($this->reservar)($this->u2, $this->luis, 3, 5);
+            $texto = app(AvisoEquipo::class)->generar($this->propiedad, $this->hoy, 7, [], [
+                'fecha' => 'larga', 'icono_dia' => '📅', 'icono_salen' => '', 'icono_llegan' => '🔑', 'separador' => 'blanco',
+                'texto_llegan' => 'Entran', 'unidades' => 'renglones', 'orden' => 'llegan', 'negritas' => true,
+            ]);
+
+            expect($texto)->toContain('📅 *'.Str::ucfirst(Formato::fecha($this->hoy->addDay(), 'dddd')).' '.Formato::fecha($this->hoy->addDay(), 'LL').'*')
+                ->toContain("🔑 *Entran:*\n• Cabaña A")
+                ->not->toContain('🔹')->not->toContain('────')
+                ->toContain("\n\n");
+            // Un día en que uno llega y otro sale: primero las llegadas.
+            $dosDias = (string) collect(explode("\n\n", $texto))->first(fn (string $b): bool => str_contains($b, 'Entran') && str_contains($b, __('equipo.aviso.salen')));
+            expect(mb_strpos($dosDias, 'Entran'))->toBeLessThan(mb_strpos($dosDias, __('equipo.aviso.salen')));
+        });
+
+        it('se guarda por propiedad y se puede volver al original', function () {
+            $pantalla = Livewire::actingAs($this->super)->test(AvisoEntradasSalidas::class)
+                ->set('formato.icono_dia', '⭐')->set('formato.fecha', 'numerica')->call('guardarFormato');
+            expect($pantalla->get('texto'))->toContain('⭐ ');
+
+            $otra = Livewire::actingAs($this->super)->test(AvisoEntradasSalidas::class);
+            expect($otra->get('formato')['icono_dia'])->toBe('⭐')->and($otra->get('texto'))->toContain('⭐ ');
+
+            $otra->call('restablecerFormato');
+            expect(Livewire::actingAs($this->super)->test(AvisoEntradasSalidas::class)->get('formato')['icono_dia'])->toBe('📌');
+        });
+
+        it('lo que no está en la lista no pasa, y los textos van en un renglón', function () {
+            expect(FormatoAviso::limpiar(['icono_dia' => '<b>', 'fecha' => 'cualquiera', 'separador' => "x\ny", 'texto_salen' => "Sa\nlen"]))
+                ->toMatchArray(['icono_dia' => '📌', 'fecha' => 'dia_numerica', 'separador' => 'linea', 'texto_salen' => 'Sa len']);
+        });
     });
 
     it('apagado no abre, y en una instalación que se actualiza llega apagado', function () {

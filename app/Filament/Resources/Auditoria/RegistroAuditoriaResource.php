@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Auditoria;
 
 use App\Demo\ModoDemo;
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Resources\Auditoria\Pages\ListRegistrosAuditoria;
 use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
@@ -111,8 +112,8 @@ class RegistroAuditoriaResource extends Resource
                     ->options(fn (): array => Propiedad::query()->orderBy('nombre')->pluck('nombre', 'id')->all()),
                 Filter::make('fecha')->label(__('ui.auditoria.cuando'))
                     ->schema([
-                        DatePicker::make('desde')->label(__('ui.indicadores.desde')),
-                        DatePicker::make('hasta')->label(__('ui.indicadores.hasta')),
+                        DatePicker::make('desde')->extraInputAttributes(RangoFechas::inicio('filtro_fecha'))->label(__('ui.indicadores.desde')),
+                        DatePicker::make('hasta')->extraInputAttributes(RangoFechas::fin('filtro_fecha'))->label(__('ui.indicadores.hasta')),
                     ])
                     ->query(fn (Builder $query, array $data): Builder => $query
                         ->when($data['desde'] ?? null, fn (Builder $q, string $desde): Builder => $q->whereDate('creado_en', '>=', $desde))

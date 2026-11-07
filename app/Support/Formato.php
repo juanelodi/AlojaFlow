@@ -84,6 +84,25 @@ final class Formato
         return self::fecha($fecha, 'ddd D MMM');
     }
 
+    /**
+     * 06/11/26 en México y 11/06/26 en Estados Unidos: el orden y el separador los da el idioma de quien mira.
+     */
+    public static function fechaNumerica(?CarbonInterface $fecha, bool $anioCompleto = false, bool $conAnio = true): string
+    {
+        if ($fecha === null) {
+            return '—';
+        }
+        $localizada = $fecha->locale(app()->getLocale());
+        $patron = (string) ($localizada->getIsoFormats()['L'] ?? 'DD/MM/YYYY');
+        if (! $conAnio) {
+            $patron = trim((string) preg_replace('/\W?Y+\W?/', '', $patron));
+        } elseif (! $anioCompleto) {
+            $patron = str_replace('YYYY', 'YY', $patron);
+        }
+
+        return $localizada->isoFormat($patron);
+    }
+
     public static function fechaLarga(?CarbonInterface $fecha): string
     {
         return self::fecha($fecha, 'dddd, LL');

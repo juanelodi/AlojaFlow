@@ -405,3 +405,29 @@
     body, .fi-body { background: white !important; }
     .af-tabla-contenedor { overflow: visible !important; }
 }
+
+/* Aviso de entradas y salidas: las opciones junto al texto que producen */
+.af-aviso-rejilla { display: grid; gap: 1.5rem; align-items: start; }
+@media (min-width: 64rem) { .af-aviso-rejilla { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.af-plegable { border: 1px solid var(--gray-200); border-radius: .75rem; padding: .25rem 1rem .875rem; background: white; }
+.dark .af-plegable { background: var(--gray-900); border-color: var(--gray-800); }
+.af-plegable > summary { cursor: pointer; font-size: .875rem; font-weight: 600; color: var(--gray-950); min-height: 2.75rem; display: flex; align-items: center; gap: .5rem; }
+.dark .af-plegable > summary { color: white; }
+.af-plegable > summary:focus-visible { outline: 2px solid var(--primary-600); outline-offset: 2px; border-radius: .25rem; }
+.af-plegable > :not(summary) { margin-block-start: .75rem; }
+.af-formato { display: grid; gap: .75rem 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr)); }
+.af-formato .af-campo { min-width: 0; }
+.af-formato__ancho { grid-column: 1 / -1; }
+
+/* Títulos de columna que ordenan las tablas propias (resources/js/alojaflow.js) */
+.af-orden { display: inline-flex; align-items: center; gap: .25rem; min-height: 1.75rem; padding: 0; background: none; border: 0; font: inherit; color: inherit; cursor: pointer; text-align: inherit; white-space: nowrap; }
+.af-orden:hover { color: var(--primary-700); }
+.dark .af-orden:hover { color: var(--primary-400); }
+.af-orden:focus-visible { outline: 2px solid var(--primary-600); outline-offset: 2px; border-radius: .25rem; }
+.af-orden::after { content: ""; flex: none; width: .75rem; height: .75rem; opacity: .35; background: currentColor;
+    clip-path: polygon(50% 8%, 82% 42%, 18% 42%, 18% 58%, 82% 58%, 50% 92%); }
+th[aria-sort] { color: var(--gray-950); }
+.dark th[aria-sort] { color: white; }
+th[aria-sort="ascending"] .af-orden::after { opacity: 1; clip-path: polygon(50% 18%, 90% 78%, 10% 78%); }
+th[aria-sort="descending"] .af-orden::after { opacity: 1; clip-path: polygon(10% 22%, 90% 22%, 50% 82%); }
+.af-tabla th.af-num .af-orden { flex-direction: row-reverse; }

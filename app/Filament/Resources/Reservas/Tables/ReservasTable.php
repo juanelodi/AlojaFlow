@@ -12,6 +12,7 @@ namespace App\Filament\Resources\Reservas\Tables;
 
 use App\Enums\EstadoReserva;
 use App\Enums\TipoReserva;
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Propiedad;
 use App\Models\Reserva;
@@ -71,8 +72,8 @@ class ReservasTable
                 SelectFilter::make('tipo')->label(__('ui.reservas.tipo'))->options(TipoReserva::opciones()),
                 Filter::make('llegada')->label(__('ui.reservas.filtro_llegada'))
                     ->schema([
-                        DatePicker::make('desde')->label(__('ui.indicadores.desde')),
-                        DatePicker::make('hasta')->label(__('ui.indicadores.hasta')),
+                        DatePicker::make('desde')->extraInputAttributes(RangoFechas::inicio('filtro_llegada'))->label(__('ui.indicadores.desde')),
+                        DatePicker::make('hasta')->extraInputAttributes(RangoFechas::fin('filtro_llegada'))->label(__('ui.indicadores.hasta')),
                     ])
                     ->query(fn (Builder $query, array $data): Builder => $query
                         ->when($data['desde'] ?? null, fn (Builder $q, string $desde): Builder => $q->where('llegada', '>=', $desde))

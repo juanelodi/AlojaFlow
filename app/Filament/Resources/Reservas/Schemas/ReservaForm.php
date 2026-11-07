@@ -19,6 +19,7 @@ use App\Enums\TipoEquipo;
 use App\Enums\TipoReserva;
 use App\Filament\Campos\CampoDinero;
 use App\Filament\Campos\CamposPropiosPanel;
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Canal;
 use App\Models\ConceptoCargo;
@@ -105,9 +106,14 @@ class ReservaForm
                         ->default(EstadoReserva::Confirmada->value)
                         ->visible($esReserva),
                     DatePicker::make('llegada')->label(__('ui.comun.llegada'))->required()->live(onBlur: true)
+                        ->extraInputAttributes(RangoFechas::llegada())
                         ->default(fn (): ?string => self::fechaDeLaDireccion('llegada'))
-                        ->afterStateUpdated($alCambiar),
+                        ->afterStateUpdated(function (Get $get, Set $set, string $operation) use ($alCambiar): void {
+                            RangoFechas::moverFin($get, $set, 'llegada', 'salida');
+                            $alCambiar($get, $set, $operation);
+                        }),
                     DatePicker::make('salida')->label(__('ui.comun.salida'))->required()->live(onBlur: true)->after('llegada')
+                        ->extraInputAttributes(RangoFechas::fin('estancia'))
                         ->default(fn (): ?string => self::fechaDeLaDireccion('salida'))
                         ->helperText(fn (Get $get): ?string => self::avisoEstancia($get))
                         ->afterStateUpdated($alCambiar),

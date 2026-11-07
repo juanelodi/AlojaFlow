@@ -8,10 +8,12 @@
 
 declare(strict_types=1);
 
+use App\Actualizacion\Empaquetador;
 use App\Enums\BaseCargo;
 use App\Enums\EstadoReserva;
 use App\Enums\ModoPropiedad;
 use App\Enums\TipoReserva;
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Pages\Calendario;
 use App\Filament\Resources\Unidades\Pages\EditUnidad;
 use App\Models\ConceptoCargo;
@@ -365,5 +367,29 @@ describe('demostración', function (): void {
         expect(Unidad::query()->where('propiedad_id', $demo->id)->where('camas_extra', 1)->count())->toBe(2)
             ->and((new AjustesMotor($demo))->calendarioPublico())->toBeTrue()
             ->and(ConceptoCargo::query()->where('propiedad_id', $demo->id)->where('por_cama_extra', true)->count())->toBe(1);
+    });
+});
+
+describe('dos calendarios que van juntos', function () {
+    it('la salida sigue a la llegada si queda vacía o antes', function () {
+        expect(RangoFechas::finCorregido('2026-12-15', null))->toBe('2026-12-16')
+            ->and(RangoFechas::finCorregido('2026-12-15', '2026-11-07'))->toBe('2026-12-16')
+            ->and(RangoFechas::finCorregido('2026-12-15', '2026-12-15'))->toBe('2026-12-16');
+    });
+
+    it('no toca una salida que ya es posterior, ni nada con una llegada a medio escribir', function () {
+        expect(RangoFechas::finCorregido('2026-12-15', '2026-12-20'))->toBeNull()
+            ->and(RangoFechas::finCorregido('', '2026-12-20'))->toBeNull()
+            ->and(RangoFechas::finCorregido('no es fecha', '2026-12-20'))->toBeNull();
+    });
+
+    it('todas las pantallas con dos fechas llevan su pareja', function () {
+        foreach (['disponibilidad', 'indicadores', 'informes', 'mensajes-periodo', 'aviso-entradas-salidas'] as $vista) {
+            $codigo = (string) file_get_contents(resource_path('views/filament/pages/'.$vista.'.blade.php'));
+            expect($codigo)->toContain('data-af-rango-inicio=')->toContain('data-af-rango-fin=');
+        }
+        expect((string) file_get_contents(resource_path('views/publico/motor-buscar.blade.php')))->toContain('data-af-rango-fin="estancia"')
+            ->and((string) file_get_contents(resource_path('views/publico/layout.blade.php')))->toContain('js/alojaflow/alojaflow.js')
+            ->and(Empaquetador::RECURSOS)->toContain('public/js/alojaflow');
     });
 });

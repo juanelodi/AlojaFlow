@@ -13,6 +13,7 @@ namespace App\Filament\Resources\Grupos;
 use App\Enums\EstadoGrupo;
 use App\Enums\EstadoReserva;
 use App\Enums\ModoPrecioGrupo;
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Resources\Base\RecursoDePropiedad;
 use App\Filament\Resources\Grupos\Pages\CreateGrupo;
 use App\Filament\Resources\Grupos\Pages\EditGrupo;
@@ -156,8 +157,8 @@ class GrupoResource extends RecursoDePropiedad
                         EstadoReserva::SinConfirmar->value => EstadoGrupo::Tentativo->etiqueta(),
                     ])
                     ->default(EstadoReserva::Confirmada->value),
-                DatePicker::make('llegada')->label(__('ui.comun.llegada'))->required()->live(onBlur: true)->visibleOn('create'),
-                DatePicker::make('salida')->label(__('ui.comun.salida'))->required()->after('llegada')->live(onBlur: true)->visibleOn('create'),
+                DatePicker::make('llegada')->label(__('ui.comun.llegada'))->required()->live(onBlur: true)->extraInputAttributes(RangoFechas::llegada())->visibleOn('create'),
+                DatePicker::make('salida')->label(__('ui.comun.salida'))->required()->after('llegada')->extraInputAttributes(RangoFechas::fin('estancia'))->live(onBlur: true)->visibleOn('create'),
                 TextInput::make('personas')->label(__('ui.grupos.personas_por_unidad'))->numeric()->minValue(1)->default(2)->required()->visibleOn('create'),
                 CheckboxList::make('unidades')->label(__('ui.grupos.unidades'))->helperText(__('ui.grupos.unidades_ayuda'))->required()->columnSpanFull()->columns(['default' => 1, 'md' => 2, 'lg' => 3])
                     ->options(fn (Get $get): array => self::opcionesUnidades($get, $ocupadas($get)))

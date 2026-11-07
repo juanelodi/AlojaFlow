@@ -17,7 +17,6 @@ use App\Enums\TipoReserva;
 use App\Models\Propiedad;
 use App\Models\ReglaLimpieza;
 use App\Models\Reserva;
-use App\Support\Formato;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -35,9 +34,11 @@ final class AvisoEquipo
 
     /**
      * @param  array<string, bool>  $opciones  los DETALLES, y `limpieza`
+     * @param  array<string, mixed>  $formato  ver FormatoAviso; sin él, la propiedad usa el suyo
      */
-    public function generar(Propiedad $propiedad, CarbonImmutable $desde, int $dias, array $opciones): string
+    public function generar(Propiedad $propiedad, CarbonImmutable $desde, int $dias, array $opciones, ?array $formato = null): string
     {
+        $formato = $formato === null ? FormatoAviso::de($propiedad->id) : FormatoAviso::limpiar($formato);
         $dias = max(1, min($dias, self::DIAS_MAXIMOS));
         $hasta = $desde->addDays($dias - 1);
         $reservas = $this->reservas($propiedad, $desde, $hasta);
@@ -53,21 +54,51 @@ final class AvisoEquipo
             if ($salen->isEmpty() && $llegan->isEmpty() && $limpian->isEmpty()) {
                 continue;
             }
-            $lineas = ['📌 '.Str::ucfirst(Formato::fecha($dia, 'dddd LL'))];
-            if ($salen->isNotEmpty()) {
-                $lineas[] = '🔹 '.__('equipo.aviso.salen').': '.$this->lista($salen, $opciones);
-            }
-            if ($llegan->isNotEmpty()) {
-                $lineas[] = '🔸 '.__('equipo.aviso.llegan').': '.$this->lista($llegan, $opciones);
-            }
-            if ($limpian->isNotEmpty()) {
+            $salidas = $salen->isEmpty() ? [] : [$this->renglon($formato, 'salen', $this->lista($salen, $opciones, $formato))];
+            $llegadas = $llegan->isEmpty() ? [] : [$this->renglon($formato, 'llegan', $this->lista($llegan, $opciones, $formato))];
+            $bloques[] = implode("\n", [
+                $this->encabezado($dia, $formato),
+                ...($formato['orden'] === 'llegan' ? [...$llegadas, ...$salidas] : [...$salidas, ...$llegadas]),
                 // A quien limpia le basta la unidad.
-                $lineas[] = '✅ '.__('equipo.aviso.limpieza').': '.$this->lista($limpian, []);
-            }
-            $bloques[] = implode("\n", $lineas);
+                ...($limpian->isEmpty() ? [] : [$this->renglon($formato, 'limpieza', $this->lista($limpian, [], $formato))]),
+            ]);
         }
 
-        return $bloques === [] ? __('equipo.aviso.sin_movimiento') : implode("\n────────────────\n", $bloques);
+        return $bloques === [] ? __('equipo.aviso.sin_movimiento') : implode(FormatoAviso::union($formato['separador']), $bloques);
+    }
+
+    /**
+     * @param  array<string, mixed>  $formato
+     */
+    private function encabezado(CarbonImmutable $dia, array $formato): string
+    {
+        return $this->conIcono((string) $formato['icono_dia'], $this->resaltar(FormatoAviso::fecha($dia, (string) $formato['fecha']), $formato));
+    }
+
+    /**
+     * @param  array<string, mixed>  $formato
+     */
+    private function renglon(array $formato, string $clave, string $lista): string
+    {
+        $titulo = (string) $formato['texto_'.$clave] !== '' ? (string) $formato['texto_'.$clave] : __('equipo.aviso.'.$clave);
+        $titulo = $this->resaltar($titulo.':', $formato);
+
+        return $this->conIcono((string) $formato['icono_'.$clave], $titulo.($formato['unidades'] === 'renglones' ? "\n" : ' ').$lista);
+    }
+
+    private function conIcono(string $icono, string $texto): string
+    {
+        return $icono === '' ? $texto : $icono.' '.$texto;
+    }
+
+    /**
+     * Entre asteriscos es negrita en WhatsApp.
+     *
+     * @param  array<string, mixed>  $formato
+     */
+    private function resaltar(string $texto, array $formato): string
+    {
+        return $formato['negritas'] ? '*'.$texto.'*' : $texto;
     }
 
     /**
@@ -89,14 +120,17 @@ final class AvisoEquipo
     /**
      * @param  Collection<int, Reserva>  $reservas
      * @param  array<string, bool>  $opciones
+     * @param  array<string, mixed>  $formato
      */
-    private function lista(Collection $reservas, array $opciones): string
+    private function lista(Collection $reservas, array $opciones, array $formato): string
     {
-        return $reservas->map(function (Reserva $r) use ($opciones): string {
+        $unidades = $reservas->map(function (Reserva $r) use ($opciones): string {
             $detalles = $this->detalles($r, $opciones);
 
             return ($r->unidad->nombre ?? '').($detalles === [] ? '' : ' ('.implode(', ', $detalles).')');
-        })->implode(', ');
+        });
+
+        return $formato['unidades'] === 'renglones' ? $unidades->map(fn (string $unidad): string => '• '.$unidad)->implode("\n") : $unidades->implode(', ');
     }
 
     /**

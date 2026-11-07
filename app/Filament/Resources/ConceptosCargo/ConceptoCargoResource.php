@@ -12,6 +12,7 @@ namespace App\Filament\Resources\ConceptosCargo;
 
 use App\Enums\BaseCargo;
 use App\Filament\Campos\CampoDinero;
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Resources\Base\RecursoDePropiedad;
 use App\Filament\Resources\ConceptosCargo\Pages\CreateConceptoCargo;
 use App\Filament\Resources\ConceptosCargo\Pages\EditConceptoCargo;
@@ -99,8 +100,8 @@ class ConceptoCargoResource extends RecursoDePropiedad
                 TextInput::make('cada_noches')->label(__('ui.cargos.cada_noches'))->helperText(__('ui.cargos.cada_noches_ayuda'))->numeric()->integer()->minValue(1)->maxValue(366)->visible($porNoche),
                 TextInput::make('noches_minimas')->label(__('ui.cargos.noches_minimas'))->numeric()->integer()->minValue(1)->maxValue(366),
                 Toggle::make('por_cama_extra')->label(__('ui.cargos.por_cama_extra'))->helperText(__('ui.cargos.por_cama_extra_ayuda'))->columnSpanFull(),
-                DatePicker::make('desde')->label(__('ui.cargos.desde'))->helperText(__('ui.cargos.fechas_ayuda')),
-                DatePicker::make('hasta')->label(__('ui.cargos.hasta'))->minDate(fn (Get $get): mixed => $get('desde')),
+                DatePicker::make('desde')->extraInputAttributes(RangoFechas::inicio('periodo'))->label(__('ui.cargos.desde'))->helperText(__('ui.cargos.fechas_ayuda')),
+                DatePicker::make('hasta')->extraInputAttributes(RangoFechas::fin('periodo'))->label(__('ui.cargos.hasta'))->minDate(fn (Get $get): mixed => $get('desde')),
                 Select::make('solo_tarifas')->label(__('ui.cargos.solo_tarifas'))->multiple()->native(false)->dehydrateStateUsing($lista)
                     ->options(fn (Get $get): array => Tarifa::query()->where('propiedad_id', self::propiedadDe($get))->orderBy('nombre')->pluck('nombre', 'id')->all()),
                 Select::make('solo_unidades')->label(__('ui.cargos.solo_unidades'))->multiple()->native(false)->dehydrateStateUsing($lista)

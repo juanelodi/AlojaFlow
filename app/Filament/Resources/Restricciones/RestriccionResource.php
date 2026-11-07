@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Restricciones;
 
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Resources\Base\RecursoDePropiedad;
 use App\Filament\Resources\Restricciones\Pages\CreateRestriccion;
 use App\Filament\Resources\Restricciones\Pages\EditRestriccion;
@@ -69,8 +70,8 @@ class RestriccionResource extends RecursoDePropiedad
                 Select::make('unidad_id')->label(__('ui.comun.unidad'))->native(false)->placeholder(__('operacion.restricciones.todas'))
                     ->options(fn (Get $get): array => Unidad::query()->where('propiedad_id', self::propiedadDe($get))->orderBy('orden')->orderBy('nombre')->pluck('nombre', 'id')->all()),
                 TextInput::make('nombre')->label(__('operacion.restricciones.nombre'))->helperText(__('operacion.restricciones.nombre_ayuda'))->maxLength(100),
-                DatePicker::make('desde')->label(__('ui.indicadores.desde'))->required(),
-                DatePicker::make('hasta')->label(__('ui.indicadores.hasta'))->required()->afterOrEqual('desde'),
+                DatePicker::make('desde')->extraInputAttributes(RangoFechas::inicio('periodo'))->label(__('ui.indicadores.desde'))->required(),
+                DatePicker::make('hasta')->extraInputAttributes(RangoFechas::fin('periodo'))->label(__('ui.indicadores.hasta'))->required()->afterOrEqual('desde'),
                 Toggle::make('cerrado_llegada')->label(__('operacion.restricciones.cerrado_llegada')),
                 Toggle::make('cerrado_salida')->label(__('operacion.restricciones.cerrado_salida')),
                 CheckboxList::make('dias_llegada')->label(__('operacion.restricciones.dias_llegada'))->helperText(__('operacion.restricciones.dias_llegada_ayuda'))->columnSpanFull()->columns(['default' => 2, 'md' => 4])

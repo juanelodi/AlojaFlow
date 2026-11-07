@@ -7,11 +7,11 @@
             @include('filament.partes.selector-propiedad')
             <label class="af-campo">
                 <span>{{ __('ui.comun.llegada') }}</span>
-                <x-filament::input.wrapper><x-filament::input type="date" :value="$this->llegada" wire:model.live="llegada" /></x-filament::input.wrapper>
+                <x-filament::input.wrapper><x-filament::input type="date" :value="$this->llegada" wire:model.live="llegada" data-af-rango-inicio="estancia" data-af-rango-dias="1" data-af-rango-llenar="1" /></x-filament::input.wrapper>
             </label>
             <label class="af-campo">
                 <span>{{ __('ui.comun.salida') }}</span>
-                <x-filament::input.wrapper><x-filament::input type="date" :value="$this->salida" wire:model.live="salida" /></x-filament::input.wrapper>
+                <x-filament::input.wrapper><x-filament::input type="date" :value="$this->salida" wire:model.live="salida" data-af-rango-fin="estancia" /></x-filament::input.wrapper>
             </label>
             <label class="af-campo" style="min-width: 6rem">
                 <span>{{ __('ui.disponibilidad.personas') }}</span>

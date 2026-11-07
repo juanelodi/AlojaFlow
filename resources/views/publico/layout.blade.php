@@ -7,6 +7,7 @@
 <title>@yield('titulo') · {{ $propiedad->nombre }}</title>
 <meta name="description" content="{{ __('motor.meta_descripcion', ['propiedad' => $propiedad->nombre]) }}">
 @if ($propiedad->es_demo)<meta name="robots" content="noindex">@endif
+<script src="{{ asset('js/alojaflow/alojaflow.js') }}?v={{ (int) @filemtime(public_path('js/alojaflow/alojaflow.js')) }}" defer></script>
 <style>
 :root{--marca:{{ $propiedad->color ?: '#0f766e' }};--tinta:#0b1f2a;--gris:#475569;--borde:#cbd5e1;--fondo:#f8fafc;--tarjeta:#fff;--campo:#fff;--rojo:#b91c1c;--verde:#15803d}
 @media (prefers-color-scheme:dark){:root{--tinta:#e2e8f0;--gris:#94a3b8;--borde:#334155;--fondo:#020617;--tarjeta:#0f172a;--campo:#1e293b;--rojo:#f87171;--verde:#4ade80}}

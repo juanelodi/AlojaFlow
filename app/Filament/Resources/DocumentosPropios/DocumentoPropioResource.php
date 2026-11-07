@@ -14,6 +14,7 @@ use App\Documentos\GeneradorPdf;
 use App\Documentos\MotorDocumentos;
 use App\Enums\AlcanceDocumento;
 use App\Enums\TipoReserva;
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Resources\Base\RecursoDeCualquierPropiedad;
 use App\Filament\Resources\DocumentosPropios\Pages\CreateDocumentoPropio;
 use App\Filament\Resources\DocumentosPropios\Pages\EditDocumentoPropio;
@@ -142,8 +143,8 @@ class DocumentoPropioResource extends RecursoDeCualquierPropiedad
             ->visible(fn (DocumentoPropio $record): bool => $record->alcance === AlcanceDocumento::Periodo && Acceso::puede(Acceso::usuarioActual(), Acceso::RESERVAS, $record->propiedad_id))
             ->fillForm(fn (DocumentoPropio $record): array => ['desde' => $record->propiedad->hoy()->format('Y-m-d'), 'hasta' => $record->propiedad->hoy()->format('Y-m-d'), 'criterio' => 'llegadas'])
             ->schema([
-                DatePicker::make('desde')->label(__('documentos_propios.desde'))->required(),
-                DatePicker::make('hasta')->label(__('documentos_propios.hasta'))->required()->afterOrEqual('desde'),
+                DatePicker::make('desde')->extraInputAttributes(RangoFechas::inicio('periodo'))->label(__('documentos_propios.desde'))->required(),
+                DatePicker::make('hasta')->extraInputAttributes(RangoFechas::fin('periodo'))->label(__('documentos_propios.hasta'))->required()->afterOrEqual('desde'),
                 Select::make('criterio')->label(__('documentos_propios.criterio'))->required()->native(false)
                     ->options(array_map(fn (string $criterio): string => __('documentos_propios.criterios.'.$criterio), array_combine(MotorDocumentos::CRITERIOS, MotorDocumentos::CRITERIOS))),
             ])

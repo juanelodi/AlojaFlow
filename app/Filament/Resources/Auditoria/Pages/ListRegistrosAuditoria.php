@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Auditoria\Pages;
 
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Resources\Auditoria\RegistroAuditoriaResource;
 use App\Models\RegistroAuditoria;
 use App\Seguridad\EtiquetasAuditoria;
@@ -37,8 +38,8 @@ class ListRegistrosAuditoria extends ListRecords
                 ->icon(Heroicon::OutlinedArrowDownTray)
                 ->color('gray')
                 ->schema([
-                    DatePicker::make('desde')->label(__('ui.indicadores.desde'))->required()->default(fn (): string => now()->subDays(30)->format('Y-m-d')),
-                    DatePicker::make('hasta')->label(__('ui.indicadores.hasta'))->required()->default(fn (): string => now()->format('Y-m-d')),
+                    DatePicker::make('desde')->extraInputAttributes(RangoFechas::inicio('periodo'))->label(__('ui.indicadores.desde'))->required()->default(fn (): string => now()->subDays(30)->format('Y-m-d')),
+                    DatePicker::make('hasta')->extraInputAttributes(RangoFechas::fin('periodo'))->label(__('ui.indicadores.hasta'))->required()->default(fn (): string => now()->format('Y-m-d')),
                 ])
                 ->action(fn (array $data): StreamedResponse => $this->csv((string) $data['desde'], (string) $data['hasta'])),
             Action::make('plazo')

@@ -12,6 +12,7 @@ namespace App\Filament\Resources\Grupos\RelationManagers;
 
 use App\Enums\EstadoGrupo;
 use App\Enums\EstadoReserva;
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Grupo;
 use App\Models\GrupoHabitacion;
@@ -100,8 +101,8 @@ class HabitacionesRelationManager extends RelationManager
             ])
             ->schema([
                 Select::make('unidad_id')->label(__('ui.comun.unidad'))->required()->native(false)->searchable()->options(fn (): array => $this->unidades()),
-                DatePicker::make('llegada')->label(__('ui.comun.llegada'))->required(),
-                DatePicker::make('salida')->label(__('ui.comun.salida'))->required()->after('llegada'),
+                DatePicker::make('llegada')->label(__('ui.comun.llegada'))->required()->extraInputAttributes(RangoFechas::llegada()),
+                DatePicker::make('salida')->label(__('ui.comun.salida'))->required()->extraInputAttributes(RangoFechas::fin('estancia'))->after('llegada'),
                 TextInput::make('personas')->label(__('ui.comun.personas'))->numeric()->integer()->minValue(1)->required(),
             ])
             ->action(fn (array $data) => $this->intentar(fn () => app(GestorGrupos::class)->agregarHabitacion(
@@ -146,8 +147,8 @@ class HabitacionesRelationManager extends RelationManager
             ->fillForm(fn (Reserva $record): array => ['unidad_id' => $record->unidad_id, 'llegada' => $record->llegada->format('Y-m-d'), 'salida' => $record->salida->format('Y-m-d')])
             ->schema([
                 Select::make('unidad_id')->label(__('ui.comun.unidad'))->required()->native(false)->searchable()->options(fn (): array => $this->unidades()),
-                DatePicker::make('llegada')->label(__('ui.comun.llegada'))->required(),
-                DatePicker::make('salida')->label(__('ui.comun.salida'))->required()->after('llegada'),
+                DatePicker::make('llegada')->label(__('ui.comun.llegada'))->required()->extraInputAttributes(RangoFechas::llegada()),
+                DatePicker::make('salida')->label(__('ui.comun.salida'))->required()->extraInputAttributes(RangoFechas::fin('estancia'))->after('llegada'),
             ])
             ->action(fn (Reserva $record, array $data) => $this->intentar(fn () => app(GestorGrupos::class)->cambiarHabitacion(
                 $record,

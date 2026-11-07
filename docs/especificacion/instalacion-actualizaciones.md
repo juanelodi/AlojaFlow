@@ -14,7 +14,7 @@ El zip tiene una sola carpeta, `alojaflow-x.y.z/`, con:
 - `vendor/` **sin** las dependencias de desarrollo (`composer install --no-dev
   --optimize-autoloader`), sin `vendor/bin/`;
 - los recursos que publica Filament y no están en git: `public/css/filament`,
-  `public/js/filament`, `public/fonts/filament` y `public/css/alojaflow`;
+  `public/js/filament`, `public/fonts/filament`, `public/css/alojaflow` y `public/js/alojaflow`;
 - el JavaScript de Livewire, `public/vendor/livewire`, para que lo sirva Apache sin arrancar PHP
   (D-067);
 - el esqueleto de `storage/` y `bootstrap/cache/` (sus `.gitignore`), para instalar desde cero;

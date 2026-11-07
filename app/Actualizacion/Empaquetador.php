@@ -34,7 +34,7 @@ class Empaquetador
      * Recursos que no están en git y la aplicación necesita: los publican `filament:assets` y `vendor:publish`. Con Livewire en
      * public/, su JavaScript lo sirve Apache: si no, cada primera visita arranca PHP entero para mandarlo.
      */
-    public const RECURSOS = ['public/css/filament', 'public/js/filament', 'public/fonts/filament', 'public/css/alojaflow', 'public/vendor/livewire'];
+    public const RECURSOS = ['public/css/filament', 'public/js/filament', 'public/fonts/filament', 'public/css/alojaflow', 'public/js/alojaflow', 'public/vendor/livewire'];
 
     /**
      * @param  callable(string): void  $informar

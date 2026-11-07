@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Enums\TipoReserva;
+use App\Filament\Campos\RangoFechas;
 use App\Filament\Concerns\ConPropiedadSeleccionada;
 use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Propiedad;
@@ -126,8 +127,8 @@ class Calendario extends Page
                         ->default(fn (): ?int => count(ReservaResource::propiedadesGestionables()) === 1 ? ReservaResource::propiedadesGestionables()[0] : null),
                     CheckboxList::make('unidades')->label(__('operacion.bloqueos.unidades'))->required()->columns(2)
                         ->options(fn (Get $get): array => Unidad::query()->where('propiedad_id', Acceso::propiedadElegida($get('propiedad_id'), ReservaResource::propiedadesGestionables()))->where('activa', true)->orderBy('orden')->orderBy('nombre')->pluck('nombre', 'id')->all()),
-                    DatePicker::make('desde')->label(__('ui.indicadores.desde'))->required(),
-                    DatePicker::make('hasta')->label(__('operacion.bloqueos.hasta'))->helperText(__('operacion.bloqueos.hasta_ayuda'))->required()->afterOrEqual('desde'),
+                    DatePicker::make('desde')->extraInputAttributes(RangoFechas::inicio('bloqueo'))->label(__('ui.indicadores.desde'))->required(),
+                    DatePicker::make('hasta')->extraInputAttributes(RangoFechas::fin('bloqueo'))->label(__('operacion.bloqueos.hasta'))->helperText(__('operacion.bloqueos.hasta_ayuda'))->required()->afterOrEqual('desde'),
                     TextInput::make('motivo')->label(__('ui.reservas.motivo'))->maxLength(100),
                 ])
                 ->action(fn (array $data) => $this->bloquearFechas($data)),

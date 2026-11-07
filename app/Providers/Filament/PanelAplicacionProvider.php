@@ -31,6 +31,7 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Assets\Css;
+use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Icons\Heroicon;
@@ -56,8 +57,11 @@ class PanelAplicacionProvider extends PanelProvider
         // Con la fecha del archivo: public/.htaccess deja en caché un año lo que lleva versión, y la de Filament no cambia con este archivo.
         FilamentAsset::register([Css::make('alojaflow', resource_path('css/alojaflow.css'))->html(
             fn (): string => asset('css/alojaflow/alojaflow.css').'?v='.(int) @filemtime(public_path('css/alojaflow/alojaflow.css')),
-        )], 'alojaflow');
-        Table::configureUsing(fn (Table $tabla) => $tabla->defaultDateDisplayFormat('j M Y')->defaultDateTimeDisplayFormat('j M Y H:i'));
+        ), Js::make('alojaflow', resource_path('js/alojaflow.js'))->defer()->html(asset('js/alojaflow/alojaflow.js').'?v='.(int) @filemtime(public_path('js/alojaflow/alojaflow.js')))], 'alojaflow');
+        // Todos los listados igual: se pagina por 10, 20, 50 o 100, y al volver a una lista sigue como estaba.
+        Table::configureUsing(fn (Table $tabla) => $tabla->defaultDateDisplayFormat('j M Y')->defaultDateTimeDisplayFormat('j M Y H:i')
+            ->paginated([10, 20, 50, 100])->defaultPaginationPageOption(20)
+            ->persistFiltersInSession()->persistSearchInSession()->persistSortInSession());
     }
 
     /**

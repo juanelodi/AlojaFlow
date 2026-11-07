@@ -33,11 +33,11 @@
         <div class="rejilla">
             <div>
                 <label for="llegada">{{ __('ui.comun.llegada') }}</label>
-                <input type="date" id="llegada" name="llegada" value="{{ $llegada }}" min="{{ $minimoFecha }}" required>
+                <input type="date" id="llegada" name="llegada" value="{{ $llegada }}" min="{{ $minimoFecha }}" required data-af-rango-inicio="estancia" data-af-rango-dias="1" data-af-rango-llenar="1">
             </div>
             <div>
                 <label for="salida">{{ __('ui.comun.salida') }}</label>
-                <input type="date" id="salida" name="salida" value="{{ $salida }}" min="{{ $minimoFecha }}" required>
+                <input type="date" id="salida" name="salida" value="{{ $salida }}" min="{{ $minimoFecha }}" required data-af-rango-fin="estancia">
             </div>
             <div>
                 <label for="personas">{{ __('ui.comun.personas') }}</label>
