@@ -2,7 +2,7 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
-## 1.0.36 — 2026-11-07
+## 1.0.37 — 2026-11-07
 
 **Omitir a un cliente, de verdad.** En Clientes omitidos ahora se elige «En todo» o cada sección: Hoy y cierre del día, Calendario, Limpieza, Aviso, Informes y Mensajes.
 
@@ -26,6 +26,9 @@ Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, 
 - **Calendario:** abre siempre por habitaciones, también en el teléfono o en una ventana angosta. La vista de día sigue a un toque y tu navegador la recuerda.
 - **Ficha del huésped:** las reservas van por año y mes, plegadas, y cada grupo dice cuántas reservas, noches y dinero lleva.
 - **Aviso de entradas y salidas:** el formato va plegado y hasta abajo.
+
+## 1.0.36 — 2026-11-07
+
 **Los importes ya no se parten ni se cortan.** En Resumen, un saldo grande podía verse sin su último dígito. En las fichas de la reserva y del huésped, un importe salía en dos renglones, y en Hoy, Cierre e Indicadores se salía de su tarjeta. Se notaba sobre todo en los importes grandes y con un prefijo de moneda, como «MX$» en inglés.
 
 - **Ahora el número se ve completo:** si no cabe, pasa al renglón siguiente.
