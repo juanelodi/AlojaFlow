@@ -12,10 +12,12 @@ namespace App\Filament\Pages;
 
 use App\Actualizacion\Actualizador;
 use App\Actualizacion\ErrorActualizacion;
+use App\Actualizacion\UltimaVersion;
 use App\Demo\ModoDemo;
 use App\Enums\EstadoActualizacion;
 use App\Models\Actualizacion;
 use App\Seguridad\Acceso;
+use App\Support\Formato;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
@@ -24,12 +26,13 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
 /**
- * Actualizar AlojaFlow subiendo el zip de una versión (instalacion-actualizaciones.md).
+ * Actualizar AlojaFlow bajando la versión nueva (D-140) o subiendo su zip (instalacion-actualizaciones.md).
  * Solo el super administrador; se confirma con la contraseña.
  */
 class Actualizaciones extends Page
@@ -46,6 +49,8 @@ class Actualizaciones extends Page
     public ?string $paquete = null;
 
     public bool $reinstalar = false;
+
+    public bool $avisoActivo = true;
 
     /** @var array<string, mixed>|null */
     public ?array $revision = null;
@@ -65,6 +70,19 @@ class Actualizaciones extends Page
         return __('actualizaciones.titulo');
     }
 
+    /**
+     * El grupo Sistema empieza plegado: la versión también se anuncia en el inicio.
+     */
+    public static function getNavigationBadge(): ?string
+    {
+        return self::canAccess() ? app(UltimaVersion::class)->disponible()['version'] ?? null : null;
+    }
+
+    public static function getNavigationBadgeColor(): string
+    {
+        return 'warning';
+    }
+
     public function getTitle(): string|Htmlable
     {
         return __('actualizaciones.titulo');
@@ -73,6 +91,50 @@ class Actualizaciones extends Page
     public function mount(): void
     {
         $this->paquete = $this->actualizador()->paquetesDisponibles()[0] ?? null;
+        $this->avisoActivo = $this->ultimaVersion()->avisoActivo();
+    }
+
+    public function updatedAvisoActivo(): void
+    {
+        $this->ultimaVersion()->cambiarAviso($this->avisoActivo);
+        Notification::make()->success()->title(__($this->avisoActivo ? 'actualizaciones.aviso_prendido' : 'actualizaciones.aviso_apagado'))->send();
+    }
+
+    /**
+     * Preguntar a mano vale aunque el aviso diario esté apagado: es algo que pidió quien pulsa.
+     */
+    public function buscarAhora(): void
+    {
+        if (! $this->ultimaVersion()->consultar()) {
+            Notification::make()->warning()->title(__('actualizaciones.consulta_fallida_ahora'))->send();
+
+            return;
+        }
+        $nueva = $this->ultimaVersion()->disponible();
+        Notification::make()->success()->title($nueva !== null ? __('actualizaciones.hay_version', ['version' => $nueva['version']]) : __('actualizaciones.al_dia'))->send();
+    }
+
+    /**
+     * @return array{version: string, notas: string, enlace: ?string}|null
+     */
+    public function versionDisponible(): ?array
+    {
+        return $this->ultimaVersion()->disponible();
+    }
+
+    /**
+     * Cómo fue la última vez que se preguntó, para decirlo en la pantalla.
+     */
+    public function estadoConsulta(): string
+    {
+        $consulta = $this->ultimaVersion()->ultimaConsulta();
+        $cuando = $consulta['consultada_en'] ?? null;
+        if (! is_string($cuando)) {
+            return __('actualizaciones.sin_consulta');
+        }
+        $fecha = Formato::momento(Carbon::parse($cuando));
+
+        return __(($consulta['fallo'] ?? false) === true ? 'actualizaciones.consulta_fallida' : 'actualizaciones.ultima_consulta', ['fecha' => $fecha]);
     }
 
     /**
@@ -223,6 +285,11 @@ class Actualizaciones extends Page
             && $actualizacion->estado !== EstadoActualizacion::Preparada;
     }
 
+
+    private function ultimaVersion(): UltimaVersion
+    {
+        return app(UltimaVersion::class);
+    }
 
     private function actualizador(): Actualizador
     {

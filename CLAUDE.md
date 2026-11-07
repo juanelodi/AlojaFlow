@@ -195,7 +195,8 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   (`docs/especificacion/instalacion-actualizaciones.md`):
   - `Empaquetador` (construye el zip firmado) y `Revisor` (lo comprueba sin cambiar nada);
   - `Aplicador` (extrae e intercambia los archivos con diario) y `Actualizador` (las dos fases);
-  - `CopiaBaseDatos`, `Firma`, `Manifiesto` y `Rutas` (qué no toca nunca una actualización).
+  - `CopiaBaseDatos`, `Firma`, `Manifiesto` y `Rutas` (qué no toca nunca una actualización);
+  - en línea (D-140): `UltimaVersion` (el aviso diario) y `DescargaPorPedazos`.
 - `app/Reservas/` — propiedades independientes: `GestorReservas` es el único que escribe reservas,
   noches y pagos propios, `Cotizador` calcula el precio con la tarifa y sus temporadas, y `Mensualidades` lleva el calendario
   de cobros de una estancia larga (D-107, D-108). Una unidad se vende con su tarifa principal y otras (`Unidad::tarifasIds`, D-118); una tarifa puede salir de otra (`Tarifa::precios`, D-119). `ReglasCargo`, cuándo se cobra un cargo (D-121).
@@ -312,6 +313,7 @@ npx license-checker --summary             # licencias npm
 - `Http::fake` compara contra la dirección con su query: un GET con `?expand[]=…` necesita `*` al final del patrón.
 - `$this->travel()` no mueve `time()`: en el código que se prueba así, `now()`.
 - Eloquent guarda un `datetime` en la zona que traiga la instancia, sin convertirla: a las columnas en UTC, `->utc()`.
+- El PHP de Wamp no trae certificados: toda petición https da «cURL error 60», y Actualizaciones dice que GitHub no respondió. En este equipo hace falta `curl.cainfo` y `openssl.cafile` en su `php.ini` o con `-d` (sirve el `ca-bundle.crt` de Git, en `usr/ssl/certs`).
 - Livewire no acepta más de 1 MB por petición y cuenta su snapshot: un texto largo en una propiedad pública viaja dos veces, y al pasarse truena sin explicar nada. Se queda en Alpine y va como argumento (`ImportarDatos`).
 - Un CSV con comas se abre en una sola columna donde Excel separa la lista con «;», y uno con «;», donde la separa con comas: lo que se abre en Excel va con `Csv::descargaParaExcel` (D-128), y lo que se suma, con `Csv::numero`. Y al guardar, las fechas quedan como en su país: se leen con `Pais::fechaConMesPrimero`.
 

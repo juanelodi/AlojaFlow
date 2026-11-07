@@ -128,6 +128,7 @@ it('crea el demo una sola vez y deja la marca de instalado', function () {
 
 it('sin cron, las tareas corren por turnos y no se repiten; con cron, no corren', function () {
     expect(TareasPorVisita::cronActivo())->toBeFalse();
+    Http::fake(); // alojaflow:buscar-version pregunta a GitHub
 
     $primera = TareasPorVisita::ejecutarPendientes();
     expect($primera)->toContain('alojaflow:sincronizar')->and($primera)->toContain('alojaflow:limpiar');

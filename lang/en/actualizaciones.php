@@ -11,7 +11,7 @@ declare(strict_types=1);
 return [
     'titulo' => 'Updates',
     'version_instalada' => 'Installed version: :version',
-    'explicacion' => 'Upload the zip of an AlojaFlow version. Before anything changes, its signature and every file are checked; the database and the files being replaced are backed up, and if anything fails everything goes back as it was. Your data, the .env file and the storage folder are never touched.',
+    'explicacion' => 'Update with one click when a new version comes out, or upload its zip by hand if your server has no internet access. Before anything changes, its signature and every file are checked; the database and the files being replaced are backed up, and if anything fails everything goes back as it was. Your data, the .env file and the storage folder are never touched.',
     'paso_subir' => '1. Upload the package',
     'subir' => 'Version zip (alojaflow-x.y.z.zip)',
     'subir_boton' => 'Upload',
@@ -62,10 +62,30 @@ return [
     'eliminar_texto' => 'The zip is removed from the server; nothing in the installation changes.',
     'eliminado' => 'Package deleted: :paquete',
 
+    'hay_version' => 'A new version is available: :version',
+    'al_dia' => 'You have the latest version.',
+    'ver_que_cambia' => 'See what changes',
+    'ver_publicacion' => 'See the release on GitHub',
+    'actualizar_ahora' => 'Update now',
+    'actualizar_ahora_nota' => 'It is downloaded from GitHub and its signature is checked. Then you see what changes and confirm with your password: nothing is installed without that.',
+    'bajando' => 'Downloading the package… :porcentaje %. Do not close this page.',
+    'bajada_terminada' => 'Downloaded. One moment: we are reviewing the package.',
+    'avisar' => 'Tell me when a new version comes out',
+    'avisar_ayuda' => 'Once a day GitHub is asked for the latest version, without sending any data about this installation; GitHub only sees the server’s address. It never installs by itself.',
+    'aviso_prendido' => 'We will tell you when a new version comes out.',
+    'aviso_apagado' => 'GitHub is no longer asked every day. You can check by hand whenever you like.',
+    'buscar_ahora' => 'Check now',
+    'sin_consulta' => 'The latest version has not been checked yet.',
+    'ultima_consulta' => 'Last check: :fecha.',
+    'consulta_fallida' => 'GitHub did not respond (:fecha). It will be asked again tomorrow; meanwhile you can upload the zip by hand.',
+    'consulta_fallida_ahora' => 'GitHub did not respond. Try again later.',
+
     'consola' => [
         'aplicando' => 'Applying the files…',
         'terminando' => 'Finishing the update with the new code…',
         'nada_pendiente' => 'There is no pending update.',
+        'aviso_apagado' => 'The version notice is turned off.',
+        'consulta_fallida' => 'GitHub did not respond. It will be asked again tomorrow.',
     ],
 
     'error' => [
@@ -102,6 +122,12 @@ return [
         'no_borra' => 'The obsolete file :ruta could not be deleted.',
         'interrumpida' => 'The update was cut off halfway (the process stopped) and the previous files were put back.',
         'migraciones' => 'The database migrations failed and the previous files were put back. If the application shows errors, restore this update’s database backup. Detail: :detalle',
+        'sin_version_nueva' => 'There is no new version to download.',
+        'descarga_red' => 'The download was cut off. Press Try again to continue from where it was.',
+        'descarga_http' => 'The download server responded with code :codigo. Try again later, or download the zip and upload it by hand.',
+        'descarga_host' => 'The download led to :host, which is not allowed. Nothing has been changed.',
+        'descarga_rango' => 'The server sent something other than what was requested. Press Try again to start over.',
+        'descarga_en_curso' => 'The package is already being downloaded.',
     ],
 
     'aviso' => [

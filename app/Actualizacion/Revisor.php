@@ -55,6 +55,30 @@ class Revisor
     }
 
     /**
+     * Si es un paquete de esa versión con la firma de quien publica, sin mirar nada más. Para lo que baja de
+     * internet: lo demás (cada archivo, requisitos) lo revisa revisar() después.
+     */
+    public function firmadoPorQuienPublica(string $zipRuta, string $version, string $clavePublica): bool
+    {
+        $zip = new ZipArchive();
+        if ($zip->open($zipRuta, ZipArchive::RDONLY) !== true) {
+            return false;
+        }
+        try {
+            $base = Manifiesto::carpetaBase($version);
+            $json = $zip->getFromName($base.'/'.self::ARCHIVO_MANIFIESTO);
+            $firma = $zip->getFromName($base.'/'.self::ARCHIVO_FIRMA);
+
+            return is_string($json) && is_string($firma) && Firma::verificar($json, $firma, $clavePublica)
+                && Manifiesto::desdeJson($json)->version === $version;
+        } catch (InvalidArgumentException) {
+            return false;
+        } finally {
+            $zip->close();
+        }
+    }
+
+    /**
      * @param  array<string, string>|null  $instalado
      */
     private function revisarZip(ZipArchive $zip, Revision $revision, string $raiz, string $clavePublica, ?array $instalado): void

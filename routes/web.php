@@ -125,5 +125,7 @@ Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class, 'si
 });
 Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class, 'throttle:600,1'])->post('/actualizaciones/subir-parte', [ActualizacionController::class, 'subirParte'])
     ->name('actualizaciones.subir-parte');
+Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class, 'throttle:120,1'])->post('/actualizaciones/descargar-pedazo', [ActualizacionController::class, 'descargarPedazo'])
+    ->name('actualizaciones.descargar-pedazo');
 Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class])->get('/actualizaciones/{actualizacion}/copia-base-datos', [ActualizacionController::class, 'copiaBaseDatos'])
     ->name('actualizaciones.copia-base-datos');

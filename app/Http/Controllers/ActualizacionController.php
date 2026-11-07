@@ -11,8 +11,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actualizacion\Actualizador;
+use App\Actualizacion\DescargaPorPedazos;
 use App\Actualizacion\ErrorActualizacion;
 use App\Actualizacion\SubidaPorPartes;
+use App\Actualizacion\UltimaVersion;
 use App\Demo\ModoDemo;
 use App\Enums\EstadoActualizacion;
 use App\Filament\Pages\Actualizaciones;
@@ -58,6 +60,27 @@ class ActualizacionController extends Controller
         }
 
         return response()->json(['ok' => true, 'paquete' => $paquete]);
+    }
+
+    /**
+     * Un pedazo de la versión nueva (D-140). No se elige qué bajar: solo la última que se sabe publicada.
+     */
+    public function descargarPedazo(DescargaPorPedazos $descarga, UltimaVersion $ultimaVersion): JsonResponse
+    {
+        $this->soloSuper();
+        abort_if(ModoDemo::activo(), 403);
+        $nueva = $ultimaVersion->disponible();
+        if ($nueva === null) {
+            return response()->json(['ok' => false, 'error' => __('actualizaciones.error.sin_version_nueva')], 422);
+        }
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(120);
+        }
+        try {
+            return response()->json(['ok' => true] + $descarga->avanzar($nueva['version']));
+        } catch (ErrorActualizacion $e) {
+            return response()->json(['ok' => false, 'error' => $e->getMessage()], 422);
+        }
     }
 
     /**

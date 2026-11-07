@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Actualizacion\Actualizador;
+use App\Actualizacion\DescargaPorPedazos;
 use App\Archivos\GestorArchivos;
 use App\Enums\EstadoEnvio;
 use App\Models\Actualizacion;
@@ -35,7 +36,7 @@ class Limpiar extends Command
 
     protected $description = 'Borra los registros vencidos (ejecuciones de sincronización, copias de actualizaciones…)';
 
-    public function handle(Actualizador $actualizador, GestorPrivacidad $privacidad): int
+    public function handle(Actualizador $actualizador, GestorPrivacidad $privacidad, DescargaPorPedazos $descarga): int
     {
         $vigentes = Principal::query()->whereNotNull('ejecucion_vigente_id')->pluck('ejecucion_vigente_id');
         $borradas = EjecucionSincronizacion::query()
@@ -75,6 +76,7 @@ class Limpiar extends Command
             }
         }
         $this->info(__('consola.copias_borradas', ['cuantas' => $copias]));
+        $descarga->limpiarAbandonadas();
 
         return self::SUCCESS;
     }

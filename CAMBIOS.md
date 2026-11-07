@@ -2,6 +2,15 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## Próxima versión (sin publicar)
+
+**Actualizar ya no pide subir un zip.** Sistema → Actualizaciones avisa cuando sale una versión nueva y dice lo que cambia. Con «Actualizar ahora» se baja sola, con una barra de avance, y si se corta sigue desde donde iba.
+
+- **Es igual de seguro que antes:** después de bajar se comprueba la firma, se revisa cada archivo y se confirma con la contraseña, con la misma copia y la misma vuelta atrás. Nunca se instala sola.
+- **El aviso no manda ningún dato de tu instalación.** Una vez al día se pregunta a GitHub cuál es la última versión, y se puede apagar. Si GitHub no responde, no pasa nada.
+- **Lo ve solo el super administrador**, en Actualizaciones y en el inicio.
+- **Si tu servidor no sale a internet,** sigues subiendo el zip a mano. Esta versión se instala todavía de la manera de siempre; el botón aparece a partir de la siguiente.
+
 ## 1.0.34 — 2026-11-07
 
 **La sincronización con HotelDruid 3.0.8 en español ya no se queda en SUB-099 por el límite diario.** Ese aviso de HotelDruid lleva un acento distinto y no se reconocía: ahora sale como SUB-005, que pausa hasta el día siguiente y pide bajar la frecuencia.
