@@ -137,11 +137,6 @@ final class VariablesMensaje
         return strtr($texto, $reemplazos);
     }
 
-    public static function ayuda(): string
-    {
-        return implode(' ', array_map(fn (string $v): string => '{'.$v.'}', self::DISPONIBLES));
-    }
-
     /**
      * Enlace de WhatsApp con el texto listo; sin teléfono, WhatsApp pregunta a quién mandarlo.
      */

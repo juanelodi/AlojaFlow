@@ -87,18 +87,6 @@
     document.addEventListener('focusin', prepararFin);
     document.addEventListener('pointerdown', prepararFin, true);
 
-    // Un clic en cualquier parte del campo abre el calendario, no solo en el icono. Se puede seguir escribiendo con el teclado.
-    document.addEventListener('click', (evento) => {
-        const campo = evento.target;
-        if (campo instanceof HTMLInputElement && campo.type === 'date' && !campo.disabled && !campo.readOnly && typeof campo.showPicker === 'function') {
-            try {
-                campo.showPicker();
-            } catch (error) {
-                // Dentro del iframe de otro sitio no se puede: queda el icono.
-            }
-        }
-    });
-
     /*
      * Variables de un documento o una plantilla: se toca una y queda donde estaba el cursor, en el editor o en el campo de texto.
      */
@@ -113,7 +101,8 @@
             return;
         }
         const editor = objetivo.closest('.fi-fo-rich-editor');
-        if (editor !== null || esTexto(objetivo)) {
+        // El nombre o el código del documento están en el mismo formulario, y una variable no va ahí.
+        if (editor !== null || (esTexto(objetivo) && objetivo.closest('.fi-sc-tabs') !== null)) {
             ultimoCampo = editor ?? objetivo;
         }
     });
@@ -194,7 +183,7 @@
     const comoNumero = (texto) => {
         const limpio = texto.replace(/ /g, ' ').trim();
         // Con moneda o porcentaje, pero sin palabras: «12 noches» se ordena como texto, y «$1,200.50» o «1.200,50 €», como número.
-        if (!/^(?:\p{Lu}{1,3})?[^\p{L}\d-]*-?\d[\d.,\s']*(?:\s?(?:%|[^\p{L}\d\s]|\p{Lu}{3}))?$/u.test(limpio)) {
+        if (!/^-?(?:\p{Lu}{1,3})?[^\p{L}\d-]*-?\d[\d.,\s']*(?:\s?(?:%|[^\p{L}\d\s]|\p{Lu}{3}))?$/u.test(limpio)) {
             return null;
         }
         const cifras = limpio.replace(/[^\d.,-]/g, '');
@@ -221,12 +210,21 @@
 
     const vacio = (valor) => valor === '' || valor === '—' || valor === '-';
 
+    // data-orden ya viene sin formato: «10.125» son diez y pico, no diez mil.
+    const numeroDeCelda = (fila, columna, valor) => {
+        if (fila.cells[columna]?.dataset.orden === undefined) {
+            return comoNumero(valor);
+        }
+
+        return /^-?\d+(?:\.\d+)?$/.test(valor) ? Number(valor) : null;
+    };
+
     const ordenar = (tabla, columna, direccion) => {
         const comparador = new Intl.Collator(document.documentElement.lang || undefined, { numeric: true, sensitivity: 'base' });
         for (const cuerpo of tabla.tBodies) {
             const filas = [...cuerpo.rows];
             const valores = new Map(filas.map((fila) => [fila, valorDeCelda(fila, columna)]));
-            const numeros = new Map(filas.map((fila) => [fila, comoNumero(valores.get(fila))]));
+            const numeros = new Map(filas.map((fila) => [fila, numeroDeCelda(fila, columna, valores.get(fila))]));
             const todoNumero = filas.every((fila) => vacio(valores.get(fila)) || numeros.get(fila) !== null);
             const ordenadas = filas.map((fila, indice) => [fila, indice]).sort(([a, ia], [b, ib]) => {
                 const va = valores.get(a);
@@ -251,7 +249,9 @@
             return;
         }
         for (const titulo of tabla.tHead.querySelectorAll('th')) {
-            if (titulo.querySelector('button, a, input') !== null || titulo.textContent.trim() === '' || titulo.dataset.afSinOrden !== undefined) {
+            // Un título con solo texto para lectores de pantalla es la columna de los botones: no hay nada que ordenar.
+            const textoVisible = [...titulo.childNodes].filter((nodo) => !nodo.classList?.contains('af-sr')).map((nodo) => nodo.textContent).join('').trim();
+            if (titulo.querySelector('button, a, input') !== null || textoVisible === '' || titulo.dataset.afSinOrden !== undefined) {
                 continue;
             }
             const boton = document.createElement('button');

@@ -29,6 +29,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -73,8 +74,8 @@ class ReservasTable
                     ->formatStateUsing(fn (Reserva $record): string => Formato::dinero($record->total, $record->moneda)),
                 TextColumn::make('pendiente')->label(__('ui.comun.pendiente'))->alignEnd()->visibleFrom('sm')
                     ->formatStateUsing(fn (Reserva $record): string => $record->pendiente > 0 ? Formato::dinero($record->pendiente, $record->moneda) : '—'),
-                // Solo donde cabe sin desplazar la tabla; también se busca y se filtra por él.
-                TextColumn::make('origen_texto')->label(__('ui.comun.origen'))->visibleFrom('2xl')->toggleable()->placeholder('—'),
+                // Oculta al empezar, para que la tabla quepa; también se busca y se filtra por él.
+                TextColumn::make('origen_texto')->label(__('ui.comun.origen'))->visibleFrom('sm')->toggleable(isToggledHiddenByDefault: true)->placeholder('—'),
                 TextColumn::make('tarifa_nombre')->label(__('ui.reservas.tarifa'))->visibleFrom('sm')->toggleable(isToggledHiddenByDefault: true)->placeholder('—'),
                 TextColumn::make('titular.nacionalidad_texto')->label(__('ui.huespedes.nacionalidad'))->visibleFrom('sm')->toggleable(isToggledHiddenByDefault: true)->placeholder('—'),
                 TextColumn::make('titular.domicilio_region')->label(__('ui.huespedes.region'))->visibleFrom('sm')->toggleable(isToggledHiddenByDefault: true)->placeholder('—'),
@@ -85,11 +86,15 @@ class ReservasTable
             ->filtersFormWidth(Width::FourExtraLarge)
             ->filtersFormColumns(['default' => 1, 'sm' => 2, 'lg' => 3])
             ->filters([
-                // En una instalación sin subordinadas no hay nada que ocultar, y un filtro siempre puesto solo estorba.
-                Filter::make('vigentes')->label(__('ui.reservas.solo_vigentes'))->default()
-                    ->visible(fn (): bool => ReservaResource::haySubordinadas())
-                    ->indicateUsing(fn (): array => [])
-                    ->query(fn (Builder $query): Builder => $query->whereNull('eliminada_en_principal_en')),
+                // Sin nada que ocultar, no estorba. Se oculta aunque la lista recuerde sus filtros de antes de que hubiera algo que ocultar: por eso no es una casilla.
+                TernaryFilter::make('vigentes')->label(__('ui.reservas.eliminada'))
+                    ->visible(fn (): bool => ReservaResource::hayEliminadasEnPrincipal())
+                    ->placeholder(__('ui.reservas.solo_vigentes'))->trueLabel(__('ui.reservas.con_eliminadas'))->falseLabel(__('ui.reservas.solo_eliminadas'))
+                    ->queries(
+                        true: fn (Builder $query): Builder => $query,
+                        false: fn (Builder $query): Builder => $query->whereNotNull('eliminada_en_principal_en'),
+                        blank: fn (Builder $query): Builder => $query->whereNull('eliminada_en_principal_en'),
+                    ),
                 SelectFilter::make('propiedad_id')->label(__('ui.comun.propiedad'))->multiple()
                     ->visible(fn (): bool => count(ReservaResource::propiedadesPermitidas()) > 1)
                     ->options(fn (): array => Propiedad::query()->whereIn('id', ReservaResource::propiedadesPermitidas())->orderBy('nombre')->pluck('nombre', 'id')->all()),
