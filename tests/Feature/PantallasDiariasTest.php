@@ -221,3 +221,20 @@ describe('la ficha de la reserva', function (): void {
         $this->actingAs(($this->usuarioCon)('limpieza'))->get(ReservaResource::getUrl('view', ['record' => $reserva]))->assertNotFound();
     });
 });
+
+describe('importes en las cifras', function (): void {
+    it('un importe no se parte: pasa al renglón siguiente en lugar de cortarse', function (): void {
+        $hoja = (string) file_get_contents(resource_path('css/alojaflow.css'));
+
+        // Una columna fija no crece con su contenido, y «MX$174,033.33» salía en dos renglones o cortado en la orilla.
+        expect($hoja)->toMatch('/\.af-cifras \{ display: flex; flex-wrap: wrap;/')
+            ->toMatch('/\.af-kpis \{ display: flex; flex-wrap: wrap;/')
+            ->toMatch('/\.af-cifra dd \{[^}]*white-space: nowrap;/')
+            ->toMatch('/\.af-kpi dd \{[^}]*white-space: nowrap;/')
+            ->not->toMatch('/\.af-cifra dd \{[^}]*overflow-wrap/');
+    });
+
+    it('la nota de un indicador sí puede ocupar varios renglones', function (): void {
+        expect((string) file_get_contents(resource_path('css/alojaflow.css')))->toMatch('/\.af-kpi small \{[^}]*white-space: normal;/');
+    });
+});

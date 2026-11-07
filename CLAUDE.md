@@ -308,6 +308,7 @@ npx license-checker --summary             # licencias npm
 - `public/.htaccess`: nada de directivas que solo admita la configuración del servidor (`DeflateCompressionLevel`) y todo
   dentro de su `IfModule`. Cualquier error ahí es un 500 en todo el sitio; `RendimientoPanelTest` lo revisa.
 - dompdf ignora `word-break: break-all`, y un texto largo sin espacios se sale de la página: `overflow-wrap: anywhere`.
+- Una columna `minmax(7.5rem, 1fr)` no crece con su contenido: un importe se sale o, con `word-break`, se parte. Las cifras son `flex-wrap` con `white-space: nowrap`, y si no cabe, pasa al renglón siguiente.
 - `@json` de Blade corta su expresión en las comas: un arreglo escrito ahí truena. Se arma en PHP y se imprime con `{!! !!}` y `JSON_HEX_TAG`.
 - `form-action` de la CSP también se aplica a una redirección: una página con un botón que acaba en una pasarela no puede llevarlo (`CabecerasSeguridad`).
 - `Http::fake` compara contra la dirección con su query: un GET con `?expand[]=…` necesita `*` al final del patrón.
