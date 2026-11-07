@@ -2,6 +2,38 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## Próxima versión (sin publicar)
+
+**La sincronización con HotelDruid 3.0.8 en español ya no se queda en SUB-099 por el límite diario.** Ese aviso de HotelDruid lleva un acento distinto y no se reconocía: ahora sale como SUB-005, que pausa hasta el día siguiente y pide bajar la frecuencia.
+
+- **El aviso del resumen dice más:** en qué paso falló, qué respondió la principal y un enlace al historial. Si cambia el fallo, se pone al día.
+- **Una falla de AlojaFlow** al procesar la copia ahora es SUB-098, y ya no culpa a la principal.
+
+**Calendarios que se entienden entre sí.** Al poner la llegada, la salida pasa al día siguiente si quedaba antes o vacía, y abre en ese mes. Vale en todos los pares de fechas, también en el motor de reservas. Un clic en cualquier parte del campo abre el calendario.
+
+**Reservas y huéspedes:**
+
+- **Un buscador de verdad:** cualquier palabra, en cualquier orden: nombre, teléfono, correo, ciudad, origen, número, unidad, estado o fecha. También en el buscador de arriba.
+- **Más filtros:** origen, tarifa, unidad, nacionalidad, país, estado o región, ciudad, saldo pendiente y fechas de llegada y salida.
+- **La ficha del huésped** muestra su código de cliente, cuántas veces ha venido, cuánto ha pagado y sus reservas por año. Sus contactos se pueden llamar, escribir por WhatsApp o por correo desde ahí.
+
+**Todas las listas:**
+
+- **Se ordenan por cualquier columna** con datos guardados, y se muestran por 10, 20, 50 o 100.
+- **Al volver a una lista** sigue con la búsqueda, los filtros y el orden que tenía.
+- **«Ver» y «Editar»** se quedan a la vista aunque la tabla no quepa, y en el teléfono son más grandes. Una reserva es una tarjeta, no una pantalla entera.
+- **Las fechas** se escriben «3 feb 2027».
+
+**Informes y tablas propias:** se ordenan con un clic en el título.
+
+**Aviso de entradas y salidas:** «desde» y «hasta» con calendario, y rangos rápidos. El formato se elige y se guarda por propiedad: fecha (por omisión, «Viernes 06/11/26»), iconos, separador, textos, qué va primero, unidades seguidas o una por renglón, y negritas para WhatsApp.
+
+**Documentos y plantillas:** la lista de variables está junto al texto. Cada una dice qué hace, se busca, y al tocarla queda donde está el cursor. Nuevas: `{pagina_propiedad}`, `{whatsapp_propiedad}` y `{mapa_propiedad}`.
+
+**Correcciones menores:** «1 noche» en Disponibilidad; Mensualidades ya no se desborda en el teléfono; el informe de anticipos muestra la fecha bien escrita.
+
+La revisión completa está en `docs/auditoria-ux-2026-11.md`.
+
 ## 1.0.33 — 2026-11-06
 
 **Clientes omitidos respeta a quien solo ve lo suyo.** Un usuario con ese límite en una propiedad independiente podía buscar ahí a todos los huéspedes y ver a quién omitieron los demás.

@@ -765,6 +765,26 @@ El usuario pidió la portada y el wiki «más modernos, con efectos, vectores y 
 
 ---
 
+### D-135 · 2026-11-06 · Un error propio no se le achaca a la principal
+
+SUB-099 servía para dos cosas: lo que la principal respondió raro y lo que falló de este lado. Una falla al procesar la copia decía «la principal dio una respuesta que AlojaFlow no reconoce». Ahora es SUB-098. Los textos de la principal se comparan sin acentos: HotelDruid 3.0.8 escribe «lìmite».
+
+### D-136 · 2026-11-06 · Un archivo de JavaScript propio, sin compilar
+
+Los pares de fechas y el orden de las tablas necesitan responder sin ir al servidor: una ida y vuelta llega tarde si alguien ya está abriendo el segundo calendario. Va en `resources/js/alojaflow.js`, sin Livewire ni Alpine y sin paso de compilación, como la hoja de estilos. Es una mejora: sin él todo funciona y el servidor valida igual.
+
+### D-137 · 2026-11-06 · Toda columna de la base se ordena sola
+
+Pedir `->sortable()` columna por columna hacía que faltara en la mayoría. `OrdenAutomatico` lo decide con el esquema: columna de la tabla o de una relación de la que depende la fila, y no cifrada. Una prueba ordena por cada columna de cada lista, para que una columna nueva no truene.
+
+### D-138 · 2026-11-06 · El formato del aviso se guarda por propiedad
+
+Es un parte de un equipo: que cada quien lo saque distinto confunde. Va en `Ajustes`, sin tabla nueva. Los iconos son emojis porque el aviso es texto para WhatsApp. El orden de día y mes lo da el idioma (regla 7): `06/11/26` en México y `11/06/26` en Estados Unidos.
+
+### D-139 · 2026-11-06 · La lista de variables es la que vale
+
+`CatalogoVariables` es la lista que se ofrece al escribir, con lo que hace cada una, y una prueba comprueba que todas se sustituyen de verdad. Se prefirió a las *merge tags* de Filament: dejan otra marca en el texto y habrían obligado a cambiar los documentos ya escritos, y no explican cada variable.
+
 ## Pendientes
 
 - Precios y modelo de venta.

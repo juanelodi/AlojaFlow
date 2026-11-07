@@ -22,7 +22,7 @@
         @if ($error)
             <p class="af-aviso" role="alert">{{ $error }}</p>
         @else
-            <p class="af-nota">{{ __('ui.disponibilidad.resultado', ['cuantas' => $libres->flatten()->count(), 'noches' => $this->noches()]) }}</p>
+            <p class="af-nota">{{ __('ui.disponibilidad.resultado', ['unidades' => trans_choice('ui.disponibilidad.n_unidades', $libres->flatten()->count()), 'noches' => trans_choice('ui.comun.n_noches', $this->noches())]) }}</p>
             @forelse ($libres as $unidades)
                 <x-filament::section :heading="$unidades->first()->propiedad->nombre">
                     <div class="af-lista-libres">

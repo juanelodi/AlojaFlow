@@ -236,7 +236,8 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 - `app/Servicios/` — consultas de las pantallas operativas (Operacion, Calendario,
   Disponibilidad, Indicadores), `Informes` e `InformesGestion` (D-079), y `Grafica`, lo que dibuja `filament.partes.grafica-barras`.
 - `app/Filament/Pages/` (pantallas propias, vistas en `resources/views/filament/pages/`) y
-  `app/Filament/Resources/` (administración y listados).
+  `app/Filament/Resources/` (administración y listados). `app/Filament/Tablas/OrdenAutomatico.php`, toda columna de la base se ordena sola (D-137). `app/Servicios/Buscador.php`, buscar por cualquier palabra, y `FichaHuesped.php`.
+- `resources/js/alojaflow.js` — lo que responde sin ir al servidor, sin Livewire ni Alpine (D-136): pares de fechas (`App\Filament\Campos\RangoFechas`), orden de `.af-tabla` y variables. `app/Documentos/CatalogoVariables.php`, la lista que se ofrece al escribir (D-139). `app/Limpieza/FormatoAviso.php` (D-138).
 - `lang/es` (fuente) y los demás idiomas; `resources/views/publico/`, páginas sin sesión del huésped;
   `resources/css/alojaflow.css` (estilos propios).
 - `tests/Support/ConstructorCopia.php` — genera copias sintéticas de HotelDruid para las pruebas;
@@ -266,7 +267,7 @@ PHP artisan alojaflow:demo [--quitar]     # propiedad de demostración con datos
 PHP vendor/bin/pest                       # pruebas, contra la base MySQL alojaflow_pruebas
 PHP vendor/bin/pint --test                # formato PSR-12 + cabecera de licencia + strict_types
 PHP vendor/bin/phpstan analyse --memory-limit=1G   # Larastan nivel 6
-PHP artisan filament:assets               # tras cambiar resources/css/alojaflow.css
+PHP artisan filament:assets               # tras cambiar resources/css/alojaflow.css o resources/js/alojaflow.js
 PHP artisan vendor:publish --tag=livewire:assets --force  # JavaScript de Livewire en public/ (lo hace composer al instalar)
 PHP artisan alojaflow:empaquetar          # dist/alojaflow-x.y.z.zip firmado (git sin cambios)
 PHP artisan alojaflow:actualizar ruta.zip # actualizar una instalación desde la consola
@@ -278,6 +279,7 @@ npx license-checker --summary             # licencias npm
 - Filament inyecta los parámetros de los *closures* **por nombre**: hay que usar `$query`,
   `$data`, `$search`, `$state`, `$record`…, nunca `$q` ni `$datos`.
 - Blade no admite `use` dentro de `@php`: se usa `@use('Clase')`.
+- Una tabla propia (`.af-tabla`) se ordena sola en el navegador: lo que se lee distinto de como se ordena, como una fecha en palabras, lleva `data-orden`. Dentro de `.af-tabla-contenedor`, una fila con `colspan` la deja sin orden.
 - Con `ONLY_FULL_GROUP_BY` y `DISTINCT`, MySQL exige que el `ORDER BY` esté en el `SELECT`.
 - Las pruebas de pantallas deben entrar también con usuarios que no son administradores.
 - En comillas dobles, un carácter no ASCII pegado a una variable forma parte de su nombre

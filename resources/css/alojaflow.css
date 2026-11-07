@@ -61,7 +61,7 @@
 .dark .af-frescura--vieja { color: var(--warning-400); }
 
 /* Tablas */
-.af-tabla-contenedor { overflow-x: auto; -webkit-overflow-scrolling: touch; container-type: inline-size; }
+.af-tabla-contenedor { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; container-type: inline-size; }
 .af-tabla-contenedor:focus-visible { outline: 2px solid var(--primary-600); outline-offset: 2px; border-radius: .25rem; }
 .af-tabla { width: 100%; border-collapse: collapse; font-size: .875rem; }
 .af-tabla th { text-align: start; font-weight: 600; font-size: .75rem; color: var(--gray-600); padding: .5rem .75rem; border-bottom: 1px solid var(--gray-200); white-space: nowrap; }
@@ -440,6 +440,7 @@ th[aria-sort="descending"] .af-orden::after { opacity: 1; clip-path: polygon(10%
         position: sticky; inset-inline-end: 0; z-index: 1; background: white;
         box-shadow: -8px 0 8px -8px rgb(15 23 42 / .18);
     }
+    .fi-ta-content-ctn thead th.fi-ta-actions-header-cell { background: var(--gray-50); }
     .fi-ta-content-ctn .fi-ta-row:hover > td.fi-ta-cell:last-child:has(> .fi-ta-actions) { background: var(--gray-50); }
     .dark .fi-ta-content-ctn .fi-ta-row > td.fi-ta-cell:last-child:has(> .fi-ta-actions),
     .dark .fi-ta-content-ctn thead th.fi-ta-actions-header-cell { background: var(--gray-900); box-shadow: -8px 0 8px -8px rgb(0 0 0 / .6); }
@@ -448,19 +449,23 @@ th[aria-sort="descending"] .af-orden::after { opacity: 1; clip-path: polygon(10%
 .fi-ta-actions .fi-ac-link-action { display: inline-flex; align-items: center; gap: .375rem; }
 @media (min-width: 40rem) {
     /* Más filas a la vista y menos columnas fuera de ella. */
-    .fi-ta-table .fi-ta-col:not(.fi-inline) { padding: .625rem .5rem; }
+    .fi-ta-table .fi-ta-col > [class*="fi-ta-"]:not(.fi-inline) { padding: .625rem .5rem; }
     .fi-ta-table .fi-ta-header-cell { padding-inline: .5rem; }
-    .fi-ta-table .fi-ta-cell:first-child .fi-ta-col, .fi-ta-table .fi-ta-header-cell:first-child { padding-inline-start: 1rem; }
-    .fi-ta-table .fi-ta-cell:has(> .fi-ta-actions) { padding-inline: .5rem .75rem; }
+    .fi-ta-table .fi-ta-cell:has(> .fi-ta-actions) { padding: .375rem .75rem .375rem .5rem; }
+    /* La primera columna que se ve, separada del borde; en Reservas, la primera del todo es la tarjeta oculta. */
+    .fi-ta-table th:first-child:not([class*="fi-hidden"]), .fi-ta-table th[class*="fi-hidden"]:first-child + th { padding-inline-start: 1rem; }
+    .fi-ta-table td:first-child:not([class*="fi-hidden"]), .fi-ta-table td[class*="fi-hidden"]:first-child + td { padding-inline-start: .5rem; }
     .fi-ta-table .fi-ta-actions { flex-wrap: nowrap; gap: .625rem; }
 }
 .fi-ta-actions .fi-ac-link-action > .fi-icon { width: 1.25rem; height: 1.25rem; }
+.fi-ta-actions .fi-ac-link-action > .fi-link-label { align-self: center; }
 
 /* En el teléfono: etiqueta y dato en un renglón, para que quepan varias filas en la pantalla. */
 @media (max-width: 39.99rem) {
     .fi-ta-table-stacked-on-mobile .fi-ta-cell:has(> .fi-ta-cell-label) { display: flex; justify-content: space-between; align-items: baseline; gap: .75rem; padding-block: .1875rem; }
-    .fi-ta-table-stacked-on-mobile .fi-ta-cell-label { flex: none; max-width: 45%; font-weight: 400; color: var(--af-suave); }
+    .fi-ta-table-stacked-on-mobile .fi-ta-cell-label { flex: none; max-width: 45%; font-weight: 400; color: var(--af-suave); text-align: start; }
     .fi-ta-table-stacked-on-mobile .fi-ta-cell-content { min-width: 0; text-align: end; }
+    .fi-ta-header-toolbar > .fi-ta-actions:not(:has(*)) { display: none; }
     .fi-ta-header-toolbar > div:last-child { flex-wrap: wrap; width: 100%; }
     .fi-ta-header-toolbar .fi-ta-search-field { flex: 1 1 100%; max-width: none; }
     .fi-ta:has(.fi-ta-cell-tarjeta) .fi-ta-col-manager-dropdown { display: none; }
@@ -491,6 +496,9 @@ th[aria-sort="descending"] .af-orden::after { opacity: 1; clip-path: polygon(10%
     .fi-icon-btn { min-width: 2.75rem; min-height: 2.75rem; }
     .fi-btn { min-height: 2.75rem; }
     .fi-pagination-item-btn, .fi-pagination-previous-btn, .fi-pagination-next-btn { min-width: 2.75rem; min-height: 2.75rem; }
+    .af-orden { min-height: 2.75rem; }
+    .fi-badge-delete-btn, .fi-select-input-value-remove-btn { min-width: 1.75rem; min-height: 1.75rem; }
+    .fi-checkbox-input { width: 1.25rem; height: 1.25rem; }
     .af-iconos { gap: .25rem; }
     .af-iconos a { min-width: 2.75rem; min-height: 2.75rem; }
     .af-iconos .h-5 { width: 1.5rem; height: 1.5rem; }
@@ -523,7 +531,7 @@ th[aria-sort="descending"] .af-orden::after { opacity: 1; clip-path: polygon(10%
 .fi-ta-header-cell:not(.fi-ta-header-cell-sorted) .fi-ta-header-cell-sort-btn:focus-visible .fi-icon { opacity: .6; }
 .af-tabla th:not([aria-sort]) .af-orden::after { margin-inline-end: -1rem; opacity: 0; }
 .af-tabla th:not([aria-sort]) .af-orden:hover::after, .af-tabla th:not([aria-sort]) .af-orden:focus-visible::after { opacity: .6; }
-.af-tabla td[data-orden] { white-space: nowrap; }
+.af-tabla td[data-orden], .af-tabla td.af-sin-cortar { white-space: nowrap; }
 /* El contador de filtros repite lo que ya dicen las etiquetas de abajo, y con 0 solo estorba. */
 .fi-ta-header-toolbar .fi-modal-trigger [class*="badge"] { display: none; }
 /* En el teléfono, una reserva de la ficha se lee con lo esencial. */
@@ -554,3 +562,11 @@ th[aria-sort="descending"] .af-orden::after { opacity: 1; clip-path: polygon(10%
 .af-variable code { font-size: .8125rem; font-weight: 600; color: var(--primary-700); overflow-wrap: anywhere; }
 .dark .af-variable code { color: var(--primary-400); }
 .af-variable span { font-size: .75rem; line-height: 1.35; color: var(--af-suave); }
+
+/* Una tabla ancha en el teléfono se desplaza, pero la primera columna se queda: es la que dice de qué es cada fila. */
+@media (max-width: 39.99rem) {
+    .af-tabla-contenedor .af-tabla:not(.af-tabla--tarjetas) th:first-child,
+    .af-tabla-contenedor .af-tabla:not(.af-tabla--tarjetas) td:first-child { position: sticky; inset-inline-start: 0; z-index: 1; background: white; box-shadow: 6px 0 6px -6px rgb(15 23 42 / .18); }
+    .dark .af-tabla-contenedor .af-tabla:not(.af-tabla--tarjetas) th:first-child,
+    .dark .af-tabla-contenedor .af-tabla:not(.af-tabla--tarjetas) td:first-child { background: var(--gray-900); }
+}

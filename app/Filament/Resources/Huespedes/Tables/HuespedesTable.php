@@ -19,7 +19,6 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -52,7 +51,6 @@ class HuespedesTable
                 TextColumn::make('reservas_como_titular_count')->label(__('ui.huespedes.reservas'))->alignEnd()->sortable(),
             ])
             ->defaultSort('apellido1')
-            ->filtersLayout(FiltersLayout::Modal)
             ->filtersFormWidth(Width::FourExtraLarge)
             ->filtersFormColumns(['default' => 1, 'sm' => 2, 'lg' => 3])
             ->filters([

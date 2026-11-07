@@ -18,6 +18,7 @@ use App\Seguridad\AuditoriaModelos;
 use App\Seguridad\Dispositivos;
 use App\Seguridad\MemoriaAcceso;
 use App\Support\ClaveCliente;
+use Filament\Forms\Components\Select;
 use Filament\Support\Assets\AssetManager;
 use Filament\Tables\Columns\Column;
 use Filament\Tables\Table;
@@ -76,6 +77,11 @@ class AppServiceProvider extends ServiceProvider
 
         // En el teléfono, cada fila es una tarjeta con todos sus datos: una tabla ancha solo dejaba ver dos columnas.
         Table::configureUsing(fn (Table $table): Table => $table->stackedOnMobile());
+
+        // Una X para vaciar un campo obligatorio solo lleva a un error.
+        Select::configureUsing(function (Select $select): void {
+            $select->selectablePlaceholder(fn (Select $component): bool => ! $component->isRequired());
+        });
 
         // Ordenar por cualquier columna de la base, sin pedirlo una por una. Una columna puede decir lo contrario con ->sortable(false).
         Column::configureUsing(function (Column $columna): void {

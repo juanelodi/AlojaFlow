@@ -40,7 +40,7 @@
                             @else
                                 {{ $reserva->titular?->nombreCompleto() ?? '—' }}
                             @endif
-                            <span class="af-secundario">{{ $reserva->numero }}</span>
+                            <span class="af-secundario">{{ __('ui.reservas.numero') }} {{ $reserva->numero }}</span>
                             @if (in_array($reserva->propiedad_id, $gestionables, true))
                                 {{-- Junto al nombre: es lo primero que busca recepción y no queda fuera de la pantalla. --}}
                                 <div class="af-accion-fila">

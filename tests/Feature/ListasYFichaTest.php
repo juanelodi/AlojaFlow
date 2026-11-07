@@ -12,9 +12,11 @@ use App\Enums\EstadoReserva;
 use App\Enums\ModoPropiedad;
 use App\Enums\TipoContacto;
 use App\Enums\TipoReserva;
+use App\Filament\Resources\Huespedes\HuespedResource;
 use App\Filament\Resources\Huespedes\Pages\ListHuespedes;
 use App\Filament\Resources\Huespedes\Pages\ViewHuesped;
 use App\Filament\Resources\Reservas\Pages\ListReservas;
+use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Huesped;
 use App\Models\Propiedad;
 use App\Models\Reserva;
@@ -209,5 +211,32 @@ describe('la ficha del huésped', function () {
         Acceso::asignarRoles($vendedor, [['propiedad_id' => $this->propiedad->id, 'rol' => 'recepcion', 'solo_propias' => true]]);
 
         expect(FichaHuesped::de($this->ana, $vendedor->refresh())['cuentas']['estancias'])->toBe(0);
+    });
+});
+
+describe('el buscador de arriba', function () {
+    beforeEach(function () {
+        $this->actingAs($this->admin);
+        $this->dic = ($this->reservar)($this->ana, '2026-12-15', '2026-12-18', ['origen_texto' => 'Booking']);
+    });
+
+    it('encuentra una reserva por cualquier dato', function () {
+        expect(ReservaResource::getGlobalSearchResults('cancún')->first()?->url)->toContain('/reservas/'.$this->dic->id)
+            ->and(ReservaResource::getGlobalSearchResults('booking'))->toHaveCount(1)
+            ->and(ReservaResource::getGlobalSearchResults('nada que ver'))->toHaveCount(0);
+    });
+
+    it('encuentra un huésped por teléfono, ciudad o código', function () {
+        expect(HuespedResource::getGlobalSearchResults('9981112')->first()?->title)->toBe('Ana Rivas')
+            ->and(HuespedResource::getGlobalSearchResults('madrid')->first()?->title)->toBe('Luis Mora')
+            ->and(HuespedResource::getGlobalSearchResults((string) $this->ana->id)->first()?->title)->toBe('Ana Rivas');
+    });
+
+    it('no enseña lo que quien busca no puede ver', function () {
+        $sinNada = User::query()->create(['name' => 'Na', 'email' => 'na@example.com', 'password' => 'una-clave-larga-de-prueba', 'activo' => true]);
+        $this->actingAs($sinNada);
+
+        expect(ReservaResource::getGlobalSearchResults('cancún'))->toHaveCount(0)
+            ->and(HuespedResource::getGlobalSearchResults('madrid'))->toHaveCount(0);
     });
 });

@@ -59,7 +59,15 @@ final class Formato
         }
         $texto = $fecha->locale(app()->getLocale())->isoFormat($formato);
 
-        return $formato === 'll' ? str_replace(' de ', ' ', str_replace('.', '', $texto)) : $texto;
+        return $formato === 'll' ? self::compactar($texto) : $texto;
+    }
+
+    /**
+     * «3 de feb. de 2027» se vuelve «3 feb 2027».
+     */
+    public static function compactar(string $fecha): string
+    {
+        return str_replace(' de ', ' ', str_replace('.', '', $fecha));
     }
 
     /**

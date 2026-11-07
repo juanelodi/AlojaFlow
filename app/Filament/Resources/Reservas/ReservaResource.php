@@ -29,13 +29,17 @@ use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Seguridad\Acceso;
 use App\Seguridad\Limites;
+use App\Servicios\Buscador;
+use App\Support\Formato;
 use BackedEnum;
+use Filament\GlobalSearch\GlobalSearchResult;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 /**
  * Reservas: en una propiedad independiente se crean y cambian aquí; en una subordinada, solo se
@@ -54,6 +58,8 @@ class ReservaResource extends Resource
     protected static ?string $recordTitleAttribute = 'numero';
 
     protected static ?int $navigationSort = 1;
+
+    private const RESULTADOS_BUSQUEDA = 8;
 
     public static function getNavigationGroup(): ?string
     {
@@ -89,6 +95,29 @@ class ReservaResource extends Resource
     public static function canViewAny(): bool
     {
         return self::propiedadesPermitidas() !== [];
+    }
+
+    /**
+     * El buscador de arriba encuentra por lo mismo que el de la lista, no solo por el número.
+     *
+     * @return Collection<int, GlobalSearchResult>
+     */
+    public static function getGlobalSearchResults(string $search): Collection
+    {
+        return Buscador::reservas(self::getGlobalSearchEloquentQuery()->with(['unidad', 'titular']), $search)
+            ->orderByDesc('llegada')->limit(self::RESULTADOS_BUSQUEDA)->get()
+            ->map(function (Model $reserva): GlobalSearchResult {
+                assert($reserva instanceof Reserva);
+
+                return new GlobalSearchResult(
+                    title: trim($reserva->numero.' · '.($reserva->titular?->nombreCompleto() ?? $reserva->tipo->etiqueta())),
+                    url: self::getUrl('view', ['record' => $reserva]),
+                    details: [
+                        __('ui.comun.unidad') => (string) ($reserva->unidad->nombre ?? '—'),
+                        __('ui.comun.llegada') => Formato::fechaCorta($reserva->llegada).' → '.Formato::fechaCorta($reserva->salida),
+                    ],
+                );
+            });
     }
 
     /**

@@ -27,7 +27,6 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ViewColumn;
-use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -83,7 +82,6 @@ class ReservasTable
                 TextColumn::make('comentario')->label(__('ui.reservas.comentario'))->visibleFrom('sm')->toggleable(isToggledHiddenByDefault: true)->limit(60)->placeholder('—'),
             ])
             ->defaultSort('llegada', 'desc')
-            ->filtersLayout(FiltersLayout::Modal)
             ->filtersFormWidth(Width::FourExtraLarge)
             ->filtersFormColumns(['default' => 1, 'sm' => 2, 'lg' => 3])
             ->filters([

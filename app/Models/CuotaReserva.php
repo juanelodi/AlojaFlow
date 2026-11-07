@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\Formato;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -55,8 +56,8 @@ class CuotaReserva extends ModeloBase
         $idioma ??= app()->getLocale();
 
         return __('estancias.cuotas.periodo', [
-            'desde' => (string) $this->desde?->locale($idioma)->isoFormat('ll'),
-            'hasta' => (string) $this->hasta?->locale($idioma)->isoFormat('ll'),
+            'desde' => Formato::compactar((string) $this->desde?->locale($idioma)->isoFormat('ll')),
+            'hasta' => Formato::compactar((string) $this->hasta?->locale($idioma)->isoFormat('ll')),
         ], $idioma);
     }
 }

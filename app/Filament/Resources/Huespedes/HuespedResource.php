@@ -21,13 +21,16 @@ use App\Filament\Resources\Reservas\ReservaResource;
 use App\Models\Huesped;
 use App\Seguridad\Acceso;
 use App\Seguridad\Limites;
+use App\Servicios\Buscador;
 use BackedEnum;
+use Filament\GlobalSearch\GlobalSearchResult;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -47,6 +50,8 @@ class HuespedResource extends Resource
     protected static ?string $recordTitleAttribute = 'apellido1';
 
     protected static ?int $navigationSort = 2;
+
+    private const RESULTADOS_BUSQUEDA = 8;
 
     public static function getNavigationGroup(): ?string
     {
@@ -76,6 +81,30 @@ class HuespedResource extends Resource
     public static function canViewAny(): bool
     {
         return ReservaResource::propiedadesPermitidas() !== [];
+    }
+
+    /**
+     * El buscador de arriba encuentra por lo mismo que el de la lista: teléfono, correo, ciudad, código…
+     *
+     * @return Collection<int, GlobalSearchResult>
+     */
+    public static function getGlobalSearchResults(string $search): Collection
+    {
+        return Buscador::huespedes(self::getGlobalSearchEloquentQuery()->with('contactos'), $search)
+            ->orderBy('apellido1')->limit(self::RESULTADOS_BUSQUEDA)->get()
+            ->map(function (Model $huesped): GlobalSearchResult {
+                assert($huesped instanceof Huesped);
+
+                return new GlobalSearchResult(
+                    title: $huesped->nombreCompleto(),
+                    url: self::getUrl('view', ['record' => $huesped]),
+                    details: array_filter([
+                        __('ui.huespedes.codigo') => $huesped->codigo(),
+                        __('ui.huespedes.contactos') => (string) $huesped->contactos->first()?->valor,
+                        __('ui.huespedes.ciudad') => (string) $huesped->domicilio_ciudad,
+                    ], fn (string $valor): bool => $valor !== ''),
+                );
+            });
     }
 
     public static function canView(Model $record): bool
