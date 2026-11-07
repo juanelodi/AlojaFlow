@@ -61,7 +61,10 @@ class PanelAplicacionProvider extends PanelProvider
         // Todos los listados igual: se pagina por 10, 20, 50 o 100, y al volver a una lista sigue como estaba.
         Table::configureUsing(fn (Table $tabla) => $tabla->defaultDateDisplayFormat('j M Y')->defaultDateTimeDisplayFormat('j M Y H:i')
             ->paginated([10, 20, 50, 100])->defaultPaginationPageOption(20)
-            ->persistFiltersInSession()->persistSearchInSession()->persistSortInSession());
+            ->persistFiltersInSession()->persistSearchInSession()->persistSortInSession()
+            // Con su nombre: un embudo y unas barras solos no dicen qué hacen.
+            ->filtersTriggerAction(fn (Action $action): Action => $action->button()->color('gray')->label(__('ui.comun.filtros')))
+            ->toggleColumnsTriggerAction(fn (Action $action): Action => $action->button()->color('gray')->label(__('ui.comun.columnas'))));
     }
 
     /**

@@ -12,12 +12,14 @@ namespace App\Providers;
 
 use App\Demo\ModoDemo;
 use App\Filament\RecursosDelPanel;
+use App\Filament\Tablas\OrdenAutomatico;
 use App\Models\User;
 use App\Seguridad\AuditoriaModelos;
 use App\Seguridad\Dispositivos;
 use App\Seguridad\MemoriaAcceso;
 use App\Support\ClaveCliente;
 use Filament\Support\Assets\AssetManager;
+use Filament\Tables\Columns\Column;
 use Filament\Tables\Table;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -74,6 +76,11 @@ class AppServiceProvider extends ServiceProvider
 
         // En el teléfono, cada fila es una tarjeta con todos sus datos: una tabla ancha solo dejaba ver dos columnas.
         Table::configureUsing(fn (Table $table): Table => $table->stackedOnMobile());
+
+        // Ordenar por cualquier columna de la base, sin pedirlo una por una. Una columna puede decir lo contrario con ->sortable(false).
+        Column::configureUsing(function (Column $columna): void {
+            $columna->sortable(fn (Column $column): bool => OrdenAutomatico::sePuede($column));
+        });
 
         // Con nombre: sin él, dos límites en una misma ruta comparten el contador y se suman.
         RateLimiter::for('publico', fn (Request $request): Limit => Limit::perMinute(60)->by(ClaveCliente::de($request)));

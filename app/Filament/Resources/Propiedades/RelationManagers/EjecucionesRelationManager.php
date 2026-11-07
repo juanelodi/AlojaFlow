@@ -46,7 +46,6 @@ class EjecucionesRelationManager extends RelationManager
     {
         return $table
             ->defaultSort('iniciada_en', 'desc')
-            ->paginated([10, 25, 50])
             ->columns([
                 TextColumn::make('iniciada_en')->label(__('ui.ejecuciones.iniciada'))
                     ->formatStateUsing(fn (EjecucionSincronizacion $record): string => Formato::momento($record->iniciada_en)),

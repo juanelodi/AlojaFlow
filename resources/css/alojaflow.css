@@ -431,3 +431,102 @@ th[aria-sort] { color: var(--gray-950); }
 th[aria-sort="ascending"] .af-orden::after { opacity: 1; clip-path: polygon(50% 18%, 90% 78%, 10% 78%); }
 th[aria-sort="descending"] .af-orden::after { opacity: 1; clip-path: polygon(10% 22%, 90% 22%, 50% 82%); }
 .af-tabla th.af-num .af-orden { flex-direction: row-reverse; }
+
+/* Tablas de Filament */
+/* «Ver» y «Editar» siempre a la vista: si la tabla no cabe, se desplaza lo demás. */
+@media (min-width: 40rem) {
+    .fi-ta-content-ctn .fi-ta-row > td.fi-ta-cell:last-child:has(> .fi-ta-actions),
+    .fi-ta-content-ctn thead th.fi-ta-actions-header-cell {
+        position: sticky; inset-inline-end: 0; z-index: 1; background: white;
+        box-shadow: -8px 0 8px -8px rgb(15 23 42 / .18);
+    }
+    .fi-ta-content-ctn .fi-ta-row:hover > td.fi-ta-cell:last-child:has(> .fi-ta-actions) { background: var(--gray-50); }
+    .dark .fi-ta-content-ctn .fi-ta-row > td.fi-ta-cell:last-child:has(> .fi-ta-actions),
+    .dark .fi-ta-content-ctn thead th.fi-ta-actions-header-cell { background: var(--gray-900); box-shadow: -8px 0 8px -8px rgb(0 0 0 / .6); }
+    .dark .fi-ta-content-ctn .fi-ta-row:hover > td.fi-ta-cell:last-child:has(> .fi-ta-actions) { background: var(--gray-800); }
+}
+.fi-ta-actions .fi-ac-link-action { display: inline-flex; align-items: center; gap: .375rem; }
+@media (min-width: 40rem) {
+    /* Más filas a la vista y menos columnas fuera de ella. */
+    .fi-ta-table .fi-ta-col:not(.fi-inline) { padding: .625rem .5rem; }
+    .fi-ta-table .fi-ta-header-cell { padding-inline: .5rem; }
+    .fi-ta-table .fi-ta-cell:first-child .fi-ta-col, .fi-ta-table .fi-ta-header-cell:first-child { padding-inline-start: 1rem; }
+    .fi-ta-table .fi-ta-cell:has(> .fi-ta-actions) { padding-inline: .5rem .75rem; }
+    .fi-ta-table .fi-ta-actions { flex-wrap: nowrap; gap: .625rem; }
+}
+.fi-ta-actions .fi-ac-link-action > .fi-icon { width: 1.25rem; height: 1.25rem; }
+
+/* En el teléfono: etiqueta y dato en un renglón, para que quepan varias filas en la pantalla. */
+@media (max-width: 39.99rem) {
+    .fi-ta-table-stacked-on-mobile .fi-ta-cell:has(> .fi-ta-cell-label) { display: flex; justify-content: space-between; align-items: baseline; gap: .75rem; padding-block: .1875rem; }
+    .fi-ta-table-stacked-on-mobile .fi-ta-cell-label { flex: none; max-width: 45%; font-weight: 400; color: var(--af-suave); }
+    .fi-ta-table-stacked-on-mobile .fi-ta-cell-content { min-width: 0; text-align: end; }
+    .fi-ta-header-toolbar > div:last-child { flex-wrap: wrap; width: 100%; }
+    .fi-ta-header-toolbar .fi-ta-search-field { flex: 1 1 100%; max-width: none; }
+    .fi-ta:has(.fi-ta-cell-tarjeta) .fi-ta-col-manager-dropdown { display: none; }
+    .fi-ta-table-stacked-on-mobile .fi-ta-cell-tarjeta { display: block; }
+    /* Con tarjeta, lo demás sobra: solo ella y sus botones. */
+    .fi-ta-table-stacked-on-mobile .fi-ta-row:has(> .fi-ta-cell-tarjeta) > .fi-ta-cell:not(.fi-ta-cell-tarjeta):not(:has(> .fi-ta-actions)) { display: none; }
+    .fi-ta-table-stacked-on-mobile .fi-ta-cell-tarjeta > .fi-ta-cell-label { display: none; }
+    .fi-ta-table-stacked-on-mobile .fi-ta-cell-tarjeta > .fi-ta-cell-content { text-align: start; }
+}
+.af-fila-movil { display: flex; flex-direction: column; gap: .25rem; font-size: .875rem; color: var(--gray-950); }
+.dark .af-fila-movil { color: var(--gray-100); }
+.af-fila-movil__cabecera { display: flex; justify-content: space-between; align-items: flex-start; gap: .75rem; font-size: 1rem; }
+.af-fila-movil__saldo { color: var(--warning-800); }
+.dark .af-fila-movil__saldo { color: var(--warning-400); }
+
+/* Lo que se toca con el dedo: 44 px como mínimo (WCAG 2.5.5, Apple; Material pide 48). */
+@media (pointer: coarse), (max-width: 39.99rem) {
+    .fi-ta-actions .fi-ac-link-action,
+    .fi-ta-actions .fi-ac-btn-action,
+    .fi-ta-actions .fi-icon-btn {
+        min-width: 2.75rem; min-height: 2.75rem; justify-content: center; padding-inline: .875rem;
+        border: 1px solid var(--gray-300); border-radius: .5rem; background: white;
+    }
+    .dark .fi-ta-actions .fi-ac-link-action, .dark .fi-ta-actions .fi-ac-btn-action, .dark .fi-ta-actions .fi-icon-btn { background: var(--gray-800); border-color: var(--gray-700); }
+    .fi-ta-actions .fi-ac-link-action > .fi-icon { width: 1.5rem; height: 1.5rem; }
+    .fi-ta-table-stacked-on-mobile .fi-ta-cell:has(> .fi-ta-actions) { display: block; padding-block-start: .5rem; }
+    .fi-ta-table-stacked-on-mobile .fi-ta-cell:has(> .fi-ta-actions) > .fi-ta-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .fi-icon-btn { min-width: 2.75rem; min-height: 2.75rem; }
+    .fi-btn { min-height: 2.75rem; }
+    .fi-pagination-item-btn, .fi-pagination-previous-btn, .fi-pagination-next-btn { min-width: 2.75rem; min-height: 2.75rem; }
+    .af-iconos { gap: .25rem; }
+    .af-iconos a { min-width: 2.75rem; min-height: 2.75rem; }
+    .af-iconos .h-5 { width: 1.5rem; height: 1.5rem; }
+    .af-enlaces a, .af-enlace { padding-block: .625rem; }
+    .fi-input, .fi-select-input { min-height: 2.75rem; }
+}
+
+/* Ficha del huésped */
+.af-ficha { display: flex; flex-direction: column; gap: 1.25rem; }
+.af-ficha__cifras dd { font-size: 1.125rem; }
+.af-ficha__titulo { display: flex; align-items: baseline; gap: .5rem; margin-block-end: .5rem; font-size: 1rem; font-weight: 600; color: var(--gray-950); font-variant-numeric: tabular-nums; }
+.dark .af-ficha__titulo { color: white; }
+.af-contactos { display: flex; flex-direction: column; gap: .75rem; margin: 0; padding: 0; list-style: none; }
+.af-contactos__fila { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.af-contactos__valor { color: var(--gray-950); overflow-wrap: anywhere; }
+.dark .af-contactos__valor { color: var(--gray-100); }
+/* Una tabla propia que en el teléfono se lee como tarjetas: cada celda dice qué es. */
+@media (max-width: 39.99rem) {
+    .af-tabla--tarjetas thead { display: none; }
+    .af-tabla--tarjetas, .af-tabla--tarjetas tbody, .af-tabla--tarjetas tr, .af-tabla--tarjetas td { display: block; }
+    .af-tabla--tarjetas tr { padding-block: .625rem; border-bottom: 1px solid var(--gray-200); }
+    .dark .af-tabla--tarjetas tr { border-color: var(--gray-800); }
+    .af-tabla--tarjetas td, .af-tabla--tarjetas td.af-num { display: flex; justify-content: space-between; gap: .75rem; padding: .1875rem 0; border: 0; text-align: end; white-space: normal; }
+    .af-tabla--tarjetas td::before { content: attr(data-etiqueta); flex: none; max-width: 45%; color: var(--af-suave); text-align: start; }
+}
+
+/* Las flechas de orden no ocupan lugar hasta que hacen falta: en una tabla con todo ordenable, una flecha por columna son dos columnas perdidas. */
+.fi-ta-header-cell:not(.fi-ta-header-cell-sorted) .fi-ta-header-cell-sort-btn .fi-icon { margin-inline-end: -1.25rem; opacity: 0; }
+.fi-ta-header-cell:not(.fi-ta-header-cell-sorted) .fi-ta-header-cell-sort-btn:hover .fi-icon,
+.fi-ta-header-cell:not(.fi-ta-header-cell-sorted) .fi-ta-header-cell-sort-btn:focus-visible .fi-icon { opacity: .6; }
+.af-tabla th:not([aria-sort]) .af-orden::after { margin-inline-end: -1rem; opacity: 0; }
+.af-tabla th:not([aria-sort]) .af-orden:hover::after, .af-tabla th:not([aria-sort]) .af-orden:focus-visible::after { opacity: .6; }
+.af-tabla td[data-orden] { white-space: nowrap; }
+/* El contador de filtros repite lo que ya dicen las etiquetas de abajo, y con 0 solo estorba. */
+.fi-ta-header-toolbar .fi-modal-trigger [class*="badge"] { display: none; }
+/* En el teléfono, una reserva de la ficha se lee con lo esencial. */
+@media (max-width: 39.99rem) {
+    .af-tabla--tarjetas td.af-solo-ancho { display: none; }
+}

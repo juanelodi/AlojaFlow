@@ -35,6 +35,8 @@ return [
     ],
 
     'comun' => [
+        'filtros' => 'Filters',
+        'columnas' => 'Columns',
 
         'hecho' => 'Done',
         'propiedad' => 'Property',
@@ -275,6 +277,9 @@ return [
         'eventos' => 'Detected changes',
         'codigo_publico' => 'Guest code',
         'filtro_llegada' => 'Arrival between',
+        'filtro_salida' => 'Departure between',
+        'con_saldo' => 'With a balance due',
+        'buscar' => 'Search: name, phone, city, source, number…',
         'solo_vigentes' => 'Hide deleted in the main installation',
         'nueva' => 'New booking',
         'creada' => 'Created',
@@ -325,9 +330,29 @@ return [
         'confirmada_ok' => 'Booking confirmed.',
     ],
 
+    'ficha' => [
+        'estancias' => 'Stays',
+        'pagado' => 'Paid',
+        'primera' => 'First visit',
+        'ultima' => 'Latest',
+        'proxima' => 'Next',
+        'n_reservas' => ':n booking|:n bookings',
+        'acompanante' => 'As a companion',
+        'sin_reservas' => 'No bookings yet.',
+        'sin_contactos' => 'No contact details.',
+        'escribir' => 'Send an email',
+        'apodo' => 'Nickname',
+        'tratamiento' => 'Title',
+        'sexo' => 'Sex',
+        'documento_vence' => 'Document expires',
+        'alta' => 'Customer since',
+    ],
+
     'huespedes' => [
         'modelo' => 'guest',
         'modelos' => 'Guests',
+        'codigo' => 'Customer code',
+        'buscar' => 'Search: name, phone, email, city, code…',
         'nombre' => 'Name',
         'apellidos' => 'Surnames',
         'nacionalidad' => 'Nationality',

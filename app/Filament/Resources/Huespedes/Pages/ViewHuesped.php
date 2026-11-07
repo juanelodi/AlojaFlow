@@ -26,10 +26,24 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Support\Htmlable;
 
 class ViewHuesped extends ViewRecord
 {
     protected static string $resource = HuespedResource::class;
+
+    /**
+     * Su nombre, sin el «Ver» delante: es lo primero que se busca en la ficha.
+     */
+    public function getHeading(): string|Htmlable
+    {
+        return $this->getRecord() instanceof Huesped ? $this->getRecord()->nombreCompleto() : parent::getHeading();
+    }
+
+    public function getSubheading(): string|Htmlable|null
+    {
+        return $this->getRecord() instanceof Huesped ? __('ui.huespedes.codigo').': '.$this->getRecord()->codigo() : null;
+    }
 
     protected function getHeaderActions(): array
     {

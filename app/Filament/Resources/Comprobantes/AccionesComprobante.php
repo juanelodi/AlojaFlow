@@ -38,7 +38,6 @@ final class AccionesComprobante
         return $table
             ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['revisor', 'archivo']))
             ->defaultSort('id', 'desc')
-            ->paginated([25])
             ->columns(self::columnas())
             ->emptyStateHeading(__('grupos.comprobante.vacio'))
             ->recordActions(self::acciones());

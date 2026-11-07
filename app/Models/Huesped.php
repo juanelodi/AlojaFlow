@@ -44,6 +44,11 @@ use Illuminate\Support\Carbon;
  * @property string|null $documento_numero
  * @property string|null $notas
  * @property int|null $creado_por
+ * @property string|null $clave_origen
+ * @property Carbon|null $documento_vencimiento
+ * @property string|null $apodo
+ * @property string|null $tratamiento
+ * @property string|null $sexo
  * @property Carbon|null $eliminado_en_principal_en
  * @property OrigenFila $origen
  * @property bool $sincronizada
@@ -138,6 +143,14 @@ class Huesped extends ModeloBase
             $patron = '%'.addcslashes($palabra, '%_\\').'%';
             $consulta->where(fn (Builder $q): Builder => $q->where('nombre', 'like', $patron)->orWhere('apellido1', 'like', $patron)->orWhere('apellido2', 'like', $patron));
         }
+    }
+
+    /**
+     * El número con que se le conoce: el de la principal si viene de allá, para reconocerlo en los dos lados.
+     */
+    public function codigo(): string
+    {
+        return $this->sincronizada && filled($this->clave_origen) ? (string) $this->clave_origen : (string) $this->id;
     }
 
     public function nombreCompleto(): string

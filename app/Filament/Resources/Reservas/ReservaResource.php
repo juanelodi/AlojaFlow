@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Reservas;
 
 use App\Enums\EstadoReserva;
+use App\Enums\ModoPropiedad;
 use App\Filament\Resources\Reservas\Pages\CreateReserva;
 use App\Filament\Resources\Reservas\Pages\EditReserva;
 use App\Filament\Resources\Reservas\Pages\ListReservas;
@@ -24,6 +25,7 @@ use App\Filament\Resources\Reservas\RelationManagers\PagosRelationManager;
 use App\Filament\Resources\Reservas\Schemas\ReservaForm;
 use App\Filament\Resources\Reservas\Schemas\ReservaInfolist;
 use App\Filament\Resources\Reservas\Tables\ReservasTable;
+use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Seguridad\Acceso;
 use App\Seguridad\Limites;
@@ -87,6 +89,14 @@ class ReservaResource extends Resource
     public static function canViewAny(): bool
     {
         return self::propiedadesPermitidas() !== [];
+    }
+
+    /**
+     * Si alguna de las que puede ver copia de otra instalación: solo entonces hay reservas borradas allá.
+     */
+    public static function haySubordinadas(): bool
+    {
+        return once(fn (): bool => Propiedad::query()->whereIn('id', self::propiedadesPermitidas())->where('modo', ModoPropiedad::Subordinada->value)->exists());
     }
 
     public static function canView(Model $record): bool

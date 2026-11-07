@@ -49,9 +49,17 @@ final class Formato
         return Dinero::formatear($importe, $moneda);
     }
 
+    /**
+     * Por omisión, la corta de las tablas: «3 feb 2027», sin los «de» ni los puntos que le dan dos renglones en una columna angosta.
+     */
     public static function fecha(?CarbonInterface $fecha, string $formato = 'll'): string
     {
-        return $fecha === null ? '—' : $fecha->locale(app()->getLocale())->isoFormat($formato);
+        if ($fecha === null) {
+            return '—';
+        }
+        $texto = $fecha->locale(app()->getLocale())->isoFormat($formato);
+
+        return $formato === 'll' ? str_replace(' de ', ' ', str_replace('.', '', $texto)) : $texto;
     }
 
     /**
@@ -81,7 +89,7 @@ final class Formato
 
     public static function fechaCorta(?CarbonInterface $fecha): string
     {
-        return self::fecha($fecha, 'ddd D MMM');
+        return str_replace('.', '', self::fecha($fecha, 'ddd D MMM'));
     }
 
     /**

@@ -35,6 +35,8 @@ return [
     ],
 
     'comun' => [
+        'filtros' => 'Filtros',
+        'columnas' => 'Columnas',
 
         'hecho' => 'Hecho',
         'propiedad' => 'Propiedad',
@@ -275,6 +277,9 @@ return [
         'eventos' => 'Cambios detectados',
         'codigo_publico' => 'Código para el huésped',
         'filtro_llegada' => 'Llegada entre',
+        'filtro_salida' => 'Salida entre',
+        'con_saldo' => 'Con saldo pendiente',
+        'buscar' => 'Buscar: nombre, teléfono, ciudad, origen, número…',
         'solo_vigentes' => 'Ocultar eliminadas en la principal',
         'nueva' => 'Nueva reserva',
         'creada' => 'Creada',
@@ -325,9 +330,29 @@ return [
         'confirmada_ok' => 'Reserva confirmada.',
     ],
 
+    'ficha' => [
+        'estancias' => 'Estancias',
+        'pagado' => 'Pagado',
+        'primera' => 'Primera visita',
+        'ultima' => 'Última',
+        'proxima' => 'Próxima',
+        'n_reservas' => ':n reserva|:n reservas',
+        'acompanante' => 'De acompañante',
+        'sin_reservas' => 'Todavía no tiene reservas.',
+        'sin_contactos' => 'Sin datos de contacto.',
+        'escribir' => 'Escribir un correo',
+        'apodo' => 'Apodo',
+        'tratamiento' => 'Tratamiento',
+        'sexo' => 'Sexo',
+        'documento_vence' => 'El documento vence',
+        'alta' => 'Cliente desde',
+    ],
+
     'huespedes' => [
         'modelo' => 'huésped',
         'modelos' => 'Huéspedes',
+        'codigo' => 'Código de cliente',
+        'buscar' => 'Buscar: nombre, teléfono, correo, ciudad, código…',
         'nombre' => 'Nombre',
         'apellidos' => 'Apellidos',
         'nacionalidad' => 'Nacionalidad',

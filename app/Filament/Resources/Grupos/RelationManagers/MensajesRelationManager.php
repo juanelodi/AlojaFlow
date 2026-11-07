@@ -42,7 +42,6 @@ class MensajesRelationManager extends RelationManager
     {
         return $table
             ->defaultSort('id', 'desc')
-            ->paginated([25])
             ->columns([
                 TextColumn::make('creado_en')->label(__('grupos.mensajes.cuando'))->formatStateUsing(fn (MensajeGrupo $record): string => Formato::momento($record->creado_en)),
                 TextColumn::make('quien')->label(__('grupos.mensajes.quien'))
