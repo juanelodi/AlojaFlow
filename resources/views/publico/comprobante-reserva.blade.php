@@ -24,15 +24,15 @@
                     <div class="rejilla">
                         <div class="campo">
                             <label for="importe">{{ __('ui.pagos.importe') }}</label>
-                            <input id="importe" type="number" name="importe" min="0.01" step="any" value="{{ \App\Support\Dinero::aDecimal($porCobrar > 0 ? $porCobrar : $reserva->pendiente, $reserva->moneda) }}" required>
+                            <input id="importe" type="number" name="importe" min="0.01" step="any" inputmode="decimal" autocomplete="off" value="{{ \App\Support\Dinero::aDecimal($porCobrar > 0 ? $porCobrar : $reserva->pendiente, $reserva->moneda) }}" required>
                         </div>
                         <div class="campo">
                             <label for="fecha">{{ __('ui.pagos.fecha') }}</label>
-                            <input id="fecha" type="date" name="fecha" value="{{ $propiedad->hoy()->format('Y-m-d') }}" required>
+                            <input id="fecha" type="date" name="fecha" autocomplete="off" value="{{ $propiedad->hoy()->format('Y-m-d') }}" required>
                         </div>
                         <div class="campo">
-                            <label for="referencia">{{ __('ui.pagos.referencia') }}</label>
-                            <input id="referencia" type="text" name="referencia" maxlength="100">
+                            <label for="referencia">{{ __('ui.pagos.referencia') }} <span class="opcional">({{ __('motor.opcional') }})</span></label>
+                            <input id="referencia" type="text" name="referencia" maxlength="100" autocomplete="off">
                         </div>
                     </div>
                     <div class="campo">

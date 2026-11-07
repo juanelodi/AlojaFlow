@@ -65,7 +65,8 @@ class MotorReservasController extends Controller
         'nombre' => ['required', 'string', 'max:100'],
         'apellido' => ['required', 'string', 'max:100'],
         'correo' => ['required', 'email', 'max:150'],
-        'telefono' => ['required', 'string', 'max:50'],
+        // Al menos siete dígitos: sin un número con el que localizarlo, la reserva no sirve de mucho.
+        'telefono' => ['required', 'string', 'max:50', 'regex:/(\D*\d){7}/'],
         'comentario' => ['nullable', 'string', 'max:2000'],
         'cupon' => ['nullable', 'string', 'max:40'],
         'cargos' => ['nullable', 'array', 'max:50'],
@@ -95,7 +96,7 @@ class MotorReservasController extends Controller
     public function buscar(Request $request, string $codigo): View
     {
         $propiedad = $this->propiedad($request, $codigo);
-        $hoy = $propiedad->hoy();
+        $primerDia = $propiedad->hoy()->addDays((new AjustesMotor($propiedad))->diasMinimosAntelacion());
         $llegada = $this->fecha($request->query('llegada'));
         $salida = $this->fecha($request->query('salida'));
         $personas = max(1, min(100, $request->integer('personas', 2)));
@@ -119,8 +120,8 @@ class MotorReservasController extends Controller
             'fotos' => $pagina->fotos(),
             'fotosTarifa' => Foto::query()->where('propiedad_id', $propiedad->id)->whereNotNull('tarifa_id')->orderBy('orden')->orderBy('id')->get()->groupBy('tarifa_id'),
             'politica' => $pagina->mostrarPoliticas() ? $this->politicaGeneral($propiedad) : null,
-            'llegada' => $llegada?->format('Y-m-d') ?? $hoy->format('Y-m-d'),
-            'salida' => $salida?->format('Y-m-d') ?? $hoy->addDay()->format('Y-m-d'),
+            'llegada' => $llegada?->format('Y-m-d') ?? $primerDia->format('Y-m-d'),
+            'salida' => $salida?->format('Y-m-d') ?? $primerDia->addDay()->format('Y-m-d'),
             'personas' => $personas,
             'ofertas' => $ofertas,
             'conEstanciasLargas' => Modulos::activo(Modulo::EstanciasLargas),
@@ -131,7 +132,7 @@ class MotorReservasController extends Controller
             'unidadLargo' => AtributosLugar::unidadLargo($propiedad),
             'noches' => $llegada !== null && $salida !== null && $salida->gt($llegada) ? (int) $llegada->diffInDays($salida) : 0,
             'error' => $error,
-            'minimoFecha' => $hoy->format('Y-m-d'),
+            'minimoFecha' => $primerDia->format('Y-m-d'),
         ]);
     }
 
@@ -150,6 +151,7 @@ class MotorReservasController extends Controller
         return view('publico.motor-calendario', [
             'propiedad' => $propiedad,
             'mes' => $mes,
+            'personas' => max(1, min(100, $request->integer('personas', 2))),
             'semanas' => (new CalendarioPublico($propiedad))->semanas($mes),
             'anterior' => $mes->gt($primero) ? $mes->subMonth()->format('Y-m') : null,
             'siguiente' => $mes->lt($ultimo) ? $mes->addMonth()->format('Y-m') : null,
@@ -166,7 +168,15 @@ class MotorReservasController extends Controller
     public function reservar(Request $request, string $codigo): Response
     {
         $propiedad = $this->propiedad($request, $codigo);
-        $validador = Validator::make($request->all(), self::REGLAS, [], [
+        $validador = Validator::make($request->all(), self::REGLAS, [
+            'nombre.required' => __('motor.validacion.nombre'),
+            'apellido.required' => __('motor.validacion.apellido'),
+            'correo.required' => __('motor.validacion.correo'),
+            'correo.email' => __('motor.validacion.correo_formato'),
+            'telefono.required' => __('motor.validacion.telefono'),
+            'telefono.regex' => __('motor.validacion.telefono_formato'),
+            'acepto.accepted' => __('motor.validacion.acepto'),
+        ], [
             'nombre' => __('motor.nombre'),
             'apellido' => __('motor.apellido'),
             'correo' => __('motor.correo'),
@@ -200,7 +210,7 @@ class MotorReservasController extends Controller
                 'equipo' => (new AjustesMotor($propiedad))->pideEquipo() ? ['tipo' => TipoEquipo::tryFrom((string) ($datos['tipo_equipo'] ?? ''))?->value, 'largo' => $datos['largo'] ?? null, 'vehiculos' => $datos['vehiculos'] ?? null, 'placas' => $datos['placas'] ?? null] : null,
             ]);
         } catch (ReservaRechazada $e) {
-            return $this->respuestaConError($reenviar(new MessageBag([$e->campo === 'cupon' ? 'cupon' : 'tarifa_id' => $e->getMessage()])));
+            return $this->respuestaConError($reenviar(new MessageBag($e->campo === 'cupon' ? ['cupon' => $e->getMessage().' '.__('motor.error.cupon_que_hacer')] : ['tarifa_id' => $e->getMessage()])));
         }
 
         return redirect()->route('motor.reserva', ['codigo' => $codigo, 'publico' => $reserva->codigo_publico, 'idioma' => app()->getLocale()]);
@@ -364,7 +374,7 @@ class MotorReservasController extends Controller
         $personas = max(1, min(100, $personasPedidas));
         $tarifa = Tarifa::query()->where('propiedad_id', $propiedad->id)->where('activa', true)->where('visible_motor', true)->find($tarifaId);
         if ($llegada === null || $salida === null || ! $this->motor->rangoCotizable($propiedad, $llegada, $salida) || $tarifa === null) {
-            return redirect()->route('motor.buscar', ['codigo' => $propiedad->codigo]);
+            return redirect()->route('motor.buscar', ['codigo' => $propiedad->codigo, 'idioma' => app()->getLocale()]);
         }
         $filtro = $this->filtro($valores);
         $oferta = collect($this->motor->ofertas($propiedad, $llegada, $salida, $personas, $filtro))->first(fn ($o): bool => $o->tarifa->id === $tarifa->id);
@@ -376,12 +386,13 @@ class MotorReservasController extends Controller
             $oferta = $lugar === null ? null : $this->motor->conLugar($oferta, $lugar, $llegada, $salida, $personas);
         }
         if ($oferta === null) {
-            return redirect()->route('motor.buscar', ['codigo' => $propiedad->codigo, 'llegada' => $llegada->format('Y-m-d'), 'salida' => $salida->format('Y-m-d'), 'personas' => $personas, 'aviso' => 'sin_lugar']);
+            return redirect()->route('motor.buscar', ['codigo' => $propiedad->codigo, 'llegada' => $llegada->format('Y-m-d'), 'salida' => $salida->format('Y-m-d'), 'personas' => $personas, 'idioma' => app()->getLocale(), 'aviso' => 'sin_lugar'] + $filtro->parametros());
         }
 
         return view('publico.motor-datos', [
             'propiedad' => $propiedad,
             'ajustes' => $ajustes,
+            'conPago' => $oferta->anticipo > 0 && (new Pasarelas($propiedad))->disponibles() !== [],
             'oferta' => $oferta,
             'tarifa' => $tarifa,
             'filtro' => $filtro,

@@ -16,8 +16,25 @@
         <p class="mensaje" role="status">{{ __('motor.estado_pendiente') }}</p>
     @endif
 
+    @if ($espera !== null)
+        @include('publico.pago-en-espera')
+    @elseif ($porCobrar > 0 && $pasarelas !== [])
+        <section class="tarjeta">
+            <h2>{{ __('motor.pagar_titulo', ['importe' => Formato::dinero($porCobrar, $reserva->moneda)]) }}</h2>
+            <p class="gris">{{ __('motor.pagar_ayuda') }}</p>
+            <div class="pagos">
+            @foreach ($pasarelas as $pasarela)
+                <form method="post" action="{{ route('motor.pagar', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico, 'pasarela' => $pasarela, 'idioma' => app()->getLocale()]) }}" target="_top">
+                    <button type="submit">{{ __('motor.pagar_con.'.$pasarela) }}</button>
+                </form>
+            @endforeach
+            </div>
+        </section>
+    @endif
+
     <section class="tarjeta">
         <h2>{{ __('motor.tu_reserva') }} {{ $reserva->codigo_publico }}</h2>
+        <p class="gris" style="margin:0 0 8px">{{ __('motor.guardar_enlace') }}</p>
         <table>
             <tr><th>{{ __('ui.comun.huesped') }}</th><td>{{ $reserva->titular?->nombreCompleto() }}</td></tr>
             <tr><th>{{ __('ui.comun.llegada') }}</th><td>{{ Formato::fecha($reserva->llegada, 'dddd LL') }}</td></tr>
@@ -33,21 +50,6 @@
         </table>
         <p style="margin:12px 0 0"><a class="boton secundario" href="{{ route('motor.pdf', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico, 'idioma' => app()->getLocale()]) }}">{{ __('documentos.descargar_confirmacion') }}</a></p>
     </section>
-
-    @if ($espera !== null)
-        @include('publico.pago-en-espera')
-    @elseif ($porCobrar > 0 && $pasarelas !== [])
-        <section class="tarjeta">
-            <h2>{{ __('motor.pagar_titulo', ['importe' => Formato::dinero($porCobrar, $reserva->moneda)]) }}</h2>
-            <p class="gris">{{ __('motor.pagar_ayuda') }}</p>
-            @foreach ($pasarelas as $pasarela)
-                <form method="post" action="{{ route('motor.pagar', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico, 'pasarela' => $pasarela, 'idioma' => app()->getLocale()]) }}" target="_top" style="display:inline-block;margin:4px 8px 4px 0">
-                    <button type="submit">{{ __('motor.pagar_con.'.$pasarela) }}</button>
-                </form>
-            @endforeach
-        </section>
-    @endif
-
 
     @include('publico.calendario-cobros')
 

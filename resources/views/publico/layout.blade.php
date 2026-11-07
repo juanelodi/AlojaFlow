@@ -9,9 +9,10 @@
 @if ($propiedad->es_demo)<meta name="robots" content="noindex">@endif
 <script src="{{ asset('js/alojaflow/alojaflow.js') }}?v={{ (int) @filemtime(public_path('js/alojaflow/alojaflow.js')) }}" defer></script>
 <style>
-:root{--marca:{{ $propiedad->color ?: '#0f766e' }};--tinta:#0b1f2a;--gris:#475569;--borde:#cbd5e1;--fondo:#f8fafc;--tarjeta:#fff;--campo:#fff;--rojo:#b91c1c;--verde:#15803d}
+:root{color-scheme:light dark;--marca:{{ $propiedad->color ?: '#0f766e' }};--tinta:#0b1f2a;--gris:#475569;--borde:#cbd5e1;--fondo:#f8fafc;--tarjeta:#fff;--campo:#fff;--rojo:#b91c1c;--verde:#15803d}
 @media (prefers-color-scheme:dark){:root{--tinta:#e2e8f0;--gris:#94a3b8;--borde:#334155;--fondo:#020617;--tarjeta:#0f172a;--campo:#1e293b;--rojo:#f87171;--verde:#4ade80}}
 *{box-sizing:border-box}
+a{color:var(--tinta)}
 body{margin:0;background:var(--fondo);color:var(--tinta);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
 header.marca{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap;border-bottom:3px solid var(--marca);padding-bottom:10px;margin-bottom:20px}
@@ -19,9 +20,11 @@ header.marca h1{font-size:1.35rem;margin:0}
 h2{font-size:1.1rem;margin:0 0 8px}
 .tarjeta{background:var(--tarjeta);border:1px solid var(--borde);border-radius:12px;padding:18px;margin-bottom:14px}
 label{display:block;font-size:.875rem;font-weight:600;margin:0 0 4px}
-input[type=text],input[type=email],input[type=tel],input[type=date],input[type=number],input[type=password],input[type=file],textarea,select{width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:8px;font:inherit;background:var(--campo);color:var(--tinta)}
-input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid var(--marca);outline-offset:2px}
-.rejilla{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end}
+input[type=text],input[type=email],input[type=tel],input[type=date],input[type=number],input[type=password],input[type=file],textarea,select{width:100%;padding:11px 12px;border:1px solid var(--borde);min-height:48px;border-radius:8px;font:inherit;background:var(--campo);color:var(--tinta)}
+input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid var(--marca);outline-offset:2px}
+.rejilla{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;align-items:end}
+.rejilla.arriba{align-items:start}
+.rejilla.amplia{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .campo{margin-bottom:12px}
 button,.boton{display:inline-block;min-height:44px;padding:10px 18px;border:0;border-radius:8px;background:var(--marca);color:#fff;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;text-align:center}
 .boton.secundario{background:transparent;color:var(--tinta);border:1px solid var(--borde)}
@@ -29,19 +32,30 @@ button,.boton{display:inline-block;min-height:44px;padding:10px 18px;border:0;bo
 .precio{font-size:1.35rem;font-weight:700}
 .oferta{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
 .oferta>div:first-child{flex:1 1 240px;min-width:0}
+.oferta-compra{text-align:right}
+.oferta-compra .boton{margin-top:8px}
 .mensaje{padding:12px;border-radius:8px;margin:0 0 14px;border:1px solid var(--borde)}
 .mensaje.error{border-color:var(--rojo);color:var(--rojo)}
 .mensaje.bien{border-color:var(--verde);color:var(--verde)}
-.casilla{display:flex;gap:10px;align-items:flex-start;font-weight:400;margin:8px 0}
+.mensaje.error a{color:inherit}
+.mensaje ul{margin:4px 0 0;padding-left:20px}
+.con-error{border:2px solid var(--rojo)!important}
+.error-campo{color:var(--rojo);font-size:.875rem;margin:4px 0 0}
+.opcional{font-weight:400;color:var(--gris)}
+.pasos{display:flex;gap:6px 16px;flex-wrap:wrap;list-style:none;margin:0 0 14px;padding:0;font-size:.875rem;color:var(--gris)}
+.pasos [aria-current]{color:var(--tinta);font-weight:700}
+.pagos{display:flex;flex-wrap:wrap;gap:8px}
+.casilla{display:flex;gap:10px;align-items:flex-start;font-weight:400;margin:0;padding:8px 0}
 .casilla input{margin-top:4px;width:18px;height:18px;flex:none}
 table{width:100%;border-collapse:collapse}
-td,th{padding:6px 0;text-align:left;border-bottom:1px solid var(--borde);vertical-align:top}
+td,th{padding:6px 12px 6px 0;text-align:left;border-bottom:1px solid var(--borde);vertical-align:top}
+td:last-child,th:last-child{padding-right:0}
 td.num,th.num{text-align:right;white-space:nowrap}
 tr.total td{font-weight:700;border-bottom:0}
 .oculto{position:absolute;left:-9999px}
 footer{margin-top:24px;font-size:.8125rem;color:var(--gris)}
 .idiomas{display:flex;flex-wrap:wrap;gap:4px 12px;margin:-10px 0 16px;font-size:.8125rem}
-.idiomas a{color:var(--gris);text-decoration:none;padding:4px 0}
+.idiomas a{color:var(--gris);text-decoration:none;padding:8px 0}
 .idiomas a[aria-current]{color:var(--tinta);font-weight:700}
 footer a{color:inherit}
 .galeria{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 0 14px;padding-bottom:6px}
@@ -52,7 +66,7 @@ footer a{color:inherit}
 .plano img{display:block;width:100%;height:auto}
 .lugar{position:absolute;min-width:32px;min-height:32px;padding:0 8px;border-radius:16px;font-size:.8125rem;line-height:32px;text-align:center;text-decoration:none;box-shadow:0 1px 3px rgb(0 0 0 / .35)}
 .lugar.libre{background:var(--marca);color:#fff;font-weight:700}
-.lugar.ocupado{background:#fff;color:var(--gris)}
+.lugar.ocupado{background:#fff;color:#475569}
 .franja{display:grid;grid-template-columns:repeat(30,1fr);gap:1px}
 .dia{display:block;height:20px;background:var(--borde)}
 .dia.reserva{background:var(--marca)}
@@ -70,7 +84,14 @@ footer a{color:inherit}
 .calendario-muestra.libre{border:2px solid var(--marca)}
 .calendario-muestra.lleno{background:var(--borde)}
 details.filtros{margin-top:12px}
-details.filtros summary{cursor:pointer;font-weight:600;min-height:32px}
+details.filtros summary{cursor:pointer;font-weight:600;padding:10px 0}
+@media (max-width:560px){
+.tarjeta{padding:14px}
+form button,form .boton{width:100%}
+.oferta-compra{flex:1 1 100%;display:flex;justify-content:space-between;gap:12px;align-items:center;text-align:left}
+.oferta-compra .boton{margin-top:0;width:auto;flex:none}
+.pagos form{width:100%}
+}
 </style>
 @yield('cabeza')
 </head>
@@ -78,7 +99,7 @@ details.filtros summary{cursor:pointer;font-weight:600;min-height:32px}
 <main>
     <header class="marca">
         <h1>{{ $propiedad->nombre }}</h1>
-        @if ($propiedad->telefono)<span class="gris">{{ $propiedad->telefono }}</span>@endif
+        @if ($propiedad->telefono)<a class="gris" href="tel:{{ preg_replace('/[^0-9+]/', '', $propiedad->telefono) }}">{{ $propiedad->telefono }}</a>@endif
     </header>
     @if ($propiedad->es_demo)
         <p class="mensaje" role="status">{{ __('motor.demo_aviso') }}</p>
