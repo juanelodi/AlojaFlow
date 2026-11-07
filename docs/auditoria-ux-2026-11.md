@@ -47,7 +47,18 @@ Por eso lo de abajo son hallazgos de una revisión experta y de mediciones, no r
 | Mayor | Informes y tablas propias | No se podían ordenar | Clic en el título, con los meses en orden de tiempo |
 | Mayor | Documentos y plantillas | Las variables eran una lista de nombres sin explicar | Lista junto al texto: dice qué hace cada una, se busca, y se pone al tocarla |
 | Mayor | Ficha del huésped | Una lista de texto, sin código | Código, cuentas y reservas por año, con llamar, WhatsApp y correo |
+| Mayor | Crear reserva en el teléfono | 3,230 px de alto, y las fechas después de propiedad, tipo y estado | Primero fechas, personas y unidad, con cuántas quedan libres. Lo poco usado va plegado y se abre si trae datos o un error: de 3,230 a unos 2,050 px con todos los módulos encendidos |
+| Mayor | Motor: errores | Una lista arriba, lejos de los campos, con textos como «Correo debe ser un correo válido» | Cada campo dice qué hacer, la página vuelve abierta en el formulario y el resumen lleva a cada campo. Sin JavaScript |
+| Mayor | Motor: repetir datos | Al volver con un error se perdía la casilla de condiciones; «Volver» y el aviso de «sin lugar» perdían filtros e idioma | Se conserva todo |
+| Mayor | Motor: oscuro | Enlaces azul oscuro casi invisibles, e iconos del calendario y botón de archivo en claro | Se leen bien: la página declara `color-scheme` y los enlaces usan el color del texto |
+| Mayor | Motor: buscar | La descripción alejaba el formulario y empujaba los resultados | Formulario y resultados primero; las fotos pasan abajo al buscar |
+| Mayor | Motor: confirmación | El botón de pagar quedaba debajo de toda la tabla | Primero el pago; y aviso de guardar la página |
 | Menor | Aviso de entradas y salidas | Fecha larga fija, días contados a mano | Dos calendarios y formato elegible |
+| Menor | Motor | «Hasta 1 personas», «1 personas» | Singular y plural, en los seis idiomas |
+| Menor | Motor | Se aceptaba un teléfono con tres dígitos | Pide al menos siete, y dice cómo escribirlo |
+| Menor | Motor | No se sabía cuánto faltaba ni si se cobraba al enviar | Pasos arriba, y «todavía no se cobra nada» junto al botón |
+| Menor | Motor | Cupón siempre a la vista, botones pequeños en el teléfono, calendario que olvidaba las personas, fecha inicial sin contar la antelación, foco invisible en listas y plegables | Corregidos, con `autocomplete`, `inputmode` y `autocapitalize` en cada campo |
+| Menor | «Elegir la primera libre» | Sin fechas o sin lugar no hacía nada | Dice por qué |
 | Menor | Mensualidades | La página se desbordaba en el teléfono | Corregido en todas: lo oculto de una tabla ya no se sale |
 | Menor | Disponibilidad | «1 noches» | «1 noche» |
 | Menor | Hoy | Un número suelto debajo del nombre | «Número 98» |
@@ -67,11 +78,10 @@ Ordenado por lo que más ayudaría a quien trabaja a diario. Nada de esto está 
 | **Calendario** | Mayor | En el teléfono las barras se tocan con precisión y arrastrar choca con desplazar. Falta una vista de lista o de día |
 | **Hoy** | Mayor | En el teléfono cada llegada es una tarjeta dentro de otra tarjeta: conviene el mismo trato que Reservas |
 | **Ficha de la reserva** | Mayor | Mismo tratamiento que la del huésped: título sin «Ver», y lo importante arriba |
-| **Crear reserva** | Mayor | El formulario es largo en el teléfono: conviene pedir primero fechas y unidad |
-| **Motor público** | Mayor | No se revisó en esta pasada, y es lo que ve el huésped |
 | **Instalador** | Menor | Mostrar la contraseña en vez de pedirla dos veces. Falta recorrerlo completo |
 | **Informes** | Menor | Paginar en el navegador los informes largos y buscar dentro de ellos |
 | **Configuración** | Menor | Cerca de 40 entradas de menú: falta un buscador de ajustes |
+| **Motor público** | Menor | Recorrerlo con pasarelas en modo de prueba: en esta pasada solo se vio el botón, sin cobrar. Tampoco se revisó el plano de lugares de un camping con imagen. Los extras no actualizan el total en pantalla hasta reservar |
 | **Limpieza, Plano, Tareas** | Menor | Se ven bien en el teléfono; falta probarlas con quien limpia |
 | **Propiedad subordinada** | Menor | Recorrerla entera, con el aviso de SUB-099 a la vista |
 | **Accesibilidad** | Menor | Probar con lector de pantalla y con teclado de punta a punta |

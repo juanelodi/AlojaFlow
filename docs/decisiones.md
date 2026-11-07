@@ -785,6 +785,10 @@ Es un parte de un equipo: que cada quien lo saque distinto confunde. Va en `Ajus
 
 `CatalogoVariables` es la lista que se ofrece al escribir, con lo que hace cada una, y una prueba comprueba que todas se sustituyen de verdad. Se prefirió a las *merge tags* de Filament: dejan otra marca en el texto y habrían obligado a cambiar los documentos ya escritos, y no explican cada variable.
 
+### D-140 · 2026-11-06 · Un error del motor abre la página en el formulario, sin JavaScript
+
+El formulario del motor se manda a su propia ancla (`#datos`). Con un error, el navegador abre la respuesta ahí, con un resumen que lleva a cada campo, y cada campo dice qué hacer. **Por qué:** el motor no depende de JavaScript ni de la sesión (D-042), y en el teléfono los errores quedaban una pantalla arriba de los campos. El motor pide además siete dígitos en el teléfono; `GestorReservas` no cambia.
+
 ## Pendientes
 
 - Precios y modelo de venta.
