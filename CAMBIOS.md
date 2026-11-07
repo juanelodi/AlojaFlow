@@ -2,7 +2,7 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
-## 1.0.34 — 2026-11-06
+## 1.0.34 — 2026-11-07
 
 **La sincronización con HotelDruid 3.0.8 en español ya no se queda en SUB-099 por el límite diario.** Ese aviso de HotelDruid lleva un acento distinto y no se reconocía: ahora sale como SUB-005, que pausa hasta el día siguiente y pide bajar la frecuencia.
 
