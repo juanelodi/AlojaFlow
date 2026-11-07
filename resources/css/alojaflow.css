@@ -530,3 +530,27 @@ th[aria-sort="descending"] .af-orden::after { opacity: 1; clip-path: polygon(10%
 @media (max-width: 39.99rem) {
     .af-tabla--tarjetas td.af-solo-ancho { display: none; }
 }
+
+/* Variables de un documento o una plantilla */
+.af-variables { border: 1px solid var(--gray-200); border-radius: .75rem; padding: 1rem; background: white; }
+.dark .af-variables { background: var(--gray-900); border-color: var(--gray-800); }
+@media (min-width: 64rem) { .af-variables { position: sticky; top: 5rem; max-height: calc(100vh - 6rem); overflow-y: auto; } }
+.af-variables__titulo { font-size: .9375rem; font-weight: 600; color: var(--gray-950); }
+.dark .af-variables__titulo { color: white; }
+.af-variables__buscar { margin-block: .625rem .25rem; }
+.af-variables__estado { min-height: 1.25rem; color: var(--success-700); }
+.dark .af-variables__estado { color: var(--success-400); }
+.af-variables__grupo { border-top: 1px solid var(--gray-100); }
+.dark .af-variables__grupo { border-color: var(--gray-800); }
+.af-variables__grupo > summary { display: flex; align-items: center; min-height: 2.75rem; cursor: pointer; font-size: .8125rem; font-weight: 600; color: var(--gray-700); }
+.dark .af-variables__grupo > summary { color: var(--gray-300); }
+.af-variables__grupo > summary:focus-visible { outline: 2px solid var(--primary-600); outline-offset: 2px; border-radius: .25rem; }
+.af-variables__grupo > .af-nota { margin-block-end: .375rem; }
+.af-variables__grupo ul { margin: 0 0 .5rem; padding: 0; list-style: none; }
+.af-variable { display: flex; flex-direction: column; align-items: flex-start; gap: .125rem; width: 100%; min-height: 2.75rem; padding: .375rem .5rem; border: 0; border-radius: .5rem; background: none; cursor: pointer; font: inherit; text-align: start; }
+.af-variable:hover { background: var(--gray-100); }
+.dark .af-variable:hover { background: var(--gray-800); }
+.af-variable:focus-visible { outline: 2px solid var(--primary-600); outline-offset: -2px; }
+.af-variable code { font-size: .8125rem; font-weight: 600; color: var(--primary-700); overflow-wrap: anywhere; }
+.dark .af-variable code { color: var(--primary-400); }
+.af-variable span { font-size: .75rem; line-height: 1.35; color: var(--af-suave); }

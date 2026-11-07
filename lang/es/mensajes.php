@@ -60,7 +60,6 @@ return [
         'asunto' => 'Asunto',
         'cuerpo' => 'Mensaje',
         'activa' => 'Activa',
-        'variables' => 'Puedes usar estas variables:',
         'vacio' => 'Todavía no hay plantillas.',
         'crear_base' => 'Crear plantillas de partida',
         'creadas' => 'Plantillas creadas: :n.',

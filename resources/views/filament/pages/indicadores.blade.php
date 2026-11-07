@@ -67,7 +67,7 @@
                                 <tbody>
                                     @forelse ($fila['por_mes'] as $mes)
                                         <tr>
-                                            <td>{{ Formato::fecha(\Carbon\CarbonImmutable::createFromFormat('!Y-m', $mes->mes), 'MMMM YYYY') }}</td>
+                                            <td data-orden="{{ \Carbon\CarbonImmutable::createFromFormat('!Y-m', $mes->mes)->format('Y-m-d') }}">{{ Formato::fecha(\Carbon\CarbonImmutable::createFromFormat('!Y-m', $mes->mes), 'MMMM YYYY') }}</td>
                                             <td class="af-num">{{ $mes->noches }}</td>
                                             <td class="af-num">{{ Formato::dinero((int) $mes->ingresos, $moneda) }}</td>
                                         </tr>

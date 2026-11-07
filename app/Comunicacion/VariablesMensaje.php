@@ -11,9 +11,12 @@ declare(strict_types=1);
 namespace App\Comunicacion;
 
 use App\Documentos\CamposPropios;
+use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
+use App\Motor\AjustesMotor;
+use App\Publico\PaginaPublica;
 use App\Reservas\Mensualidades;
 use App\Support\Ajustes;
 use App\Support\Contactos;
@@ -25,7 +28,7 @@ use Illuminate\Support\Str;
  */
 final class VariablesMensaje
 {
-    public const DISPONIBLES = ['huesped', 'nombre', 'propiedad', 'telefono_propiedad', 'correo_propiedad', 'numero', 'codigo', 'llegada', 'salida', 'noches', 'personas', 'unidad', 'total', 'pagado', 'pendiente', 'enlace_reserva', 'enlace_llegada', 'enlace_opinion', 'enlace_mi_reserva', 'cuota_importe', 'cuota_vence', 'cuota_periodo'];
+    public const DISPONIBLES = ['huesped', 'nombre', 'propiedad', 'telefono_propiedad', 'correo_propiedad', 'numero', 'codigo', 'llegada', 'salida', 'noches', 'personas', 'unidad', 'total', 'pagado', 'pendiente', 'enlace_reserva', 'enlace_llegada', 'enlace_opinion', 'enlace_mi_reserva', 'cuota_importe', 'cuota_vence', 'cuota_periodo', 'pagina_propiedad', 'whatsapp_propiedad', 'mapa_propiedad'];
 
     public const AJUSTE_PROPIAS = 'mensajes.variables.';
 
@@ -55,6 +58,7 @@ final class VariablesMensaje
             'pendiente' => Formato::dinero($reserva->pendiente, $reserva->moneda),
             'enlace_reserva' => $propiedad->esIndependiente() && Modulos::activo(Modulo::Motor) ? self::enlaceInstalado('motor.reserva', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico, 'idioma' => $idioma]) : '',
         ];
+        $variables += self::dePropiedad($propiedad);
         $pago = Mensualidades::siguiente($reserva);
         $variables['cuota_importe'] = $pago === null ? '' : Formato::dinero($pago['cuota']->importe - $pago['pagado'], $reserva->moneda);
         $variables['cuota_vence'] = $pago === null ? '' : Formato::fecha($pago['cuota']->vence_en, 'LL');
@@ -63,6 +67,23 @@ final class VariablesMensaje
 
         // Las propias del alojamiento (la clave del wifi…), sin pisar las del sistema.
         return $variables + self::propias($reserva->propiedad_id) + CamposPropios::variables($reserva);
+    }
+
+    /**
+     * La página pública, su WhatsApp y su mapa. Vacías si la propiedad no los tiene: una dirección que no abre es peor que ninguna.
+     *
+     * @return array<string, string>
+     */
+    public static function dePropiedad(Propiedad $propiedad): array
+    {
+        $pagina = new PaginaPublica($propiedad);
+        $whatsapp = $pagina->whatsapp();
+
+        return [
+            'pagina_propiedad' => (new AjustesMotor($propiedad))->activo() && Modulos::activo(Modulo::Motor) ? self::enlaceInstalado('motor.buscar', ['codigo' => $propiedad->codigo]) : '',
+            'whatsapp_propiedad' => (string) $whatsapp,
+            'mapa_propiedad' => (string) $pagina->mapaUrl(),
+        ];
     }
 
     /**

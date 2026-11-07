@@ -35,8 +35,7 @@
                         <tbody>
                             @foreach ($copias as $copia)
                                 <tr wire:key="copia-{{ $copia['nombre'] }}">
-                                    <td>
-                                        {{ Formato::momento($copia['creada_en']) }}
+                                    <td data-orden="{{ $copia['creada_en']?->format('Y-m-d H:i:s') }}">{{ Formato::momento($copia['creada_en']) }}
                                         <span class="af-secundario">{{ $copia['nombre'] }}</span>
                                         @unless ($copia['misma_clave'])
                                             <span class="af-secundario" style="color: var(--warning-700)">{{ __('copias.otra_clave') }}</span>

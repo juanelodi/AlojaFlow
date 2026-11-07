@@ -45,7 +45,7 @@
                                 <tr wire:key="cuota-{{ $fila['cuota']->id }}">
                                     <td><a class="af-enlace" href="{{ GrupoResource::getUrl('view', ['record' => $fila['grupo']]) }}">{{ $fila['grupo']->nombre }}</a></td>
                                     <td>{{ $fila['cuota']->concepto }}</td>
-                                    <td>{{ Formato::fecha($fila['cuota']->vence_en) }}</td>
+                                    <td data-orden="{{ $fila['cuota']->vence_en?->format('Y-m-d') }}">{{ Formato::fecha($fila['cuota']->vence_en) }}</td>
                                     <td>{{ Formato::dinero($fila['cuota']->importe - $fila['pagado'], $fila['grupo']->propiedad->moneda) }}</td>
                                     <td>{{ __('grupos.cuotas.estados.'.$fila['estado']) }}</td>
                                     <td>

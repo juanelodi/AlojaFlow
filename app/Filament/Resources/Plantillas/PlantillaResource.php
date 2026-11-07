@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Plantillas;
 
-use App\Comunicacion\VariablesMensaje;
+use App\Documentos\CatalogoVariables;
 use App\Filament\Resources\Base\RecursoDeCualquierPropiedad;
 use App\Filament\Resources\Plantillas\Pages\CreatePlantilla;
 use App\Filament\Resources\Plantillas\Pages\EditPlantilla;
@@ -26,10 +26,12 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -101,8 +103,10 @@ class PlantillaResource extends RecursoDeCualquierPropiedad
                     ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('propiedad_id', self::propiedadDe($get))),
                 Toggle::make('activa')->label(__('mensajes.plantillas.activa'))->default(true),
             ]),
-            Section::make()->columnSpanFull()->description(__('mensajes.plantillas.variables').' '.VariablesMensaje::ayuda())->schema([
-                Tabs::make()->tabs($pestanas),
+            Grid::make(['default' => 1, 'lg' => 3])->columnSpanFull()->schema([
+                Section::make()->columnSpan(['lg' => 2])->schema([Tabs::make()->tabs($pestanas)]),
+                View::make('filament.partes.variables')->columnSpan(['lg' => 1])
+                    ->viewData(fn (Get $get): array => ['grupos' => CatalogoVariables::paraMensaje(self::propiedadDe($get))]),
             ]),
         ]);
     }

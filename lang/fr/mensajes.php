@@ -60,7 +60,6 @@ return [
         'asunto' => 'Objet',
         'cuerpo' => 'Message',
         'activa' => 'Actif',
-        'variables' => 'Vous pouvez utiliser ces variables :',
         'vacio' => 'Aucun modèle pour l’instant.',
         'crear_base' => 'Créer les modèles de départ',
         'creadas' => 'Modèles créés : :n.',

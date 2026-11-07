@@ -53,10 +53,12 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($datos['filas'] as $fila)
+                            @php($naturales = array_keys(array_intersect($datos['columnas'], \App\Servicios\Informes::titulos('mes', 'dia', 'llegada'))))
+                            @foreach ($datos['filas'] as $f => $fila)
                                 <tr>
-                                    @foreach ($fila as $celda)
-                                        <td>{{ $celda }}</td>
+                                    @foreach ($fila as $c => $celda)
+                                        {{-- «noviembre» va después de «octubre», no de «abril»: las filas ya vienen en orden de tiempo. --}}
+                                        <td @if (in_array($c, $naturales, true)) data-orden="{{ sprintf('%06d', $f) }}" @endif>{{ $celda }}</td>
                                     @endforeach
                                 </tr>
                             @endforeach

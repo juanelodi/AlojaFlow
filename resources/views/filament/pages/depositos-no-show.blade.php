@@ -31,9 +31,9 @@
                                 <tr wire:key="deposito-{{ $d['reserva']->id }}" x-data>
                                     <td><a class="af-enlace" href="{{ ReservaResource::getUrl('view', ['record' => $d['reserva']]) }}">{{ $d['reserva']->numero }}</a></td>
                                     <td>{{ $d['reserva']->titular?->nombreCompleto() }}</td>
-                                    <td>{{ Formato::fecha($d['reserva']->llegada) }}</td>
+                                    <td data-orden="{{ $d['reserva']->llegada?->format('Y-m-d') }}">{{ Formato::fecha($d['reserva']->llegada) }}</td>
                                     <td>{{ Formato::dinero($d['importe'], $d['reserva']->moneda) }}</td>
-                                    <td @class(['af-vencido' => $d['vencido']])>{{ Formato::fecha($d['vence']) }}@if ($d['vencido']) · {{ __('operacion.depositos.vencido') }}@endif</td>
+                                    <td @class(['af-vencido' => $d['vencido']]) data-orden="{{ $d['vence']?->format('Y-m-d') }}">{{ Formato::fecha($d['vence']) }}@if ($d['vencido']) · {{ __('operacion.depositos.vencido') }}@endif</td>
                                     <td><x-filament::button tag="a" size="sm" color="gray" icon="heroicon-m-chat-bubble-left-ellipsis" :href="$d['whatsapp']" target="_blank" rel="noopener" x-on:click="$wire.anotarRecordatorio({{ $d['reserva']->id }})">{{ __('operacion.depositos.recordar') }}</x-filament::button></td>
                                 </tr>
                             @endforeach
@@ -65,7 +65,7 @@
                                 <tr wire:key="no-show-{{ $n['reserva']->id }}">
                                     <td><a class="af-enlace" href="{{ ReservaResource::getUrl('view', ['record' => $n['reserva']]) }}">{{ $n['reserva']->numero }}</a></td>
                                     <td>{{ $n['reserva']->titular?->nombreCompleto() }}</td>
-                                    <td>{{ Formato::fecha($n['reserva']->llegada) }}</td>
+                                    <td data-orden="{{ $n['reserva']->llegada?->format('Y-m-d') }}">{{ Formato::fecha($n['reserva']->llegada) }}</td>
                                     <td>{{ Formato::dinero($n['penalizacion'], $n['reserva']->moneda) }}</td>
                                     <td><x-filament::button size="sm" color="warning" wire:click="marcarNoShow({{ $n['reserva']->id }})" wire:confirm="{{ __('dinero.politicas.no_show_ayuda') }}">{{ __('dinero.politicas.no_show_accion') }}</x-filament::button></td>
                                 </tr>

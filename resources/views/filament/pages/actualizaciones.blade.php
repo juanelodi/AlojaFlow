@@ -154,7 +154,7 @@
                         <tbody>
                             @foreach ($historial as $a)
                                 <tr wire:key="actualizacion-{{ $a->id }}">
-                                    <td>{{ Formato::momento($a->iniciada_en ?? $a->creado_en) }}</td>
+                                    <td data-orden="{{ $a->iniciada_en ?? $a->creado_en?->format('Y-m-d H:i:s') }}">{{ Formato::momento($a->iniciada_en ?? $a->creado_en) }}</td>
                                     <td>{{ $a->version_anterior }} → {{ $a->version_nueva }}</td>
                                     <td>
                                         <x-filament::badge :color="match ($a->estado) {

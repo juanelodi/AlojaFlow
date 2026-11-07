@@ -52,7 +52,7 @@
                                 </div>
                             @endif
                         </td>
-                        <td data-etiqueta="{{ __('ui.comun.llegada') }} → {{ __('ui.comun.salida') }}">
+                        <td data-etiqueta="{{ __('ui.comun.llegada') }} → {{ __('ui.comun.salida') }}" data-orden="{{ $reserva->llegada->format('Y-m-d') }}">
                             {{ Formato::fechaCorta($reserva->llegada) }} → {{ Formato::fechaCorta($reserva->salida) }}
                             <span class="af-secundario">{{ trans_choice('ui.comun.n_noches', $reserva->noches) }}</span>
                         </td>

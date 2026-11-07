@@ -112,7 +112,7 @@
                             <tbody>
                                 @foreach ($historial as $lectura)
                                     <tr wire:key="historial-{{ $lectura->id }}">
-                                        <td>{{ Formato::fecha($lectura->leida_en) }}</td>
+                                        <td data-orden="{{ $lectura->leida_en?->format('Y-m-d') }}">{{ Formato::fecha($lectura->leida_en) }}</td>
                                         <td>{{ $lectura->unidad->nombre }}</td>
                                         <td>{{ (float) $lectura->actual }}</td>
                                         <td>{{ $lectura->inicial ? __('camping.lecturas.punto_de_partida') : (float) $lectura->consumo }}</td>

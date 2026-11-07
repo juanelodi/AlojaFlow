@@ -188,7 +188,7 @@ final class MotorDocumentos
             'domicilio_propiedad' => (string) $propiedad->getAttribute('domicilio'),
             'telefono_propiedad' => (string) $propiedad->getAttribute('telefono'),
             'correo_propiedad' => (string) $propiedad->getAttribute('correo'),
-        ] + VariablesMensaje::propias($propiedad->id);
+        ] + VariablesMensaje::dePropiedad($propiedad) + VariablesMensaje::propias($propiedad->id);
     }
 
     /**

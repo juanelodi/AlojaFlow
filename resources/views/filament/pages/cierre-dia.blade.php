@@ -106,7 +106,7 @@
                         <tbody>
                             @foreach ($anteriores as $cierre)
                                 <tr>
-                                    <td>{{ Formato::fecha($cierre->fecha) }}</td>
+                                    <td data-orden="{{ $cierre->fecha?->format('Y-m-d') }}">{{ Formato::fecha($cierre->fecha) }}</td>
                                     <td>{{ $cierre->propiedad->nombre }}</td>
                                     <td>{{ $cierre->usuario->name ?? '—' }}</td>
                                     <td>{{ $cierre->notas }}</td>

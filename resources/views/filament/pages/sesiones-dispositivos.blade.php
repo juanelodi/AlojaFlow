@@ -25,7 +25,7 @@
                                     @if ($this->veTodos())<td>{{ $s['usuario'] }}</td>@endif
                                     <td>{{ $s['dispositivo'] }}</td>
                                     <td>{{ $s['ip'] }}</td>
-                                    <td>{{ Formato::momento($s['ultimo']) }}</td>
+                                    <td data-orden="{{ $s['ultimo']?->format('Y-m-d H:i:s') }}">{{ Formato::momento($s['ultimo']) }}</td>
                                     <td>
                                         @if ($s['actual'])
                                             <x-filament::badge color="success">{{ __('permisos.sesiones.esta') }}</x-filament::badge>
@@ -65,8 +65,8 @@
                                     @if ($this->veTodos())<td>{{ $d['usuario'] }}</td>@endif
                                     <td>{{ $d['dispositivo'] }}</td>
                                     <td>{{ $d['ip'] }}</td>
-                                    <td>{{ Formato::momento($d['ultimo']) }}</td>
-                                    <td>{{ Formato::fecha($d['expira']) }}</td>
+                                    <td data-orden="{{ $d['ultimo']?->format('Y-m-d H:i:s') }}">{{ Formato::momento($d['ultimo']) }}</td>
+                                    <td data-orden="{{ $d['expira']?->format('Y-m-d') }}">{{ Formato::fecha($d['expira']) }}</td>
                                     <td><x-filament::button size="sm" color="gray" wire:click="olvidarDispositivo({{ $d['id'] }})">{{ __('permisos.sesiones.olvidar') }}</x-filament::button></td>
                                 </tr>
                             @endforeach

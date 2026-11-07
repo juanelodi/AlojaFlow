@@ -415,7 +415,7 @@ final class Informes
             ->map(fn (object $f): array => [
                 ...($varias ? [(string) $nombres->get($f->propiedad_id)] : []),
                 (string) $f->numero,
-                (string) $f->llegada,
+                Formato::fecha(CarbonImmutable::parse((string) $f->llegada)),
                 Dinero::formatear((int) $f->total, (string) $f->moneda),
                 Dinero::formatear((int) $f->deposito, (string) $f->moneda),
                 Dinero::formatear((int) $f->pagado, (string) $f->moneda),

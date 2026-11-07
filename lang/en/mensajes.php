@@ -60,7 +60,6 @@ return [
         'asunto' => 'Subject',
         'cuerpo' => 'Message',
         'activa' => 'Active',
-        'variables' => 'You can use these variables:',
         'vacio' => 'No templates yet.',
         'crear_base' => 'Create starter templates',
         'creadas' => 'Templates created: :n.',

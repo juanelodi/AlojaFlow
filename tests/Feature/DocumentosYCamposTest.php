@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 use App\Comunicacion\VariablesMensaje;
 use App\Documentos\CamposPropios;
+use App\Documentos\CatalogoVariables;
 use App\Documentos\DocumentosDePartida;
 use App\Documentos\GeneradorPdf;
 use App\Documentos\MotorDocumentos;
@@ -45,11 +46,13 @@ use App\Models\User;
 use App\Models\ValorCampoPropio;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
+use App\Motor\AjustesMotor;
 use App\Privacidad\GestorPrivacidad;
 use App\Reservas\FusionHuespedes;
 use App\Reservas\GestorReservas;
 use App\Seguridad\Acceso;
 use App\Support\Ajustes;
+use App\Support\Formato;
 use Carbon\CarbonImmutable;
 use Database\Seeders\RolesYPermisosSeeder;
 use Filament\Facades\Filament;
@@ -552,5 +555,59 @@ describe('demostración', function (): void {
 
         expect(DocumentoPropio::query()->where('propiedad_id', $demo->id)->count())->toBe(3)
             ->and(CampoPropio::query()->where('propiedad_id', $demo->id)->count())->toBe(2);
+    });
+});
+
+describe('la lista de variables', function () {
+    it('cada variable de un documento se sustituye de verdad', function () {
+        $reserva = $this->reserva;
+        $grupos = CatalogoVariables::paraDocumento($this->propiedad->id);
+        $nombres = collect($grupos)->reject(fn (array $g): bool => $g['clave'] === 'periodo')->flatMap(fn (array $g): array => array_column($g['variables'], 'nombre'))->all();
+        expect($nombres)->toContain('pagina_propiedad', 'huesped', 'llegada');
+
+        $cuerpo = '<p>'.implode(' ', array_map(fn (string $n): string => '{'.$n.'}', array_filter($nombres, fn (string $n): bool => preg_match('/^(h_|c_|p_)/', $n) !== 1))).'</p>'
+            .'<ul><li>'.implode(' ', array_map(fn (string $n): string => '{'.$n.'}', array_filter($nombres, fn (string $n): bool => str_starts_with($n, 'h_')))).'</li></ul>';
+        $documento = new DocumentoPropio(['propiedad_id' => $this->propiedad->id, 'nombre' => 'x', 'cuerpo' => ['es' => $cuerpo], 'alcance' => 'reserva']);
+
+        expect(app(MotorDocumentos::class)->deReserva($documento, $reserva, true))->not->toMatch('/\{[a-z_]+\}/');
+    });
+
+    it('cada variable de un mensaje se sustituye de verdad', function () {
+        $reserva = $this->reserva;
+        $nombres = collect(CatalogoVariables::paraMensaje($this->propiedad->id))->flatMap(fn (array $g): array => array_column($g['variables'], 'nombre'))
+            ->reject(fn (string $n): bool => str_starts_with($n, 'enlace_') && $n !== 'enlace_reserva');
+        $variables = VariablesMensaje::de($reserva, 'es');
+
+        foreach ($nombres as $nombre) {
+            expect($variables)->toHaveKey($nombre);
+        }
+    });
+
+    it('cada variable dice qué hace, en cada idioma', function () {
+        foreach (array_keys(Formato::idiomas()) as $idioma) {
+            app()->setLocale($idioma);
+            foreach ([...CatalogoVariables::paraDocumento(null), ...CatalogoVariables::paraMensaje(null)] as $grupo) {
+                expect($grupo['titulo'])->not->toStartWith('variables.');
+                foreach ($grupo['variables'] as $variable) {
+                    expect($variable['descripcion'])->not->toStartWith('variables.');
+                }
+            }
+        }
+    });
+
+    it('la página de la propiedad sale en documentos y mensajes solo si está activa', function () {
+        $reserva = $this->reserva;
+        (new AjustesMotor($this->propiedad))->guardar(['activo' => true]);
+        expect(VariablesMensaje::de($reserva->refresh(), 'es')['pagina_propiedad'])->toContain('/reservar/'.$this->propiedad->codigo);
+
+        (new AjustesMotor($this->propiedad))->guardar(['activo' => false]);
+        expect(VariablesMensaje::de($reserva->refresh(), 'es')['pagina_propiedad'])->toBe('');
+    });
+
+    it('el formulario la ofrece junto al texto', function () {
+        $this
+            ->get(DocumentoPropioResource::getUrl('create'))->assertOk()
+            ->assertSee('data-af-variable="{pagina_propiedad}"', false)
+            ->assertSee(__('variables.lista.pagina_propiedad'));
     });
 });

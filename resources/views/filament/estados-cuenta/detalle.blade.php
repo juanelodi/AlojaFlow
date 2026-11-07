@@ -47,8 +47,8 @@
                             <tr>
                                 <td>{{ $linea['numero'] }}</td>
                                 <td>{{ $linea['unidad'] }}</td>
-                                <td style="white-space: nowrap">{{ Formato::fecha(CarbonImmutable::parse($linea['llegada']), 'D MMM') }}</td>
-                                <td style="white-space: nowrap">{{ Formato::fecha(CarbonImmutable::parse($linea['salida']), 'D MMM') }}</td>
+                                <td style="white-space: nowrap" data-orden="{{ CarbonImmutable::parse($linea['llegada'])->format('Y-m-d') }}">{{ Formato::fecha(CarbonImmutable::parse($linea['llegada']), 'D MMM') }}</td>
+                                <td style="white-space: nowrap" data-orden="{{ CarbonImmutable::parse($linea['salida'])->format('Y-m-d') }}">{{ Formato::fecha(CarbonImmutable::parse($linea['salida']), 'D MMM') }}</td>
                                 <td class="af-num">{{ $linea['noches'] }}</td>
                                 <td class="af-num">{{ Formato::dinero($linea['ingreso'], $estado->moneda) }}</td>
                                 <td class="af-num">{{ Formato::dinero($linea['portal'], $estado->moneda) }}</td>
@@ -67,7 +67,7 @@
                 <caption class="af-sr">{{ __('propietarios.estado.estancias') }}</caption>
                 <tbody>
                     @foreach ($estado->detalle['estancias'] as $linea)
-                        <tr><td>{{ $linea['unidad'] }}</td><td>{{ Formato::fecha(CarbonImmutable::parse($linea['llegada'])) }} → {{ Formato::fecha(CarbonImmutable::parse($linea['salida'])) }}</td></tr>
+                        <tr><td>{{ $linea['unidad'] }}</td><td data-orden="{{ CarbonImmutable::parse($linea['llegada'])->format('Y-m-d') }}">{{ Formato::fecha(CarbonImmutable::parse($linea['llegada'])) }} → {{ Formato::fecha(CarbonImmutable::parse($linea['salida'])) }}</td></tr>
                     @endforeach
                 </tbody>
             </table>
@@ -81,7 +81,7 @@
                 <tbody>
                     @foreach ($estado->detalle['gastos'] as $linea)
                         <tr>
-                            <td>{{ Formato::fecha(CarbonImmutable::parse($linea['fecha'])) }}</td>
+                            <td data-orden="{{ CarbonImmutable::parse($linea['fecha'])->format('Y-m-d') }}">{{ Formato::fecha(CarbonImmutable::parse($linea['fecha'])) }}</td>
                             <td>{{ $linea['concepto'] }}@if ($linea['unidad']) · {{ $linea['unidad'] }}@endif</td>
                             <td class="af-num">{{ Formato::dinero($linea['importe'], $estado->moneda) }}</td>
                         </tr>

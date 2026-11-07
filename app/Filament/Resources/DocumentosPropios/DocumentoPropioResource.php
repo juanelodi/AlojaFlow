@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\DocumentosPropios;
 
+use App\Documentos\CatalogoVariables;
 use App\Documentos\GeneradorPdf;
 use App\Documentos\MotorDocumentos;
 use App\Enums\AlcanceDocumento;
@@ -37,11 +38,12 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -110,11 +112,14 @@ class DocumentoPropioResource extends RecursoDeCualquierPropiedad
                     ->default(AlcanceDocumento::Reserva->value),
                 Toggle::make('activo')->label(__('documentos_propios.activo'))->default(true),
             ]),
-            Section::make()->columnSpanFull()
-                ->description(__('documentos_propios.variables'))
-                ->schema([Tabs::make()->tabs($pestanas)]),
-            Section::make(__('documentos_propios.variables_titulo'))->columnSpanFull()->collapsible()->collapsed()
-                ->schema(array_map(fn (string $clave): Text => Text::make(__('documentos_propios.'.$clave)), ['variables_reserva', 'variables_huespedes', 'variables_cargos', 'variables_pagos', 'variables_periodo', 'variables_campos'])),
+            // El texto y, a su lado, las variables: se ven las dos cosas al escribir.
+            Grid::make(['default' => 1, 'lg' => 3])->columnSpanFull()->schema([
+                Section::make()->columnSpan(['lg' => 2])
+                    ->description(__('documentos_propios.variables'))
+                    ->schema([Tabs::make()->tabs($pestanas)]),
+                View::make('filament.partes.variables')->columnSpan(['lg' => 1])
+                    ->viewData(fn (Get $get): array => ['grupos' => CatalogoVariables::paraDocumento(self::propiedadDe($get))]),
+            ]),
         ]);
     }
 

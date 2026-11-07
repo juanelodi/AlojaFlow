@@ -60,7 +60,6 @@ return [
         'asunto' => 'Betreff',
         'cuerpo' => 'Nachricht',
         'activa' => 'Aktiv',
-        'variables' => 'Sie können diese Variablen verwenden:',
         'vacio' => 'Noch keine Vorlagen.',
         'crear_base' => 'Ausgangsvorlagen erstellen',
         'creadas' => 'Vorlagen erstellt: :n.',

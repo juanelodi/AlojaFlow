@@ -35,8 +35,8 @@
                                 <tr wire:key="residente-{{ $fila['reserva']->id }}">
                                     <td><a class="af-enlace" href="{{ ReservaResource::getUrl('view', ['record' => $fila['reserva']]) }}">{{ $fila['reserva']->unidad?->nombre }}</a></td>
                                     <td>{{ $fila['reserva']->titular?->nombreCompleto() }}</td>
-                                    <td>{{ Formato::fecha($fila['reserva']->llegada) }}</td>
-                                    <td>{{ Formato::fecha($fila['reserva']->salida) }}</td>
+                                    <td data-orden="{{ $fila['reserva']->llegada?->format('Y-m-d') }}">{{ Formato::fecha($fila['reserva']->llegada) }}</td>
+                                    <td data-orden="{{ $fila['reserva']->salida?->format('Y-m-d') }}">{{ Formato::fecha($fila['reserva']->salida) }}</td>
                                     <td class="af-num">{{ Formato::dinero($fila['reserva']->pendiente, $fila['reserva']->moneda) }}</td>
                                     <td class="af-num">{{ $fila['por_pagar'] > 0 ? Formato::dinero($fila['por_pagar'], $fila['reserva']->moneda) : '—' }}</td>
                                     <td>

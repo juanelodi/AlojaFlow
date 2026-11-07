@@ -41,7 +41,7 @@
                                         <td><a class="af-enlace" href="{{ ReservaResource::getUrl('view', ['record' => $fila['reserva']]) }}">{{ $fila['reserva']->numero }}</a></td>
                                         <td>{{ $fila['reserva']->titular?->nombreCompleto() }}</td>
                                         <td>{{ $fila['cuota']->periodo() }}</td>
-                                        <td @class(['af-vencido' => $clave === 'vencidas'])>{{ Formato::fecha($fila['cuota']->vence_en) }}</td>
+                                        <td @class(['af-vencido' => $clave === 'vencidas']) data-orden="{{ $fila['cuota']->vence_en?->format('Y-m-d') }}">{{ Formato::fecha($fila['cuota']->vence_en) }}</td>
                                         <td>{{ Formato::dinero($fila['falta'], $fila['reserva']->moneda) }}</td>
                                         <td><x-filament::button tag="a" size="sm" color="gray" icon="heroicon-m-chat-bubble-left-ellipsis" :href="$fila['whatsapp']" target="_blank" rel="noopener" x-on:click="$wire.anotarRecordatorio({{ $fila['cuota']->id }})">{{ __('operacion.mensajes.whatsapp') }}</x-filament::button></td>
                                     </tr>

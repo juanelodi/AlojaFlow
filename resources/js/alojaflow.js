@@ -100,6 +100,92 @@
     });
 
     /*
+     * Variables de un documento o una plantilla: se toca una y queda donde estaba el cursor, en el editor o en el campo de texto.
+     */
+    let ultimoCampo = null;
+
+    const esTexto = (elemento) => elemento.matches('textarea, input[type="text"]');
+    const visible = (elemento) => elemento !== null && elemento.isConnected && elemento.offsetParent !== null;
+
+    document.addEventListener('focusin', (evento) => {
+        const objetivo = evento.target;
+        if (!(objetivo instanceof Element) || objetivo.closest('[data-af-variables]') !== null || objetivo.closest('form') === null) {
+            return;
+        }
+        const editor = objetivo.closest('.fi-fo-rich-editor');
+        if (editor !== null || esTexto(objetivo)) {
+            ultimoCampo = editor ?? objetivo;
+        }
+    });
+
+    const destinoDe = (panel) => {
+        const ambito = panel.closest('form') ?? document;
+        if (visible(ultimoCampo) && ambito.contains(ultimoCampo)) {
+            return ultimoCampo;
+        }
+        // Sin haber tocado nada: el cuerpo que se está viendo.
+        return [...ambito.querySelectorAll('.fi-fo-rich-editor, textarea')].find(visible) ?? null;
+    };
+
+    const insertar = (destino, texto) => {
+        if (destino.matches('.fi-fo-rich-editor')) {
+            const raiz = destino.querySelector('[x-data^="richEditorFormComponent"]') ?? destino.closest('[x-data^="richEditorFormComponent"]');
+            const editor = raiz !== null && window.Alpine ? window.Alpine.$data(raiz).getEditor() : null;
+            if (editor) {
+                editor.chain().focus().insertContent(texto).run();
+
+                return true;
+            }
+
+            return false;
+        }
+        const inicio = destino.selectionStart ?? destino.value.length;
+        const fin = destino.selectionEnd ?? inicio;
+        destino.setRangeText(texto, inicio, fin, 'end');
+        destino.dispatchEvent(new Event('input', { bubbles: true }));
+        destino.focus();
+
+        return true;
+    };
+
+    document.addEventListener('click', (evento) => {
+        const boton = evento.target instanceof Element ? evento.target.closest('[data-af-variable]') : null;
+        if (boton === null) {
+            return;
+        }
+        const panel = boton.closest('[data-af-variables]');
+        const destino = destinoDe(panel);
+        if (destino !== null && insertar(destino, boton.dataset.afVariable)) {
+            const estado = panel.querySelector('[data-af-variables-estado]');
+            if (estado !== null) {
+                estado.textContent = `${panel.dataset.afInsertada} ${boton.dataset.afVariable}`;
+            }
+        }
+    });
+
+    const sinAcentos = (texto) => texto.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+
+    document.addEventListener('input', (evento) => {
+        const campo = evento.target;
+        if (!(campo instanceof HTMLInputElement) || campo.dataset.afVariablesBuscar === undefined) {
+            return;
+        }
+        const busqueda = sinAcentos(campo.value.trim());
+        campo.closest('[data-af-variables]').querySelectorAll('details').forEach((grupo) => {
+            let hay = false;
+            grupo.querySelectorAll('li').forEach((fila) => {
+                const coincide = busqueda === '' || sinAcentos(fila.textContent).includes(busqueda);
+                fila.hidden = !coincide;
+                hay = hay || coincide;
+            });
+            grupo.hidden = !hay;
+            if (busqueda !== '') {
+                grupo.open = hay;
+            }
+        });
+    });
+
+    /*
      * Ordenar las tablas propias (.af-tabla) con un clic en el título de la columna. Ordena lo que ya está en la pantalla.
      * Lo que se lee distinto de como se ordena, como una fecha en palabras, lleva su valor en data-orden.
      */

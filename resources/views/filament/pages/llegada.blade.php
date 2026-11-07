@@ -56,7 +56,7 @@
                                 <tr>
                                     <td>{{ $aceptacion->documento->titulo }} (v{{ $aceptacion->documento->version }})</td>
                                     <td>{{ $aceptacion->firmante_nombre }}</td>
-                                    <td>{{ Formato::momento($aceptacion->aceptada_en, $registro->propiedad->zona_horaria) }}</td>
+                                    <td data-orden="{{ $aceptacion->aceptada_en?->format('Y-m-d H:i:s') }}">{{ Formato::momento($aceptacion->aceptada_en, $registro->propiedad->zona_horaria) }}</td>
                                     <td>{{ $aceptacion->verificacion->etiqueta() }}</td>
                                     <td>@if ($aceptacion->copia_archivo_id)<a class="af-enlace" href="{{ route('archivos.ver', $aceptacion->copia_archivo_id) }}" target="_blank" rel="noopener">{{ __('llegada.panel.ver_copia') }}</a>@endif</td>
                                 </tr>

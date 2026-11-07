@@ -60,7 +60,6 @@ return [
         'asunto' => 'Assunto',
         'cuerpo' => 'Mensagem',
         'activa' => 'Ativo',
-        'variables' => 'Pode usar estas variáveis:',
         'vacio' => 'Ainda não há modelos.',
         'crear_base' => 'Criar modelos de partida',
         'creadas' => 'Modelos criados: :n.',
