@@ -86,4 +86,9 @@ abstract class PaisBase implements Pais
 
         return $textos;
     }
+
+    public function cargosDeCanales(): array
+    {
+        return ['comisiones' => [], 'cargos' => []];
+    }
 }

@@ -10,7 +10,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\BaseCargoCanal;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * De dónde vienen las reservas (directo, Booking…), con su comisión.
@@ -19,8 +21,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $propiedad_id
  * @property string $nombre
  * @property string|null $comision_porcentaje
+ * @property BaseCargoCanal $comision_base
  * @property bool $cobra_impuestos
  * @property bool $activo
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, CanalCargo> $cargos
  */
 class Canal extends ModeloBase
 {
@@ -32,8 +36,15 @@ class Canal extends ModeloBase
     {
         return [
             'comision_porcentaje' => 'decimal:4',
+            'comision_base' => BaseCargoCanal::class,
             'activo' => 'boolean',
         ];
+    }
+
+    /** @return HasMany<CanalCargo, $this> */
+    public function cargos(): HasMany
+    {
+        return $this->hasMany(CanalCargo::class);
     }
 
     /** @return BelongsTo<Propiedad, $this> */

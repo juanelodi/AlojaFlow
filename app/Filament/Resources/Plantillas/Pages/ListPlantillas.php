@@ -62,6 +62,20 @@ class ListPlantillas extends ListRecords
                     $propiedad = Propiedad::query()->whereIn('id', PlantillaResource::propiedadesGestionables())->findOrFail((int) $data['propiedad']);
                     Notification::make()->success()->title(__('mensajes.plantillas.creadas', ['n' => PlantillasBase::sembrar($propiedad)]))->send();
                 }),
+            Action::make('activarEnvios')->label(__('mensajes.plantillas.activar_envios'))->icon(Heroicon::OutlinedBolt)->color('gray')
+                ->modalDescription(__('mensajes.plantillas.activar_envios_ayuda'))
+                ->schema([Select::make('propiedad')->label(__('ui.comun.propiedad'))->required()->native(false)
+                    ->options(fn (): array => Propiedad::query()->whereIn('id', PlantillaResource::propiedadesGestionables())->orderBy('nombre')->pluck('nombre', 'id')->all())
+                    ->default(function (): ?int {
+                        $permitidas = PlantillaResource::propiedadesGestionables();
+
+                        return count($permitidas) === 1 ? $permitidas[0] : null;
+                    })])
+                ->visible(fn (): bool => PlantillaResource::canCreate())
+                ->action(function (array $data): void {
+                    $propiedad = Propiedad::query()->whereIn('id', PlantillaResource::propiedadesGestionables())->findOrFail((int) $data['propiedad']);
+                    Notification::make()->success()->title(__('mensajes.plantillas.envios_activados', ['n' => PlantillasBase::prenderRecomendados($propiedad)]))->send();
+                }),
             CreateAction::make()->visible(fn (): bool => PlantillaResource::canCreate()),
         ];
     }

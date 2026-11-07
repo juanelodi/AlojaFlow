@@ -782,6 +782,13 @@ return [
     ],
 
     'grupos' => [
+        'desde_reservas' => 'Create from bookings',
+        'desde_reservas_ayuda' => 'Find the guest and choose their existing bookings. They will be managed as a group without changing dates, units or prices, and that guest becomes the coordinator.',
+        'buscar_cliente' => 'Find guest',
+        'reservas_elegir' => 'Bookings to manage as a group',
+        'sin_reservas_cliente' => 'This guest has no current bookings outside a group.',
+        'error_reservas' => 'Choose current bookings of this property that are not already in a group.',
+        'creado_desde_reservas' => 'Group created with :n bookings',
         'modelo' => 'group',
         'modelos' => 'Groups',
         'codigo' => 'Code',

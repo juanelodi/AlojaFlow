@@ -79,4 +79,11 @@ interface Pais
      * @return array<string, array{titulo: string, cuerpo: string}> tipo => texto
      */
     public function textosBase(string $idioma): array;
+
+    /**
+     * Lo que cambia por país en los canales de venta (D-149): comisiones distintas a la habitual y los impuestos y retenciones que aplican.
+     *
+     * @return array{comisiones: array<string, float>, cargos: list<array{clave: string, clase: \App\Enums\ClaseCargoCanal, valor: float, base: \App\Enums\BaseCargoCanal}>}
+     */
+    public function cargosDeCanales(): array;
 }

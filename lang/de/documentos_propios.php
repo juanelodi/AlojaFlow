@@ -56,6 +56,24 @@ return [
     ],
 
     'base' => [
+        'reglamento' => [
+            'nombre' => 'Hausordnung',
+            'intro' => 'Regeln von {propiedad} für Buchung {numero}, vom {llegada} bis {salida}:',
+            'horarios' => 'Bitte halten Sie die genannten An- und Abreisezeiten ein.',
+            'ruido' => 'Bitte verhalten Sie sich nachts ruhig und nehmen Sie Rücksicht auf andere Gäste.',
+            'visitas' => 'Nur angemeldete Personen dürfen bleiben; informieren Sie uns über Besuch.',
+            'fumar' => 'In den Einheiten wird nicht geraucht.',
+            'danos' => 'Gäste haften für von ihnen verursachte Schäden.',
+            'firma' => 'Zur Kenntnis genommen am {hoy}:',
+        ],
+        'limpieza' => [
+            'nombre' => 'Reinigungsblatt',
+            'intro' => 'Abreisen vom {desde} bis {hasta}:',
+            'salida' => 'Abreise',
+            'unidad' => 'Einheit',
+            'personas' => 'Personen',
+            'comentario' => 'Kommentar',
+        ],
         'contrato' => [
             'nombre' => 'Beherbergungsvertrag',
             'partes' => 'Zwischen {propiedad}, Anschrift {domicilio_propiedad}, und {huesped}, Ausweis {huesped_documento}, wird Folgendes vereinbart:',

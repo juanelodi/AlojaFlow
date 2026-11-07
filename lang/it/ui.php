@@ -749,6 +749,13 @@ return [
         'guardada' => 'Nota salvata.',
     ],
     'grupos' => [
+        'desde_reservas' => 'Crea da prenotazioni',
+        'desde_reservas_ayuda' => 'Cerca il cliente e scegli le sue prenotazioni esistenti. Saranno gestite come gruppo senza cambiare date, unità o prezzi, e quel cliente diventa il coordinatore.',
+        'buscar_cliente' => 'Cerca cliente',
+        'reservas_elegir' => 'Prenotazioni da gestire come gruppo',
+        'sin_reservas_cliente' => 'Questo cliente non ha prenotazioni in corso fuori da un gruppo.',
+        'error_reservas' => 'Scegli prenotazioni in corso di questa struttura che non siano già in un gruppo.',
+        'creado_desde_reservas' => 'Gruppo creato con :n prenotazioni',
         'modelo' => 'gruppo',
         'modelos' => 'Gruppi',
         'codigo' => 'Codice',

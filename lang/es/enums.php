@@ -9,6 +9,26 @@
 declare(strict_types=1);
 
 return [
+    'ClaseCargoCanal' => [
+        'servicio' => 'Cargo por servicio',
+        'procesamiento_pago' => 'Cargo por cobrar el pago',
+        'promocion' => 'Promoción o visibilidad',
+        'impuesto_sobre_cargos' => 'Impuesto sobre sus cargos',
+        'retencion_renta' => 'Retención de impuesto sobre la renta',
+        'retencion_iva' => 'Retención de IVA',
+        'otro' => 'Otro',
+    ],
+    'CalculoCargoCanal' => [
+        'porcentaje' => 'Porcentaje',
+        'fijo_reserva' => 'Importe fijo por reserva',
+        'fijo_noche' => 'Importe fijo por noche',
+    ],
+    'BaseCargoCanal' => [
+        'tarifa_base' => 'Tarifa base (alojamiento, sin extras ni impuestos)',
+        'sin_impuestos' => 'Total sin impuestos',
+        'total_final' => 'Total final (lo que paga el huésped)',
+        'comisiones' => 'Comisión y cargos del canal',
+    ],
     'TipoEmpresa' => ['empresa' => 'Empresa', 'agencia' => 'Agencia'],
     'ModoPropiedad' => ['nativa' => 'Independiente', 'subordinada' => 'Subordinada'],
     'MetodoPago' => ['efectivo' => 'Efectivo', 'tarjeta' => 'Tarjeta', 'transferencia' => 'Transferencia', 'otro' => 'Otro'],

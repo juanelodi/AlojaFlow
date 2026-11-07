@@ -749,6 +749,13 @@ return [
         'guardada' => 'Note enregistrée.',
     ],
     'grupos' => [
+        'desde_reservas' => 'Créer à partir de réservations',
+        'desde_reservas_ayuda' => 'Cherchez le client et choisissez ses réservations existantes. Elles seront gérées en groupe sans changer les dates, les unités ni les prix, et ce client devient le coordinateur.',
+        'buscar_cliente' => 'Chercher un client',
+        'reservas_elegir' => 'Réservations à gérer en groupe',
+        'sin_reservas_cliente' => 'Ce client n’a aucune réservation en cours hors d’un groupe.',
+        'error_reservas' => 'Choisissez des réservations en cours de cet établissement qui ne sont pas déjà dans un groupe.',
+        'creado_desde_reservas' => 'Groupe créé avec :n réservations',
         'modelo' => 'groupe',
         'modelos' => 'Groupes',
         'codigo' => 'Code',

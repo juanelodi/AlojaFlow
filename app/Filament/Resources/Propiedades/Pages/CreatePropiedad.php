@@ -10,8 +10,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Propiedades\Pages;
 
+use App\Comunicacion\PlantillasBase;
+use App\Documentos\DocumentosDePartida;
 use App\Enums\ModoPropiedad;
 use App\Filament\Resources\Propiedades\PropiedadResource;
+use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
@@ -37,6 +40,11 @@ class CreatePropiedad extends CreateRecord
     protected function afterCreate(): void
     {
         RegistroAuditoria::anotar('propiedad.crear', $this->record, [], (int) $this->record->getKey());
+        // Ya trae sus textos de partida (D-147). Ningún mensaje sale hasta que alguien prenda un envío.
+        $propiedad = $this->record;
+        assert($propiedad instanceof Propiedad);
+        PlantillasBase::sembrar($propiedad);
+        DocumentosDePartida::sembrar($propiedad);
     }
 
     protected function getRedirectUrl(): string

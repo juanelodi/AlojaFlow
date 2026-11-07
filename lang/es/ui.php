@@ -782,6 +782,13 @@ return [
     ],
 
     'grupos' => [
+        'desde_reservas' => 'Crear a partir de reservas',
+        'desde_reservas_ayuda' => 'Busca al cliente y elige sus reservas ya creadas. Se manejarán como grupo sin cambiar fechas, unidades ni precios, y ese cliente queda como coordinador.',
+        'buscar_cliente' => 'Buscar cliente',
+        'reservas_elegir' => 'Reservas que se manejarán como grupo',
+        'sin_reservas_cliente' => 'Este cliente no tiene reservas vigentes fuera de un grupo.',
+        'error_reservas' => 'Elige reservas vigentes de esta propiedad que no estén ya en un grupo.',
+        'creado_desde_reservas' => 'Grupo creado con :n reservas',
         'modelo' => 'grupo',
         'modelos' => 'Grupos',
         'codigo' => 'Código',

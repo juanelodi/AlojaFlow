@@ -91,6 +91,26 @@ final class GestorReservas
     }
 
     /**
+     * Una reserva ya hecha pasa a un grupo (D-146). Fechas, unidad y precio no cambian: se vendió así.
+     */
+    public function unirAGrupo(Reserva $reserva, int $grupoId): Reserva
+    {
+        return DB::transaction(function () use ($reserva, $grupoId): Reserva {
+            $actual = $this->bloquear($reserva);
+            if ($actual->grupo_id !== null || $actual->estado === EstadoReserva::Cancelada || $actual->tipo !== TipoReserva::Reserva) {
+                throw new ReservaRechazada(__('ui.grupos.error_reservas'));
+            }
+            $antes = $this->resumen($actual);
+            $actual->grupo_id = $grupoId;
+            $actual->version++;
+            $actual->save();
+            $this->anotar($actual, TipoEventoReserva::Modificada, 'reserva.modificar', ['antes' => $antes, 'despues' => $this->resumen($actual)]);
+
+            return $actual;
+        });
+    }
+
+    /**
      * @param  array<string, mixed>  $datos
      * @param  int|null  $version  la que tenía el formulario; si otra persona la cambió, se rechaza
      */

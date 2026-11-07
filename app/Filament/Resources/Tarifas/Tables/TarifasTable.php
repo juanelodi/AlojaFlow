@@ -11,11 +11,14 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Tarifas\Tables;
 
 use App\Filament\Resources\Tarifas\TarifaResource;
+use App\Models\Propiedad;
 use App\Models\Tarifa;
 use App\Support\Formato;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -38,6 +41,13 @@ class TarifasTable
                 IconColumn::make('activa')->label(__('ui.tarifas.activa'))->boolean(),
             ])
             ->defaultSort('nombre')
+            // Por propiedad: con varias, cada una con sus tarifas juntas.
+            ->defaultGroup(count(TarifaResource::propiedadesGestionables()) > 1 ? Group::make('propiedad.nombre')->label(__('ui.comun.propiedad')) : null)
+            ->filters([
+                SelectFilter::make('propiedad_id')->label(__('ui.comun.propiedad'))
+                    ->options(fn (): array => Propiedad::query()->whereIn('id', TarifaResource::propiedadesGestionables())->orderBy('nombre')->pluck('nombre', 'id')->all())
+                    ->visible(fn (): bool => count(TarifaResource::propiedadesGestionables()) > 1),
+            ])
             ->emptyStateHeading(__('ui.tarifas.vacio'))
             ->recordActions([EditAction::make()]);
     }

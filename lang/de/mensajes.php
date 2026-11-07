@@ -25,6 +25,36 @@ return [
         'cuerpo' => "{huesped} hat bei {propiedad} gebucht:\n\nAnkunft: {llegada}\nAbreise: {salida}\nPersonen: {personas}\nZimmer: {unidad}\nGesamt: {total}",
     ],
     'base' => [
+        'instrucciones' => [
+            'nombre' => 'Anfahrt und Anreisedaten',
+            'asunto' => 'So kommen Sie zu {propiedad}',
+            'cuerpo' => "Hallo {nombre},\n\nhier ist alles Nötige für Ihre Anreise am {llegada}.\n\nEinheit: {unidad}\nStandort: {mapa_propiedad}\nWhatsApp: {whatsapp_propiedad}\n\nHier können Sie sich vorab registrieren: {enlace_llegada}\n\nBis bald!\n{propiedad}",
+        ],
+        'pago_pendiente' => [
+            'nombre' => 'Offene Zahlung',
+            'asunto' => 'Ihre Buchung {numero} hat einen offenen Betrag',
+            'cuerpo' => "Hallo {nombre},\n\nIhre Buchung {numero} bei {propiedad} hat einen offenen Betrag von {pendiente} bei insgesamt {total}.\n\nIhre Buchung finden Sie hier: {enlace_reserva}\n\nFalls Sie bereits bezahlt haben, ignorieren Sie diese Nachricht. Danke.\n{propiedad}",
+        ],
+        'pago_recibido' => [
+            'nombre' => 'Zahlung erhalten',
+            'asunto' => 'Wir haben Ihre Zahlung für Buchung {numero} erhalten',
+            'cuerpo' => "Hallo {nombre},\n\nwir haben Ihre Zahlung erhalten. Sie haben {pagado} von {total} bezahlt; offen sind noch {pendiente}.\n\nDanke.\n{propiedad}",
+        ],
+        'cambio' => [
+            'nombre' => 'Buchungsänderung',
+            'asunto' => 'Ihre Buchung {numero} wurde geändert',
+            'cuerpo' => "Hallo {nombre},\n\nIhre Buchung bei {propiedad} lautet jetzt:\n\nAnreise: {llegada}\nAbreise: {salida}\nEinheit: {unidad}\nPersonen: {personas}\nGesamt: {total}\n\nFalls etwas nicht stimmt, rufen Sie uns an: {telefono_propiedad}.\n{propiedad}",
+        ],
+        'antes_salida' => [
+            'nombre' => 'Vor Ihrer Abreise',
+            'asunto' => 'Ihre Abreise von {propiedad}',
+            'cuerpo' => "Hallo {nombre},\n\nwir erinnern Sie daran, dass Ihre Abreise am {salida} ist.\n\nOffener Betrag: {pendiente}\n\nWenn Sie vor der Abreise etwas brauchen, rufen Sie uns an: {telefono_propiedad}.\n{propiedad}",
+        ],
+        'pide_opinion' => [
+            'nombre' => 'Um Bewertung bitten',
+            'asunto' => 'Wie war Ihr Aufenthalt bei {propiedad}?',
+            'cuerpo' => "Hallo {nombre},\n\nwir würden gern wissen, wie es war. Sagen Sie es uns hier, es dauert nur eine Minute: {enlace_opinion}\n\nDanke.\n{propiedad}",
+        ],
         'confirmacion' => [
             'nombre' => 'Buchungsbestätigung',
             'asunto' => 'Ihre Buchung bei {propiedad} ist bestätigt',
@@ -52,6 +82,9 @@ return [
         ],
     ],
     'plantillas' => [
+        'activar_envios' => 'Empfohlene Nachrichten aktivieren',
+        'activar_envios_ayuda' => 'Sendet per E-Mail die Bestätigung, eine Erinnerung zwei Tage vor der Anreise und einen Dank einen Tag nach der Abreise. Änderbar oder abschaltbar unter Automatisierungen.',
+        'envios_activados' => 'Aktivierte Nachrichten: :n',
         'modelo' => 'Vorlage',
         'modelos' => 'Vorlagen',
         'nombre' => 'Name',

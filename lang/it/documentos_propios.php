@@ -56,6 +56,24 @@ return [
     ],
 
     'base' => [
+        'reglamento' => [
+            'nombre' => 'Regolamento della casa',
+            'intro' => 'Regole di {propiedad} per la prenotazione {numero}, dal {llegada} al {salida}:',
+            'horarios' => 'Rispetta gli orari di arrivo e partenza indicati.',
+            'ruido' => 'Fai silenzio di notte e rispetta gli altri ospiti.',
+            'visitas' => 'Possono restare solo le persone registrate; avvisaci di eventuali visite.',
+            'fumar' => 'Non si fuma all’interno delle unità.',
+            'danos' => 'L’ospite risponde dei danni che causa.',
+            'firma' => 'Preso atto il {hoy}:',
+        ],
+        'limpieza' => [
+            'nombre' => 'Foglio per le pulizie',
+            'intro' => 'Partenze dal {desde} al {hasta}:',
+            'salida' => 'Partenza',
+            'unidad' => 'Unità',
+            'personas' => 'Persone',
+            'comentario' => 'Commento',
+        ],
         'contrato' => [
             'nombre' => 'Contratto di alloggio',
             'partes' => 'Tra {propiedad}, con sede in {domicilio_propiedad}, e {huesped}, con documento {huesped_documento}, si conviene quanto segue:',

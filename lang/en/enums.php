@@ -9,6 +9,26 @@
 declare(strict_types=1);
 
 return [
+    'ClaseCargoCanal' => [
+        'servicio' => 'Service charge',
+        'procesamiento_pago' => 'Payment processing charge',
+        'promocion' => 'Promotion or visibility',
+        'impuesto_sobre_cargos' => 'Tax on its charges',
+        'retencion_renta' => 'Income tax withholding',
+        'retencion_iva' => 'VAT withholding',
+        'otro' => 'Other',
+    ],
+    'CalculoCargoCanal' => [
+        'porcentaje' => 'Percentage',
+        'fijo_reserva' => 'Fixed amount per booking',
+        'fijo_noche' => 'Fixed amount per night',
+    ],
+    'BaseCargoCanal' => [
+        'tarifa_base' => 'Base rate (accommodation, no extras or taxes)',
+        'sin_impuestos' => 'Total before taxes',
+        'total_final' => 'Final total (what the guest pays)',
+        'comisiones' => 'Channel commission and charges',
+    ],
     'TipoEmpresa' => ['empresa' => 'Company', 'agencia' => 'Agency'],
     'ModoPropiedad' => ['nativa' => 'Independent', 'subordinada' => 'Subordinate'],
     'MetodoPago' => ['efectivo' => 'Cash', 'tarjeta' => 'Card', 'transferencia' => 'Transfer', 'otro' => 'Other'],

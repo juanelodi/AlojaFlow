@@ -56,6 +56,24 @@ return [
     ],
 
     'base' => [
+        'reglamento' => [
+            'nombre' => 'Regulamento da casa',
+            'intro' => 'Regras de {propiedad} para a reserva {numero}, de {llegada} a {salida}:',
+            'horarios' => 'Respeite os horários de entrada e saída indicados.',
+            'ruido' => 'Faça silêncio à noite e respeite os outros hóspedes.',
+            'visitas' => 'Só podem ficar as pessoas registadas; avise-nos de qualquer visita.',
+            'fumar' => 'Não se fuma dentro das unidades.',
+            'danos' => 'O hóspede responde pelos danos que causar.',
+            'firma' => 'Tomei conhecimento em {hoy}:',
+        ],
+        'limpieza' => [
+            'nombre' => 'Folha de limpeza',
+            'intro' => 'Saídas de {desde} a {hasta}:',
+            'salida' => 'Saída',
+            'unidad' => 'Unidade',
+            'personas' => 'Pessoas',
+            'comentario' => 'Comentário',
+        ],
         'contrato' => [
             'nombre' => 'Contrato de alojamento',
             'partes' => 'Entre {propiedad}, com morada em {domicilio_propiedad}, e {huesped}, com identificação {huesped_documento}, acorda-se o seguinte:',

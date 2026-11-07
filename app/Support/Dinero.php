@@ -74,6 +74,23 @@ final class Dinero
     }
 
     /**
+     * Sin símbolo y sin centavos si no los hay, para una celda angosta. La moneda se dice aparte.
+     */
+    public static function corto(int $importe, string $moneda): string
+    {
+        $decimales = self::decimales($moneda);
+        $valor = $importe / (10 ** $decimales);
+        $conCentavos = $importe % (10 ** $decimales) !== 0;
+        if (! class_exists(\NumberFormatter::class)) {
+            return number_format($valor, $conCentavos ? $decimales : 0);
+        }
+        $formato = new \NumberFormatter(self::locale($moneda), \NumberFormatter::DECIMAL);
+        $formato->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, $conCentavos ? $decimales : 0);
+
+        return (string) $formato->format($valor);
+    }
+
+    /**
      * Reparte un total en partes que suman exactamente el total; el resto va a las primeras.
      *
      * @return list<int>

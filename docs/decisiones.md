@@ -806,6 +806,38 @@ Las barras exigen precisión y arrastrar choca con desplazar, así que el teléf
 
 El formulario del motor se manda a su propia ancla (`#datos`). Con un error, el navegador abre la respuesta ahí, con un resumen que lleva a cada campo, y cada campo dice qué hacer. **Por qué:** el motor no depende de JavaScript ni de la sesión (D-042), y en el teléfono los errores quedaban una pantalla arriba de los campos. El motor pide además siete dígitos en el teléfono; `GestorReservas` no cambia.
 
+### D-143 · 2026-11-07 · El calendario abre por habitaciones, también en el teléfono
+
+Sustituye a D-141 en lo que abre primero. El usuario reportó que «el calendario ya no muestra el calendario». En pantalla ancha sí salía; en una ventana angosta o un teléfono abría la lista del día, y además escribía `?vista=dia` en la dirección, que se quedaba. Ahora abre siempre el mes; «Día» sigue a un toque, y lo recuerda ese navegador. La vista ya no va en la dirección. **No se pudo comprobar** que esa fuera la causa en su instalación: si sigue fallando, hace falta saber en cuál y con qué ancho.
+
+### D-144 · 2026-11-07 · Omitir en todo o por secciones
+
+Se añaden «En todo» (lo nuevo llega con eso) y las secciones Hoy, Calendario y Limpieza. Hoy incluye el Resumen, el cierre del día, y depósitos y no-shows. Las omisiones que ya estaban en el aviso pasan también a Hoy: es lo que el usuario esperaba. **Sigue sin borrarse nada:** en el calendario la barra dice «Ocupada», sin nombre ni enlace, porque si desapareciera se vendería dos veces (D-074). **También se quedan:** las listas de Reservas y Huéspedes, para poder encontrarlo y deshacerlo; cobros y caja, porque ese dinero es real; y el registro de viajeros ante la autoridad, que es legal. Se omite solo al titular.
+
+### D-145 · 2026-11-07 · Ficha del huésped por año y mes, plegada
+
+Años y meses plegados de entrada, y cada uno dice cuántas reservas, noches y dinero lleva. Con `details` del navegador, sin JavaScript. El bloque de formato del aviso también va plegado y al final de la pantalla, porque casi nunca se cambia. `.af-plegable` lleva su triángulo: con `flex` el navegador lo quitaba y no se notaba que se abre.
+
+### D-146 · 2026-11-07 · Grupo a partir de reservas ya creadas
+
+Se busca al cliente y se eligen sus reservas vigentes sin grupo, que no hayan salido. **Fechas, unidad y precio no se tocan:** ya se vendieron así, y el cliente queda como coordinador. Solo reservas de un mismo titular, como se pidió, y solo propias: las de una subordinada las manda la principal.
+
+### D-147 · 2026-11-07 · Plantillas y documentos ya vienen creados
+
+Se amplían a 11 mensajes y 5 documentos, a partir de los de HotelDruid y de lo habitual en otros PMS. Una propiedad nueva los recibe al crearse, y una existente al actualizar, sin tocar lo que ya tenga. **Ningún mensaje sale solo:** crear la plantilla no crea un envío. «Activar envíos recomendados» prende tres (confirmación, recordatorio y gracias), solo si alguien lo pide.
+
+### D-148 · 2026-11-07 · Calendario de tarifas
+
+Una fila por tarifa y una columna por día, agrupadas por propiedad, como las tablas de precios de los PMS. Calcula con el mismo `Cotizador` que cobra, para que no pueda decir un precio distinto. Pulsar un día pone precio a un rango: es una temporada, y **las que se enciman se recortan**, porque el `Cotizador` da prioridad a la que empieza más tarde y el día podría no decir lo último que se escribió. Lo vendido no cambia. A una tarifa derivada no se le pone precio: sale de otra. Solo independientes.
+
+### D-149 · 2026-11-07 · Cargos de los canales y utilidad de la reserva
+
+Cada canal lleva los cargos que quiera (porcentaje o fijo; sobre tarifa base, total sin impuestos, total final o sobre la comisión) y su comisión dice sobre qué se calcula. **Utilidad bruta:** lo que paga el huésped, menos impuestos cobrados por cuenta de otro, comisión y cargos. **Neta:** la bruta menos retenciones, que van aparte porque no son un gasto sino impuesto adelantado. Es criterio nuestro, sin revisar por un contador. Los gastos del alojamiento no entran: no son de una reserva.
+
+Se calcula con los cargos de hoy, sin foto en cada reserva: cambiar un cargo cambia también las cifras de las pasadas. La comisión sí es la guardada en la reserva. Un canal se liga a la reserva por el nombre de su origen, como ya hacían los impuestos. Canales pasa a valer también en subordinadas: son datos propios.
+
+**Sugerencias, con lo que se pudo comprobar (2026-11-07, casi todo fuentes secundarias):** Booking, comisión de 15 % (10 a 25 %) sobre el total con limpieza, y cargo de pago de 1.1 a 3.1 % solo con Payments by Booking.com (llega apagado). Airbnb, tarifa única de 15.5 %, 16 % en México según una fuente; las fechas de la transición no coinciden entre fuentes. Expedia: no hay cifra pública, va por contrato, y se deja vacía. México: 4 % de ISR y 8 % de IVA con RFC, 20 % y 16 % sin él (LISR 113-A, LIVA 18-J), para persona física; no se leyó el texto oficial vigente, y el IVA de 16 % sobre la comisión es un supuesto a confirmar con la factura del portal. Lo de cada país va en `Pais::cargosDeCanales`.
+
 ## Pendientes
 
 - Precios y modelo de venta.

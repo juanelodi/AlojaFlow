@@ -67,6 +67,7 @@ class ReservaInfolist
                     TextEntry::make('descuento')->label(__('ui.reservas.descuento'))->formatStateUsing($dinero('descuento')),
                     TextEntry::make('comision')->label(__('ui.reservas.comision'))->formatStateUsing($dinero('comision')),
                     TextEntry::make('tarifa_nombre')->label(__('ui.reservas.tarifa'))->placeholder('—'),
+                    ViewEntry::make('utilidad')->label(__('canales.utilidad.titulo'))->hiddenLabel()->columnSpanFull()->view('filament.reservas.utilidad'),
                 ]),
             Section::make(__('documentos_propios.campos.seccion'))->columnSpanFull()
                 ->visible(fn (Reserva $record): bool => CamposPropios::lineas($record) !== [])

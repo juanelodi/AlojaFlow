@@ -19,7 +19,9 @@ use App\Enums\TipoReserva;
 use App\Enums\TipoTarea;
 use App\Limpieza\Omisiones;
 use App\Models\Propiedad;
+use App\Models\Reserva;
 use App\Paises\CatalogoPaises;
+use App\Reservas\UtilidadReserva;
 use App\Support\Dinero;
 use App\Support\Formato;
 use Carbon\CarbonImmutable;
@@ -34,7 +36,7 @@ use Illuminate\Support\Facades\DB;
  */
 final class Informes
 {
-    public const INFORMES = ['resumen_anio', 'unidades', 'canales', 'tarifas', 'anio_anterior', 'futuro', 'pickup', 'pronostico', 'cobros', 'por_cobrar', 'anticipos', 'ingresos_gastos', 'gastos', 'impuestos', 'estancia', 'dia_semana', 'cancelaciones', 'grupos', 'huespedes', 'limpieza', 'limpieza_persona'];
+    public const INFORMES = ['resumen_anio', 'unidades', 'canales', 'utilidad', 'tarifas', 'anio_anterior', 'futuro', 'pickup', 'pronostico', 'cobros', 'por_cobrar', 'anticipos', 'ingresos_gastos', 'gastos', 'impuestos', 'estancia', 'dia_semana', 'cancelaciones', 'grupos', 'huespedes', 'limpieza', 'limpieza_persona'];
 
     /**
      * @param  list<int>  $propiedades
@@ -45,6 +47,7 @@ final class Informes
         return match ($informe) {
             'unidades' => self::unidades($propiedades, $desde, $hasta),
             'canales' => self::canales($propiedades, $desde, $hasta),
+            'utilidad' => self::utilidad($propiedades, $desde, $hasta),
             'tarifas' => self::tarifas($propiedades, $desde, $hasta),
             'anio_anterior' => self::anioAnterior($propiedades, $desde, $hasta),
             'futuro' => self::futuro($propiedades),
@@ -137,6 +140,53 @@ final class Informes
                 fn (object $f): array => [[(int) $f->total - (int) $f->comision, Dinero::formatear((int) $f->total - (int) $f->comision, (string) $f->moneda)]],
                 fn (object $f): string => (string) $f->moneda,
             ),
+        ];
+    }
+
+    /**
+     * Utilidad bruta y neta por canal (D-149).
+     *
+     * @param  list<int>  $propiedades
+     * @return Reporte
+     */
+    private static function utilidad(array $propiedades, CarbonImmutable $desde, CarbonImmutable $hasta): array
+    {
+        $calculo = new UtilidadReserva();
+        $sumas = [];
+        Omisiones::excluir(Reserva::query()->with('propiedad'), 'titular_id', $propiedades, LugarOmision::Informes)->whereIn('propiedad_id', $propiedades)->where('tipo', TipoReserva::Reserva->value)
+            ->where('estado', '!=', EstadoReserva::Cancelada->value)->whereNull('eliminada_en_principal_en')
+            ->whereBetween('llegada', [$desde->format('Y-m-d'), $hasta->format('Y-m-d')])
+            ->chunkById(200, function ($reservas) use ($calculo, &$sumas): void {
+                foreach ($reservas as $reserva) {
+                    $u = $calculo->de($reserva);
+                    if ($u === null) {
+                        continue;
+                    }
+                    $clave = ($reserva->origen_texto ?: '—').'|'.$reserva->moneda;
+                    $sumas[$clave] ??= ['canal' => $reserva->origen_texto ?: '—', 'moneda' => $reserva->moneda, 'reservas' => 0, 'ingreso' => 0, 'impuestos' => 0, 'cargos' => 0, 'bruta' => 0, 'retenciones' => 0, 'neta' => 0];
+                    $sumas[$clave]['reservas']++;
+                    $sumas[$clave]['ingreso'] += $u['ingreso'];
+                    $sumas[$clave]['impuestos'] += $u['impuestos'];
+                    $sumas[$clave]['cargos'] += $u['comision'] + $u['total_cargos'];
+                    $sumas[$clave]['bruta'] += $u['bruta'];
+                    $sumas[$clave]['retenciones'] += $u['total_retenciones'];
+                    $sumas[$clave]['neta'] += $u['neta'];
+                }
+            });
+        usort($sumas, fn (array $a, array $b): int => $b['neta'] <=> $a['neta']);
+
+        return [
+            'columnas' => self::titulos('canal', 'reservas', 'ingresos', 'impuestos_cobrados', 'cargos_canal', 'utilidad_bruta', 'retenciones', 'utilidad_neta'),
+            'filas' => array_map(fn (array $s): array => [
+                $s['canal'],
+                (string) $s['reservas'],
+                Dinero::formatear($s['ingreso'], $s['moneda']),
+                Dinero::formatear($s['impuestos'], $s['moneda']),
+                Dinero::formatear($s['cargos'], $s['moneda']),
+                Dinero::formatear($s['bruta'], $s['moneda']),
+                Dinero::formatear($s['retenciones'], $s['moneda']),
+                Dinero::formatear($s['neta'], $s['moneda']),
+            ], $sumas),
         ];
     }
 

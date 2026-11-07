@@ -46,4 +46,19 @@ final class Mexico extends PaisBase
             'placas' => ['etiqueta' => __('legal.campos.placas'), 'requerido' => false, 'solo_titular' => true],
         ];
     }
+
+    /**
+     * Persona física con RFC: 4 % de ISR y la mitad del IVA, sobre el ingreso sin IVA (LISR 113-A, LIVA 18-J). Sin RFC son 20 % y 16 %; se cambian en el canal.
+     */
+    public function cargosDeCanales(): array
+    {
+        return [
+            'comisiones' => ['airbnb' => 16.0],
+            'cargos' => [
+                ['clave' => 'iva_comision', 'clase' => \App\Enums\ClaseCargoCanal::ImpuestoSobreCargos, 'valor' => 16.0, 'base' => \App\Enums\BaseCargoCanal::Comisiones],
+                ['clave' => 'retencion_isr', 'clase' => \App\Enums\ClaseCargoCanal::RetencionRenta, 'valor' => 4.0, 'base' => \App\Enums\BaseCargoCanal::SinImpuestos],
+                ['clave' => 'retencion_iva', 'clase' => \App\Enums\ClaseCargoCanal::RetencionIva, 'valor' => 8.0, 'base' => \App\Enums\BaseCargoCanal::SinImpuestos],
+            ],
+        ];
+    }
 }

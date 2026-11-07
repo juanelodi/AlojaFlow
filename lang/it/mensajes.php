@@ -25,6 +25,36 @@ return [
         'cuerpo' => "{huesped} ha fatto una prenotazione presso {propiedad}:\n\nArrivo: {llegada}\nPartenza: {salida}\nPersone: {personas}\nCamera: {unidad}\nTotale: {total}",
     ],
     'base' => [
+        'instrucciones' => [
+            'nombre' => 'Come arrivare e dati di arrivo',
+            'asunto' => 'Come arrivare a {propiedad}',
+            'cuerpo' => "Ciao {nombre},\n\nEcco il necessario per il tuo arrivo del {llegada}.\n\nUnità: {unidad}\nPosizione: {mapa_propiedad}\nWhatsApp: {whatsapp_propiedad}\n\nAnticipa la registrazione qui: {enlace_llegada}\n\nA presto!\n{propiedad}",
+        ],
+        'pago_pendiente' => [
+            'nombre' => 'Pagamento in sospeso',
+            'asunto' => 'La tua prenotazione {numero} ha un saldo da pagare',
+            'cuerpo' => "Ciao {nombre},\n\nLa tua prenotazione {numero} presso {propiedad} ha un saldo di {pendiente}, su un totale di {total}.\n\nConsulta la prenotazione qui: {enlace_reserva}\n\nSe hai già pagato, ignora questo messaggio. Grazie.\n{propiedad}",
+        ],
+        'pago_recibido' => [
+            'nombre' => 'Pagamento ricevuto',
+            'asunto' => 'Abbiamo ricevuto il pagamento della prenotazione {numero}',
+            'cuerpo' => "Ciao {nombre},\n\nAbbiamo ricevuto il tuo pagamento. Hai pagato {pagado} su {total}; restano {pendiente}.\n\nGrazie.\n{propiedad}",
+        ],
+        'cambio' => [
+            'nombre' => 'Modifica della prenotazione',
+            'asunto' => 'La tua prenotazione {numero} è cambiata',
+            'cuerpo' => "Ciao {nombre},\n\nLa tua prenotazione presso {propiedad} ora è:\n\nArrivo: {llegada}\nPartenza: {salida}\nUnità: {unidad}\nPersone: {personas}\nTotale: {total}\n\nSe qualcosa non è corretto, chiamaci al {telefono_propiedad}.\n{propiedad}",
+        ],
+        'antes_salida' => [
+            'nombre' => 'Prima della partenza',
+            'asunto' => 'La tua partenza da {propiedad}',
+            'cuerpo' => "Ciao {nombre},\n\nTi ricordiamo che la partenza è il {salida}.\n\nDa pagare: {pendiente}\n\nSe ti serve qualcosa prima di partire, chiamaci al {telefono_propiedad}.\n{propiedad}",
+        ],
+        'pide_opinion' => [
+            'nombre' => 'Chiedere un parere',
+            'asunto' => 'Com’è andato il soggiorno a {propiedad}?',
+            'cuerpo' => "Ciao {nombre},\n\nCi piacerebbe sapere com’è andata. Raccontacelo qui, basta un minuto: {enlace_opinion}\n\nGrazie.\n{propiedad}",
+        ],
         'confirmacion' => [
             'nombre' => 'Conferma della prenotazione',
             'asunto' => 'La tua prenotazione presso {propiedad} è confermata',
@@ -52,6 +82,9 @@ return [
         ],
     ],
     'plantillas' => [
+        'activar_envios' => 'Attiva gli invii consigliati',
+        'activar_envios_ayuda' => 'Invia per e-mail la conferma alla conferma, un promemoria due giorni prima dell’arrivo e un ringraziamento un giorno dopo la partenza. Si cambiano o spengono in Automazioni.',
+        'envios_activados' => 'Invii attivati: :n',
         'modelo' => 'modello',
         'modelos' => 'Modelli',
         'nombre' => 'Nome',

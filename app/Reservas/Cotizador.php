@@ -79,6 +79,31 @@ final class Cotizador
     }
 
     /**
+     * Lo que cuesta una noche suelta con las personas incluidas, para el calendario de tarifas. Sin estancia larga: esa depende de cuánto se quede.
+     *
+     * @param  iterable<TemporadaTarifa>  $temporadas  de la tarifa de la que salen sus precios, de la más reciente a la más antigua
+     * @return array{precio: int, temporada: ?TemporadaTarifa, estancia_minima: int}
+     */
+    public static function precioDeNoche(Tarifa $tarifa, iterable $temporadas, CarbonImmutable $dia): array
+    {
+        $precios = $tarifa->precios();
+        $temporada = null;
+        foreach ($temporadas as $candidata) {
+            if ($candidata->desde->format('Y-m-d') <= $dia->format('Y-m-d') && $candidata->hasta->format('Y-m-d') >= $dia->format('Y-m-d')) {
+                $temporada = $candidata;
+                break;
+            }
+        }
+        $personas = $precios->modo === ModoTarifa::PorPersona ? 1 : max(1, $precios->personas_incluidas);
+
+        return [
+            'precio' => (int) round($tarifa->conAjuste(self::precioNoche($precios, $temporada, $dia, $personas, null))),
+            'temporada' => $temporada,
+            'estancia_minima' => max(1, $tarifa->estancia_minima, $precios->estancia_minima, (int) $temporada?->estancia_minima),
+        ];
+    }
+
+    /**
      * La que se pidió, si esa unidad la vende y sigue activa; si no, la principal.
      */
     private static function tarifaDe(Unidad $unidad, ?int $tarifaId): ?Tarifa

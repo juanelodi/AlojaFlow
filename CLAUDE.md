@@ -201,12 +201,13 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   noches y pagos propios, `Cotizador` calcula el precio con la tarifa y sus temporadas, y `Mensualidades` lleva el calendario
   de cobros de una estancia larga (D-107, D-108). Una unidad se vende con su tarifa principal y otras (`Unidad::tarifasIds`, D-118); una tarifa puede salir de otra (`Tarifa::precios`, D-119). `ReglasCargo`, cuándo se cobra un cargo (D-121).
 - `app/Reservas/GestorGrupos.php` y `app/Grupos/` — grupos: `CalculadorPrecio` (D-095), `CalendarioPagos`, `AccesoCoordinador` y `ContratoGrupo` (D-096), `ListaHuespedes`. `app/Comprobantes/`, comprobantes de pago (D-097). Página pública en `GrupoPublicoController`.
+- `app/Reservas/UtilidadReserva.php` y `CargosSugeridos.php`, cargos de los canales y utilidad bruta y neta (D-149). `GestorPreciosTarifa.php` y `app/Servicios/CalendarioTarifas.php`, calendario de tarifas (D-148).
 - `app/Reservas/ImportadorDatos.php`, traer huéspedes y reservas de un archivo (D-127). `app/Reservas/DetectorDuplicados.php` (D-088). `app/Propiedades/RegistrosTuristicos.php` (D-091). `app/Paises/CatalogoRegiones.php` (D-092).
 - `app/Reservas/Restricciones.php` (D-084) e `ImportadorPrecios.php` (D-083). `app/Pagos/GestorEnlacesPago.php` (D-085). `app/Comunicacion/Opiniones.php` (D-087).
 - `app/Motor/` y `app/Pagos/` — motor de reservas y pasarelas (D-042). `app/Propiedades/Independizador.php`,
   pasar una subordinada a independiente (D-043).
 - `app/Caja/GestorTurnos.php`, turnos y arqueo (D-080). `app/Sincronizacion/ProyeccionCaja.php`, la caja de la principal (D-078).
-- `app/Limpieza/AvisoEquipo.php`, el parte para el equipo, y `Omisiones.php`, a quién no mostrar en cada lugar (D-074).
+- `app/Limpieza/AvisoEquipo.php`, el parte para el equipo, y `Omisiones.php`, a quién no mostrar en cada lugar (D-074, D-144); la jornada lo toma de `Operacion::delDia`.
 - `app/Limpieza/`, `app/Comunicacion/` (`Mensajero`, D-045), `app/Ical/` (D-046), `app/Llegada/` y
   `app/Privacidad/` (D-047): datos propios, que valen igual en independientes y subordinadas.
 - `app/Paises/` — **todo lo que cambia por país** va detrás de `Pais` (D-048). `app/Dinero/`, políticas (D-050). Por ahora no se factura

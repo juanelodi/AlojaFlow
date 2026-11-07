@@ -9,6 +9,26 @@
 declare(strict_types=1);
 
 return [
+    'ClaseCargoCanal' => [
+        'servicio' => 'Servicegebühr',
+        'procesamiento_pago' => 'Zahlungsgebühr',
+        'promocion' => 'Werbung oder Sichtbarkeit',
+        'impuesto_sobre_cargos' => 'Steuer auf seine Gebühren',
+        'retencion_renta' => 'Einbehalt Einkommensteuer',
+        'retencion_iva' => 'Einbehalt Umsatzsteuer',
+        'otro' => 'Sonstiges',
+    ],
+    'CalculoCargoCanal' => [
+        'porcentaje' => 'Prozentsatz',
+        'fijo_reserva' => 'Festbetrag pro Buchung',
+        'fijo_noche' => 'Festbetrag pro Nacht',
+    ],
+    'BaseCargoCanal' => [
+        'tarifa_base' => 'Basistarif (Unterkunft, ohne Extras und Steuern)',
+        'sin_impuestos' => 'Gesamt ohne Steuern',
+        'total_final' => 'Endbetrag (was der Gast zahlt)',
+        'comisiones' => 'Provision und Gebühren des Kanals',
+    ],
     'TipoEmpresa' => ['empresa' => 'Unternehmen', 'agencia' => 'Agentur'],
     'ModoPropiedad' => [
         'nativa' => 'Eigenständig',

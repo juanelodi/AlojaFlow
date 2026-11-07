@@ -15,6 +15,7 @@ use App\Enums\EstadoGrupo;
 use App\Enums\EstadoReserva;
 use App\Enums\MetodoPago;
 use App\Enums\ModoPrecioGrupo;
+use App\Enums\TipoReserva;
 use App\Grupos\CalculadorPrecio;
 use App\Models\CuotaGrupo;
 use App\Models\Grupo;
@@ -60,6 +61,42 @@ final class GestorGrupos
                 $this->crearHabitacion($grupo, $unidadId, $llegada, $salida, $personasPorUnidad, $estado);
             }
             RegistroAuditoria::anotar('grupo.crear', $grupo, ['reservas' => count($unidades)], $propiedad->id);
+
+            return $grupo;
+        });
+    }
+
+    /**
+     * Un grupo con reservas que ya existen (D-146). Ninguna cambia de fechas, unidad ni precio; el grupo solo las junta.
+     *
+     * @param  list<int>  $reservas
+     */
+    public function crearDesdeReservas(Propiedad $propiedad, string $nombre, int $coordinadorId, array $reservas, ?string $notas = null): Grupo
+    {
+        $ids = array_values(array_unique(array_map('intval', $reservas)));
+        if ($ids === []) {
+            throw new ReservaRechazada(__('ui.grupos.error_reservas'), 'reservas');
+        }
+
+        return DB::transaction(function () use ($propiedad, $nombre, $coordinadorId, $ids, $notas): Grupo {
+            $elegidas = Reserva::query()->where('propiedad_id', $propiedad->id)->whereIn('id', $ids)->where('sincronizada', false)->where('tipo', TipoReserva::Reserva->value)
+                ->where('estado', '!=', EstadoReserva::Cancelada->value)->whereNull('grupo_id')->get();
+            if ($elegidas->count() !== count($ids)) {
+                throw new ReservaRechazada(__('ui.grupos.error_reservas'), 'reservas');
+            }
+            $grupo = Grupo::query()->create([
+                'propiedad_id' => $propiedad->id,
+                'codigo' => 'GRP-'.Huellas::codigoPublico(6),
+                'nombre' => $nombre,
+                'estado' => $elegidas->contains(fn (Reserva $r): bool => $r->estado === EstadoReserva::SinConfirmar) ? EstadoGrupo::Tentativo : EstadoGrupo::Confirmado,
+                'coordinador_id' => $coordinadorId,
+                'notas' => $notas,
+            ])->refresh();
+            foreach ($elegidas as $reserva) {
+                $this->reservas->unirAGrupo($reserva, $grupo->id);
+                GrupoHabitacion::query()->create(['grupo_id' => $grupo->id, 'reserva_id' => $reserva->id]);
+            }
+            RegistroAuditoria::anotar('grupo.crear', $grupo, ['reservas' => count($ids)], $propiedad->id);
 
             return $grupo;
         });

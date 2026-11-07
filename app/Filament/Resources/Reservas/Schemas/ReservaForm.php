@@ -12,6 +12,7 @@ namespace App\Filament\Resources\Reservas\Schemas;
 
 use App\Camping\AtributosLugar;
 use App\Camping\CupoExtras;
+use App\Enums\BaseCargoCanal;
 use App\Enums\EntidadCampo;
 use App\Enums\EstadoReserva;
 use App\Enums\TipoContacto;
@@ -314,7 +315,12 @@ class ReservaForm
 
         $canal = Canal::query()->where('propiedad_id', self::propiedadPermitida($get($ruta.'propiedad_id')))->where('nombre', (string) $get($ruta.'origen_texto'))->first();
         if ($canal !== null && $canal->comision_porcentaje !== null) {
-            $set($ruta.'comision', Dinero::aDecimal((int) round($presupuesto->total() * (float) $canal->comision_porcentaje / 100), $moneda));
+            $base = match ($canal->comision_base) {
+                BaseCargoCanal::TarifaBase => $presupuesto->alojamiento,
+                BaseCargoCanal::SinImpuestos => $presupuesto->total() - $presupuesto->impuestosAdicionales() - $presupuesto->impuestosIncluidos(),
+                default => $presupuesto->total(),
+            };
+            $set($ruta.'comision', Dinero::aDecimal((int) round($base * (float) $canal->comision_porcentaje / 100), $moneda));
         }
         $empresa = blank($get($ruta.'empresa_id')) ? null : Empresa::query()->where('propiedad_id', self::propiedadPermitida($get($ruta.'propiedad_id')))->find((int) $get($ruta.'empresa_id'));
         if ($empresa?->comision_porcentaje !== null) {

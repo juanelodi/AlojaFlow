@@ -22,7 +22,9 @@ final class DocumentosDePartida
     private const DOCUMENTOS = [
         'contrato' => AlcanceDocumento::Reserva,
         'registro' => AlcanceDocumento::Reserva,
+        'reglamento' => AlcanceDocumento::Reserva,
         'llegadas' => AlcanceDocumento::Periodo,
+        'limpieza' => AlcanceDocumento::Periodo,
     ];
 
     /**

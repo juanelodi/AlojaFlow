@@ -12,7 +12,6 @@ namespace App\Comunicacion;
 
 use App\Enums\AccionAutomatizacion;
 use App\Enums\DisparadorAutomatizacion;
-use App\Enums\EstadoReserva;
 use App\Models\Automatizacion;
 use App\Models\Plantilla;
 use App\Models\Propiedad;
@@ -23,7 +22,18 @@ use Illuminate\Support\Facades\Lang;
  */
 final class PlantillasBase
 {
-    private const CODIGOS = ['confirmacion', 'solicitud', 'recordatorio', 'gracias', 'cancelacion'];
+    private const CODIGOS = ['confirmacion', 'solicitud', 'instrucciones', 'recordatorio', 'pago_pendiente', 'pago_recibido', 'cambio', 'antes_salida', 'gracias', 'pide_opinion', 'cancelacion'];
+
+    /**
+     * Los envíos que casi todo alojamiento quiere: confirmar, recordar y agradecer. Nunca se prenden solos.
+     *
+     * @var list<array{0: string, 1: DisparadorAutomatizacion, 2: int, 3: string|null, 4: array<string, string>|null}>
+     */
+    private const RECOMENDADOS = [
+        ['confirmacion', DisparadorAutomatizacion::ReservaConfirmada, 0, null, null],
+        ['recordatorio', DisparadorAutomatizacion::AntesLlegada, 2, '10:00', ['estado' => 'confirmada']],
+        ['gracias', DisparadorAutomatizacion::DespuesSalida, 1, '11:00', null],
+    ];
 
     private const RECORDATORIOS_CUOTA = [
         'cuota_por_vencer' => [DisparadorAutomatizacion::AntesCuota, 3],
@@ -78,32 +88,36 @@ final class PlantillasBase
 
         return Plantilla::query()->firstOrCreate(
             ['propiedad_id' => $propiedad->id, 'codigo' => $codigo],
-            ['nombre' => __($clave.'.nombre'), 'asunto' => $asunto, 'cuerpo' => $cuerpo],
+            ['nombre' => __($clave.'.nombre', [], $propiedad->idioma), 'asunto' => $asunto, 'cuerpo' => $cuerpo],
         );
     }
 
     /**
-     * Las automatizaciones de ejemplo de la demostración: confirmar, recordar y agradecer.
+     * Prende los envíos recomendados. Lo ya creado se queda como esté, incluso apagado a propósito.
+     *
+     * @return int cuántos creó
+     */
+    public static function prenderRecomendados(Propiedad $propiedad): int
+    {
+        self::sembrar($propiedad);
+        $plantillas = Plantilla::query()->where('propiedad_id', $propiedad->id)->pluck('id', 'codigo');
+        $creados = 0;
+        foreach (self::RECOMENDADOS as [$codigo, $disparador, $dias, $hora, $condiciones]) {
+            $automatizacion = Automatizacion::query()->firstOrCreate(
+                ['propiedad_id' => $propiedad->id, 'disparador' => $disparador->value, 'plantilla_id' => $plantillas[$codigo]],
+                ['nombre' => __('mensajes.base.'.$codigo.'.nombre', [], $propiedad->idioma), 'dias' => $dias, 'hora' => $hora, 'condiciones' => $condiciones, 'accion' => AccionAutomatizacion::CorreoHuesped],
+            );
+            $creados += $automatizacion->wasRecentlyCreated ? 1 : 0;
+        }
+
+        return $creados;
+    }
+
+    /**
+     * Las automatizaciones de ejemplo de la demostración.
      */
     public static function automatizacionesDemo(Propiedad $propiedad): void
     {
-        $plantillas = Plantilla::query()->where('propiedad_id', $propiedad->id)->pluck('id', 'codigo');
-        $reglas = [
-            ['confirmacion', DisparadorAutomatizacion::ReservaConfirmada, 0, null, null],
-            ['recordatorio', DisparadorAutomatizacion::AntesLlegada, 2, '10:00', ['estado' => EstadoReserva::Confirmada->value]],
-            ['gracias', DisparadorAutomatizacion::DespuesSalida, 1, '11:00', null],
-        ];
-        foreach ($reglas as [$codigo, $disparador, $dias, $hora, $condiciones]) {
-            Automatizacion::query()->create([
-                'propiedad_id' => $propiedad->id,
-                'nombre' => __('mensajes.base.'.$codigo.'.nombre'),
-                'disparador' => $disparador,
-                'dias' => $dias,
-                'hora' => $hora,
-                'condiciones' => $condiciones,
-                'accion' => AccionAutomatizacion::CorreoHuesped,
-                'plantilla_id' => $plantillas[$codigo],
-            ]);
-        }
+        self::prenderRecomendados($propiedad);
     }
 }

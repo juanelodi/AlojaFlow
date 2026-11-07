@@ -749,6 +749,13 @@ return [
         'guardada' => 'Notiz gespeichert.',
     ],
     'grupos' => [
+        'desde_reservas' => 'Aus Buchungen erstellen',
+        'desde_reservas_ayuda' => 'Suchen Sie den Gast und wählen Sie seine vorhandenen Buchungen. Sie werden als Gruppe verwaltet, ohne Daten, Einheiten oder Preise zu ändern, und dieser Gast wird Koordinator.',
+        'buscar_cliente' => 'Gast suchen',
+        'reservas_elegir' => 'Als Gruppe zu verwaltende Buchungen',
+        'sin_reservas_cliente' => 'Dieser Gast hat keine aktuellen Buchungen außerhalb einer Gruppe.',
+        'error_reservas' => 'Wählen Sie aktuelle Buchungen dieser Unterkunft, die noch in keiner Gruppe sind.',
+        'creado_desde_reservas' => 'Gruppe mit :n Buchungen erstellt',
         'modelo' => 'Gruppe',
         'modelos' => 'Gruppen',
         'codigo' => 'Code',

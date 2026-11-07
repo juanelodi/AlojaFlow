@@ -56,6 +56,24 @@ return [
     ],
 
     'base' => [
+        'reglamento' => [
+            'nombre' => 'House rules',
+            'intro' => 'Rules of {propiedad} for booking {numero}, from {llegada} to {salida}:',
+            'horarios' => 'Please respect the check-in and check-out times we give you.',
+            'ruido' => 'Keep quiet at night and be considerate of other guests.',
+            'visitas' => 'Only registered guests may stay; let us know about any visitors.',
+            'fumar' => 'No smoking inside the units.',
+            'danos' => 'Guests are responsible for any damage they cause.',
+            'firma' => 'Acknowledged on {hoy}:',
+        ],
+        'limpieza' => [
+            'nombre' => 'Housekeeping sheet',
+            'intro' => 'Departures from {desde} to {hasta}:',
+            'salida' => 'Departure',
+            'unidad' => 'Unit',
+            'personas' => 'Guests',
+            'comentario' => 'Comment',
+        ],
         'contrato' => [
             'nombre' => 'Accommodation contract',
             'partes' => 'Between {propiedad}, located at {domicilio_propiedad}, and {huesped}, with ID {huesped_documento}, the following is agreed:',

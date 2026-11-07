@@ -25,6 +25,36 @@ return [
         'cuerpo' => "{huesped} made a booking at {propiedad}:\n\nArrival: {llegada}\nDeparture: {salida}\nPeople: {personas}\nRoom: {unidad}\nTotal: {total}",
     ],
     'base' => [
+        'instrucciones' => [
+            'nombre' => 'Directions and check-in details',
+            'asunto' => 'How to get to {propiedad}',
+            'cuerpo' => "Hello {nombre},\n\nHere is what you need for your arrival on {llegada}.\n\nUnit: {unidad}\nLocation: {mapa_propiedad}\nWhatsApp: {whatsapp_propiedad}\n\nCheck in online here: {enlace_llegada}\n\nSee you soon!\n{propiedad}",
+        ],
+        'pago_pendiente' => [
+            'nombre' => 'Payment due',
+            'asunto' => 'Your booking {numero} has a balance due',
+            'cuerpo' => "Hello {nombre},\n\nYour booking {numero} at {propiedad} has a balance of {pendiente}, out of a total of {total}.\n\nView your booking here: {enlace_reserva}\n\nIf you have already paid, please ignore this message. Thank you.\n{propiedad}",
+        ],
+        'pago_recibido' => [
+            'nombre' => 'Payment received',
+            'asunto' => 'We received your payment for booking {numero}',
+            'cuerpo' => "Hello {nombre},\n\nWe received your payment. You have paid {pagado} of {total}; {pendiente} is still due.\n\nThank you.\n{propiedad}",
+        ],
+        'cambio' => [
+            'nombre' => 'Booking change',
+            'asunto' => 'Your booking {numero} has changed',
+            'cuerpo' => "Hello {nombre},\n\nYour booking at {propiedad} is now:\n\nArrival: {llegada}\nDeparture: {salida}\nUnit: {unidad}\nGuests: {personas}\nTotal: {total}\n\nIf anything is wrong, call us at {telefono_propiedad}.\n{propiedad}",
+        ],
+        'antes_salida' => [
+            'nombre' => 'Before you leave',
+            'asunto' => 'Your departure from {propiedad}',
+            'cuerpo' => "Hello {nombre},\n\nA reminder that your departure is on {salida}.\n\nBalance due: {pendiente}\n\nIf you need anything before you go, call us at {telefono_propiedad}.\n{propiedad}",
+        ],
+        'pide_opinion' => [
+            'nombre' => 'Ask for a review',
+            'asunto' => 'How was your stay at {propiedad}?',
+            'cuerpo' => "Hello {nombre},\n\nWe would love to know how it went. Tell us here, it only takes a minute: {enlace_opinion}\n\nThank you.\n{propiedad}",
+        ],
         'confirmacion' => [
             'nombre' => 'Booking confirmation',
             'asunto' => 'Your booking at {propiedad} is confirmed',
@@ -52,6 +82,9 @@ return [
         ],
     ],
     'plantillas' => [
+        'activar_envios' => 'Turn on recommended messages',
+        'activar_envios_ayuda' => 'Emails the confirmation when a booking is confirmed, a reminder two days before arrival and a thank-you one day after departure. Change or turn them off in Automations.',
+        'envios_activados' => 'Messages turned on: :n',
         'modelo' => 'template',
         'modelos' => 'Templates',
         'nombre' => 'Name',

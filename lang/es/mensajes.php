@@ -25,6 +25,36 @@ return [
         'cuerpo' => "{huesped} hizo una reserva en {propiedad}:\n\nLlegada: {llegada}\nSalida: {salida}\nPersonas: {personas}\nHabitación: {unidad}\nTotal: {total}",
     ],
     'base' => [
+        'instrucciones' => [
+            'nombre' => 'Cómo llegar y datos de entrada',
+            'asunto' => 'Cómo llegar a {propiedad}',
+            'cuerpo' => "Hola, {nombre}:\n\nTe compartimos lo necesario para tu llegada del {llegada}.\n\nUnidad: {unidad}\nUbicación: {mapa_propiedad}\nWhatsApp: {whatsapp_propiedad}\n\nAdelanta tu registro aquí: {enlace_llegada}\n\n¡Nos vemos pronto!\n{propiedad}",
+        ],
+        'pago_pendiente' => [
+            'nombre' => 'Pago pendiente',
+            'asunto' => 'Tu reserva {numero} tiene un saldo pendiente',
+            'cuerpo' => "Hola, {nombre}:\n\nTu reserva {numero} en {propiedad} tiene un saldo de {pendiente}, de un total de {total}.\n\nConsulta tu reserva aquí: {enlace_reserva}\n\nSi ya pagaste, ignora este mensaje y gracias.\n{propiedad}",
+        ],
+        'pago_recibido' => [
+            'nombre' => 'Pago recibido',
+            'asunto' => 'Recibimos tu pago de la reserva {numero}',
+            'cuerpo' => "Hola, {nombre}:\n\nRecibimos tu pago. Llevas {pagado} de {total}; queda pendiente {pendiente}.\n\nGracias.\n{propiedad}",
+        ],
+        'cambio' => [
+            'nombre' => 'Cambio en la reserva',
+            'asunto' => 'Tu reserva {numero} cambió',
+            'cuerpo' => "Hola, {nombre}:\n\nTu reserva en {propiedad} quedó así:\n\nLlegada: {llegada}\nSalida: {salida}\nUnidad: {unidad}\nPersonas: {personas}\nTotal: {total}\n\nSi algo no es correcto, llámanos al {telefono_propiedad}.\n{propiedad}",
+        ],
+        'antes_salida' => [
+            'nombre' => 'Antes de tu salida',
+            'asunto' => 'Tu salida de {propiedad}',
+            'cuerpo' => "Hola, {nombre}:\n\nTe recordamos que tu salida es el {salida}.\n\nPendiente de pago: {pendiente}\n\nSi necesitas algo antes de irte, llámanos al {telefono_propiedad}.\n{propiedad}",
+        ],
+        'pide_opinion' => [
+            'nombre' => 'Pedir una opinión',
+            'asunto' => '¿Cómo estuvo tu estancia en {propiedad}?',
+            'cuerpo' => "Hola, {nombre}:\n\nNos encantaría saber cómo te fue. Cuéntanos aquí, solo toma un minuto: {enlace_opinion}\n\nGracias.\n{propiedad}",
+        ],
         'confirmacion' => [
             'nombre' => 'Confirmación de la reserva',
             'asunto' => 'Tu reserva en {propiedad} está confirmada',
@@ -52,6 +82,9 @@ return [
         ],
     ],
     'plantillas' => [
+        'activar_envios' => 'Activar envíos recomendados',
+        'activar_envios_ayuda' => 'Manda por correo la confirmación al confirmar, un recordatorio dos días antes de la llegada y las gracias un día después de la salida. Se cambian o apagan en Automatizaciones.',
+        'envios_activados' => 'Envíos activados: :n',
         'modelo' => 'plantilla',
         'modelos' => 'Plantillas',
         'nombre' => 'Nombre',

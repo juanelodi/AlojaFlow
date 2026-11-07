@@ -749,6 +749,13 @@ return [
         'guardada' => 'Nota guardada.',
     ],
     'grupos' => [
+        'desde_reservas' => 'Criar a partir de reservas',
+        'desde_reservas_ayuda' => 'Procure o cliente e escolha as suas reservas já criadas. Serão geridas como grupo sem alterar datas, unidades nem preços, e esse cliente fica como coordenador.',
+        'buscar_cliente' => 'Procurar cliente',
+        'reservas_elegir' => 'Reservas a gerir como grupo',
+        'sin_reservas_cliente' => 'Este cliente não tem reservas vigentes fora de um grupo.',
+        'error_reservas' => 'Escolha reservas vigentes desta propriedade que ainda não estejam num grupo.',
+        'creado_desde_reservas' => 'Grupo criado com :n reservas',
         'modelo' => 'grupo',
         'modelos' => 'Grupos',
         'codigo' => 'Código',

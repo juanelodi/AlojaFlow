@@ -28,14 +28,14 @@
         <details class="af-plegable af-ficha__anio">
             <summary>
                 <span class="af-ficha__titulo">{{ $anio }}</span>
-                <span class="af-nota">{{ trans_choice('ui.ficha.n_reservas', $delAnio['reservas'], ['n' => $delAnio['reservas']]) }} · {{ $delAnio['noches'] }} {{ __('ui.comun.noches') }}@if ($delAnio['total'] > 0) · {{ Formato::dinero($delAnio['total'], $moneda) }}@endif</span>
+                <span class="af-nota">{{ trans_choice('ui.ficha.n_reservas', $delAnio['reservas'], ['n' => $delAnio['reservas']]) }} · {{ $delAnio['noches'] }} {{ mb_strtolower(__('ui.comun.noches')) }}@if ($delAnio['total'] > 0) · {{ Formato::dinero($delAnio['total'], $moneda) }}@endif</span>
             </summary>
             <div class="af-ficha__meses">
                 @foreach ($delAnio['meses'] as $mes)
                     <details class="af-plegable af-ficha__mes">
                         <summary>
                             <span class="af-ficha__mes-nombre">{{ Formato::fecha($mes['fecha'], 'MMMM') }}</span>
-                            <span class="af-nota">{{ trans_choice('ui.ficha.n_reservas', $mes['reservas']->count(), ['n' => $mes['reservas']->count()]) }} · {{ $mes['noches'] }} {{ __('ui.comun.noches') }}@if ($mes['total'] > 0) · {{ Formato::dinero($mes['total'], $moneda) }}@endif</span>
+                            <span class="af-nota">{{ trans_choice('ui.ficha.n_reservas', $mes['reservas']->count(), ['n' => $mes['reservas']->count()]) }} · {{ $mes['noches'] }} {{ mb_strtolower(__('ui.comun.noches')) }}@if ($mes['total'] > 0) · {{ Formato::dinero($mes['total'], $moneda) }}@endif</span>
                         </summary>
                     <div class="af-tabla-contenedor" tabindex="0" role="region" aria-label="{{ Formato::fecha($mes['fecha'], 'MMMM YYYY') }}">
                         <table class="af-tabla af-tabla--tarjetas">
