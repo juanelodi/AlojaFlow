@@ -536,11 +536,11 @@ it('un zip a medio subir por FTP no se borra, y lo bajado y firmado lo sustituye
     File::ensureDirectoryExists(dirname(($this->entrada)()));
     File::put(($this->entrada)(), 'a medio subir');
 
-    Http::fake([URL_ZIP => Http::response('', 500)]);
+    Http::fake([URL_ZIP => Http::sequence()->push('', 500)->push($this->zip)]);
+
     ($this->pedazo)()->assertStatus(422);
     expect((string) file_get_contents(($this->entrada)()))->toBe('a medio subir');
 
-    Http::fake([URL_ZIP => Http::response($this->zip)]);
     ($this->pedazo)()->assertOk()->assertJson(['paquete' => 'alojaflow-1.0.2.zip']);
     expect((string) file_get_contents(($this->entrada)()))->toBe($this->zip);
 });
