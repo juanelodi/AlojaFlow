@@ -2,14 +2,15 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
-## Próxima versión (sin publicar)
+## 1.0.34 — 2026-11-06
 
 **La sincronización con HotelDruid 3.0.8 en español ya no se queda en SUB-099 por el límite diario.** Ese aviso de HotelDruid lleva un acento distinto y no se reconocía: ahora sale como SUB-005, que pausa hasta el día siguiente y pide bajar la frecuencia.
 
 - **El aviso del resumen dice más:** en qué paso falló, qué respondió la principal y un enlace al historial. Si cambia el fallo, se pone al día.
 - **Una falla de AlojaFlow** al procesar la copia ahora es SUB-098, y ya no culpa a la principal.
+- **Sin verificar:** no se ha probado contra un HotelDruid real con su límite alcanzado. Si el aviso sigue, ahora dirá qué respondió la principal.
 
-**Calendarios que se entienden entre sí.** Al poner la llegada, la salida pasa al día siguiente si quedaba antes o vacía, y abre en ese mes. Vale en todos los pares de fechas, también en el motor de reservas. Un clic en cualquier parte del campo abre el calendario.
+**Calendarios que se entienden entre sí.** Al poner la llegada, la salida pasa al día siguiente si quedaba antes o vacía, y abre en ese mes. Vale en todos los pares de fechas, también en el motor de reservas.
 
 **Reservas y huéspedes:**
 
@@ -20,6 +21,7 @@ Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, 
 **Todas las listas:**
 
 - **Se ordenan por cualquier columna** con datos guardados, y se muestran por 10, 20, 50 o 100.
+- **«Columnas»** elige qué se ve. En Reservas, el origen, la tarifa, las noches y otros datos empiezan ocultos para que la tabla quepa en la pantalla.
 - **Al volver a una lista** sigue con la búsqueda, los filtros y el orden que tenía.
 - **«Ver» y «Editar»** se quedan a la vista aunque la tabla no quepa, y en el teléfono son más grandes. Una reserva es una tarjeta, no una pantalla entera.
 - **Las fechas** se escriben «3 feb 2027».
