@@ -1,6 +1,6 @@
 # Auditoría de experiencia de uso
 
-**Fecha:** 2026-11-06 · **Sobre:** la rama `mejoras-ux-1.0.34`, a partir de la 1.0.33 · **Decisiones:** D-135 a D-140
+**Fecha:** 2026-11-06 · **Sobre:** la rama `mejoras-ux-1.0.34`, a partir de la 1.0.33 · **Decisiones:** D-135 a D-142
 
 ## Cómo se hizo y qué no cubre
 
@@ -50,7 +50,18 @@ Por eso lo de abajo son hallazgos de una revisión experta y de mediciones, no r
 | Mayor | Hoy en el teléfono | Cada llegada era una tarjeta dentro de otra, con etiquetas y botones chicos | Un renglón por reserva dentro de la sección, con lo esencial de un vistazo y botones de 44 px; las cifras del día van en un renglón para que las llegadas se vean sin desplazar |
 | Mayor | Calendario en el teléfono | Las barras exigían precisión y arrastrar chocaba con desplazar | Vista de día, unidad por unidad: quién sale, sigue o llega, qué está libre y un botón para reservar ahí. Se abre sola en el teléfono; las dos vistas se pueden elegir. La computadora sigue abriendo por habitaciones |
 | Mayor | Ficha de la reserva | Título «Reserva N», acciones en tres renglones y el saldo muy abajo | El huésped de título; luego fechas, estado, total, pagado, pendiente y contactos, con la línea visual de la ficha del huésped. Lo que toca hacer va primero y la limpieza pasa a «Más» |
+| Mayor | Crear reserva en el teléfono | 3,230 px de alto, y las fechas después de propiedad, tipo y estado | Primero fechas, personas y unidad, con cuántas quedan libres. Lo poco usado va plegado y se abre si trae datos o un error: de 3,230 a unos 2,050 px con todos los módulos encendidos |
+| Mayor | Motor: errores | Una lista arriba, lejos de los campos, con textos como «Correo debe ser un correo válido» | Cada campo dice qué hacer, la página vuelve abierta en el formulario y el resumen lleva a cada campo. Sin JavaScript |
+| Mayor | Motor: repetir datos | Al volver con un error se perdía la casilla de condiciones; «Volver» y el aviso de «sin lugar» perdían filtros e idioma | Se conserva todo |
+| Mayor | Motor: oscuro | Enlaces azul oscuro casi invisibles, e iconos del calendario y botón de archivo en claro | Se leen bien: la página declara `color-scheme` y los enlaces usan el color del texto |
+| Mayor | Motor: buscar | La descripción alejaba el formulario y empujaba los resultados | Formulario y resultados primero; las fotos pasan abajo al buscar |
+| Mayor | Motor: confirmación | El botón de pagar quedaba debajo de toda la tabla | Primero el pago; y aviso de guardar la página |
 | Menor | Aviso de entradas y salidas | Fecha larga fija, días contados a mano | Dos calendarios y formato elegible |
+| Menor | Motor | «Hasta 1 personas», «1 personas» | Singular y plural, en los seis idiomas |
+| Menor | Motor | Se aceptaba un teléfono con tres dígitos | Pide al menos siete, y dice cómo escribirlo |
+| Menor | Motor | No se sabía cuánto faltaba ni si se cobraba al enviar | Pasos arriba, y «todavía no se cobra nada» junto al botón |
+| Menor | Motor | Cupón siempre a la vista, botones pequeños en el teléfono, calendario que olvidaba las personas, fecha inicial sin contar la antelación, foco invisible en listas y plegables | Corregidos, con `autocomplete`, `inputmode` y `autocapitalize` en cada campo |
+| Menor | «Elegir la primera libre» | Sin fechas o sin lugar no hacía nada | Dice por qué |
 | Menor | Mensualidades | La página se desbordaba en el teléfono | Corregido en todas: lo oculto de una tabla ya no se sale |
 | Menor | Disponibilidad | «1 noches» | «1 noche» |
 | Menor | Hoy | Un número suelto debajo del nombre | «Número 98» |
@@ -66,22 +77,15 @@ Ordenado por lo que más ayudaría a quien trabaja a diario. Nada de esto está 
 
 | Módulo | Prioridad | Qué falta |
 |---|---|---|
-| **Actualizaciones** | Mayor | Actualizar desde la pantalla, sin subir el zip. Espera la decisión de abajo |
-| **Crear reserva** | Mayor | El formulario es largo en el teléfono: conviene pedir primero fechas y unidad |
-| **Motor público** | Mayor | No se revisó en esta pasada, y es lo que ve el huésped |
+| **Actualizaciones** | Menor | Probar la actualización en línea en un hosting de verdad: solo se probó contra GitHub, sin instalar |
 | **Instalador** | Menor | Mostrar la contraseña en vez de pedirla dos veces. Falta recorrerlo completo |
 | **Informes** | Menor | Paginar en el navegador los informes largos y buscar dentro de ellos |
 | **Configuración** | Menor | Cerca de 40 entradas de menú: falta un buscador de ajustes |
+| **Motor público** | Menor | Recorrerlo con pasarelas en modo de prueba: en esta pasada solo se vio el botón, sin cobrar. Tampoco se revisó el plano de lugares de un camping con imagen. Los extras no actualizan el total en pantalla hasta reservar |
 | **Limpieza, Plano, Tareas** | Menor | Se ven bien en el teléfono; falta probarlas con quien limpia |
 | **Propiedad subordinada** | Menor | Recorrerla entera, con el aviso de SUB-099 a la vista |
 | **Accesibilidad** | Menor | Probar con lector de pantalla y con teclado de punta a punta |
 
-## La actualización en línea (por decidir)
+## La actualización en línea
 
-Hoy se sube un zip por partes. La pieza difícil ya existe: comprueba la firma, hace copia y vuelve atrás si falla. Lo recomendado es añadir solo lo que falta:
-
-1. **Avisar:** una vez al día se pregunta a GitHub cuál es la última versión, sin mandar ningún dato. El super administrador ve el aviso con lo que cambia.
-2. **Bajar:** con el botón «Actualizar ahora» se baja el zip por pedazos, como ya hace el instalador, con barra de avance: en un hosting compartido una descarga larga la cortaría el servidor.
-3. **Aplicar:** el mismo camino de siempre (firma, copia, cambio y vuelta atrás), con la confirmación de la contraseña.
-
-**La firma es lo que da seguridad, no el sitio de donde baja.** Se conserva subir el zip a mano para el servidor que no sale a internet. Nunca se actualiza sola al principio: primero un clic, y más adelante una opción para las de seguridad.
+**Hecha** (D-140): avisa una vez al día, baja el zip por pedazos con «Actualizar ahora» y sigue el mismo camino firmado, con la contraseña. Subir el zip a mano se conserva para el servidor que no sale a internet, y nunca se instala sola. Falta probarla en un hosting de verdad.

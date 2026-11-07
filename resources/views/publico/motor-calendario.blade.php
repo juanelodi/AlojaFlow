@@ -10,10 +10,10 @@
             <strong style="flex:1 1 auto">{{ Formato::fecha($mes, 'MMMM YYYY') }}</strong>
             <div>
                 @if ($anterior)
-                    <a class="boton secundario" href="{{ route('motor.calendario', ['codigo' => $propiedad->codigo, 'mes' => $anterior, 'idioma' => app()->getLocale()]) }}" aria-label="{{ __('motor.calendario.anterior') }}">←</a>
+                    <a class="boton secundario" href="{{ route('motor.calendario', ['codigo' => $propiedad->codigo, 'mes' => $anterior, 'personas' => $personas, 'idioma' => app()->getLocale()]) }}" aria-label="{{ __('motor.calendario.anterior') }}">←</a>
                 @endif
                 @if ($siguiente)
-                    <a class="boton secundario" href="{{ route('motor.calendario', ['codigo' => $propiedad->codigo, 'mes' => $siguiente, 'idioma' => app()->getLocale()]) }}" aria-label="{{ __('motor.calendario.siguiente') }}">→</a>
+                    <a class="boton secundario" href="{{ route('motor.calendario', ['codigo' => $propiedad->codigo, 'mes' => $siguiente, 'personas' => $personas, 'idioma' => app()->getLocale()]) }}" aria-label="{{ __('motor.calendario.siguiente') }}">→</a>
                 @endif
             </div>
         </div>
@@ -33,7 +33,7 @@
                             @if ($dia === null)
                                 <td></td>
                             @elseif ($dia['reservable'])
-                                <td><a href="{{ route('motor.buscar', ['codigo' => $propiedad->codigo, 'llegada' => $dia['fecha']->format('Y-m-d'), 'salida' => $dia['fecha']->addDay()->format('Y-m-d'), 'idioma' => app()->getLocale()]) }}" aria-label="{{ Formato::fecha($dia['fecha'], 'LL') }}: {{ __('motor.calendario.libre') }}">{{ $dia['fecha']->day }}</a></td>
+                                <td><a href="{{ route('motor.buscar', ['codigo' => $propiedad->codigo, 'llegada' => $dia['fecha']->format('Y-m-d'), 'salida' => $dia['fecha']->addDay()->format('Y-m-d'), 'personas' => $personas, 'idioma' => app()->getLocale()]) }}" aria-label="{{ Formato::fecha($dia['fecha'], 'LL') }}: {{ __('motor.calendario.libre') }}">{{ $dia['fecha']->day }}</a></td>
                             @else
                                 <td class="{{ $dia['libre'] ? 'pasado' : 'lleno' }}"><span aria-label="{{ Formato::fecha($dia['fecha'], 'LL') }}: {{ __($dia['libre'] ? 'motor.calendario.no_disponible' : 'motor.calendario.lleno') }}">{{ $dia['fecha']->day }}</span></td>
                             @endif
@@ -47,5 +47,5 @@
             <span class="calendario-muestra lleno"></span> {{ __('motor.calendario.lleno') }}
         </p>
     </section>
-    <a class="boton secundario" href="{{ route('motor.buscar', ['codigo' => $propiedad->codigo, 'idioma' => app()->getLocale()]) }}">{{ __('motor.calendario.volver') }}</a>
+    <a class="boton secundario" href="{{ route('motor.buscar', ['codigo' => $propiedad->codigo, 'personas' => $personas, 'idioma' => app()->getLocale()]) }}">{{ __('motor.calendario.volver') }}</a>
 @endsection

@@ -53,6 +53,8 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -69,6 +71,14 @@ use Throwable;
  */
 class ReservaForm
 {
+    /** Hasta aquí se ve la lista sin buscador: en el teléfono, buscar abre el teclado y tapa la lista. */
+    private const UNIDADES_SIN_BUSCADOR = 10;
+
+    /** Filament solo abre la sección del primer error: una plegada con otro lo dejaría oculto y parecería que el botón no hace nada. */
+    private const ABRIR_CON_ERROR = [
+        'x-on:form-validation-error.window' => '$nextTick(() => { if ($el.querySelector(\'[data-validation-error]\')) $el.querySelector(\'.fi-section\')?.dispatchEvent(new CustomEvent(\'expand\')) })',
+    ];
+
     public static function configure(Schema $schema): Schema
     {
         $esReserva = fn (Get $get): bool => self::tipo($get) === TipoReserva::Reserva;
@@ -82,29 +92,24 @@ class ReservaForm
 
         return $schema->components([
             Hidden::make('version'),
+            // Primero lo que decide todo lo demás: cuándo, cuántos y dónde. Lo que casi nunca cambia va plegado abajo.
             Section::make(__('ui.reservas.estancia'))->columnSpanFull()
-                ->columns(['default' => 1, 'md' => 2, 'lg' => 3])
+                ->columns(['default' => 2, 'lg' => 4])
                 ->schema([
+                    // Con una sola propiedad no hay nada que preguntar, y el valor sigue viajando.
                     Select::make('propiedad_id')->label(__('ui.comun.propiedad'))->required()->native(false)->live()
                         ->options(fn (): array => Propiedad::query()->whereIn('id', ReservaResource::propiedadesGestionables())->orderBy('nombre')->pluck('nombre', 'id')->all())
                         ->default(fn (): ?int => self::propiedadInicial())
                         ->disabledOn('edit')
+                        ->hidden(fn (): bool => count(ReservaResource::propiedadesGestionables()) === 1)
+                        ->dehydratedWhenHidden()
                         ->afterStateUpdated(function (Set $set): void {
                             $set('unidad_id', null);
                             $set('titular_id', null);
                             $set('total', null);
                             $set('cargos', []);
-                        }),
-                    Select::make('tipo')->label(__('ui.reservas.tipo'))->options(TipoReserva::opciones())->required()->native(false)->live()
-                        ->default(TipoReserva::Reserva->value)
-                        ->disabledOn('edit'),
-                    Select::make('estado')->label(__('ui.comun.estado'))->required()->native(false)
-                        ->options([
-                            EstadoReserva::Confirmada->value => EstadoReserva::Confirmada->etiqueta(),
-                            EstadoReserva::SinConfirmar->value => EstadoReserva::SinConfirmar->etiqueta(),
-                        ])
-                        ->default(EstadoReserva::Confirmada->value)
-                        ->visible($esReserva),
+                        })
+                        ->columnSpanFull(),
                     DatePicker::make('llegada')->label(__('ui.comun.llegada'))->required()->live(onBlur: true)
                         ->extraInputAttributes(RangoFechas::llegada())
                         ->default(fn (): ?string => self::fechaDeLaDireccion('llegada'))
@@ -115,7 +120,6 @@ class ReservaForm
                     DatePicker::make('salida')->label(__('ui.comun.salida'))->required()->live(onBlur: true)->after('llegada')
                         ->extraInputAttributes(RangoFechas::fin('estancia'))
                         ->default(fn (): ?string => self::fechaDeLaDireccion('salida'))
-                        ->helperText(fn (Get $get): ?string => self::avisoEstancia($get))
                         ->afterStateUpdated($alCambiar),
                     TextInput::make('personas')->label(__('ui.comun.personas'))->numeric()->minValue(1)->maxValue(100)->live(onBlur: true)
                         ->default(fn (): int => max(1, request()->integer('personas', 2)))
@@ -125,8 +129,11 @@ class ReservaForm
                     TextInput::make('ninos')->label(__('caja.impuestos.menores'))->helperText(__('caja.impuestos.menores_ayuda'))->numeric()->minValue(0)->maxValue(100)->live(onBlur: true)
                         ->afterStateUpdated($alCambiar)
                         ->visible(fn (Get $get): bool => $esReserva($get) && self::hayEdadMinima($get('propiedad_id'))),
-                    Select::make('unidad_id')->label(__('ui.comun.unidad'))->required()->native(false)->searchable()->live()
-                        ->helperText(__('ui.reservas.unidad_ayuda'))
+                    // Los avisos de la estancia van aquí: dependen de la unidad, y en media pantalla, bajo la salida, no se leerían.
+                    Select::make('unidad_id')->label(__('ui.comun.unidad'))->required()->native(false)->live()
+                        // Con pocas se ve la lista; un buscador solo abriría el teclado encima de ella.
+                        ->searchable(fn (Get $get): bool => count(self::opcionesUnidad($get('propiedad_id'))) > self::UNIDADES_SIN_BUSCADOR)
+                        ->helperText(fn (Get $get, ?Reserva $record): string => trim(self::textoUnidades($get, $record).' '.self::avisoEstancia($get)))
                         ->options(fn (Get $get): array => self::opcionesUnidad($get('propiedad_id')))
                         ->disableOptionWhen(fn (string $value, Get $get, ?Reserva $record): bool => in_array((int) $value, self::ocupadas($get, $record), true))
                         ->default(fn (): ?int => self::unidadDeLaDireccion()?->id)
@@ -143,9 +150,14 @@ class ReservaForm
                                 ->action(function (Get $get, Set $set, string $operation): void {
                                     [$llegada, $salida] = self::fechas($get);
                                     if ($llegada === null || $salida === null || blank($get('propiedad_id'))) {
+                                        Notification::make()->warning()->title(__('ui.reservas.primera_libre_sin_fechas'))->send();
+
                                         return;
                                     }
                                     $unidad = Disponibilidad::primeraLibre(self::propiedadPermitida($get('propiedad_id')), $llegada->format('Y-m-d'), $salida->format('Y-m-d'), max(1, (int) $get('personas')));
+                                    if ($unidad === null) {
+                                        Notification::make()->warning()->title(__('ui.reservas.primera_libre_ninguna'))->send();
+                                    }
                                     $set('unidad_id', $unidad?->id);
                                     $set('tarifa_id', null);
                                     if ($operation === 'create') {
@@ -153,20 +165,22 @@ class ReservaForm
                                     }
                                 })
                         )
-                        ->columnSpan(['lg' => 2]),
+                        ->columnSpanFull(),
                     // Solo si esa unidad se vende con más de una.
                     Select::make('tarifa_id')->label(__('ui.reservas.tarifa'))->native(false)->live()->placeholder(__('ui.reservas.tarifa_principal'))
                         ->options(fn (Get $get, ?Reserva $record): array => self::tarifasDeUnidad($get('propiedad_id'), $get('unidad_id'), $record?->tarifa_id))
                         ->visible(fn (Get $get, ?Reserva $record): bool => $esReserva($get) && count(self::tarifasDeUnidad($get('propiedad_id'), $get('unidad_id'), $record?->tarifa_id)) > 1)
-                        ->afterStateUpdated($alCambiar),
+                        ->afterStateUpdated($alCambiar)
+                        ->columnSpanFull(),
+                    ToggleButtons::make('tipo')->label(__('ui.reservas.tipo'))->options(TipoReserva::opciones())->required()->inline()->grouped()->live()
+                        ->default(TipoReserva::Reserva->value)
+                        ->disabledOn('edit')
+                        ->columnSpanFull(),
                     TextInput::make('origen_texto')->maxLength(100)->live(onBlur: true)
                         ->label(fn (Get $get): string => $esReserva($get) ? __('ui.comun.origen') : __('ui.reservas.motivo'))
                         ->datalist(fn (Get $get): array => $esReserva($get) ? self::canales($get('propiedad_id')) : [])
-                        ->afterStateUpdated($alCambiar),
-                    Select::make('empresa_id')->label(__('caja.empresas.campo'))->helperText(__('caja.empresas.campo_ayuda'))->native(false)->searchable()->live()
-                        ->options(fn (Get $get, ?Reserva $record): array => self::empresas($get('propiedad_id'), $record?->empresa_id))
                         ->afterStateUpdated($alCambiar)
-                        ->visible(fn (Get $get, ?Reserva $record): bool => $esReserva($get) && Modulos::activo(Modulo::Empresas) && self::empresas($get('propiedad_id'), $record?->empresa_id) !== []),
+                        ->columnSpanFull(),
                 ]),
             Section::make(__('ui.comun.huesped'))->columnSpanFull()
                 ->visible($esReserva)
@@ -189,7 +203,8 @@ class ReservaForm
             CamposPropiosPanel::seccion(EntidadCampo::Reserva, $esReserva),
             Section::make(__('ui.cargos.modelos'))->columnSpanFull()
                 ->visible(fn (Get $get): bool => $esReserva($get) && self::hayConceptosOpcionales($get('propiedad_id')))
-                ->collapsible()
+                ->collapsed(fn (Get $get): bool => blank($get('cargos')))
+                ->extraAlpineAttributes(self::ABRIR_CON_ERROR)
                 ->schema([
                     Repeater::make('cargos')->label(__('ui.cargos.modelos'))->hiddenLabel()->defaultItems(0)
                         ->addActionLabel(__('ui.reservas.anadir_cargo'))
@@ -205,7 +220,9 @@ class ReservaForm
                                 ->afterStateUpdated(self::recalcularDesdeLinea()),
                         ]),
                 ]),
-            Section::make(__('camping.equipo.titulo'))->columnSpanFull()->collapsible()
+            Section::make(__('camping.equipo.titulo'))->columnSpanFull()
+                ->collapsed(fn (Get $get): bool => array_filter((array) $get('equipo'), filled(...)) === [])
+                ->extraAlpineAttributes(self::ABRIR_CON_ERROR)
                 ->visible(fn (Get $get): bool => $esReserva($get) && Modulos::activo(Modulo::Camping))
                 ->columns(['default' => 1, 'md' => 2])
                 ->schema([
@@ -225,7 +242,6 @@ class ReservaForm
             Hidden::make('esta_reserva')->dehydrated(false),
             Section::make(__('ui.reservas.dinero'))->columnSpanFull()
                 ->visible($esReserva)
-                ->columns(['default' => 1, 'md' => 2, 'lg' => 4])
                 ->schema([
                     CampoDinero::make('total')->label(__('ui.comun.total'))->required()->default(0)
                         ->helperText(fn (Get $get, ?Reserva $record): string => self::textoPresupuesto($get, $record))
@@ -233,33 +249,51 @@ class ReservaForm
                             Action::make('aplicarTarifa')->label(__('ui.reservas.aplicar_tarifa'))->tooltip(__('ui.reservas.aplicar_tarifa'))
                                 ->icon(Heroicon::OutlinedCalculator)
                                 ->action(fn (Get $get, Set $set) => self::aplicarTarifa($get, $set))
-                        )
-                        ->columnSpan(['lg' => 2]),
-                    CampoDinero::make('deposito')->label(__('ui.reservas.deposito'))->default(0),
-                    CampoDinero::make('comision')->label(__('ui.reservas.comision'))->default(0),
-                    TextInput::make('cupon_codigo')->label(__('ui.cupones.modelo_campo'))->maxLength(40)->live(onBlur: true)
-                        ->visible(fn (): bool => Modulos::activo(Modulo::Cupones))
-                        ->rules([
-                            fn (Get $get, ?Reserva $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
-                                $motivo = self::motivoCupon($get, (string) $value, $record);
-                                if ($motivo !== null) {
-                                    $fail($motivo);
-                                }
-                            },
-                        ])
-                        ->afterStateUpdated(function (Get $get, Set $set, string $operation): void {
-                            self::aplicarCupon($get, $set);
-                            if ($operation === 'create') {
-                                self::aplicarTarifa($get, $set);
-                            }
-                        }),
-                    CampoDinero::make('descuento')->label(__('ui.reservas.descuento'))->default(0)->live(onBlur: true)
-                        ->afterStateUpdated($alCambiar),
+                        ),
+                    Section::make(__('ui.reservas.descuento_y_mas'))->compact()
+                        ->collapsed(fn (Get $get): bool => blank($get('cupon_codigo')) && (float) $get('descuento') === 0.0 && (float) $get('deposito') === 0.0 && (float) $get('comision') === 0.0)
+                        ->extraAlpineAttributes(self::ABRIR_CON_ERROR)
+                        ->columns(['default' => 2, 'lg' => 4])
+                        ->schema([
+                            TextInput::make('cupon_codigo')->label(__('ui.cupones.modelo_campo'))->maxLength(40)->live(onBlur: true)
+                                ->visible(fn (): bool => Modulos::activo(Modulo::Cupones))
+                                ->rules([
+                                    fn (Get $get, ?Reserva $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
+                                        $motivo = self::motivoCupon($get, (string) $value, $record);
+                                        if ($motivo !== null) {
+                                            $fail($motivo);
+                                        }
+                                    },
+                                ])
+                                ->afterStateUpdated(function (Get $get, Set $set, string $operation): void {
+                                    self::aplicarCupon($get, $set);
+                                    if ($operation === 'create') {
+                                        self::aplicarTarifa($get, $set);
+                                    }
+                                }),
+                            CampoDinero::make('descuento')->label(__('ui.reservas.descuento'))->default(0)->live(onBlur: true)
+                                ->afterStateUpdated($alCambiar),
+                            CampoDinero::make('deposito')->label(__('ui.reservas.deposito'))->default(0),
+                            CampoDinero::make('comision')->label(__('ui.reservas.comision'))->default(0),
+                        ]),
                 ]),
-            Section::make(__('ui.reservas.comentario'))->columnSpanFull()
-                ->collapsible()
+            Section::make(fn (Get $get): string => $esReserva($get) ? __('ui.reservas.mas_detalles') : __('ui.reservas.comentario'))->columnSpanFull()
+                ->collapsed(fn (Get $get): bool => blank($get('comentario')) && blank($get('empresa_id')) && in_array($get('estado'), [null, EstadoReserva::Confirmada, EstadoReserva::Confirmada->value], true))
+                ->extraAlpineAttributes(self::ABRIR_CON_ERROR)
+                ->columns(['default' => 1, 'md' => 2])
                 ->schema([
-                    Textarea::make('comentario')->label(__('ui.reservas.comentario'))->hiddenLabel()->rows(3)->maxLength(5000),
+                    Select::make('estado')->label(__('ui.comun.estado'))->required()->native(false)
+                        ->options([
+                            EstadoReserva::Confirmada->value => EstadoReserva::Confirmada->etiqueta(),
+                            EstadoReserva::SinConfirmar->value => EstadoReserva::SinConfirmar->etiqueta(),
+                        ])
+                        ->default(EstadoReserva::Confirmada->value)
+                        ->visible($esReserva),
+                    Select::make('empresa_id')->label(__('caja.empresas.campo'))->helperText(__('caja.empresas.campo_ayuda'))->native(false)->searchable()->live()
+                        ->options(fn (Get $get, ?Reserva $record): array => self::empresas($get('propiedad_id'), $record?->empresa_id))
+                        ->afterStateUpdated($alCambiar)
+                        ->visible(fn (Get $get, ?Reserva $record): bool => $esReserva($get) && Modulos::activo(Modulo::Empresas) && self::empresas($get('propiedad_id'), $record?->empresa_id) !== []),
+                    Textarea::make('comentario')->label(__('ui.reservas.comentario'))->rows(3)->maxLength(5000)->columnSpanFull(),
                 ]),
         ]);
     }
@@ -415,6 +449,20 @@ class ReservaForm
             ->orderBy('orden')->orderBy('nombre')->get()
             ->mapWithKeys(fn (Unidad $u): array => [$u->id => trim($u->nombre.($u->capacidad > 0 ? ' · '.__('ui.disponibilidad.capacidad', ['personas' => $u->capacidad.($u->camas_extra > 0 ? ' + '.$u->camas_extra : '')]) : '').($u->tarifa ? ' · '.$u->tarifa->nombre : ''))])
             ->all();
+    }
+
+    /**
+     * Cuántas quedan para esas fechas, en cuanto se saben: así se ve antes de abrir la lista.
+     */
+    private static function textoUnidades(Get $get, ?Reserva $record): string
+    {
+        [$llegada, $salida] = self::fechas($get);
+        if ($llegada === null || $salida === null) {
+            return __('ui.reservas.unidad_ayuda');
+        }
+        $unidades = array_keys(self::opcionesUnidad($get('propiedad_id')));
+
+        return trans_choice('ui.reservas.unidades_libres', count(array_diff($unidades, self::ocupadas($get, $record))), ['total' => count($unidades)]);
     }
 
     /**

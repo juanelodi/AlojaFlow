@@ -8,40 +8,26 @@
     <script type="application/ld+json">{!! $pagina->datosEstructurados() !!}</script>
 @endsection
 @section('contenido')
-    @include('publico.fotos', ['fotos' => $fotos, 'nombre' => $propiedad->nombre])
-    @if ($pagina->descripcion() || $pagina->ubicacion() || $pagina->servicios())
-        <section class="tarjeta">
-            @if ($pagina->descripcion())
-                <p style="white-space:pre-line;margin:0 0 8px">{{ $pagina->descripcion() }}</p>
-            @endif
-            @if ($pagina->servicios())
-                <h2>{{ __('portal.servicios') }}</h2>
-                <p class="gris" style="white-space:pre-line;margin:0 0 8px">{{ $pagina->servicios() }}</p>
-            @endif
-            @if ($pagina->ubicacion())
-                <h2>{{ __('portal.ubicacion') }}</h2>
-                <p class="gris" style="white-space:pre-line;margin:0">{{ $pagina->ubicacion() }}</p>
-            @endif
-            @include('publico.contacto')
-        </section>
-    @elseif ($pagina->whatsapp() || $pagina->mapaUrl())
-        <section class="tarjeta" style="padding-top:6px">@include('publico.contacto')</section>
+    {{-- Quien ya buscó quiere ver los resultados: las fotos pasan abajo. La descripción siempre va después del formulario, para no alejarlo en el teléfono. --}}
+    @if ($ofertas === null && ! $error)
+        @include('publico.fotos', ['fotos' => $fotos, 'nombre' => $propiedad->nombre])
     @endif
+    @include('publico.motor-pasos', ['paso' => 'elegir'])
     <form method="get" class="tarjeta" action="{{ route('motor.buscar', ['codigo' => $propiedad->codigo]) }}">
         <h2>{{ __('motor.titulo') }}</h2>
         <input type="hidden" name="idioma" value="{{ app()->getLocale() }}">
         <div class="rejilla">
             <div>
                 <label for="llegada">{{ __('ui.comun.llegada') }}</label>
-                <input type="date" id="llegada" name="llegada" value="{{ $llegada }}" min="{{ $minimoFecha }}" required data-af-rango-inicio="estancia" data-af-rango-dias="1" data-af-rango-llenar="1">
+                <input type="date" id="llegada" name="llegada" value="{{ $llegada }}" min="{{ $minimoFecha }}" required autocomplete="off" data-af-rango-inicio="estancia" data-af-rango-dias="1" data-af-rango-llenar="1">
             </div>
             <div>
                 <label for="salida">{{ __('ui.comun.salida') }}</label>
-                <input type="date" id="salida" name="salida" value="{{ $salida }}" min="{{ $minimoFecha }}" required data-af-rango-fin="estancia">
+                <input type="date" id="salida" name="salida" value="{{ $salida }}" min="{{ $minimoFecha }}" required autocomplete="off" data-af-rango-fin="estancia">
             </div>
             <div>
                 <label for="personas">{{ __('ui.comun.personas') }}</label>
-                <input type="number" id="personas" name="personas" value="{{ $personas }}" min="1" max="100" required>
+                <input type="number" id="personas" name="personas" value="{{ $personas }}" min="1" max="100" inputmode="numeric" autocomplete="off" required>
             </div>
             <div><button type="submit">{{ __('motor.buscar') }}</button></div>
         </div>
@@ -60,7 +46,7 @@
                     </div>
                     <div>
                         <label for="largo">{{ __('camping.equipo.largo', ['unidad' => $unidadLargo]) }}</label>
-                        <input type="number" id="largo" name="largo" min="0" max="1000" step="any" value="{{ $filtro->largo }}">
+                        <input type="number" id="largo" name="largo" min="0" max="1000" step="any" inputmode="decimal" autocomplete="off" value="{{ $filtro->largo }}">
                     </div>
                 </div>
                 @foreach (['luz', 'agua', 'drenaje', 'mascotas', 'accesible'] as $casilla)
@@ -68,11 +54,10 @@
                 @endforeach
             </details>
         @endif
+        @if ($conCalendario)
+            <p style="margin:12px 0 0"><a href="{{ route('motor.calendario', ['codigo' => $propiedad->codigo, 'personas' => $personas, 'idioma' => app()->getLocale()]) }}">{{ __('motor.calendario.ver') }}</a></p>
+        @endif
     </form>
-
-    @if ($conCalendario)
-        <p style="margin:-6px 0 14px"><a href="{{ route('motor.calendario', ['codigo' => $propiedad->codigo, 'idioma' => app()->getLocale()]) }}">{{ __('motor.calendario.ver') }}</a></p>
-    @endif
 
     @if ($error)
         <p class="mensaje error" role="alert">{{ $error }}</p>
@@ -96,7 +81,7 @@
                                 <p class="gris" style="margin:0">{{ $oferta->politica }}</p>
                             </details>
                         @endif
-                        <span class="gris">{{ __('motor.capacidad', ['personas' => $oferta->capacidad]) }}</span>
+                        <span class="gris">{{ trans_choice('motor.capacidad', $oferta->capacidad) }}</span>
                         @if ($oferta->libres <= 2)
                             <span class="gris"> · {{ trans_choice('motor.quedan', $oferta->libres) }}</span>
                         @endif
@@ -112,14 +97,16 @@
                             </p>
                         @endif
                     </div>
-                    <div style="text-align:right">
+                    <div class="oferta-compra">
+                        <div>
                         <div class="precio">{{ Formato::dinero($oferta->presupuesto->total(), $propiedad->moneda) }}</div>
                         <div class="gris">{{ trans_choice('ui.comun.n_noches', $noches) }}</div>
                         @if ($oferta->presupuesto->cotizacion?->estanciaLarga)
                             <div class="gris">{{ __('estancias.motor.aplicado.'.$oferta->presupuesto->cotizacion->estanciaLarga) }}</div>
                         @endif
+                        </div>
                         @if ($oferta->cumpleEstancia)
-                            <a class="boton" style="margin-top:8px" href="{{ route('motor.datos', ['codigo' => $propiedad->codigo, 'tarifa' => $oferta->tarifa->id, 'llegada' => $llegada, 'salida' => $salida, 'personas' => $personas, 'idioma' => app()->getLocale()] + $filtro->parametros()) }}">{{ __('motor.reservar') }}</a>
+                            <a class="boton" href="{{ route('motor.datos', ['codigo' => $propiedad->codigo, 'tarifa' => $oferta->tarifa->id, 'llegada' => $llegada, 'salida' => $salida, 'personas' => $personas, 'idioma' => app()->getLocale()] + $filtro->parametros()) }}">{{ __('motor.reservar') }}</a>
                         @else
                             <div class="gris">{{ __('motor.error.estancia_minima', ['noches' => $oferta->estanciaMinima]) }}</div>
                         @endif
@@ -127,9 +114,18 @@
                 </div>
             </section>
         @empty
-            <p class="mensaje">{{ __('motor.sin_resultados') }}</p>
+            <p class="mensaje" role="status">
+                {{ __('motor.sin_resultados') }}
+                @if ($conCalendario)
+                    <a href="{{ route('motor.calendario', ['codigo' => $propiedad->codigo, 'personas' => $personas, 'idioma' => app()->getLocale()]) }}">{{ __('motor.calendario.ver') }}</a>
+                @endif
+            </p>
         @endforelse
     @endif
+    @if ($ofertas !== null || $error)
+        @include('publico.fotos', ['fotos' => $fotos, 'nombre' => $propiedad->nombre])
+    @endif
+    @include('publico.motor-presentacion')
     @if ($politica)
         <section class="tarjeta">
             <h2>{{ __('portal.politicas') }}</h2>
