@@ -287,7 +287,7 @@ it('crea plantillas y automatizaciones desde el panel, y las de partida', functi
         ->call('create')->assertHasNoFormErrors();
     expect(Automatizacion::query()->first()->dias)->toBe(2);
 
-    expect(PlantillasBase::sembrar($this->propiedad))->toBe(5)->and(PlantillasBase::sembrar($this->propiedad))->toBe(0);
+    expect(PlantillasBase::sembrar($this->propiedad))->toBe(11)->and(PlantillasBase::sembrar($this->propiedad))->toBe(0);
     expect(Plantilla::query()->where('codigo', 'confirmacion')->first()->texto('cuerpo', 'en'))->toContain('is confirmed');
 });
 

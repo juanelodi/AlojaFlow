@@ -470,9 +470,9 @@ describe('documentos en el panel', function (): void {
             ->assertHasNoActionErrors();
 
         $documentos = DocumentoPropio::query()->where('propiedad_id', $this->propiedad->id)->get();
-        expect($documentos)->toHaveCount(3)
+        expect($documentos)->toHaveCount(5)
             ->and(array_keys($documentos->first()->cuerpo))->toEqualCanonicalizing((array) config('alojaflow.idiomas'))
-            ->and($documentos->where('alcance', AlcanceDocumento::Periodo)->count())->toBe(1)
+            ->and($documentos->where('alcance', AlcanceDocumento::Periodo)->count())->toBe(2)
             ->and(DocumentosDePartida::sembrar($this->propiedad))->toBe(0);
     });
 
@@ -486,7 +486,9 @@ describe('documentos en el panel', function (): void {
         }
         $inicio = CarbonImmutable::parse('2027-03-01');
         $fin = CarbonImmutable::parse('2027-03-31');
-        $lista = DocumentoPropio::query()->where('alcance', AlcanceDocumento::Periodo->value)->sole();
+        $lista = DocumentoPropio::query()->where('nombre', __('documentos_propios.base.llegadas.nombre'))->sole();
+        $limpieza = DocumentoPropio::query()->where('nombre', __('documentos_propios.base.limpieza.nombre'))->sole();
+        expect($motor->dePeriodo($limpieza, $this->propiedad, $inicio, $fin, $motor->reservasDelPeriodo($this->propiedad, $inicio, $fin, 'llegadas', $this->gerente), true))->not->toMatch('/\{[a-z_]+\}/');
         $html = $motor->dePeriodo($lista, $this->propiedad, $inicio, $fin, $motor->reservasDelPeriodo($this->propiedad, $inicio, $fin, 'llegadas', $this->gerente), true);
         expect($html)->not->toMatch('/\{[a-z_]+\}/')->and($html)->toContain('Ana Ejemplo');
     });
@@ -553,7 +555,7 @@ describe('demostración', function (): void {
         $this->artisan('alojaflow:demo')->assertSuccessful();
         $demo = Propiedad::query()->where('es_demo', true)->sole();
 
-        expect(DocumentoPropio::query()->where('propiedad_id', $demo->id)->count())->toBe(3)
+        expect(DocumentoPropio::query()->where('propiedad_id', $demo->id)->count())->toBe(5)
             ->and(CampoPropio::query()->where('propiedad_id', $demo->id)->count())->toBe(2);
     });
 });

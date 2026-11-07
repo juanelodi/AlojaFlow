@@ -13,6 +13,9 @@ return [
     'si' => 'Sim',
     'no' => 'Não',
     'acciones' => [
+        'tarifa' => [
+            'precio_fechas' => 'Preço de uma tarifa alterado por datas',
+        ],
         'actualizacion' => [
             'completada' => 'Atualização concluída',
             'preparar' => 'Atualização preparada',

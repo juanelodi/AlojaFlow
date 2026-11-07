@@ -13,6 +13,9 @@ return [
     'si' => 'Yes',
     'no' => 'No',
     'acciones' => [
+        'tarifa' => [
+            'precio_fechas' => 'Rate price changed for some dates',
+        ],
         'actualizacion' => [
             'completada' => 'Update completed',
             'preparar' => 'Update prepared',
