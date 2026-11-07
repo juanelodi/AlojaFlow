@@ -20,6 +20,8 @@ use App\Enums\ModoPropiedad;
 use App\Enums\TipoContacto;
 use App\Enums\TipoTarea;
 use App\Filament\Pages\AvisoEntradasSalidas;
+use App\Filament\Pages\Calendario;
+use App\Filament\Pages\Hoy;
 use App\Filament\Pages\Limpieza;
 use App\Filament\Resources\Huespedes\Pages\ViewHuesped;
 use App\Filament\Resources\ListasComprobacion\ListaComprobacionResource;
@@ -52,8 +54,10 @@ use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Reservas\GestorReservas;
 use App\Seguridad\Acceso;
+use App\Servicios\CierreDelDia;
 use App\Servicios\Indicadores;
 use App\Servicios\Informes;
+use App\Servicios\Operacion;
 use App\Support\Ajustes;
 use App\Support\Contactos;
 use App\Support\Formato;
@@ -317,6 +321,56 @@ describe('clientes omitidos', function () {
             ->and(DB::table('reservas_noches')->where('reserva_id', $reserva->id)->count())->toBe(2);
     });
 
+    it('no salen en Hoy ni en el Resumen ni el cierre, y sus cifras no los cuentan', function () {
+        $hoy = $this->hoy;
+        ($this->reservar)($this->u1, $this->ana, 0, 2);
+        ($this->reservar)($this->u2, $this->luis, 0, 2);
+        Omision::query()->create(['propiedad_id' => $this->propiedad->id, 'huesped_id' => $this->ana->id, 'en_aviso' => false, 'en_hoy' => true]);
+
+        $dia = Operacion::dia([$this->propiedad->id], $hoy->format('Y-m-d'));
+        expect($dia['llegan']->pluck('titular_id')->all())->toBe([$this->luis->id])
+            ->and(Operacion::resumen($this->propiedad)['llegan'])->toBe(1)
+            ->and(app(CierreDelDia::class)->resumen($this->propiedad, $hoy)['llegadas_sin_registrar'])->toBe(1);
+        Livewire::actingAs($this->super)->test(Hoy::class)->assertSee('Luis')->assertDontSee('Ana Uno');
+    });
+
+    it('«en todo» los quita de cada lugar, sin marcar ninguna casilla', function () {
+        Omision::query()->create(['propiedad_id' => $this->propiedad->id, 'huesped_id' => $this->ana->id, 'en_todo' => true, 'en_aviso' => false]);
+
+        foreach (LugarOmision::cases() as $lugar) {
+            expect(Omisiones::estaOmitido($this->ana->id, $this->propiedad->id, $lugar))->toBeTrue();
+        }
+    });
+
+    it('por omisión, una nueva se omite en todo', function () {
+        Livewire::actingAs($this->super)->test(CreateOmision::class)
+            ->fillForm(['propiedad_id' => $this->propiedad->id, 'por' => 'huesped', 'huesped_id' => $this->ana->id])
+            ->call('create')->assertHasNoFormErrors();
+
+        expect(Omision::query()->firstOrFail()->en_todo)->toBeTrue();
+    });
+
+    it('en el calendario dicen «Ocupada» y sin enlace: las fechas no se vuelven a vender', function () {
+        $reserva = ($this->reservar)($this->u1, $this->ana, 1, 3);
+        Omision::query()->create(['propiedad_id' => $this->propiedad->id, 'huesped_id' => $this->ana->id, 'en_aviso' => false, 'en_calendario' => true]);
+
+        Livewire::actingAs($this->super)->test(Calendario::class)->assertDontSee('Ana Uno')->assertDontSee('data-reserva="'.$reserva->id.'"', false)->assertSee(__('permisos.limites.ocupada'));
+        Livewire::actingAs($this->super)->test(Calendario::class, ['vista' => 'dia', 'dia' => $this->hoy->addDay()->format('Y-m-d')])->assertDontSee('Ana Uno')->assertSee(__('permisos.limites.ocupada'));
+        expect(DB::table('reservas_noches')->where('reserva_id', $reserva->id)->count())->toBe(2);
+    });
+
+    it('en limpieza no generan tareas, y las que había se cancelan', function () {
+        $reserva = ($this->reservar)($this->u1, $this->ana, 1, 3);
+        $gestor = app(GestorLimpieza::class);
+        $gestor->generarTareas($this->propiedad);
+        expect(Tarea::query()->where('clave_generacion', 'like', '%:'.$reserva->id)->where('estado', EstadoTarea::Pendiente->value)->count())->toBe(1);
+
+        Omision::query()->create(['propiedad_id' => $this->propiedad->id, 'huesped_id' => $this->ana->id, 'en_aviso' => false, 'en_limpieza' => true]);
+        $gestor->generarTareas($this->propiedad);
+
+        expect(Tarea::query()->where('clave_generacion', 'like', '%:'.$reserva->id)->where('estado', EstadoTarea::Pendiente->value)->count())->toBe(0);
+    });
+
     it('la casilla de cada lugar es independiente', function () {
         Omision::query()->create(['propiedad_id' => $this->propiedad->id, 'huesped_id' => $this->ana->id, 'en_aviso' => true, 'en_informes' => false, 'en_mensajes' => false]);
 
@@ -366,7 +420,7 @@ describe('clientes omitidos', function () {
 
     it('se dan de alta en su pantalla, con casillas', function () {
         Livewire::actingAs($this->super)->test(CreateOmision::class)
-            ->fillForm(['propiedad_id' => $this->propiedad->id, 'por' => 'huesped', 'huesped_id' => $this->ana->id, 'en_aviso' => true, 'en_informes' => true, 'en_mensajes' => false, 'motivo' => 'Familia'])
+            ->fillForm(['propiedad_id' => $this->propiedad->id, 'por' => 'huesped', 'huesped_id' => $this->ana->id, 'en_todo' => false, 'en_aviso' => true, 'en_informes' => true, 'en_mensajes' => false, 'motivo' => 'Familia'])
             ->call('create')->assertHasNoFormErrors();
 
         $omision = Omision::query()->firstOrFail();

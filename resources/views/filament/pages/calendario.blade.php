@@ -23,17 +23,20 @@
             ];
         }
     @endphp
-    {{-- En el teléfono, lo que siga ya pide solo el día, sin una petición de más: lo lleva la siguiente. --}}
-    <div class="af-pila af-cal-vistas af-cal-vistas--{{ $vista ?? 'auto' }}"
-         x-data
-         x-init="if (! $wire.vista && window.matchMedia('(max-width: 39.99rem)').matches) { $wire.$set('vista', 'dia', false); $el.querySelector('[data-vista=dia]').setAttribute('aria-pressed', 'true'); $el.querySelector('[data-vista=mes]').setAttribute('aria-pressed', 'false') }">
+    {{-- Abre por habitaciones. Quien eligió el día lo sigue viendo, porque lo recuerda este navegador (D-143). --}}
+    <div class="af-pila af-cal-vistas af-cal-vistas--{{ $vista ?? 'mes' }}"
+         x-data="{
+             recordar(vista) { try { localStorage.setItem('alojaflow.calendario.vista', vista) } catch (error) {} },
+             recordada() { try { return localStorage.getItem('alojaflow.calendario.vista') } catch (error) { return null } },
+         }"
+         x-init="if (! $wire.vista && recordada() === 'dia') { $wire.cambiarVista('dia') }">
         <div class="af-barra-herramientas">
             @include('filament.partes.selector-propiedad')
             <div class="af-campo" style="min-width: 0">
                 <span id="af-cal-vista">{{ __('ui.calendario.vista') }}</span>
                 <div class="af-segmentado" role="group" aria-labelledby="af-cal-vista">
-                    <button type="button" data-vista="dia" wire:click="cambiarVista('dia')" aria-pressed="{{ $vista === 'dia' ? 'true' : 'false' }}">{{ __('ui.calendario.dia') }}</button>
-                    <button type="button" data-vista="mes" wire:click="cambiarVista('mes')" aria-pressed="{{ $vista !== 'dia' ? 'true' : 'false' }}">{{ __('ui.calendario.mes') }}</button>
+                    <button type="button" data-vista="dia" wire:click="cambiarVista('dia')" x-on:click="recordar('dia')" aria-pressed="{{ $vista === 'dia' ? 'true' : 'false' }}">{{ __('ui.calendario.dia') }}</button>
+                    <button type="button" data-vista="mes" wire:click="cambiarVista('mes')" x-on:click="recordar('mes')" aria-pressed="{{ $vista !== 'dia' ? 'true' : 'false' }}">{{ __('ui.calendario.mes') }}</button>
                 </div>
             </div>
             <label class="af-campo af-solo-vista-dia">
@@ -68,7 +71,7 @@
             </div>
         </div>
 
-        @if ($vista !== 'mes')
+        @if ($vista === 'dia')
             <div class="af-solo-vista-dia">
                 @include('filament.partes.calendario-dia')
             </div>
@@ -173,8 +176,8 @@
                         @endforeach
                         @foreach ($fila['barras'] as $barra)
                             @php($reserva = $barra['reserva'])
-                            @php($ajena = ! \App\Seguridad\Limites::puedeVer(\App\Seguridad\Acceso::usuarioActual(), $reserva))
-                            @php($texto = \App\Servicios\Calendario::textoDe($reserva, \App\Seguridad\Acceso::usuarioActual()))
+                            @php($ajena = $barra['oculta'] || ! \App\Seguridad\Limites::puedeVer(\App\Seguridad\Acceso::usuarioActual(), $reserva))
+                            @php($texto = $barra['oculta'] ? __('permisos.limites.ocupada') : \App\Servicios\Calendario::textoDe($reserva, \App\Seguridad\Acceso::usuarioActual()))
                             {{-- Sin permiso de datos, la barra no lleva a la ficha: un enlace sin destino no se puede seguir. --}}
                             <a @if (! $ajena && \App\Seguridad\Acceso::puede(\App\Seguridad\Acceso::usuarioActual(), \App\Seguridad\Acceso::DATOS, $reserva->propiedad_id)) href="{{ \App\Filament\Resources\Reservas\ReservaResource::getUrl('view', ['record' => $reserva]) }}" @endif
                                @if (! $ajena && ! $reserva->sincronizada && $gestionable && $reserva->salida_registrada_en === null)

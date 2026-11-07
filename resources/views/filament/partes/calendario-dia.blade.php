@@ -56,11 +56,11 @@
                     </div>
                     @foreach ($fila['reservas'] as $renglon)
                         @php($reserva = $renglon['reserva'])
-                        @php($ajena = ! Limites::puedeVer($usuario, $reserva))
+                        @php($ajena = $renglon['oculta'] || ! Limites::puedeVer($usuario, $reserva))
                         <x-tarjeta-reserva
                             wire:key="dia-reserva-{{ $reserva->id }}"
                             :reserva="$reserva"
-                            :titulo="Calendario::textoDe($reserva, $usuario)"
+                            :titulo="$renglon['oculta'] ? __('permisos.limites.ocupada') : Calendario::textoDe($reserva, $usuario)"
                             :ver-datos="! $ajena && $reserva->tipo === TipoReserva::Reserva && in_array($reserva->propiedad_id, $conDatos, true)"
                             :mostrar-unidad="false"
                             :ajena="$ajena"

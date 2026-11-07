@@ -11,7 +11,9 @@ declare(strict_types=1);
 namespace App\Servicios;
 
 use App\Enums\EstadoReserva;
+use App\Enums\LugarOmision;
 use App\Enums\TipoReserva;
+use App\Limpieza\Omisiones;
 use App\Models\Aviso;
 use App\Models\Propiedad;
 use App\Models\Reserva;
@@ -43,6 +45,17 @@ final class Operacion
     }
 
     /**
+     * Las reservas de la jornada: sin los clientes omitidos en «Hoy» (D-144). Para buscar una reserva por su número, `reservas()`.
+     *
+     * @param  list<int>  $propiedades
+     * @return Builder<Reserva>
+     */
+    public static function delDia(array $propiedades): Builder
+    {
+        return Omisiones::excluir(self::reservas($propiedades), 'titular_id', $propiedades, LugarOmision::Hoy);
+    }
+
+    /**
      * Llegadas, salidas y huéspedes que siguen alojados en una fecha.
      *
      * @param  list<int>  $propiedades
@@ -51,9 +64,9 @@ final class Operacion
     public static function dia(array $propiedades, string $fecha): array
     {
         return [
-            'llegan' => self::reservas($propiedades)->where('llegada', $fecha)->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
-            'salen' => self::reservas($propiedades)->where('salida', $fecha)->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
-            'continuan' => self::reservas($propiedades)->where('llegada', '<', $fecha)->where('salida', '>', $fecha)
+            'llegan' => self::delDia($propiedades)->where('llegada', $fecha)->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
+            'salen' => self::delDia($propiedades)->where('salida', $fecha)->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
+            'continuan' => self::delDia($propiedades)->where('llegada', '<', $fecha)->where('salida', '>', $fecha)
                 ->orderBy('propiedad_id')->orderBy('unidad_id')->get(),
         ];
     }
@@ -67,7 +80,7 @@ final class Operacion
     {
         $hoy = $propiedad->hoy();
         $fecha = $hoy->format('Y-m-d');
-        $base = fn (): Builder => self::reservas([$propiedad->id])->without(['unidad', 'titular', 'propiedad', 'principal']);
+        $base = fn (): Builder => self::delDia([$propiedad->id])->without(['unidad', 'titular', 'propiedad', 'principal']);
 
         return [
             'propiedad' => $propiedad,

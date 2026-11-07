@@ -590,8 +590,6 @@ th[aria-sort="descending"] .af-orden::after { opacity: 1; clip-path: polygon(10%
 
 /* Calendario: día por día en el teléfono, por habitaciones en la computadora. Sin elegir, lo decide el ancho, sin esperar a Alpine. */
 .af-cal-vistas--dia .af-solo-vista-mes, .af-cal-vistas--mes .af-solo-vista-dia { display: none; }
-@media (min-width: 40rem) { .af-cal-vistas--auto .af-solo-vista-dia { display: none; } }
-@media (max-width: 39.99rem) { .af-cal-vistas--auto .af-solo-vista-mes { display: none; } }
 .af-segmentado { display: inline-flex; border: 1px solid var(--gray-300); border-radius: .5rem; overflow: hidden; }
 .dark .af-segmentado { border-color: var(--gray-700); }
 .af-segmentado button { min-height: 2.25rem; padding-inline: .875rem; border: 0; background: white; color: var(--gray-700); font-size: .875rem; font-weight: 500; cursor: pointer; }
@@ -601,9 +599,7 @@ th[aria-sort="descending"] .af-orden::after { opacity: 1; clip-path: polygon(10%
 .af-segmentado button:focus-visible { outline: 2px solid var(--primary-600); outline-offset: -2px; }
 .af-cal-vistas--dia .af-segmentado [data-vista="dia"],
 .af-cal-vistas--mes .af-segmentado [data-vista="mes"] { background: var(--primary-700); color: white; }
-@media (min-width: 40rem) { .af-cal-vistas--auto .af-segmentado [data-vista="mes"] { background: var(--primary-700); color: white; } }
 @media (max-width: 39.99rem) {
-    .af-cal-vistas--auto .af-segmentado [data-vista="dia"] { background: var(--primary-700); color: white; }
     .af-segmentado button { min-height: 2.75rem; }
 }
 .af-dia__fecha { font-size: 1rem; font-weight: 600; color: var(--gray-950); }
@@ -641,3 +637,15 @@ th[aria-sort="descending"] .af-orden::after { opacity: 1; clip-path: polygon(10%
 @media (max-width: 39.99rem) {
     .af-resumen-reserva .af-cifra dd { font-size: 1rem; }
 }
+
+/* Ficha del huésped: años y meses plegables (D-145) */
+.af-ficha__anio > summary, .af-ficha__mes > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; min-height: 2.75rem; padding-block: .625rem; cursor: pointer; }
+.af-ficha__anio > summary::before, .af-ficha__mes > summary::before { content: '▸'; color: var(--gray-500); align-self: center; }
+.af-ficha__anio[open] > summary::before, .af-ficha__mes[open] > summary::before { content: '▾'; }
+.af-ficha__anio > summary, .af-ficha__mes > summary { list-style: none; }
+.af-ficha__anio > summary::-webkit-details-marker, .af-ficha__mes > summary::-webkit-details-marker { display: none; }
+.af-ficha__anio { border-block-start: 1px solid var(--gray-200); }
+.dark .af-ficha__anio { border-color: var(--gray-800); }
+.af-ficha__meses { display: flex; flex-direction: column; padding-inline-start: 1rem; padding-block-end: .5rem; }
+.af-ficha__mes-nombre { font-weight: 500; text-transform: capitalize; color: var(--gray-950); }
+.dark .af-ficha__mes-nombre { color: var(--gray-100); }

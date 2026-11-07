@@ -11,8 +11,10 @@ declare(strict_types=1);
 namespace App\Servicios;
 
 use App\Enums\EstadoReserva;
+use App\Enums\LugarOmision;
 use App\Enums\TipoMovimiento;
 use App\Enums\TipoReserva;
+use App\Limpieza\Omisiones;
 use App\Models\CierreDia;
 use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
@@ -33,7 +35,7 @@ final class CierreDelDia
     public function resumen(Propiedad $propiedad, CarbonImmutable $fecha): array
     {
         $dia = $fecha->format('Y-m-d');
-        $reservas = fn () => DB::table('reservas')->where('propiedad_id', $propiedad->id)->where('tipo', TipoReserva::Reserva->value)
+        $reservas = fn () => Omisiones::excluir(DB::table('reservas'), 'titular_id', [$propiedad->id], LugarOmision::Hoy)->where('propiedad_id', $propiedad->id)->where('tipo', TipoReserva::Reserva->value)
             ->where('estado', '!=', EstadoReserva::Cancelada->value)->whereNull('eliminada_en_principal_en');
         $movimientos = fn (TipoMovimiento $tipo): int => (int) DB::table('movimientos')->where('propiedad_id', $propiedad->id)->where('fecha', $dia)->where('tipo', $tipo->value)->sum('importe');
 

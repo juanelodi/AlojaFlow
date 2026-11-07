@@ -16,7 +16,7 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Qué clientes no salen en cada lugar (D-074): por ficha, o todos los que tienen cierto valor en un campo.
+ * Qué clientes no salen en cada lugar (D-074, D-144): por ficha, o todos los que tienen cierto valor en un campo. «En todo» vale por cualquier lugar.
  */
 final class Omisiones
 {
@@ -27,7 +27,7 @@ final class Omisiones
     public static function huespedes(array $propiedades, LugarOmision $lugar): array
     {
         $ids = [];
-        foreach (Omision::query()->whereIn('propiedad_id', $propiedades)->where($lugar->value, true)->get(['propiedad_id', 'huesped_id', 'campo', 'valor']) as $omision) {
+        foreach (Omision::query()->whereIn('propiedad_id', $propiedades)->where(fn ($q) => $q->where('en_todo', true)->orWhere($lugar->value, true))->get(['propiedad_id', 'huesped_id', 'campo', 'valor']) as $omision) {
             if ($omision->huesped_id !== null) {
                 $ids[] = $omision->huesped_id;
             } elseif ($omision->campo !== null) {

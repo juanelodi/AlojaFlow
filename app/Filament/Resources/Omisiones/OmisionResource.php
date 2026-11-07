@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Omisiones;
 
+use App\Enums\LugarOmision;
 use App\Filament\Resources\Base\RecursoDeCualquierPropiedad;
 use App\Filament\Resources\Omisiones\Pages\CreateOmision;
 use App\Filament\Resources\Omisiones\Pages\EditOmision;
@@ -28,7 +29,6 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -117,9 +117,9 @@ class OmisionResource extends RecursoDeCualquierPropiedad
                 TextInput::make('valor')->label(__('equipo.omisiones.valor'))->maxLength(255)
                     ->visible(fn (Get $get): bool => ! $porHuesped($get))->required(fn (Get $get): bool => ! $porHuesped($get)),
                 Section::make(__('equipo.omisiones.donde'))->columnSpanFull()->schema([
-                    Toggle::make('en_aviso')->label(__('equipo.omisiones.en_aviso'))->helperText(__('equipo.omisiones.en_aviso_ayuda'))->default(true),
-                    Toggle::make('en_informes')->label(__('equipo.omisiones.en_informes'))->helperText(__('equipo.omisiones.en_informes_ayuda'))->default(false),
-                    Toggle::make('en_mensajes')->label(__('equipo.omisiones.en_mensajes'))->helperText(__('equipo.omisiones.en_mensajes_ayuda'))->default(false),
+                    Toggle::make('en_todo')->label(__('equipo.omisiones.en_todo'))->helperText(__('equipo.omisiones.en_todo_ayuda'))->default(true)->live(),
+                    ...array_map(fn (LugarOmision $lugar): Toggle => Toggle::make($lugar->value)->label(__('equipo.omisiones.'.$lugar->value))->helperText(__('equipo.omisiones.'.$lugar->value.'_ayuda'))
+                        ->default(false)->visible(fn (Get $get): bool => ! $get('en_todo')), LugarOmision::cases()),
                 ]),
                 TextInput::make('motivo')->label(__('equipo.omisiones.motivo'))->maxLength(255)->columnSpanFull(),
             ]),
@@ -135,9 +135,9 @@ class OmisionResource extends RecursoDeCualquierPropiedad
                 TextColumn::make('quien')->label(__('equipo.omisiones.quien'))
                     ->state(fn (Omision $record): string => $record->huesped?->nombreCompleto() ?? $record->campo.': '.$record->valor),
                 self::columnaPropiedad(),
-                IconColumn::make('en_aviso')->label(__('equipo.omisiones.en_aviso'))->boolean(),
-                IconColumn::make('en_informes')->label(__('equipo.omisiones.en_informes'))->boolean(),
-                IconColumn::make('en_mensajes')->label(__('equipo.omisiones.en_mensajes'))->boolean(),
+                TextColumn::make('lugares')->label(__('equipo.omisiones.donde'))->badge()->wrap()
+                    ->state(fn (Omision $record): array => $record->en_todo ? [__('equipo.omisiones.en_todo')]
+                        : array_map(fn (LugarOmision $lugar): string => __('equipo.omisiones.'.$lugar->value), array_values(array_filter(LugarOmision::cases(), fn (LugarOmision $lugar): bool => (bool) $record->getAttribute($lugar->value))))),
                 TextColumn::make('motivo')->label(__('equipo.omisiones.motivo'))->placeholder('—')->limit(60),
             ])
             ->emptyStateHeading(__('equipo.omisiones.vacio'))

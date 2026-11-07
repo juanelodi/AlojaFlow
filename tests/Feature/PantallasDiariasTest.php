@@ -111,7 +111,7 @@ describe('el calendario por día', function (): void {
         $this->actingAs(($this->usuarioCon)('recepcion'));
 
         expect(ServicioCalendario::dia([$this->propiedad->id], $this->hoy, Acceso::usuarioActual())['filas'][0]['libre'])->toBeTrue();
-        Livewire::test(Calendario::class)->assertSee(__('ui.calendario.libre_noche'));
+        Livewire::test(Calendario::class, ['vista' => 'dia'])->assertSee(__('ui.calendario.libre_noche'));
     });
 
     it('no da por libre lo que ocupa un calendario externo', function (): void {
@@ -154,7 +154,8 @@ describe('el calendario por día', function (): void {
         ($this->reservar)(0, 2);
         $recepcion = ($this->usuarioCon)('recepcion');
 
-        Livewire::actingAs($recepcion)->test(Calendario::class)->assertSee('af-calendario', false)->assertSee('af-dia-lista', false);
+        // Abre por habitaciones en cualquier pantalla (D-143): el día solo si se pide.
+        Livewire::actingAs($recepcion)->test(Calendario::class)->assertSet('vista', null)->assertSee('af-calendario"', false)->assertDontSee('af-dia-lista', false);
         Livewire::actingAs($recepcion)->test(Calendario::class)->call('cambiarVista', 'dia')->assertSet('vista', 'dia')->assertSee('af-dia-lista', false)->assertDontSee('af-calendario"', false);
         Livewire::actingAs($recepcion)->test(Calendario::class)->call('cambiarVista', 'mes')->assertSet('vista', 'mes')->assertSee('af-calendario', false)->assertDontSee('af-dia-lista', false);
         Livewire::actingAs($recepcion)->test(Calendario::class)->call('cambiarVista', 'otra')->assertSet('vista', null);

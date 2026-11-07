@@ -20,6 +20,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $huesped_id
  * @property string|null $campo
  * @property string|null $valor
+ * @property bool $en_todo
+ * @property bool $en_hoy
+ * @property bool $en_calendario
+ * @property bool $en_limpieza
  * @property bool $en_aviso
  * @property bool $en_informes
  * @property bool $en_mensajes
@@ -36,7 +40,7 @@ class Omision extends ModeloBase
 
     protected function casts(): array
     {
-        return ['en_aviso' => 'boolean', 'en_informes' => 'boolean', 'en_mensajes' => 'boolean'];
+        return ['en_todo' => 'boolean', 'en_hoy' => 'boolean', 'en_calendario' => 'boolean', 'en_limpieza' => 'boolean', 'en_aviso' => 'boolean', 'en_informes' => 'boolean', 'en_mensajes' => 'boolean'];
     }
 
     /** @return BelongsTo<Huesped, $this> */

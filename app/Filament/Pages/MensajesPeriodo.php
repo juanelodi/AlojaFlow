@@ -13,7 +13,9 @@ namespace App\Filament\Pages;
 use App\Comunicacion\Mensajero;
 use App\Comunicacion\VariablesMensaje;
 use App\Enums\EstadoEnvio;
+use App\Enums\LugarOmision;
 use App\Filament\Concerns\ConPropiedadSeleccionada;
+use App\Limpieza\Omisiones;
 use App\Models\Plantilla;
 use App\Models\Reserva;
 use App\Modulos\Modulo;
@@ -113,7 +115,7 @@ class MensajesPeriodo extends Page
         $columna = $this->por === 'salida' ? 'salida' : 'llegada';
         $reservas = ($this->por === 'residentes' && Modulos::activo(Modulo::Camping)
             ? Residentes::consulta([$plantilla->propiedad_id])
-            : Operacion::reservas([$plantilla->propiedad_id])->whereBetween($columna, [$this->desde, $this->hasta])->orderBy($columna)->orderBy('unidad_id'))
+            : Omisiones::excluir(Operacion::reservas([$plantilla->propiedad_id]), 'titular_id', [$plantilla->propiedad_id], LugarOmision::Mensajes)->whereBetween($columna, [$this->desde, $this->hasta])->orderBy($columna)->orderBy('unidad_id'))
             ->limit(self::FILAS_MAXIMAS)->get();
 
         return $reservas->map(function (Reserva $reserva) use ($plantilla): array {

@@ -15,6 +15,9 @@ namespace App\Enums;
  */
 enum LugarOmision: string
 {
+    case Hoy = 'en_hoy';
+    case Calendario = 'en_calendario';
+    case Limpieza = 'en_limpieza';
     case Aviso = 'en_aviso';
     case Informes = 'en_informes';
     case Mensajes = 'en_mensajes';

@@ -13,6 +13,7 @@ namespace App\Limpieza;
 use App\Enums\EstadoLimpieza;
 use App\Enums\EstadoReserva;
 use App\Enums\EstadoTarea;
+use App\Enums\LugarOmision;
 use App\Enums\TipoReserva;
 use App\Enums\TipoTarea;
 use App\Models\CambioEstadoUnidad;
@@ -107,7 +108,7 @@ final class GestorLimpieza
         $existentes = Tarea::query()->where('propiedad_id', $propiedad->id)->where('fecha', '>=', $hoy->format('Y-m-d'))
             ->whereNotNull('clave_generacion')->pluck('clave_generacion')->flip();
 
-        $reservas = Reserva::query()->with('unidad')
+        $reservas = Omisiones::excluir(Reserva::query()->with('unidad'), 'titular_id', [$propiedad->id], LugarOmision::Limpieza)
             ->where('propiedad_id', $propiedad->id)->where('tipo', TipoReserva::Reserva->value)
             ->where('estado', '!=', EstadoReserva::Cancelada->value)->whereNull('eliminada_en_principal_en')
             ->where('salida', '>=', $hoy->format('Y-m-d'))->where('llegada', '<=', $hasta->format('Y-m-d'))

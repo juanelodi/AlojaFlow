@@ -15,8 +15,10 @@ use App\Enums\ClaseArchivo;
 use App\Enums\EstadoLimpieza;
 use App\Enums\EstadoReserva;
 use App\Enums\EstadoTarea;
+use App\Enums\LugarOmision;
 use App\Filament\Concerns\ConPropiedadSeleccionada;
 use App\Limpieza\GestorLimpieza;
+use App\Limpieza\Omisiones;
 use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Tarea;
@@ -133,7 +135,7 @@ class Limpieza extends Page
             ->when($this->soloMias, fn ($q) => $q->where(fn ($q) => $q->where('asignada_a', auth()->id())->orWhereNull('asignada_a')))
             ->orderByDesc('prioridad')->orderBy('fecha')->get()->groupBy('unidad_id');
 
-        $reservas = Reserva::query()->whereIn('propiedad_id', $propiedades)->where('estado', '!=', EstadoReserva::Cancelada->value)
+        $reservas = Omisiones::excluir(Reserva::query(), 'titular_id', $propiedades, LugarOmision::Limpieza)->whereIn('propiedad_id', $propiedades)->where('estado', '!=', EstadoReserva::Cancelada->value)
             ->where('llegada', '<=', $fecha)->where('salida', '>=', $fecha)->get(['unidad_id', 'llegada', 'salida']);
 
         $filas = [];

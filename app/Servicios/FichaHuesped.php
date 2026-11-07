@@ -16,16 +16,17 @@ use App\Models\Huesped;
 use App\Models\Reserva;
 use App\Models\User;
 use App\Seguridad\Limites;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
 /**
- * Lo que se ve de un huésped de un vistazo: cuántas veces ha venido, cuánto ha pagado y sus reservas por año, también en las que vino de
+ * Lo que se ve de un huésped de un vistazo: cuántas veces ha venido, cuánto ha pagado y sus reservas por año y mes, también en las que vino de
  * acompañante. La idea de agruparlas por año viene de modifica_cliente.php de HotelDruid, reescrita. Cuenta solo lo que quien mira puede ver.
  */
 final class FichaHuesped
 {
     /**
-     * @return array{cuentas: array{estancias: int, noches: int, total: int, pagado: int, pendiente: int, moneda: ?string, primera: ?Reserva, ultima: ?Reserva, proxima: ?Reserva}, anios: Collection<int, Collection<int, Reserva>>, titular: list<int>}
+     * @return array{cuentas: array{estancias: int, noches: int, total: int, pagado: int, pendiente: int, moneda: ?string, primera: ?Reserva, ultima: ?Reserva, proxima: ?Reserva}, anios: array<int, array{reservas: int, noches: int, total: int, meses: array<int, array{fecha: \Carbon\CarbonImmutable, reservas: Collection<int, Reserva>, noches: int, total: int}>}>, titular: list<int>}
      */
     public static function de(Huesped $huesped, ?User $usuario): array
     {
@@ -51,8 +52,30 @@ final class FichaHuesped
                 'ultima' => $vigentes->first(fn (Reserva $r): bool => $r->llegada->format('Y-m-d') <= $hoy),
                 'proxima' => $vigentes->last(fn (Reserva $r): bool => $r->llegada->format('Y-m-d') > $hoy),
             ],
-            'anios' => $todas->groupBy(fn (Reserva $r): int => (int) $r->llegada->format('Y'))->sortKeysDesc(),
+            'anios' => self::porAnioYMes($todas, $huesped->id),
             'titular' => $comoTitular->pluck('id')->map(fn (mixed $id): int => (int) $id)->values()->all(),
         ];
+    }
+
+    /**
+     * Del más reciente al más antiguo. Cada grupo dice cuánto lleva dentro, para saber sin abrirlo si interesa.
+     *
+     * @param  Collection<int, Reserva>  $reservas
+     * @return array<int, array{reservas: int, noches: int, total: int, meses: array<int, array{fecha: \Carbon\CarbonImmutable, reservas: Collection<int, Reserva>, noches: int, total: int}>}>
+     */
+    private static function porAnioYMes(Collection $reservas, int $huespedId): array
+    {
+        $noches = fn (Collection $lista): int => (int) $lista->sum(fn (Reserva $r): int => $r->estado === EstadoReserva::Cancelada ? 0 : (int) $r->llegada->diffInDays($r->salida));
+        $total = fn (Collection $lista): int => (int) $lista->sum(fn (Reserva $r): int => $r->estado !== EstadoReserva::Cancelada && $r->titular_id === $huespedId ? $r->total : 0);
+        $anios = [];
+        foreach ($reservas->groupBy(fn (Reserva $r): int => (int) $r->llegada->format('Y'))->sortKeysDesc() as $anio => $delAnio) {
+            $meses = [];
+            foreach ($delAnio->groupBy(fn (Reserva $r): int => (int) $r->llegada->format('n'))->sortKeysDesc() as $mes => $delMes) {
+                $meses[(int) $mes] = ['fecha' => CarbonImmutable::create((int) $anio, (int) $mes, 1), 'reservas' => $delMes->values(), 'noches' => $noches($delMes), 'total' => $total($delMes)];
+            }
+            $anios[(int) $anio] = ['reservas' => $delAnio->count(), 'noches' => $noches($delAnio), 'total' => $total($delAnio), 'meses' => $meses];
+        }
+
+        return $anios;
     }
 }

@@ -58,9 +58,9 @@ class Calendario extends Page
     public ?string $mes = null;
 
     /**
-     * «dia» o «mes». Mientras nadie elija, lo decide el ancho de la pantalla: la página lleva las dos vistas.
+     * «dia» o «mes». Abre siempre por habitaciones (D-143): quien prefiere el día lo elige, y su navegador lo recuerda. No va en la
+     * dirección, para que una vista elegida una vez no se quede pegada en un enlace.
      */
-    #[Url(except: null)]
     public ?string $vista = null;
 
     #[Url]

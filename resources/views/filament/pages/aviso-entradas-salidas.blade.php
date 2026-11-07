@@ -39,80 +39,6 @@
                     @endif
                     <label class="af-casilla"><x-filament::input.checkbox wire:model.live="limpieza" /><span>{{ __('equipo.aviso.mostrar_limpieza') }}</span></label>
                 </fieldset>
-
-                <details class="af-plegable" open>
-                    <summary>{{ __('equipo.aviso.formato') }}</summary>
-                    <div class="af-formato">
-                        <label class="af-campo af-formato__ancho">
-                            <span>{{ __('equipo.aviso.fecha_formato') }}</span>
-                            <x-filament::input.wrapper>
-                                <x-filament::input.select wire:model.live="formato.fecha">
-                                    @foreach ($this->ejemplosFecha() as $clave => $ejemplo)
-                                        <option value="{{ $clave }}" @selected(($formato['fecha'] ?? '') === $clave)>{{ $ejemplo }}</option>
-                                    @endforeach
-                                </x-filament::input.select>
-                            </x-filament::input.wrapper>
-                        </label>
-                        @foreach (['icono_dia' => \App\Limpieza\FormatoAviso::ICONOS_DIA, 'icono_salen' => \App\Limpieza\FormatoAviso::ICONOS_SALEN, 'icono_llegan' => \App\Limpieza\FormatoAviso::ICONOS_LLEGAN, 'icono_limpieza' => \App\Limpieza\FormatoAviso::ICONOS_LIMPIEZA] as $campo => $iconos)
-                            <label class="af-campo">
-                                <span>{{ __('equipo.aviso.'.$campo) }}</span>
-                                <x-filament::input.wrapper>
-                                    <x-filament::input.select wire:model.live="formato.{{ $campo }}">
-                                        @foreach ($iconos as $icono)
-                                            <option value="{{ $icono }}" @selected(($formato[$campo] ?? '') === $icono)>{{ $icono === '' ? __('equipo.aviso.sin_icono') : $icono }}</option>
-                                        @endforeach
-                                    </x-filament::input.select>
-                                </x-filament::input.wrapper>
-                            </label>
-                        @endforeach
-                        <label class="af-campo">
-                            <span>{{ __('equipo.aviso.separador') }}</span>
-                            <x-filament::input.wrapper>
-                                <x-filament::input.select wire:model.live="formato.separador">
-                                    @foreach (\App\Limpieza\FormatoAviso::SEPARADORES as $separador)
-                                        <option value="{{ $separador }}" @selected(($formato['separador'] ?? '') === $separador)>{{ __('equipo.aviso.separadores.'.$separador) }}</option>
-                                    @endforeach
-                                </x-filament::input.select>
-                            </x-filament::input.wrapper>
-                        </label>
-                        <label class="af-campo">
-                            <span>{{ __('equipo.aviso.unidades') }}</span>
-                            <x-filament::input.wrapper>
-                                <x-filament::input.select wire:model.live="formato.unidades">
-                                    @foreach (\App\Limpieza\FormatoAviso::UNIDADES as $unidades)
-                                        <option value="{{ $unidades }}" @selected(($formato['unidades'] ?? '') === $unidades)>{{ __('equipo.aviso.unidades_'.$unidades) }}</option>
-                                    @endforeach
-                                </x-filament::input.select>
-                            </x-filament::input.wrapper>
-                        </label>
-                        <label class="af-campo">
-                            <span>{{ __('equipo.aviso.orden') }}</span>
-                            <x-filament::input.wrapper>
-                                <x-filament::input.select wire:model.live="formato.orden">
-                                    @foreach (\App\Limpieza\FormatoAviso::ORDENES as $orden)
-                                        <option value="{{ $orden }}" @selected(($formato['orden'] ?? '') === $orden)>{{ __('equipo.aviso.orden_'.$orden) }}</option>
-                                    @endforeach
-                                </x-filament::input.select>
-                            </x-filament::input.wrapper>
-                        </label>
-                        @foreach (['salen', 'llegan', 'limpieza'] as $titulo)
-                            <label class="af-campo">
-                                <span>{{ __('equipo.aviso.texto_'.$titulo) }}</span>
-                                <x-filament::input.wrapper>
-                                    <x-filament::input type="text" maxlength="30" :value="$formato['texto_'.$titulo] ?? ''" wire:model.live.debounce.500ms="formato.texto_{{ $titulo }}" placeholder="{{ __('equipo.aviso.'.$titulo) }}" />
-                                </x-filament::input.wrapper>
-                            </label>
-                        @endforeach
-                        <label class="af-casilla af-formato__ancho"><x-filament::input.checkbox wire:model.live="formato.negritas" /><span>{{ __('equipo.aviso.negritas') }}</span></label>
-                    </div>
-                    @if ($this->puedeGuardarFormato())
-                        <div class="af-grupo-botones">
-                            <x-filament::button size="sm" wire:click="guardarFormato">{{ __('equipo.aviso.guardar_formato') }}</x-filament::button>
-                            <x-filament::button size="sm" color="gray" wire:click="restablecerFormato">{{ __('equipo.aviso.restablecer') }}</x-filament::button>
-                        </div>
-                        <p class="af-nota">{{ __('equipo.aviso.formato_ayuda') }}</p>
-                    @endif
-                </details>
             </div>
 
             <div class="af-pila" x-data="avisoEquipo(@js(__('modulos.pasos.copiado')))">
@@ -139,6 +65,81 @@
                 <a class="af-enlace" href="{{ $url }}">{{ __('equipo.omisiones.modelos') }}</a>
             @endif
         </p>
+
+        {{-- Casi nunca se cambia: plegado y al final, para que no estorbe al entrar. --}}
+        <details class="af-plegable">
+            <summary>{{ __('equipo.aviso.formato') }}</summary>
+            <div class="af-formato">
+                <label class="af-campo af-formato__ancho">
+                    <span>{{ __('equipo.aviso.fecha_formato') }}</span>
+                    <x-filament::input.wrapper>
+                        <x-filament::input.select wire:model.live="formato.fecha">
+                            @foreach ($this->ejemplosFecha() as $clave => $ejemplo)
+                                <option value="{{ $clave }}" @selected(($formato['fecha'] ?? '') === $clave)>{{ $ejemplo }}</option>
+                            @endforeach
+                        </x-filament::input.select>
+                    </x-filament::input.wrapper>
+                </label>
+                @foreach (['icono_dia' => \App\Limpieza\FormatoAviso::ICONOS_DIA, 'icono_salen' => \App\Limpieza\FormatoAviso::ICONOS_SALEN, 'icono_llegan' => \App\Limpieza\FormatoAviso::ICONOS_LLEGAN, 'icono_limpieza' => \App\Limpieza\FormatoAviso::ICONOS_LIMPIEZA] as $campo => $iconos)
+                    <label class="af-campo">
+                        <span>{{ __('equipo.aviso.'.$campo) }}</span>
+                        <x-filament::input.wrapper>
+                            <x-filament::input.select wire:model.live="formato.{{ $campo }}">
+                                @foreach ($iconos as $icono)
+                                    <option value="{{ $icono }}" @selected(($formato[$campo] ?? '') === $icono)>{{ $icono === '' ? __('equipo.aviso.sin_icono') : $icono }}</option>
+                                @endforeach
+                            </x-filament::input.select>
+                        </x-filament::input.wrapper>
+                    </label>
+                @endforeach
+                <label class="af-campo">
+                    <span>{{ __('equipo.aviso.separador') }}</span>
+                    <x-filament::input.wrapper>
+                        <x-filament::input.select wire:model.live="formato.separador">
+                            @foreach (\App\Limpieza\FormatoAviso::SEPARADORES as $separador)
+                                <option value="{{ $separador }}" @selected(($formato['separador'] ?? '') === $separador)>{{ __('equipo.aviso.separadores.'.$separador) }}</option>
+                            @endforeach
+                        </x-filament::input.select>
+                    </x-filament::input.wrapper>
+                </label>
+                <label class="af-campo">
+                    <span>{{ __('equipo.aviso.unidades') }}</span>
+                    <x-filament::input.wrapper>
+                        <x-filament::input.select wire:model.live="formato.unidades">
+                            @foreach (\App\Limpieza\FormatoAviso::UNIDADES as $unidades)
+                                <option value="{{ $unidades }}" @selected(($formato['unidades'] ?? '') === $unidades)>{{ __('equipo.aviso.unidades_'.$unidades) }}</option>
+                            @endforeach
+                        </x-filament::input.select>
+                    </x-filament::input.wrapper>
+                </label>
+                <label class="af-campo">
+                    <span>{{ __('equipo.aviso.orden') }}</span>
+                    <x-filament::input.wrapper>
+                        <x-filament::input.select wire:model.live="formato.orden">
+                            @foreach (\App\Limpieza\FormatoAviso::ORDENES as $orden)
+                                <option value="{{ $orden }}" @selected(($formato['orden'] ?? '') === $orden)>{{ __('equipo.aviso.orden_'.$orden) }}</option>
+                            @endforeach
+                        </x-filament::input.select>
+                    </x-filament::input.wrapper>
+                </label>
+                @foreach (['salen', 'llegan', 'limpieza'] as $titulo)
+                    <label class="af-campo">
+                        <span>{{ __('equipo.aviso.texto_'.$titulo) }}</span>
+                        <x-filament::input.wrapper>
+                            <x-filament::input type="text" maxlength="30" :value="$formato['texto_'.$titulo] ?? ''" wire:model.live.debounce.500ms="formato.texto_{{ $titulo }}" placeholder="{{ __('equipo.aviso.'.$titulo) }}" />
+                        </x-filament::input.wrapper>
+                    </label>
+                @endforeach
+                <label class="af-casilla af-formato__ancho"><x-filament::input.checkbox wire:model.live="formato.negritas" /><span>{{ __('equipo.aviso.negritas') }}</span></label>
+            </div>
+            @if ($this->puedeGuardarFormato())
+                <div class="af-grupo-botones">
+                    <x-filament::button size="sm" wire:click="guardarFormato">{{ __('equipo.aviso.guardar_formato') }}</x-filament::button>
+                    <x-filament::button size="sm" color="gray" wire:click="restablecerFormato">{{ __('equipo.aviso.restablecer') }}</x-filament::button>
+                </div>
+                <p class="af-nota">{{ __('equipo.aviso.formato_ayuda') }}</p>
+            @endif
+        </details>
     </div>
 
     @script

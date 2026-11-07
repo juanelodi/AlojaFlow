@@ -82,7 +82,7 @@ class DepositosNoShow extends Page
     {
         $politicas = app(GestorPoliticas::class);
         $filas = [];
-        $reservas = Operacion::reservas($this->propiedadesElegidas())->whereColumn('pagado', '<', 'total')->orderBy('llegada')->limit(self::FILAS_MAXIMAS)->get();
+        $reservas = Operacion::delDia($this->propiedadesElegidas())->whereColumn('pagado', '<', 'total')->orderBy('llegada')->limit(self::FILAS_MAXIMAS)->get();
         foreach ($reservas as $reserva) {
             $hoy = $reserva->propiedad->hoy();
             if ($reserva->llegada->format('Y-m-d') < $hoy->format('Y-m-d')) {
@@ -117,7 +117,7 @@ class DepositosNoShow extends Page
         $politicas = app(GestorPoliticas::class);
         $filas = [];
         $hoy = CarbonImmutable::now();
-        $reservas = Operacion::reservas($this->propiedadesElegidas())->whereNull('entrada_registrada_en')
+        $reservas = Operacion::delDia($this->propiedadesElegidas())->whereNull('entrada_registrada_en')
             ->whereBetween('llegada', [$hoy->subDays(self::DIAS_NO_SHOW + 1)->format('Y-m-d'), $hoy->addDay()->format('Y-m-d')])->orderByDesc('llegada')->limit(self::FILAS_MAXIMAS)->get();
         foreach ($reservas as $reserva) {
             $hoyAlla = $reserva->propiedad->hoy();

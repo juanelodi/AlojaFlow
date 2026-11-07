@@ -11,7 +11,9 @@ declare(strict_types=1);
 namespace App\Servicios;
 
 use App\Enums\EstadoReserva;
+use App\Enums\LugarOmision;
 use App\Enums\TipoReserva;
+use App\Limpieza\Omisiones;
 use App\Models\BloqueoExterno;
 use App\Models\ColorTipoCliente;
 use App\Models\Reserva;
@@ -27,7 +29,7 @@ final class Calendario
 {
     /**
      * @param  list<int>  $propiedades
-     * @return array{dias: list<CarbonImmutable>, filas: list<array{unidad: Unidad, barras: list<array{reserva: Reserva, columna: int, ancho: int, sigue_antes: bool, sigue_despues: bool, clase: string, color: ?string}>, externos: list<array{columna: int, ancho: int, sigue_antes: bool, sigue_despues: bool, fuente: string}>, tapados: array<int, true>}>} en «tapados», los días del mes (desde 1) que quedan debajo de una barra
+     * @return array{dias: list<CarbonImmutable>, filas: list<array{unidad: Unidad, barras: list<array{oculta: bool, reserva: Reserva, columna: int, ancho: int, sigue_antes: bool, sigue_despues: bool, clase: string, color: ?string}>, externos: list<array{columna: int, ancho: int, sigue_antes: bool, sigue_despues: bool, fuente: string}>, tapados: array<int, true>}>} en «tapados», los días del mes (desde 1) que quedan debajo de una barra
      */
     public static function mes(array $propiedades, CarbonImmutable $inicio): array
     {
@@ -53,6 +55,7 @@ final class Calendario
             ->orderBy('llegada')->get()->groupBy('unidad_id');
 
         $colores = ColorTipoCliente::query()->whereIn('propiedad_id', $propiedades)->get();
+        $omitidos = Omisiones::huespedes($propiedades, LugarOmision::Calendario);
 
         $filas = [];
         foreach ($unidades as $unidad) {
@@ -61,15 +64,18 @@ final class Calendario
                 /** @var Reserva $reserva */
                 $desde = $reserva->llegada->max($inicio);
                 $hasta = $reserva->salida->min($fin);
+                // Omitido: ocupa sus fechas, para no venderlas dos veces, pero no dice de quién son (D-144).
+                $oculta = $reserva->titular_id !== null && in_array($reserva->titular_id, $omitidos, true);
                 $barras[] = [
+                    'oculta' => $oculta,
                     'reserva' => $reserva,
                     'columna' => (int) $inicio->diffInDays($desde) + 1,
                     'ancho' => max(1, (int) $desde->diffInDays($hasta)),
                     'sigue_antes' => $reserva->llegada->lt($inicio),
                     'sigue_despues' => $reserva->salida->gt($fin),
-                    'clase' => self::clase($reserva),
-                    'color' => self::colorDe($reserva, $colores),
-                    'grupo' => $reserva->grupo,
+                    'clase' => $oculta ? 'af-barra--bloqueo' : self::clase($reserva),
+                    'color' => $oculta ? null : self::colorDe($reserva, $colores),
+                    'grupo' => $oculta ? null : $reserva->grupo,
                 ];
             }
             $deportales = [];
@@ -100,7 +106,7 @@ final class Calendario
      * duerme esa noche, aunque alguien salga de ella ese día: lo mismo que una celda libre del mes.
      *
      * @param  list<int>  $propiedades
-     * @return array{filas: list<array{unidad: Unidad, reservas: list<array{reserva: Reserva, momento: string}>, externos: list<BloqueoExterno>, libre: bool}>, libres: int, ocupadas: int, llegan: int, salen: int}
+     * @return array{filas: list<array{unidad: Unidad, reservas: list<array{reserva: Reserva, momento: string, oculta: bool}>, externos: list<BloqueoExterno>, libre: bool}>, libres: int, ocupadas: int, llegan: int, salen: int}
      */
     public static function dia(array $propiedades, CarbonImmutable $dia, ?User $usuario): array
     {
@@ -112,6 +118,7 @@ final class Calendario
         $externos = BloqueoExterno::query()->with('fuente')->whereIn('propiedad_id', $propiedades)->whereNull('eliminado_en')
             ->where('llegada', '<=', $fecha)->where('salida', '>', $fecha)->orderBy('llegada')->get()->groupBy('unidad_id');
 
+        $omitidos = Omisiones::huespedes($propiedades, LugarOmision::Calendario);
         $orden = ['sale' => 0, 'sigue' => 1, 'llega' => 2];
         $filas = [];
         $libres = $ocupadas = $llegan = $salen = 0;
@@ -124,9 +131,10 @@ final class Calendario
                     $reserva->llegada->format('Y-m-d') => 'llega',
                     default => 'sigue',
                 };
-                $renglones[] = ['reserva' => $reserva, 'momento' => $momento];
+                $oculta = $reserva->titular_id !== null && in_array($reserva->titular_id, $omitidos, true);
+                $renglones[] = ['reserva' => $reserva, 'momento' => $momento, 'oculta' => $oculta];
                 // Lo que un usuario no puede ver no se suma: las cifras dirían más que las tarjetas.
-                if ($reserva->tipo === TipoReserva::Reserva && Limites::puedeVer($usuario, $reserva)) {
+                if (! $oculta && $reserva->tipo === TipoReserva::Reserva && Limites::puedeVer($usuario, $reserva)) {
                     $llegan += $momento === 'llega' ? 1 : 0;
                     $salen += $momento === 'sale' ? 1 : 0;
                 }
