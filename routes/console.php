@@ -27,8 +27,11 @@ Schedule::command('alojaflow:autoridades')->everyTenMinutes();
 Schedule::command('alojaflow:grupos')->dailyAt('03:40')->when(fn (): bool => Modulos::activo(Modulo::Grupos));
 Schedule::command('alojaflow:copia --programada')->dailyAt('03:10')->withoutOverlapping(60)->skip(fn (): bool => ModoDemo::activo());
 Schedule::command('alojaflow:buscar-version')->dailyAt('03:50')->skip(fn (): bool => ModoDemo::activo());
+// Actualizaciones sin nadie delante (D-151): la urgente en cuanto se sabe; la automática, a las 3:00 de la instalación.
+// En un minuto múltiplo de 10: hay hostings (DreamHost) que solo permiten el cron cada 10 minutos.
+Schedule::command('alojaflow:actualizacion-automatica')->hourlyAt(20)->withoutOverlapping(120)->skip(fn (): bool => ModoDemo::activo());
 // Mejora continua (D-150): solo con permiso, salvo los reportes que alguien escribió.
-Schedule::command('alojaflow:mejora-continua')->hourlyAt(17)->withoutOverlapping(30)->skip(fn (): bool => ModoDemo::activo());
+Schedule::command('alojaflow:mejora-continua')->hourlyAt(40)->withoutOverlapping(30)->skip(fn (): bool => ModoDemo::activo());
 Schedule::command('alojaflow:demo-reiniciar')->dailyAt('04:00')->when(fn (): bool => ModoDemo::activo());
 
 // Una actualización que se quedó sin terminar (se cerró el navegador entre las dos fases) o que

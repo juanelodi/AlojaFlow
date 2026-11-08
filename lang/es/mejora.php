@@ -11,6 +11,7 @@ declare(strict_types=1);
 // Mejora continua (D-150): permiso, qué se manda y «Reportar o sugerir».
 return [
     'nav' => 'Mejora continua',
+    'nav_ajustes' => 'Qué se envía',
     'titulo' => 'Mejora continua',
     'intro' => 'Ayuda a mejorar AlojaFlow mandando, una vez al día, datos de diagnóstico y de uso de esta instalación al equipo de AlojaFlow. No es obligatorio y lo puedes apagar cuando quieras.',
     'que_se_manda' => 'Qué se manda',
@@ -61,6 +62,7 @@ return [
         'tipo' => 'Qué es',
         'tipos' => [
             'error' => 'Un error',
+            'informe' => 'Un informe',
             'sugerencia' => 'Una sugerencia',
             'pregunta' => 'Una pregunta',
             'otro' => 'Otra cosa',
@@ -70,7 +72,9 @@ return [
         'pasos' => 'Pasos para que se repita',
         'pasos_ayuda' => 'Qué hiciste justo antes, uno por renglón.',
         'imagenes' => 'Imágenes',
-        'imagenes_ayuda' => 'Hasta :cuantas capturas o fotos.',
+        'imagenes_ayuda' => 'Hasta :cuantas capturas o fotos, en JPG o PNG.',
+        'imagenes_descartadas' => 'Se descartaron :cuantas imágenes que no eran JPG o PNG válidas; el reporte se mandó sin ellas.',
+        'demasiados' => 'Ya mandaste muchos en la última hora. Inténtalo más tarde.',
         'contacto' => 'Contacto',
         'contacto_nombre' => 'Tu nombre',
         'contacto_correo' => 'Tu correo',

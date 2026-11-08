@@ -36,6 +36,39 @@
             <p class="af-nota">{{ $this->estadoConsulta() }}</p>
         </x-filament::section>
 
+        {{-- D-151: lo que se instala solo. --}}
+        @php($automatica = $this->automatica())
+        @php($ultimoIntento = $automatica->ultimoIntento())
+        <x-filament::section :heading="__('actualizaciones.automaticas.titulo')">
+            <div class="af-pila">
+                <label class="af-campo" style="flex-direction: row; align-items: flex-start; gap: .5rem; min-width: auto">
+                    <x-filament::input.checkbox wire:model="automaticas" />
+                    <span><strong>{{ __('actualizaciones.automaticas.automaticas') }}</strong><br><span class="af-nota">{{ __('actualizaciones.automaticas.automaticas_ayuda', ['zona' => $zona]) }}</span></span>
+                </label>
+                <label class="af-campo" style="max-width: 24rem">
+                    <span>{{ __('actualizaciones.automaticas.zona') }}</span>
+                    <x-filament::input.wrapper>
+                        <x-filament::input.select wire:model="zona">
+                            @foreach ($this->zonas() as $opcion)
+                                <option value="{{ $opcion }}">{{ $opcion }}</option>
+                            @endforeach
+                        </x-filament::input.select>
+                    </x-filament::input.wrapper>
+                </label>
+                <label class="af-campo" style="flex-direction: row; align-items: flex-start; gap: .5rem; min-width: auto">
+                    <x-filament::input.checkbox wire:model="urgentes" />
+                    <span><strong>{{ __('actualizaciones.automaticas.urgentes') }}</strong><br><span class="af-nota">{{ __('actualizaciones.automaticas.urgentes_ayuda') }}</span></span>
+                </label>
+                @unless ($automatica->puedeInstalarSola())
+                    <p class="af-aviso">{{ __('actualizaciones.automaticas.sin_cron') }}</p>
+                @endunless
+                @if (isset($ultimoIntento['version']))
+                    <p class="af-nota">{{ ($ultimoIntento['ok'] ?? false) ? __('actualizaciones.automaticas.ultima_ok', ['version' => $ultimoIntento['version'], 'cuando' => Formato::momento(\Illuminate\Support\Carbon::parse($ultimoIntento['en']))]) : __('actualizaciones.automaticas.ultima_fallo', ['version' => $ultimoIntento['version'], 'error' => (string) ($ultimoIntento['error'] ?? '')]) }}</p>
+                @endif
+                <div><x-filament::button wire:click="guardarAutomaticas" wire:target="guardarAutomaticas">{{ __('actualizaciones.automaticas.guardar') }}</x-filament::button></div>
+            </div>
+        </x-filament::section>
+
         @if ($nueva = $this->versionDisponible())
             <x-filament::section id="version-nueva" :heading="__('actualizaciones.hay_version', ['version' => $nueva['version']])">
                 <div class="af-pila">

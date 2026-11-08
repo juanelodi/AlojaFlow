@@ -32,8 +32,11 @@ vuelve a limpiar lo mismo.
 
 ## 3. Reportar o sugerir
 
-Cualquiera del equipo del alojamiento, desde el menú de usuario o *Sistema → Reportar o sugerir*: tipo,
-título, descripción, pasos, hasta 10 imágenes (el navegador las reduce a 2560 px) y contacto opcional. Se
+Cualquiera del equipo del alojamiento, desde el menú de usuario o el apartado *Mejora continua → Reportar o
+sugerir*: tipo (error, sugerencia, informe, pregunta u otro), título, descripción, pasos, hasta 10 imágenes y
+contacto opcional. **Solo JPG o PNG:** el formulario lo exige y `ImagenSegura` lo revisa por el contenido
+(no por el nombre), las vuelve a codificar sin metadatos y las reduce a 2560 px; lo que no pasa se borra.
+Cada persona manda hasta diez por hora. Se
 agregan solos la pantalla de donde se abrió, el idioma, el rol, el navegador y el tamaño de la pantalla.
 «Adjuntar el diagnóstico» viene marcado si hay permiso.
 

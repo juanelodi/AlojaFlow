@@ -11,7 +11,7 @@ declare(strict_types=1);
 return [
 
     // Versión instalada; la usa el enlace «Código fuente» (regla 8).
-    'version' => '1.0.38',
+    'version' => '1.0.39',
 
     // Idiomas de la interfaz (regla 7). El español es la fuente.
     'idiomas' => ['es', 'en', 'fr', 'it', 'pt', 'de'],
@@ -51,6 +51,9 @@ return [
         'url_paquete' => env('ALOJAFLOW_URL_PAQUETE', 'https://github.com/juanelodi/AlojaFlow/releases/download/v:version/alojaflow-:version.zip'),
         // Dónde se pregunta cuál es la última versión (D-140). Es un GET sin ningún dato de la instalación.
         'url_ultima_version' => env('ALOJAFLOW_URL_ULTIMA_VERSION', 'https://api.github.com/repos/juanelodi/AlojaFlow/releases/latest'),
+        // Actualizaciones urgentes (D-151): a qué versión pasar cuando el equipo de AlojaFlow corrige una vulnerabilidad.
+        // Es un GET sin ningún dato de la instalación, y solo se instala una versión firmada y más nueva. Vacío: no se consulta.
+        'url_urgente' => env('ALOJAFLOW_URL_URGENTE', 'https://dev.alojaflow.com/api/v1/actualizacion-urgente'),
         // En una copia de desarrollo (con .git) el código se actualiza con git, no desde el panel.
         'permitir_en_copia_git' => filter_var(env('ALOJAFLOW_ACTUALIZAR_COPIA_GIT', false), FILTER_VALIDATE_BOOLEAN),
         'tamano_maximo_paquete' => 300 * 1024 * 1024,

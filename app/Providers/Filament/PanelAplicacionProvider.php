@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Actualizacion\ActualizacionAutomatica;
 use App\Actualizacion\Actualizador;
 use App\Actualizacion\UltimaVersion;
 use App\Demo\ModoDemo;
@@ -126,6 +127,7 @@ class PanelAplicacionProvider extends PanelProvider
                 NavigationGroup::make()->label(fn (): string => __('ui.nav.comunicacion'))->collapsed(),
                 NavigationGroup::make()->label(fn (): string => __('ui.nav.configuracion'))->collapsed(),
                 NavigationGroup::make()->label(fn (): string => __('ui.nav.sistema'))->collapsed(),
+                NavigationGroup::make()->label(fn (): string => __('mejora.nav'))->collapsed(),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -142,6 +144,7 @@ class PanelAplicacionProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::FOOTER, fn () => view('componentes.pie'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn (): View|string => self::avisoActualizacionSinTerminar())
             ->renderHook(PanelsRenderHook::CONTENT_START, fn (): View|string => self::avisoVersionNueva(), scopes: Resumen::class)
+            ->renderHook(PanelsRenderHook::CONTENT_START, fn (): View|string => self::avisoActualizacionUrgente())
             ->renderHook(PanelsRenderHook::CONTENT_START, fn (): View|string => self::avisoMejoraContinua())
             ->middleware([
                 EncryptCookies::class,
@@ -164,6 +167,23 @@ class PanelAplicacionProvider extends PanelProvider
     /**
      * Hay una versión nueva: en el inicio, solo para quien puede instalarla (D-140).
      */
+    /**
+     * Una actualización urgente pendiente (D-151), a quien puede instalarla, en todas las pantallas.
+     */
+    public static function avisoActualizacionUrgente(): View|string
+    {
+        // Primero lo barato (los ajustes ya están en memoria): casi nunca hay una urgente.
+        $automatica = app(ActualizacionAutomatica::class);
+        $urgente = $automatica->urgentesActivas() ? $automatica->urgentePendiente() : null;
+
+        return $urgente === null || ! Actualizaciones::canAccess() ? '' : view('filament.avisos.actualizacion-urgente', [
+            'version' => $urgente['version'],
+            'mensaje' => $urgente['mensaje'],
+            'sola' => $automatica->puedeInstalarSola(),
+            'enlace' => Actualizaciones::getUrl(),
+        ]);
+    }
+
     /**
      * Quien actualizó desde una versión anterior decide si manda datos de mejora continua (D-150). Solo el
      * administrador, y no en la pantalla donde ya se decide.

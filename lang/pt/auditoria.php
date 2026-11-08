@@ -17,6 +17,8 @@ return [
             'precio_fechas' => 'Preço de uma tarifa alterado por datas',
         ],
         'actualizacion' => [
+            'automatica' => 'Atualização instalada sozinha',
+            'automaticas' => 'Atualizações automáticas alteradas',
             'completada' => 'Atualização concluída',
             'preparar' => 'Atualização preparada',
             'recuperada' => 'Atualização recuperada',

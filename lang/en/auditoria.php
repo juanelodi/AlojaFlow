@@ -17,6 +17,8 @@ return [
             'precio_fechas' => 'Rate price changed for some dates',
         ],
         'actualizacion' => [
+            'automatica' => 'Update installed automatically',
+            'automaticas' => 'Automatic updates changed',
             'completada' => 'Update completed',
             'preparar' => 'Update prepared',
             'recuperada' => 'Update recovered',

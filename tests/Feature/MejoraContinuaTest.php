@@ -18,6 +18,7 @@ use App\MejoraContinua\ClienteReceptor;
 use App\MejoraContinua\EnvioMejora;
 use App\MejoraContinua\Permiso;
 use App\MejoraContinua\RegistroErrores;
+use App\MejoraContinua\ReportesMejora;
 use App\MejoraContinua\Saneador;
 use App\Models\ContactoHuesped;
 use App\Models\Huesped;
@@ -327,4 +328,51 @@ it('no cuenta lo que no es una pantalla del panel', function () {
     $this->get('/codigo-fuente');
 
     expect(DB::table('mejora_pantallas')->count())->toBe(0);
+});
+
+it('solo acepta imágenes JPG o PNG, revisadas por su contenido', function () {
+    Storage::fake('local');
+    receptorFalso();
+
+    Livewire::actingAs($this->recepcion)->test(ReportarSugerir::class)
+        ->fillForm(['tipo' => 'informe', 'titulo' => 'Informe', 'descripcion' => 'Todo bien.', 'imagenes' => [UploadedFile::fake()->create('animada.gif', 10, 'image/gif')]])
+        ->call('enviar')
+        ->assertHasErrors();
+    expect(ReporteMejora::query()->count())->toBe(0);
+
+    // Un archivo que dice ser PNG y no lo es se borra antes de guardarse.
+    Storage::disk('local')->put('mejora/reportes/disfrazada.png', 'GIF89a no es png');
+    $reporte = app(ReportesMejora::class)->crear($this->recepcion, ['tipo' => 'informe', 'titulo' => 'Informe', 'descripcion' => 'Todo bien.'], ['mejora/reportes/disfrazada.png', '../.env']);
+    expect($reporte->tipo)->toBe('informe')
+        ->and($reporte->imagenes)->toBe([])
+        ->and(Storage::disk('local')->exists('mejora/reportes/disfrazada.png'))->toBeFalse();
+});
+
+it('limita cuántos reportes manda cada persona por hora', function () {
+    receptorFalso();
+    $prueba = Livewire::actingAs($this->recepcion)->test(ReportarSugerir::class);
+    for ($i = 0; $i < 11; $i++) {
+        $prueba->fillForm(['tipo' => 'sugerencia', 'titulo' => 'Idea '.$i, 'descripcion' => 'Algo.'])->call('enviar');
+    }
+
+    expect(ReporteMejora::query()->count())->toBe(10);
+});
+
+it('el apartado de mejora continua lo ve todo el equipo, con Reportar o sugerir', function () {
+    $pagina = $this->actingAs($this->recepcion)->get(ReportarSugerir::getUrl())->assertOk();
+    $pagina->assertSee(__('mejora.nav'))->assertSee(__('mejora.reportar.nav'))->assertDontSee(__('mejora.nav_ajustes'));
+
+    $this->actingAs($this->admin)->get(MejoraContinua::getUrl())->assertOk()->assertSee(__('mejora.reportar.nav'));
+});
+
+it('avisa si alguna imagen se descartó', function () {
+    Storage::fake('local');
+    receptorFalso();
+    // Dice ser PNG (pasa el formulario) pero su contenido no lo es.
+    $falsa = UploadedFile::fake()->create('rara.png', 5, 'image/png');
+
+    Livewire::actingAs($this->recepcion)->test(ReportarSugerir::class)
+        ->fillForm(['tipo' => 'error', 'titulo' => 'Falla', 'descripcion' => 'Algo.', 'imagenes' => [$falsa]])
+        ->call('enviar')
+        ->assertNotified(__('mejora.reportar.imagenes_descartadas', ['cuantas' => '1']));
 });

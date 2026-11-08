@@ -4,7 +4,7 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-08): versión de prueba 1.0.38**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-08): versión de prueba 1.0.39**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
   D-029) y D-036 se revisan con el usuario. El plan de [docs/plan-paridad.md](docs/plan-paridad.md) quedó completo en la 1.0.24, y lo que se eligió del núcleo heredado ([docs/nucleo-heredado.md](docs/nucleo-heredado.md), D-117), en la 1.0.29.
@@ -196,7 +196,8 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   - `Empaquetador` (construye el zip firmado) y `Revisor` (lo comprueba sin cambiar nada);
   - `Aplicador` (extrae e intercambia los archivos con diario) y `Actualizador` (las dos fases);
   - `CopiaBaseDatos`, `Firma`, `Manifiesto` y `Rutas` (qué no toca nunca una actualización);
-  - en línea (D-140): `UltimaVersion` (el aviso diario) y `DescargaPorPedazos`.
+  - en línea (D-140): `UltimaVersion` (el aviso diario) y `DescargaPorPedazos`;
+  - sin nadie delante (D-151): `ActualizacionAutomatica` (a las 3:00, o la urgente de dev.alojaflow.com) e `InstaladorVersion`.
 - `app/Reservas/` — propiedades independientes: `GestorReservas` es el único que escribe reservas,
   noches y pagos propios, `Cotizador` calcula el precio con la tarifa y sus temporadas, y `Mensualidades` lleva el calendario
   de cobros de una estancia larga (D-107, D-108). Una unidad se vende con su tarifa principal y otras (`Unidad::tarifasIds`, D-118); una tarifa puede salir de otra (`Tarifa::precios`, D-119). `ReglasCargo`, cuándo se cobra un cargo (D-121).

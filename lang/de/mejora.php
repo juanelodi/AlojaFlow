@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 return [
     'nav' => 'Kontinuierliche Verbesserung',
+    'nav_ajustes' => 'Was gesendet wird',
     'titulo' => 'Kontinuierliche Verbesserung',
     'intro' => 'Helfen Sie, AlojaFlow zu verbessern, indem Sie dem AlojaFlow-Team einmal täglich Diagnose- und Nutzungsdaten dieser Installation senden. Es ist freiwillig und lässt sich jederzeit ausschalten.',
     'que_se_manda' => 'Was gesendet wird',
@@ -60,6 +61,7 @@ return [
         'tipo' => 'Was ist es',
         'tipos' => [
             'error' => 'Ein Fehler',
+            'informe' => 'Ein Bericht',
             'sugerencia' => 'Ein Vorschlag',
             'pregunta' => 'Eine Frage',
             'otro' => 'Etwas anderes',
@@ -69,7 +71,9 @@ return [
         'pasos' => 'Schritte zum Nachstellen',
         'pasos_ayuda' => 'Was Sie direkt davor getan haben, ein Schritt pro Zeile.',
         'imagenes' => 'Bilder',
-        'imagenes_ayuda' => 'Bis zu :cuantas Bildschirmfotos oder Fotos.',
+        'imagenes_ayuda' => 'Bis zu :cuantas Bildschirmfotos oder Fotos, als JPG oder PNG.',
+        'imagenes_descartadas' => ':cuantas Bilder, die keine gültigen JPG- oder PNG-Dateien waren, wurden verworfen; die Meldung wurde ohne sie gesendet.',
+        'demasiados' => 'Sie haben in der letzten Stunde viele gesendet. Versuchen Sie es später erneut.',
         'contacto' => 'Kontakt',
         'contacto_nombre' => 'Ihr Name',
         'contacto_correo' => 'Ihre E-Mail',

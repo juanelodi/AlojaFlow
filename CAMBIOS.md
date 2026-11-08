@@ -2,6 +2,14 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.39 — 2026-11-08
+
+**Actualizaciones automáticas.** En Sistema → Actualizaciones puedes prender que cada versión nueva se instale sola a las 3:00, en la hora de tu instalación. Antes se baja, se revisa su firma y se hace una copia de la base; si algo falla, se deshace y se intenta otro día. Llegan apagadas.
+
+**Actualizaciones urgentes de seguridad.** Si el equipo de AlojaFlow corrige una vulnerabilidad, tu instalación se entera en una hora y la instala sola, sin esperar a las 3:00. Solo instala versiones publicadas y firmadas por AlojaFlow, más nuevas que la tuya, y para enterarse no manda ningún dato. Puedes apagarlo. Las dos necesitan la tarea programada (cron); sin ella verás el aviso y la instalas tú.
+
+**Reportar o sugerir, más a la mano.** El apartado Mejora continua del menú lo ve todo el equipo. Hay un tipo nuevo, «informe», y las imágenes deben ser JPG o PNG: se revisan por su contenido y se guardan sin datos escondidos.
+
 ## 1.0.38 — 2026-11-08
 
 **Reportar o sugerir.** Desde el menú de usuario, cualquiera del equipo puede contarle al equipo de AlojaFlow un error, una idea o una duda, con hasta diez capturas o fotos. La respuesta llega a la misma pantalla, en «Mis reportes».

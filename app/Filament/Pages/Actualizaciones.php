@@ -10,15 +10,18 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Actualizacion\ActualizacionAutomatica;
 use App\Actualizacion\Actualizador;
 use App\Actualizacion\ErrorActualizacion;
 use App\Actualizacion\UltimaVersion;
 use App\Demo\ModoDemo;
 use App\Enums\EstadoActualizacion;
 use App\Models\Actualizacion;
+use App\Models\RegistroAuditoria;
 use App\Seguridad\Acceso;
 use App\Support\Formato;
 use BackedEnum;
+use DateTimeZone;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -51,6 +54,14 @@ class Actualizaciones extends Page
     public bool $reinstalar = false;
 
     public bool $avisoActivo = true;
+
+    /** Instalar sola una versión nueva a las 3:00 (D-151). */
+    public bool $automaticas = false;
+
+    /** Instalar sola una actualización urgente que ordene el equipo de AlojaFlow (D-151). */
+    public bool $urgentes = true;
+
+    public string $zona = 'UTC';
 
     /** @var array<string, mixed>|null */
     public ?array $revision = null;
@@ -92,6 +103,32 @@ class Actualizaciones extends Page
     {
         $this->paquete = $this->actualizador()->paquetesDisponibles()[0] ?? null;
         $this->avisoActivo = $this->ultimaVersion()->avisoActivo();
+        $automatica = app(ActualizacionAutomatica::class);
+        $this->automaticas = $automatica->automaticasActivas();
+        $this->urgentes = $automatica->urgentesActivas();
+        $this->zona = $automatica->zona();
+    }
+
+    public function guardarAutomaticas(): void
+    {
+        abort_unless(self::canAccess(), 403);
+        $this->validate(['zona' => ['required', 'timezone:all']]);
+        app(ActualizacionAutomatica::class)->guardar($this->automaticas, $this->urgentes, $this->zona);
+        RegistroAuditoria::anotar('actualizacion.automaticas', null, ['automaticas' => $this->automaticas, 'urgentes' => $this->urgentes, 'zona' => $this->zona]);
+        Notification::make()->success()->title(__('actualizaciones.automaticas.guardado'))->send();
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function zonas(): array
+    {
+        return DateTimeZone::listIdentifiers();
+    }
+
+    public function automatica(): ActualizacionAutomatica
+    {
+        return app(ActualizacionAutomatica::class);
     }
 
     public function updatedAvisoActivo(): void

@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 return [
     'nav' => 'Continuous improvement',
+    'nav_ajustes' => 'What is sent',
     'titulo' => 'Continuous improvement',
     'intro' => 'Help improve AlojaFlow by sending the AlojaFlow team, once a day, diagnostic and usage data from this installation. It is optional and you can turn it off at any time.',
     'que_se_manda' => 'What is sent',
@@ -60,6 +61,7 @@ return [
         'tipo' => 'What is it',
         'tipos' => [
             'error' => 'A bug',
+            'informe' => 'A report',
             'sugerencia' => 'A suggestion',
             'pregunta' => 'A question',
             'otro' => 'Something else',
@@ -69,7 +71,9 @@ return [
         'pasos' => 'Steps to reproduce it',
         'pasos_ayuda' => 'What you did right before, one per line.',
         'imagenes' => 'Images',
-        'imagenes_ayuda' => 'Up to :cuantas screenshots or photos.',
+        'imagenes_ayuda' => 'Up to :cuantas screenshots or photos, in JPG or PNG.',
+        'imagenes_descartadas' => ':cuantas images that were not valid JPG or PNG were discarded; the report was sent without them.',
+        'demasiados' => 'You have sent many in the last hour. Try again later.',
         'contacto' => 'Contact',
         'contacto_nombre' => 'Your name',
         'contacto_correo' => 'Your email',

@@ -57,7 +57,11 @@ final class ReportesMejora
             'contacto_correo' => Saneador::corto(is_string($datos['contacto_correo'] ?? null) ? $datos['contacto_correo'] : null, 190),
             'permite_contacto' => (bool) ($datos['permite_contacto'] ?? false),
             'adjuntar_diagnostico' => (bool) ($datos['adjuntar_diagnostico'] ?? false),
-            'imagenes' => array_slice($imagenes, 0, (int) config('alojaflow.mejora_continua.imagenes_por_reporte')),
+            // Solo JPG o PNG por su contenido, sin metadatos; lo demás se borra aquí mismo.
+            'imagenes' => array_values(array_filter(
+                array_slice($imagenes, 0, (int) config('alojaflow.mejora_continua.imagenes_por_reporte')),
+                fn (string $ruta): bool => str_starts_with($ruta, 'mejora/reportes/') && ! str_contains($ruta, '..') && ImagenSegura::limpiar($ruta),
+            )),
         ]);
     }
 

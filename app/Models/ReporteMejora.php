@@ -50,7 +50,7 @@ use Illuminate\Support\Carbon;
  */
 class ReporteMejora extends ModeloBase
 {
-    public const TIPOS = ['error', 'sugerencia', 'pregunta', 'otro'];
+    public const TIPOS = ['error', 'sugerencia', 'informe', 'pregunta', 'otro'];
 
     public const ENVIO_PENDIENTE = 'pendiente';
 

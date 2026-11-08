@@ -854,6 +854,22 @@ quien los escribe, y sus imágenes se borran de aquí al llegar. Todo va en segu
 receptor no responde, se reintenta cada hora sin afectar al alojamiento. Detalle en
 `docs/especificacion/mejora-continua.md`.
 
+### D-151 · 2026-11-08 · Actualizaciones automáticas a las 3:00 y urgentes desde dev.alojaflow.com
+
+Pedido del usuario: cada instalación puede prender las **actualizaciones automáticas**, que instalan una
+versión nueva a las 3:00 de la instalación, y el equipo puede ordenar una **actualización urgente** a todas
+cuando corrige una vulnerabilidad. Las automáticas llegan apagadas; las urgentes, prendidas, y se pueden
+apagar en *Sistema → Actualizaciones*. **Por qué es seguro:** la orden solo dice «pasen a la versión X»;
+cada instalación baja ese zip de GitHub y lo instala solo si está firmado con la clave de AlojaFlow y es
+más nuevo que el suyo, así que quien tomara dev.alojaflow.com no podría instalar nada propio ni regresar a
+una versión vieja. Consultar la orden no manda ningún dato. **Límite:** sin cron no se instala nada solo
+(tarda más que una visita); se avisa en el panel. La zona horaria es la elegida o la de la primera
+propiedad, porque la instalación corre en UTC. Detalle en `instalacion-actualizaciones.md` §3.4.
+
+Junto con esto, en «Reportar o sugerir» (D-150) solo se aceptan JPG y PNG, revisados por su contenido y
+vueltos a codificar antes de guardarse; hay un tipo «informe»; cada persona manda hasta diez por hora, y
+el apartado *Mejora continua* lo ve todo el equipo (los ajustes, solo el administrador).
+
 ## Pendientes
 
 - Precios y modelo de venta.

@@ -52,6 +52,8 @@ final class TareasPorVisita
         'alojaflow:copia --programada' => 1440,
         'alojaflow:buscar-version' => 1440,
         'alojaflow:mejora-continua' => 60,
+        // Sin cron no se instala nada solo (tarda más que una visita): solo se entera de la urgente para avisar.
+        'alojaflow:actualizacion-automatica --solo-consultar' => 60,
     ];
 
     /**
@@ -73,7 +75,7 @@ final class TareasPorVisita
         if (! ModoDemo::activo()) {
             return $tareas;
         }
-        unset($tareas['alojaflow:copia --programada'], $tareas['alojaflow:mejora-continua']);
+        unset($tareas['alojaflow:copia --programada'], $tareas['alojaflow:mejora-continua'], $tareas['alojaflow:actualizacion-automatica --solo-consultar']);
 
         // Sin cron el reinicio no tiene hora: cada hora mira si hoy ya se hizo.
         return $tareas + ['alojaflow:demo-reiniciar --si-toca' => 60];

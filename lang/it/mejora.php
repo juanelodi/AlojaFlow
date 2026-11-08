@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 return [
     'nav' => 'Miglioramento continuo',
+    'nav_ajustes' => 'Cosa viene inviato',
     'titulo' => 'Miglioramento continuo',
     'intro' => 'Aiuta a migliorare AlojaFlow inviando al team di AlojaFlow, una volta al giorno, dati di diagnostica e di utilizzo di questa installazione. Non è obbligatorio e puoi disattivarlo quando vuoi.',
     'que_se_manda' => 'Cosa viene inviato',
@@ -60,6 +61,7 @@ return [
         'tipo' => 'Di cosa si tratta',
         'tipos' => [
             'error' => 'Un errore',
+            'informe' => 'Un resoconto',
             'sugerencia' => 'Un suggerimento',
             'pregunta' => 'Una domanda',
             'otro' => 'Altro',
@@ -69,7 +71,9 @@ return [
         'pasos' => 'Passi per riprodurlo',
         'pasos_ayuda' => 'Cosa hai fatto subito prima, uno per riga.',
         'imagenes' => 'Immagini',
-        'imagenes_ayuda' => 'Fino a :cuantas schermate o foto.',
+        'imagenes_ayuda' => 'Fino a :cuantas schermate o foto, in JPG o PNG.',
+        'imagenes_descartadas' => 'Sono state scartate :cuantas immagini che non erano JPG o PNG validi; la segnalazione è stata inviata senza.',
+        'demasiados' => 'Ne hai inviati molti nell\'ultima ora. Riprova più tardi.',
         'contacto' => 'Contatto',
         'contacto_nombre' => 'Il tuo nome',
         'contacto_correo' => 'La tua e-mail',

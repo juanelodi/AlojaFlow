@@ -211,6 +211,27 @@ nuevo.
 - En una copia de desarrollo (con `.git`) no se actualiza ni desde el panel ni desde la consola
   (D-034).
 
+### 3.4 Sin nadie delante (D-151)
+
+`alojaflow:actualizacion-automatica` corre cada hora con la tarea programada. Instalar tarda más de lo
+que dura una visita, así que **sin cron no se instala nada solo**: solo se consulta la orden urgente
+(`--solo-consultar`, en `TareasPorVisita`) para avisar en el panel.
+
+- **Automáticas** (*Sistema → Actualizaciones*, apagadas al empezar): a las 3:00 de la instalación se
+  pregunta a GitHub por la última versión y, si es más nueva, se instala. La hora es la de la zona elegida
+  ahí; si nadie eligió, la de la primera propiedad.
+- **Urgentes** (prendidas al empezar, se pueden apagar): cuando el equipo de AlojaFlow corrige una
+  vulnerabilidad, ordena en dev.alojaflow.com pasar a esa versión. Cada instalación lo consulta cada hora
+  (`GET` a `url_urgente`, sin ningún dato) y la instala sin esperar a las 3:00. Quien puede actualizar ve
+  el aviso en todas las pantallas mientras esté pendiente.
+
+En los dos casos: solo una versión con formato `x.y.z` y **más nueva** que la instalada, bajada de
+`url_paquete` (GitHub) por `DescargaPorPedazos` y revisada por su firma como siempre; luego
+`alojaflow:actualizar --force`, con su copia de la base y su diario. Quien controlara dev.alojaflow.com no
+podría instalar nada que no sea una versión publicada y firmada. Nada en una copia con `.git`, con una
+actualización en marcha ni en la demostración. Si falla, se anota (`actualizacion.automatica` en la
+auditoría y en la pantalla) y esa versión no se reintenta en 20 horas.
+
 ## 4. Cómo se aplica: dos fases
 
 Cada fase es una petición firmada, solo para administradores y exenta del modo mantenimiento

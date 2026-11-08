@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 return [
     'nav' => 'Melhoria contínua',
+    'nav_ajustes' => 'O que é enviado',
     'titulo' => 'Melhoria contínua',
     'intro' => 'Ajude a melhorar o AlojaFlow enviando à equipe do AlojaFlow, uma vez por dia, dados de diagnóstico e de uso desta instalação. Não é obrigatório e você pode desativar quando quiser.',
     'que_se_manda' => 'O que é enviado',
@@ -60,6 +61,7 @@ return [
         'tipo' => 'O que é',
         'tipos' => [
             'error' => 'Um erro',
+            'informe' => 'Um informe',
             'sugerencia' => 'Uma sugestão',
             'pregunta' => 'Uma pergunta',
             'otro' => 'Outra coisa',
@@ -69,7 +71,9 @@ return [
         'pasos' => 'Passos para que se repita',
         'pasos_ayuda' => 'O que você fez logo antes, um por linha.',
         'imagenes' => 'Imagens',
-        'imagenes_ayuda' => 'Até :cuantas capturas de tela ou fotos.',
+        'imagenes_ayuda' => 'Até :cuantas capturas de tela ou fotos, em JPG ou PNG.',
+        'imagenes_descartadas' => 'Foram descartadas :cuantas imagens que não eram JPG ou PNG válidas; o relato foi enviado sem elas.',
+        'demasiados' => 'Você já enviou muitos na última hora. Tente mais tarde.',
         'contacto' => 'Contato',
         'contacto_nombre' => 'Seu nome',
         'contacto_correo' => 'Seu e-mail',

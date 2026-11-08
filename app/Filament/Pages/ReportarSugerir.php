@@ -34,6 +34,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 use function Illuminate\Support\defer;
 
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Url;
 
 /**
@@ -67,7 +68,7 @@ class ReportarSugerir extends Page
 
     public static function getNavigationGroup(): ?string
     {
-        return __('ui.nav.sistema');
+        return __('mejora.nav');
     }
 
     public static function getNavigationLabel(): string
@@ -98,7 +99,8 @@ class ReportarSugerir extends Page
                 Textarea::make('pasos')->label(__('mejora.reportar.pasos'))->helperText(__('mejora.reportar.pasos_ayuda'))->maxLength(5000)->rows(4)->columnSpanFull()
                     ->visible(fn (Get $get): bool => $get('tipo') === 'error'),
                 FileUpload::make('imagenes')->label(__('mejora.reportar.imagenes'))->helperText(__('mejora.reportar.imagenes_ayuda', ['cuantas' => (string) $maximo]))
-                    ->multiple()->maxFiles($maximo)->image()->maxSize((int) config('alojaflow.mejora_continua.kb_por_imagen'))
+                    // Solo JPG o PNG: aquí por su tipo, y al guardar por su contenido (ImagenSegura).
+                    ->multiple()->maxFiles($maximo)->image()->acceptedFileTypes(['image/jpeg', 'image/png'])->maxSize((int) config('alojaflow.mejora_continua.kb_por_imagen'))
                     // Se reducen en el navegador antes de subirlas: en el teléfono las fotos pesan mucho.
                     ->imageResizeMode('contain')->imageResizeTargetWidth('2560')->imageResizeTargetHeight('2560')->imageResizeUpscale(false)
                     ->disk('local')->directory('mejora/reportes')->visibility('private')->preventFilePathTampering()
@@ -118,10 +120,21 @@ class ReportarSugerir extends Page
     {
         $usuario = Acceso::usuarioActual();
         abort_if($usuario === null, 403);
+        // Para que nadie llene el receptor por error o a propósito: diez por hora y por persona.
+        if (RateLimiter::tooManyAttempts('reportes-mejora:'.$usuario->id, 10)) {
+            Notification::make()->danger()->title(__('mejora.reportar.demasiados'))->send();
+
+            return;
+        }
         $datos = $this->form->getState();
+        RateLimiter::hit('reportes-mejora:'.$usuario->id, 3600);
         $imagenes = array_values(array_filter((array) ($datos['imagenes'] ?? []), 'is_string'));
         $reporte = $reportes->crear($usuario, ['pantalla' => $this->desde] + $datos, $imagenes);
         RegistroAuditoria::anotar('mejora.reporte', null, ['tipo' => $reporte->tipo, 'titulo' => $reporte->titulo]);
+        $descartadas = count($imagenes) - count($reporte->imagenes ?? []);
+        if ($descartadas > 0) {
+            Notification::make()->warning()->persistent()->title(__('mejora.reportar.imagenes_descartadas', ['cuantas' => (string) $descartadas]))->send();
+        }
 
         // Se manda después de responder: con diez imágenes y mala conexión tardaría más de lo que aguanta la petición.
         // Si no sale, el programador lo reintenta cada hora.

@@ -61,12 +61,12 @@ class MejoraContinua extends Page
 
     public static function getNavigationGroup(): ?string
     {
-        return __('ui.nav.sistema');
+        return __('mejora.nav');
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('mejora.nav');
+        return __('mejora.nav_ajustes');
     }
 
     public function getTitle(): string|Htmlable
@@ -151,6 +151,11 @@ class MejoraContinua extends Page
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('reportar')
+                ->label(__('mejora.reportar.nav'))
+                ->icon(Heroicon::OutlinedChatBubbleLeftEllipsis)
+                ->url(fn (): string => ReportarSugerir::getUrl())
+                ->visible(fn (): bool => ReportarSugerir::canAccess()),
             Action::make('ver')
                 ->label(__('mejora.ver'))
                 ->icon(Heroicon::OutlinedEye)

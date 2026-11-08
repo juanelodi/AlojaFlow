@@ -17,6 +17,8 @@ return [
             'precio_fechas' => 'Tarifpreis für bestimmte Daten geändert',
         ],
         'actualizacion' => [
+            'automatica' => 'Update automatisch installiert',
+            'automaticas' => 'Automatische Updates geändert',
             'completada' => 'Aktualisierung abgeschlossen',
             'preparar' => 'Aktualisierung vorbereitet',
             'recuperada' => 'Aktualisierung wiederhergestellt',
