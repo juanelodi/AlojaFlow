@@ -17,11 +17,14 @@ use App\Filament\AvatarLocal;
 use App\Filament\Pages\Actualizaciones;
 use App\Filament\Pages\EditarPerfil;
 use App\Filament\Pages\IniciarSesion;
+use App\Filament\Pages\MejoraContinua;
 use App\Filament\Pages\PedirRecuperacion;
+use App\Filament\Pages\ReportarSugerir;
 use App\Filament\Pages\Resumen;
 use App\Filament\Pages\SesionesDispositivos;
 use App\Http\Middleware\AplicarIdioma;
 use App\Http\Middleware\RecordarDispositivo;
+use App\MejoraContinua\Permiso;
 use App\Seguridad\Acceso;
 use Filament\Actions\Action;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
@@ -130,12 +133,16 @@ class PanelAplicacionProvider extends PanelProvider
             ->userMenuItems([
                 Action::make('sesiones')->label(fn (): string => __('permisos.sesiones.titulo'))->icon(Heroicon::OutlinedComputerDesktop)
                     ->url(fn (): string => SesionesDispositivos::getUrl())->visible(fn (): bool => SesionesDispositivos::canAccess()),
+                // Desde cualquier pantalla, sabiendo cuál era (D-150).
+                Action::make('reportar')->label(fn (): string => __('mejora.reportar.nav'))->icon(Heroicon::OutlinedChatBubbleLeftEllipsis)
+                    ->url(fn (): string => ReportarSugerir::getUrl(['desde' => request()->route()?->getName()]))->visible(fn (): bool => ReportarSugerir::canAccess()),
             ])
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): View => view('componentes.cabeza-panel'))
             ->renderHook(PanelsRenderHook::BODY_START, fn (): View|string => ModoDemo::activo() ? view('componentes.banner-demo') : '')
             ->renderHook(PanelsRenderHook::FOOTER, fn () => view('componentes.pie'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn (): View|string => self::avisoActualizacionSinTerminar())
             ->renderHook(PanelsRenderHook::CONTENT_START, fn (): View|string => self::avisoVersionNueva(), scopes: Resumen::class)
+            ->renderHook(PanelsRenderHook::CONTENT_START, fn (): View|string => self::avisoMejoraContinua())
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -157,6 +164,19 @@ class PanelAplicacionProvider extends PanelProvider
     /**
      * Hay una versión nueva: en el inicio, solo para quien puede instalarla (D-140).
      */
+    /**
+     * Quien actualizó desde una versión anterior decide si manda datos de mejora continua (D-150). Solo el
+     * administrador, y no en la pantalla donde ya se decide.
+     */
+    public static function avisoMejoraContinua(): View|string
+    {
+        if (! MejoraContinua::canAccess() || Permiso::decidido() || ! Permiso::hayReceptor() || request()->routeIs(MejoraContinua::getRouteName())) {
+            return '';
+        }
+
+        return view('filament.avisos.mejora-continua');
+    }
+
     public static function avisoVersionNueva(): View|string
     {
         if (! Actualizaciones::canAccess()) {

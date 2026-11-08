@@ -12,6 +12,7 @@ namespace App\Instalacion;
 
 use App\Actualizacion\EsquemaAlDia;
 use App\Demo\GeneradorDemo;
+use App\MejoraContinua\Permiso;
 use App\Models\User;
 use App\Programador\TareasPorVisita;
 use App\Support\Ajustes;
@@ -58,6 +59,14 @@ class Instalador
             'es_administrador' => true,
             'es_superadministrador' => true,
         ]);
+    }
+
+    /**
+     * La casilla de mejora continua del instalador (D-150), que explica qué se manda y viene marcada.
+     */
+    public function decidirMejoraContinua(bool $permiso): void
+    {
+        Permiso::guardar($permiso);
     }
 
     public function crearDemo(): void

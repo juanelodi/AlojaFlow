@@ -53,6 +53,11 @@ return [
             'ajustes' => 'E-Mail-Einstellungen geändert',
             'quitar' => 'E-Mail-Einstellungen entfernt',
         ],
+        'mejora' => [
+            'permiso' => 'Kontinuierliche Verbesserung: Erlaubnis geändert',
+            'olvidar' => 'Kontinuierliche Verbesserung: Installation vergessen',
+            'reporte' => 'Meldung oder Vorschlag gesendet',
+        ],
         'cuota_reserva' => [
             'crear' => 'Zahlung zum Plan hinzugefügt',
             'editar' => 'Geplante Zahlung geändert',

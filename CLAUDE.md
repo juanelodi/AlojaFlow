@@ -4,7 +4,7 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-07): versión de prueba 1.0.37**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-08): versión de prueba 1.0.38**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
   D-029) y D-036 se revisan con el usuario. El plan de [docs/plan-paridad.md](docs/plan-paridad.md) quedó completo en la 1.0.24, y lo que se eligió del núcleo heredado ([docs/nucleo-heredado.md](docs/nucleo-heredado.md), D-117), en la 1.0.29.
@@ -210,6 +210,9 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 - `app/Limpieza/AvisoEquipo.php`, el parte para el equipo, y `Omisiones.php`, a quién no mostrar en cada lugar (D-074, D-144); la jornada lo toma de `Operacion::delDia`.
 - `app/Limpieza/`, `app/Comunicacion/` (`Mensajero`, D-045), `app/Ical/` (D-046), `app/Llegada/` y
   `app/Privacidad/` (D-047): datos propios, que valen igual en independientes y subordinadas.
+- `app/MejoraContinua/` — datos de uso con permiso y «Reportar o sugerir», hacia dev.alojaflow.com (D-150,
+  `docs/especificacion/mejora-continua.md`): `Permiso`, `ArmadorLatido`, `RegistroErrores`, `ReportesMejora`, `EnvioMejora`.
+  Nada de huéspedes; un dato nuevo del latido se agrega también a esa especificación.
 - `app/Paises/` — **todo lo que cambia por país** va detrás de `Pais` (D-048). `app/Dinero/`, políticas (D-050). Por ahora no se factura
   en ningún país: de un pago sale un recibo (`GeneradorPdf::recibo`, D-131).
 - `app/Autoridades/` — registro de viajeros: `GestorEnvios` concilia reservas con lo comunicado y `Ses/` es SES.Hospedajes (D-100).

@@ -53,6 +53,11 @@ return [
             'ajustes' => 'Definições de e-mail alteradas',
             'quitar' => 'Definições de e-mail removidas',
         ],
+        'mejora' => [
+            'permiso' => 'Melhoria contínua: permissão alterada',
+            'olvidar' => 'Melhoria contínua: instalação esquecida',
+            'reporte' => 'Relato ou sugestão enviado',
+        ],
         'cuota_reserva' => [
             'crear' => 'Pagamento adicionado ao calendário',
             'editar' => 'Pagamento do calendário alterado',

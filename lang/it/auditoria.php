@@ -53,6 +53,11 @@ return [
             'ajustes' => 'Impostazioni e-mail modificate',
             'quitar' => 'Impostazioni e-mail rimosse',
         ],
+        'mejora' => [
+            'permiso' => 'Miglioramento continuo: permesso modificato',
+            'olvidar' => 'Miglioramento continuo: installazione dimenticata',
+            'reporte' => 'Segnalazione o suggerimento inviato',
+        ],
         'cuota_reserva' => [
             'crear' => 'Pagamento aggiunto al calendario',
             'editar' => 'Pagamento del calendario modificato',

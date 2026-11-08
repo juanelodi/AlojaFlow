@@ -51,6 +51,7 @@ final class TareasPorVisita
         'alojaflow:autoridades' => 10,
         'alojaflow:copia --programada' => 1440,
         'alojaflow:buscar-version' => 1440,
+        'alojaflow:mejora-continua' => 60,
     ];
 
     /**
@@ -72,7 +73,7 @@ final class TareasPorVisita
         if (! ModoDemo::activo()) {
             return $tareas;
         }
-        unset($tareas['alojaflow:copia --programada']);
+        unset($tareas['alojaflow:copia --programada'], $tareas['alojaflow:mejora-continua']);
 
         // Sin cron el reinicio no tiene hora: cada hora mira si hoy ya se hizo.
         return $tareas + ['alojaflow:demo-reiniciar --si-toca' => 60];

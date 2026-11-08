@@ -838,6 +838,22 @@ Se calcula con los cargos de hoy, sin foto en cada reserva: cambiar un cargo cam
 
 **Sugerencias, con lo que se pudo comprobar (2026-11-07, casi todo fuentes secundarias):** Booking, comisión de 15 % (10 a 25 %) sobre el total con limpieza, y cargo de pago de 1.1 a 3.1 % solo con Payments by Booking.com (llega apagado). Airbnb, tarifa única de 15.5 %, 16 % en México según una fuente; las fechas de la transición no coinciden entre fuentes. Expedia: no hay cifra pública, va por contrato, y se deja vacía. México: 4 % de ISR y 8 % de IVA con RFC, 20 % y 16 % sin él (LISR 113-A, LIVA 18-J), para persona física; no se leyó el texto oficial vigente, y el IVA de 16 % sobre la comisión es un supuesto a confirmar con la factura del portal. Lo de cada país va en `Pais::cargosDeCanales`.
 
+### D-150 · 2026-11-08 · Mejora continua: datos de uso con permiso, y reportes con imágenes
+
+Una instalación puede mandar al equipo de AlojaFlow, una vez al día, datos de diagnóstico y de uso, y
+quien la usa puede reportar errores o sugerir cambios con hasta diez imágenes. Lo recibe
+`dev.alojaflow.com`, un sistema aparte del equipo. **Decidido con el usuario:** se pide permiso con una casilla al instalar (marcada,
+explica qué se manda, se puede desmarcar); quien actualiza decide en un aviso del panel y, mientras no
+decide, no sale nada. No es obligatorio. Las reservas van en número exacto, por origen, y se cuentan las
+visitas a cada pantalla. No hay formulario público: los reportes salen solo de las instalaciones.
+
+**Nunca** sale nada de huéspedes, importes ni contraseñas; los errores se sanean aquí y otra vez allá, y
+de una consulta va el SQL con `?`. La instalación es anónima (un UUID al azar) salvo que elija
+identificarse, y «Olvidar mi instalación» borra todo allá. Los reportes no dependen del permiso: los manda
+quien los escribe, y sus imágenes se borran de aquí al llegar. Todo va en segundo plano y, si el
+receptor no responde, se reintenta cada hora sin afectar al alojamiento. Detalle en
+`docs/especificacion/mejora-continua.md`.
+
 ## Pendientes
 
 - Precios y modelo de venta.

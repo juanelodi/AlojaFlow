@@ -53,6 +53,11 @@ return [
             'ajustes' => 'Ajustes de correo cambiados',
             'quitar' => 'Ajustes de correo quitados',
         ],
+        'mejora' => [
+            'permiso' => 'Mejora continua: permiso cambiado',
+            'olvidar' => 'Mejora continua: instalación olvidada',
+            'reporte' => 'Reporte o sugerencia enviado',
+        ],
         'cuota_reserva' => [
             'crear' => 'Pago agregado al calendario',
             'editar' => 'Pago del calendario cambiado',

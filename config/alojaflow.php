@@ -11,7 +11,7 @@ declare(strict_types=1);
 return [
 
     // Versión instalada; la usa el enlace «Código fuente» (regla 8).
-    'version' => '1.0.37',
+    'version' => '1.0.38',
 
     // Idiomas de la interfaz (regla 7). El español es la fuente.
     'idiomas' => ['es', 'en', 'fr', 'it', 'pt', 'de'],
@@ -60,6 +60,23 @@ return [
         'copias_conservadas' => 3,
         // Requisitos mínimos de PHP que comprueba cada paquete además de los suyos.
         'extensiones' => ['ctype', 'curl', 'dom', 'fileinfo', 'intl', 'mbstring', 'openssl', 'pdo_mysql', 'sodium', 'tokenizer', 'xml', 'zip', 'zlib'],
+    ],
+
+    // Mejora continua (D-150; docs/especificacion/mejora-continua.md): datos de diagnóstico y uso, sin
+    // huéspedes, solo con permiso de quien administra la instalación. Los reportes los manda quien los escribe.
+    'mejora_continua' => [
+        // Quien distribuya su propia versión de AlojaFlow pone aquí su receptor, o lo deja vacío para no mandar nada.
+        'url' => env('ALOJAFLOW_MEJORA_URL', 'https://dev.alojaflow.com/api/v1'),
+        'tiempo_conexion' => 5,
+        'tiempo_peticion' => 20,
+        'agente' => 'AlojaFlow/%s (mejora continua; +https://alojaflow.com)',
+        // Errores por envío y días que se guardan los que no se pudieron mandar.
+        'errores_por_envio' => 100,
+        'dias_conservar' => 7,
+        // Visitas a pantallas: días que se guardan (el latido manda los últimos 30).
+        'dias_pantallas' => 35,
+        'imagenes_por_reporte' => 10,
+        'kb_por_imagen' => 10240,
     ],
 
 ];

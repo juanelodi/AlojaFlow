@@ -93,6 +93,8 @@ function af_textos()
             'admin_contrasena' => 'Contraseña (mínimo 12 caracteres)',
             'admin_repite' => 'Repite la contraseña',
             'demo' => 'Crear también un hotel de demostración con datos ficticios, para probar (se quita con un botón)',
+            'mejora' => 'Enviar datos para la mejora continua de AlojaFlow',
+            'mejora_ayuda' => 'Una vez al día, en segundo plano: versión de AlojaFlow y de PHP, base de datos, módulos prendidos, cuántas propiedades, unidades y reservas hay, cuántas veces se abre cada pantalla y los errores del sistema sin sus datos. Nunca nada de tus huéspedes, ni importes, ni contraseñas. No es obligatorio: puedes desmarcarlo y cambiarlo cuando quieras en Sistema → Mejora continua.',
             'instalar' => 'Instalar',
             'atras' => 'Atrás',
             'probando_base' => 'Probando la conexión con la base de datos…',
@@ -231,6 +233,8 @@ function af_textos()
             'admin_contrasena' => 'Password (at least 12 characters)',
             'admin_repite' => 'Repeat the password',
             'demo' => 'Also create a demo hotel with made-up data, to try things out (removed with one button)',
+            'mejora' => 'Send data for the continuous improvement of AlojaFlow',
+            'mejora_ayuda' => 'Once a day, in the background: AlojaFlow and PHP versions, database, enabled modules, how many properties, units and bookings there are, how often each screen is opened and system errors without their data. Never anything about your guests, nor amounts, nor passwords. It is optional: you can uncheck it and change it any time in System → Continuous improvement.',
             'instalar' => 'Install',
             'atras' => 'Back',
             'probando_base' => 'Testing the database connection…',
@@ -1384,6 +1388,8 @@ function af_atender_accion()
                     af_responder($admin);
                 }
                 af_instalador_laravel()->crearAdministrador(trim($entrada['nombre']), trim($entrada['correo']), (string) $entrada['admin_contrasena'], af_idioma());
+                // Mejora continua (D-150): lo que dejó marcado en la casilla, que explica qué se manda.
+                af_instalador_laravel()->decidirMejoraContinua(! empty($entrada['mejora']));
                 af_responder(array('ok' => true));
             case 'demo':
                 af_instalador_laravel()->crearDemo();
@@ -1572,6 +1578,8 @@ function af_pagina()
             <label for="admin_repite"><?php echo af_h(af_t('admin_repite')); ?></label>
             <input type="password" id="admin_repite" name="admin_repite" autocomplete="new-password" minlength="12" required>
             <label class="casilla" style="margin-top:16px"><input type="checkbox" id="demo" name="demo"> <span><?php echo af_h(af_t('demo')); ?></span></label>
+            <label class="casilla" style="margin-top:16px"><input type="checkbox" id="mejora" name="mejora" checked aria-describedby="mejora-ayuda"> <span><?php echo af_h(af_t('mejora')); ?></span></label>
+            <p class="ayuda" id="mejora-ayuda"><?php echo af_h(af_t('mejora_ayuda')); ?></p>
         </section>
         <p class="mensaje error" id="datos-error" role="alert" hidden></p>
         <div class="acciones">

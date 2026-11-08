@@ -53,6 +53,11 @@ return [
             'ajustes' => 'Email settings changed',
             'quitar' => 'Email settings removed',
         ],
+        'mejora' => [
+            'permiso' => 'Continuous improvement: permission changed',
+            'olvidar' => 'Continuous improvement: installation forgotten',
+            'reporte' => 'Report or suggestion sent',
+        ],
         'cuota_reserva' => [
             'crear' => 'Payment added to the schedule',
             'editar' => 'Scheduled payment changed',

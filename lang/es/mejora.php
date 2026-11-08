@@ -1,0 +1,115 @@
+<?php
+
+/*
+ * AlojaFlow — sistema de gestión de alojamientos
+ * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+declare(strict_types=1);
+
+// Mejora continua (D-150): permiso, qué se manda y «Reportar o sugerir».
+return [
+    'nav' => 'Mejora continua',
+    'titulo' => 'Mejora continua',
+    'intro' => 'Ayuda a mejorar AlojaFlow mandando, una vez al día, datos de diagnóstico y de uso de esta instalación al equipo de AlojaFlow. No es obligatorio y lo puedes apagar cuando quieras.',
+    'que_se_manda' => 'Qué se manda',
+    'lista' => [
+        'entorno' => 'Cómo está instalado: versión de AlojaFlow y de PHP, base de datos, servidor, límites, y si el programador y las copias funcionan.',
+        'uso' => 'Cómo se usa, en números: propiedades, unidades, usuarios, módulos prendidos, reservas creadas por origen y cuántas veces se abre cada pantalla.',
+        'errores' => 'Los errores del sistema, sin los datos que tenían (sin correos, teléfonos ni valores).',
+    ],
+    'que_no' => 'Nunca se manda nada de tus huéspedes (nombres, correos, teléfonos, documentos), ni importes, ni contraseñas.',
+    'permiso' => 'Enviar datos para la mejora continua',
+    'permiso_ayuda' => 'Una vez al día, en segundo plano, a :receptor.',
+    'identificar' => 'Identificar mi instalación para recibir ayuda',
+    'identificar_ayuda' => 'Se manda también el nombre, el dominio y el correo que escribas aquí, para que el equipo te pueda escribir si ve un problema. Si no lo marcas, la instalación es anónima.',
+    'nombre' => 'Nombre del alojamiento',
+    'dominio' => 'Dominio',
+    'correo' => 'Correo de contacto',
+    'guardado' => 'Guardado',
+    'estado' => [
+        'titulo' => 'Estado',
+        'sin_receptor' => 'No hay a dónde mandar los datos (ALOJAFLOW_MEJORA_URL está vacío): no se manda nada.',
+        'sin_decidir' => 'Todavía no se ha decidido: no se manda nada.',
+        'apagado' => 'Apagado: no se manda nada.',
+        'nunca' => 'Todavía no se ha mandado nada.',
+        'ultimo_ok' => 'Último envío: :cuando.',
+        'ultimo_fallo' => 'El último intento falló (:motivo). Se vuelve a intentar cada hora.',
+        'identificador' => 'Identificador anónimo: :uuid',
+    ],
+    'ver' => 'Ver lo que se envía',
+    'ver_ayuda' => 'Esto es exactamente lo que se mandaría ahora.',
+    'enviar_ahora' => 'Enviar ahora',
+    'enviado' => 'Enviado.',
+    'no_enviado' => 'No se pudo enviar (:motivo). Se vuelve a intentar cada hora.',
+    'olvidar' => 'Olvidar mi instalación',
+    'olvidar_ayuda' => 'Borra en dev.alojaflow.com todo lo que mandó esta instalación, también sus reportes, y deja de mandar datos.',
+    'olvidada' => 'Listo: se borró todo lo de esta instalación y ya no se manda nada.',
+    'aviso' => [
+        'titulo' => 'Ayuda a mejorar AlojaFlow',
+        'texto' => '¿Nos permites recibir, una vez al día, datos de diagnóstico y de uso de esta instalación? Nada de tus huéspedes. No es obligatorio y lo puedes cambiar en Sistema → Mejora continua.',
+        'si' => 'Sí, enviar',
+        'no' => 'No, gracias',
+        'detalle' => 'Ver qué se manda',
+    ],
+    'reportar' => [
+        'nav' => 'Reportar o sugerir',
+        'titulo' => 'Reportar o sugerir',
+        'intro' => 'Cuéntale al equipo de AlojaFlow un error, una idea o una duda. La respuesta llega aquí mismo.',
+        'aviso_datos' => 'No incluyas datos de tus huéspedes, ni en el texto ni en las imágenes.',
+        'tipo' => 'Qué es',
+        'tipos' => [
+            'error' => 'Un error',
+            'sugerencia' => 'Una sugerencia',
+            'pregunta' => 'Una pregunta',
+            'otro' => 'Otra cosa',
+        ],
+        'titulo_campo' => 'Título',
+        'descripcion' => 'Descripción',
+        'pasos' => 'Pasos para que se repita',
+        'pasos_ayuda' => 'Qué hiciste justo antes, uno por renglón.',
+        'imagenes' => 'Imágenes',
+        'imagenes_ayuda' => 'Hasta :cuantas capturas o fotos.',
+        'contacto' => 'Contacto',
+        'contacto_nombre' => 'Tu nombre',
+        'contacto_correo' => 'Tu correo',
+        'permite_contacto' => 'Me pueden escribir a este correo',
+        'diagnostico' => 'Adjuntar el diagnóstico de esta instalación',
+        'diagnostico_ayuda' => 'Lo mismo que se ve en Sistema → Mejora continua → Ver lo que se envía. Ayuda a encontrar el problema.',
+        'enviar' => 'Enviar',
+        'enviado' => 'Gracias. Se está enviando al equipo de AlojaFlow; su estado y la respuesta aparecen abajo.',
+        'guardado' => 'Gracias. Se mandará en cuanto haya conexión.',
+        'mis_reportes' => 'Mis reportes',
+        'reportes_instalacion' => 'Reportes de esta instalación',
+        'vacio' => 'Todavía no se ha mandado nada.',
+        'columnas' => [
+            'folio' => 'Folio',
+            'fecha' => 'Fecha',
+            'tipo' => 'Tipo',
+            'titulo' => 'Título',
+            'estado' => 'Estado',
+            'respuesta' => 'Respuesta',
+        ],
+        'envio' => [
+            'pendiente' => 'Por enviar',
+            'enviado' => 'Enviado',
+            'error' => 'Se reintentará',
+            'rechazado' => 'No se pudo enviar',
+        ],
+        'estados' => [
+            'nuevo' => 'Recibido',
+            'en_revision' => 'En revisión',
+            'planeado' => 'Planeado',
+            'en_curso' => 'En curso',
+            'resuelto' => 'Resuelto',
+            'descartado' => 'Descartado',
+            'duplicado' => 'Duplicado',
+        ],
+        'resuelto_en' => 'Resuelto en la :version',
+        'sin_respuesta' => 'Sin respuesta todavía',
+    ],
+    'consola' => [
+        'resumen' => 'Reportes: :reportes · errores: :errores · latido: :latido',
+    ],
+];

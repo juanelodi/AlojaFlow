@@ -2,6 +2,15 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.38 — 2026-11-08
+
+**Reportar o sugerir.** Desde el menú de usuario, cualquiera del equipo puede contarle al equipo de AlojaFlow un error, una idea o una duda, con hasta diez capturas o fotos. La respuesta llega a la misma pantalla, en «Mis reportes».
+
+**Mejora continua, con tu permiso.** Si lo permites, la instalación manda una vez al día datos de diagnóstico y de uso: versiones, módulos, cuántas propiedades, unidades y reservas hay, qué pantallas se usan y los errores del sistema sin sus datos. **Nunca nada de tus huéspedes, ni importes, ni contraseñas.**
+
+- **No es obligatorio.** Al instalar se pregunta con una casilla; si actualizas, el panel te pregunta una vez y, mientras no decidas, no se manda nada.
+- **En Sistema → Mejora continua** puedes apagarlo, ver exactamente lo que se manda, identificar tu instalación para recibir ayuda u olvidarla, lo que borra todo lo que se mandó.
+
 ## 1.0.37 — 2026-11-07
 
 **Omitir a un cliente, de verdad.** En Clientes omitidos ahora se elige «En todo» o cada sección: Hoy y cierre del día, Calendario, Limpieza, Aviso, Informes y Mensajes.

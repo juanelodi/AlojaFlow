@@ -11,6 +11,7 @@ declare(strict_types=1);
 use App\Http\Controllers\ActualizacionController;
 use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\CodigoFuenteController;
+use App\Http\Controllers\DecidirMejoraContinuaController;
 use App\Http\Controllers\EnlacePagoController;
 use App\Http\Controllers\EntradaInstalacionController;
 use App\Http\Controllers\GrupoPublicoController;
@@ -129,3 +130,7 @@ Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class, 'th
     ->name('actualizaciones.descargar-pedazo');
 Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class])->get('/actualizaciones/{actualizacion}/copia-base-datos', [ActualizacionController::class, 'copiaBaseDatos'])
     ->name('actualizaciones.copia-base-datos');
+
+// Mejora continua (D-150): los botones del aviso para decidir si se mandan datos. Lo comprueba el controlador.
+Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class, 'throttle:30,1'])->post('/mejora-continua/decidir', DecidirMejoraContinuaController::class)
+    ->name('mejora-continua.decidir');

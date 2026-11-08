@@ -9,9 +9,11 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\CabecerasSeguridad;
+use App\Http\Middleware\ContarPantallas;
 use App\Http\Middleware\EsquemaActualizado;
 use App\Http\Middleware\ProgramadorPorVisitas;
 use App\Http\Middleware\RecordarDispositivo;
+use App\MejoraContinua\RegistroErrores;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -40,6 +42,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['laravel_maintenance']);
         $middleware->append(EsquemaActualizado::class);
         $middleware->append(ProgramadorPorVisitas::class);
+        // Mejora continua (D-150): cuántas veces se abre cada pantalla, solo con permiso.
+        $middleware->append(ContarPantallas::class);
         $middleware->web(append: [RecordarDispositivo::class]);
         // El motor de reservas no da permisos por sesión y debe funcionar dentro de un iframe; los
         // avisos de pago llegan de la pasarela y se comprueban con su firma.
@@ -48,6 +52,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn () => route('filament.app.auth.login'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Mejora continua (D-150): el error saneado se junta para mandarlo, solo con permiso. Sigue al registro.
+        $exceptions->report(fn (\Throwable $error) => RegistroErrores::anotar($error));
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
