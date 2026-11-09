@@ -36,7 +36,7 @@ final class CatalogoVariables
     ];
 
     private const MENSAJE = [
-        'estancia' => ['numero', 'codigo', 'llegada', 'salida', 'noches', 'personas', 'unidad'],
+        'estancia' => ['numero', 'codigo', 'llegada', 'salida', 'noches', 'personas', 'unidad', 'codigo_acceso'],
         'titular' => ['huesped', 'nombre'],
         'dinero' => ['total', 'pagado', 'pendiente', 'cuota_importe', 'cuota_vence', 'cuota_periodo'],
         'propiedad' => ['propiedad', 'telefono_propiedad', 'correo_propiedad', 'pagina_propiedad', 'whatsapp_propiedad', 'mapa_propiedad'],

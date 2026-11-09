@@ -133,6 +133,16 @@ final class Formato
     }
 
     /**
+     * La hora como se lee en el idioma de quien mira (8:05 en español, 8:05 AM en inglés), en la zona indicada.
+     */
+    public static function hora(CarbonInterface $momento, ?string $zona = null): string
+    {
+        $momento = $zona === null ? $momento : $momento->copy()->setTimezone($zona);
+
+        return $momento->locale(app()->getLocale())->isoFormat('LT');
+    }
+
+    /**
      * Fecha y hora en la zona del usuario (o la indicada).
      */
     public static function momento(?CarbonInterface $momento, ?string $zona = null): string

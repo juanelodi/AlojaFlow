@@ -430,7 +430,7 @@ it('en una subordinada las reservas siguen siendo de solo consulta', function ()
     $this->get('/unidades/create')->assertForbidden();
 });
 
-it('una reserva subordinada no ofrece editar, cancelar ni registrar, ni siquiera al administrador', function () {
+it('una reserva subordinada no ofrece editar ni cancelar, ni siquiera al administrador; la llegada sí, con marca propia', function () {
     $subordinada = Propiedad::query()->create(['nombre' => 'Sub', 'codigo' => 'sub', 'zona_horaria' => 'UTC', 'moneda' => 'MXN']);
     $unidad = Unidad::query()->create(['propiedad_id' => $subordinada->id, 'codigo' => 'S1', 'nombre' => 'S1', 'sincronizada' => true]);
     $reserva = Reserva::query()->create([
@@ -442,8 +442,12 @@ it('una reserva subordinada no ofrece editar, cancelar ni registrar, ni siquiera
 
     Livewire::test(ViewReserva::class, ['record' => $reserva->getKey()])
         ->assertActionHidden(EditAction::class)
-        ->assertActionHidden('registrarEntrada')
-        ->assertActionHidden('cancelar');
+        ->assertActionHidden('cancelar')
+        // Desde la 1.0.40 se anota en una marca propia, sin escribir en la reserva de la principal (D-153).
+        ->assertActionVisible('registrarEntrada')
+        ->callAction('registrarEntrada');
+    expect(\App\Models\MarcaEstancia::query()->where('reserva_id', $reserva->id)->exists())->toBeTrue()
+        ->and($reserva->refresh()->entrada_registrada_en)->toBeNull();
     $this->get('/reservas/'.$reserva->id.'/edit')->assertForbidden();
     Livewire::test(ListReservas::class)->assertTableActionHidden(EditAction::class, $reserva);
     Livewire::test(ListUnidades::class)->assertTableActionHidden(EditAction::class, $unidad);

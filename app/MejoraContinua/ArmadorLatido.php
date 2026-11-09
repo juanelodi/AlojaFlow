@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\MejoraContinua;
 
+use App\Copias\CopiaExterna;
 use App\Enums\EstadoEjecucion;
 use App\Enums\EstadoEnvio;
 use App\Enums\EstadoFuenteIcal;
@@ -227,6 +228,8 @@ final class ArmadorLatido
             'copias' => [
                 'ultima_hace_h' => isset($copia['en']) ? (int) Carbon::parse((string) $copia['en'])->diffInHours(now(), true) : null,
                 'origen' => isset($copia['origen']) ? (string) $copia['origen'] : null,
+                // Solo si está configurada y si la última salió: nunca a dónde.
+                'externa' => app(CopiaExterna::class)->configurada() ? ((app(CopiaExterna::class)->ultima()['ok'] ?? null) === true ? 'ok' : 'falla') : null,
             ],
             'sincronizacion' => [
                 'principales' => Principal::query()->whereIn('propiedad_id', $this->propiedades())->count(),

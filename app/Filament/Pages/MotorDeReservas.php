@@ -132,6 +132,7 @@ class MotorDeReservas extends Page
                     Toggle::make('activo')->label(__('motor.panel.activo'))->columnSpanFull(),
                     Toggle::make('calendario_publico')->label(__('motor.panel.calendario'))->helperText(__('motor.panel.calendario_ayuda'))->columnSpanFull(),
                     TextInput::make('anticipo_porcentaje')->label(__('motor.panel.anticipo'))->helperText(__('motor.panel.anticipo_ayuda'))->numeric()->minValue(0)->maxValue(100)->required(),
+                    TextInput::make('unidades_maximas')->label(__('motor.panel.unidades_maximas'))->helperText(__('motor.panel.unidades_maximas_ayuda'))->numeric()->integer()->minValue(1)->maxValue(10)->required(),
                     TextInput::make('minutos_retencion')->label(__('motor.panel.retencion'))->helperText(__('motor.panel.retencion_ayuda'))->numeric()->minValue(5)->maxValue(10080)->required(),
                     Toggle::make('confirmacion_inmediata')->label(__('motor.panel.confirmacion_inmediata'))->helperText(__('motor.panel.confirmacion_inmediata_ayuda')),
                     TextInput::make('horas_revision')->label(__('motor.panel.horas_revision'))->helperText(__('motor.panel.horas_revision_ayuda'))->numeric()->minValue(0)->maxValue(720)->required(),
@@ -175,6 +176,15 @@ class MotorDeReservas extends Page
                         ->helperText(fn (): string => $ayudaLlave('mercadopago_webhook')),
                     Toggle::make('mercadopago_quitar')->label(__('motor.panel.quitar_llaves')),
                 ]),
+                // PayPal (D-159): la aplicación REST de su panel de desarrolladores.
+                Section::make(__('motor.panel.paypal'))->description(__('motor.panel.paypal_ayuda'))->hidden(fn (): bool => ModoDemo::activo() || ! Modulos::activo(Modulo::Pagos))->collapsible()->columns(['default' => 1, 'md' => 2])->schema([
+                    TextInput::make('paypal_cliente')->label(__('motor.panel.paypal_cliente'))->maxLength(200)->regex('/^[A-Za-z0-9_\-]+$/'),
+                    TextInput::make('paypal_secreto')->label(__('motor.panel.paypal_secreto'))->password()->revealable()->autocomplete('new-password')->maxLength(200)
+                        ->helperText(fn (): string => $ayudaLlave('paypal_secreto')),
+                    TextInput::make('paypal_webhook')->label(__('motor.panel.paypal_webhook'))->helperText(__('motor.panel.paypal_webhook_ayuda'))->maxLength(100)->regex('/^[A-Za-z0-9]+$/'),
+                    Toggle::make('paypal_pruebas')->label(__('motor.panel.paypal_pruebas'))->helperText(__('motor.panel.paypal_pruebas_ayuda')),
+                    Toggle::make('paypal_quitar')->label(__('motor.panel.quitar_llaves')),
+                ]),
             ]);
     }
 
@@ -189,6 +199,7 @@ class MotorDeReservas extends Page
             'calendario_publico' => (bool) ($datos['calendario_publico'] ?? false),
             'anticipo_porcentaje' => (int) $datos['anticipo_porcentaje'],
             'minutos_retencion' => (int) $datos['minutos_retencion'],
+            'unidades_maximas' => (int) $datos['unidades_maximas'],
             'confirmacion_inmediata' => (bool) ($datos['confirmacion_inmediata'] ?? false),
             'horas_revision' => (int) $datos['horas_revision'],
             'dias_antelacion' => (int) $datos['dias_antelacion'],
@@ -205,9 +216,11 @@ class MotorDeReservas extends Page
             'redsys_terminal' => trim((string) ($datos['redsys_terminal'] ?? '')),
             'redsys_pruebas' => (bool) ($datos['redsys_pruebas'] ?? true),
             'redsys_bizum' => (bool) ($datos['redsys_bizum'] ?? false),
+            'paypal_cliente' => ! empty($datos['paypal_quitar']) ? '' : trim((string) ($datos['paypal_cliente'] ?? '')),
+            'paypal_pruebas' => (bool) ($datos['paypal_pruebas'] ?? true),
             'condiciones' => $datos['condiciones'] ?? null,
         ]);
-        foreach (ModoDemo::activo() ? [] : ['stripe' => ['stripe_secreta', 'stripe_webhook'], 'mercadopago' => ['mercadopago_token', 'mercadopago_webhook'], 'redsys' => ['redsys_clave']] as $pasarela => $llaves) {
+        foreach (ModoDemo::activo() ? [] : ['stripe' => ['stripe_secreta', 'stripe_webhook'], 'mercadopago' => ['mercadopago_token', 'mercadopago_webhook'], 'redsys' => ['redsys_clave'], 'paypal' => ['paypal_secreto', 'paypal_webhook']] as $pasarela => $llaves) {
             foreach ($llaves as $llave) {
                 if (! empty($datos[$pasarela.'_quitar'])) {
                     $ajustes->guardarLlave($llave, null);
@@ -233,6 +246,7 @@ class MotorDeReservas extends Page
             'activo' => (bool) ($motor['activo'] ?? false),
             'anticipo_porcentaje' => $motor['anticipo_porcentaje'] ?? 30,
             'minutos_retencion' => $motor['minutos_retencion'] ?? 30,
+            'unidades_maximas' => $motor['unidades_maximas'] ?? 3,
             'confirmacion_inmediata' => (bool) ($motor['confirmacion_inmediata'] ?? false),
             'horas_revision' => $motor['horas_revision'] ?? 48,
             'dias_antelacion' => $motor['dias_antelacion'] ?? 0,
@@ -249,6 +263,8 @@ class MotorDeReservas extends Page
             'redsys_terminal' => $motor['redsys_terminal'] ?? '1',
             'redsys_pruebas' => (bool) ($motor['redsys_pruebas'] ?? true),
             'redsys_bizum' => (bool) ($motor['redsys_bizum'] ?? false),
+            'paypal_cliente' => $motor['paypal_cliente'] ?? null,
+            'paypal_pruebas' => (bool) ($motor['paypal_pruebas'] ?? true),
             'condiciones' => $motor['condiciones'] ?? null,
         ]);
     }

@@ -9,6 +9,18 @@
 declare(strict_types=1);
 
 return [
+    'segunda' => [
+        'moneda' => 'Deuxième devise',
+        'moneda_ayuda' => 'Facultatif, comme USD. Elle s’affiche à côté des prix et on peut y recevoir des espèces ; tout s’additionne dans la devise de l’établissement.',
+        'tipo' => 'Taux de change',
+        'tipo_ayuda' => 'Combien vaut 1 :segunda en :moneda. Vous le saisissez : changez-le quand il change.',
+        'recibido_en' => 'Reçu en',
+        'tipo_pago' => 'Taux de change de ce paiement',
+        'se_anota' => 'La réservation enregistre :importe.',
+        'recibido' => ':importe à :tipo',
+        'recibido_titulo' => 'Reçu',
+        'efectivo_en' => 'Espèces en :moneda (à compter à part)',
+    ],
     'politicas' => [
         'no_reembolsable' => 'Non remboursable',
         'no_reembolsable_ayuda' => 'En cas d’annulation, à tout moment, le total est facturé.',

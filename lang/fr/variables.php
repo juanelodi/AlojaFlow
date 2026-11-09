@@ -75,6 +75,7 @@ return [
         'enlace_reserva' => 'Pour voir la réservation en ligne',
         'enlace_llegada' => 'Pour remplir le formulaire d’arrivée',
         'enlace_mi_reserva' => 'Pour voir ses données, ses paiements et le guide',
+        'codigo_acceso' => 'Code d’accès de la réservation, ou le code fixe de son unité',
         'enlace_opinion' => 'Pour laisser un avis',
         'h_numero' => 'Numéro de ligne : 1, 2, 3…',
         'h_nombre' => 'Nom complet',

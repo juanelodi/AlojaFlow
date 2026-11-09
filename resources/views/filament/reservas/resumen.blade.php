@@ -19,11 +19,17 @@
             @endif
             <span class="af-nota">{{ trans_choice('ui.comun.n_noches', $reserva->noches) }} · {{ $reserva->unidad->nombre ?? '—' }}@unless ($esBloqueo) · {{ trans_choice('ui.comun.n_personas', $reserva->personas) }}@endunless</span>
         </div>
+        {{-- Parte de un pedido de varias unidades del motor (D-158). --}}
+        @if ($reserva->reserva_principal_id !== null || $reserva->acompanantes()->exists())
+            @php($pedido = $reserva->pedido())
+            <p class="af-nota" style="margin-top: .25rem">{{ __('ui.reservas.pedido_de', ['n' => $pedido->count(), 'numero' => $pedido->first()?->numero]) }}</p>
+        @endif
     </div>
 
     @unless ($esBloqueo)
         <dl class="af-cifras af-ficha__cifras">
-            <div class="af-cifra"><dt>{{ __('ui.comun.total') }}</dt><dd>{{ Formato::dinero($reserva->total, $reserva->moneda) }}</dd></div>
+            {{-- Con segunda moneda, lo que sería en ella (D-157). --}}
+            <div class="af-cifra"><dt>{{ __('ui.comun.total') }}</dt><dd>{{ Formato::dinero($reserva->total, $reserva->moneda) }}@if ($segunda = (new \App\Dinero\SegundaMoneda($reserva->propiedad))->texto($reserva->total))<span class="af-secundario" style="display:block">{{ $segunda }}</span>@endif</dd></div>
             <div class="af-cifra"><dt>{{ __('ui.ficha.pagado') }}</dt><dd>{{ Formato::dinero($reserva->pagado, $reserva->moneda) }}</dd></div>
             <div @class(['af-cifra', 'af-cifra--destacada' => $reserva->pendiente > 0])><dt>{{ __('ui.comun.pendiente') }}</dt><dd>{{ Formato::dinero($reserva->pendiente, $reserva->moneda) }}</dd></div>
         </dl>

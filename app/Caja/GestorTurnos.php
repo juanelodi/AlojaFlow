@@ -55,7 +55,7 @@ final class GestorTurnos
     }
 
     /**
-     * @return array{entradas: int, salidas: int, esperado: int, por_metodo: array<string, int>, cobros: int, gastos: int, ingresos: int}
+     * @return array{entradas: int, salidas: int, esperado: int, por_metodo: array<string, int>, cobros: int, gastos: int, ingresos: int, otras_monedas: array<string, int>}
      */
     public function resumen(TurnoCaja $turno): array
     {
@@ -67,7 +67,10 @@ final class GestorTurnos
         $sumar = fn (TipoMovimiento $tipo, bool $soloEfectivo): int => (int) $movimientos
             ->filter(fn (object $f): bool => $f->tipo === $tipo->value && (! $soloEfectivo || $f->metodo === $efectivo))->sum('total');
 
-        $entradas = ($pagos[$efectivo] ?? 0) + $sumar(TipoMovimiento::Ingreso, true);
+        // El efectivo recibido en la segunda moneda está en el cajón en esa moneda (D-157): se cuenta aparte, no en el esperado.
+        $otras = $this->dentro(DB::table('pagos'), $turno, $hasta)->where('metodo', $efectivo)->whereNotNull('moneda_recibida')
+            ->groupBy('moneda_recibida')->get(['moneda_recibida', DB::raw('SUM(importe) as principal'), DB::raw('SUM(importe_recibido) as recibido')]);
+        $entradas = ($pagos[$efectivo] ?? 0) - (int) $otras->sum('principal') + $sumar(TipoMovimiento::Ingreso, true);
         $salidas = $sumar(TipoMovimiento::Gasto, true);
 
         return [
@@ -78,6 +81,7 @@ final class GestorTurnos
             'cobros' => array_sum($pagos),
             'gastos' => $sumar(TipoMovimiento::Gasto, false),
             'ingresos' => $sumar(TipoMovimiento::Ingreso, false),
+            'otras_monedas' => $otras->mapWithKeys(fn (object $fila): array => [(string) $fila->moneda_recibida => (int) $fila->recibido])->all(),
         ];
     }
 

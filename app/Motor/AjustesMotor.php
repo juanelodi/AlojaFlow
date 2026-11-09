@@ -45,6 +45,14 @@ final class AjustesMotor
         return min(100, max(0, (int) $this->valor('anticipo_porcentaje', 30)));
     }
 
+    /**
+     * Cuántas unidades se pueden pedir en una sola reserva (D-158). 1 lo apaga; con el plano de lugares siempre es una.
+     */
+    public function unidadesMaximas(): int
+    {
+        return $this->elegirLugar() ? 1 : max(1, min(10, (int) $this->valor('unidades_maximas', 3)));
+    }
+
     public function minutosRetencion(): int
     {
         return max(5, (int) $this->valor('minutos_retencion', 30));
@@ -86,6 +94,19 @@ final class AjustesMotor
             'terminal' => trim((string) $this->valor('redsys_terminal', '1')) ?: '1',
             'pruebas' => (bool) $this->valor('redsys_pruebas', true),
             'bizum' => (bool) $this->valor('redsys_bizum', false),
+        ];
+    }
+
+    /**
+     * PayPal (D-159): el identificador de la aplicación y si es la de pruebas.
+     *
+     * @return array{cliente: string, pruebas: bool}
+     */
+    public function paypal(): array
+    {
+        return [
+            'cliente' => trim((string) $this->valor('paypal_cliente', '')),
+            'pruebas' => (bool) $this->valor('paypal_pruebas', true),
         ];
     }
 

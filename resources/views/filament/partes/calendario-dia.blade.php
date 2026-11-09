@@ -67,6 +67,9 @@
                             :momento="__('ui.calendario.'.$renglon['momento'])"
                         />
                     @endforeach
+                    @if ($fila['vinculadas'] !== [])
+                        <p class="af-dia-externo"><strong>{{ __('ui.calendario.vinculada', ['unidades' => implode(', ', $fila['vinculadas'])]) }}</strong></p>
+                    @endif
                     @foreach ($fila['externos'] as $externo)
                         <p class="af-dia-externo" wire:key="dia-externo-{{ $externo->id }}">
                             <strong>{{ __('ical.calendario_externo', ['fuente' => $externo->fuente->nombre]) }}</strong>

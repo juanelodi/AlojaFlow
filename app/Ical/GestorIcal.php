@@ -25,6 +25,7 @@ use App\Models\FuenteIcal;
 use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Unidad;
+use App\Reservas\UnidadesVinculadas;
 use App\Seguridad\ClienteExterno;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -80,7 +81,9 @@ final class GestorIcal
         $ical = new VCalendar(['PRODID' => '-//AlojaFlow//AlojaFlow '.config('alojaflow.version').'//ES', 'CALSCALE' => 'GREGORIAN']);
         $anfitrion = (string) parse_url((string) config('app.url'), PHP_URL_HOST) ?: 'alojaflow';
 
-        $reservas = Reserva::query()->where('unidad_id', $unidad->id)->where('estado', '!=', EstadoReserva::Cancelada->value)->whereNull('eliminada_en_principal_en')
+        // Lo ocupado en una unidad vinculada también la cierra en los portales (D-155): la casa completa con un cuarto vendido.
+        $cierran = [$unidad->id, ...UnidadesVinculadas::conflictos($unidad->id)];
+        $reservas = Reserva::query()->whereIn('unidad_id', $cierran)->where('estado', '!=', EstadoReserva::Cancelada->value)->whereNull('eliminada_en_principal_en')
             ->where('salida', '>=', $hoy)
             ->when(! $calendario->incluir_bloqueos, fn ($q) => $q->where('tipo', TipoReserva::Reserva->value))
             ->orderBy('llegada')->get(['id', 'llegada', 'salida', 'actualizado_en']);
@@ -89,7 +92,7 @@ final class GestorIcal
         }
         // Lo que se ocupó en otro portal también debe verse cerrado en este.
         if ($calendario->incluir_bloqueos) {
-            $externos = BloqueoExterno::query()->where('unidad_id', $unidad->id)->whereNull('eliminado_en')->where('salida', '>=', $hoy)->orderBy('llegada')->get(['id', 'llegada', 'salida']);
+            $externos = BloqueoExterno::query()->whereIn('unidad_id', $cierran)->whereNull('eliminado_en')->where('salida', '>=', $hoy)->orderBy('llegada')->get(['id', 'llegada', 'salida']);
             foreach ($externos as $externo) {
                 $this->anadirEvento($ical, $this->uid('externo-'.$externo->id, $anfitrion), $externo->llegada, $externo->salida);
             }
@@ -169,7 +172,7 @@ final class GestorIcal
     public function revisarChoques(Propiedad $propiedad): int
     {
         $hoy = $propiedad->hoy()->format('Y-m-d');
-        $vigentes = array_merge($this->choquesConBloqueos($propiedad, $hoy), $this->choquesEntreReservas($propiedad, $hoy));
+        $vigentes = array_merge($this->choquesConBloqueos($propiedad, $hoy), $this->choquesEntreReservas($propiedad, $hoy), $this->choquesVinculados($propiedad, $hoy));
 
         foreach ($vigentes as $clave => $datos) {
             // Con clave ya existente sigue abierto, o alguien lo dio por resuelto: no se reabre.
@@ -219,6 +222,56 @@ final class GestorIcal
                 'bloqueo_externo_id' => $fila->bloqueo,
                 'reserva_id' => $fila->reserva,
             ];
+        }
+
+        return $vigentes;
+    }
+
+    /**
+     * Con una unidad vinculada (D-155): el cuarto vendido en un portal mientras la casa completa está reservada aquí, o dos reservas
+     * que ya estaban cuando se vincularon las unidades. Pocas unidades tienen vínculos: una consulta por cada una.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    private function choquesVinculados(Propiedad $propiedad, string $hoy): array
+    {
+        $unidades = Unidad::query()->where('propiedad_id', $propiedad->id)->pluck('id')->map(fn (mixed $id): int => (int) $id)->all();
+        $vigentes = [];
+        foreach (UnidadesVinculadas::mapa($unidades) as $unidad => $otras) {
+            $reservas = fn () => DB::table('reservas as r')->where('r.unidad_id', $unidad)
+                ->where('r.estado', '!=', EstadoReserva::Cancelada->value)->whereNull('r.eliminada_en_principal_en')->where('r.salida', '>=', $hoy);
+            $conBloqueos = $reservas()
+                ->join('bloqueos_externos as b', fn ($j) => $j->whereColumn('b.llegada', '<', 'r.salida')->whereColumn('b.salida', '>', 'r.llegada'))
+                ->whereIn('b.unidad_id', $otras)->whereNull('b.eliminado_en')->where('b.salida', '>=', $hoy)
+                ->limit(self::CHOQUES_MAXIMOS)
+                ->get(['b.id as bloqueo', 'r.id as reserva', 'b.llegada as b_llegada', 'b.salida as b_salida', 'r.llegada as r_llegada', 'r.salida as r_salida']);
+            foreach ($conBloqueos as $fila) {
+                $vigentes['v:b:'.$fila->bloqueo.':r:'.$fila->reserva] = [
+                    'unidad_id' => $unidad,
+                    'desde' => max((string) $fila->b_llegada, (string) $fila->r_llegada),
+                    'hasta' => min((string) $fila->b_salida, (string) $fila->r_salida),
+                    'tipo' => TipoChoque::BloqueoReserva,
+                    'bloqueo_externo_id' => $fila->bloqueo,
+                    'reserva_id' => $fila->reserva,
+                ];
+            }
+            $conReservas = $reservas()
+                ->join('reservas as o', fn ($j) => $j->whereColumn('o.llegada', '<', 'r.salida')->whereColumn('o.salida', '>', 'r.llegada'))
+                ->whereIn('o.unidad_id', $otras)->where('o.estado', '!=', EstadoReserva::Cancelada->value)->whereNull('o.eliminada_en_principal_en')->where('o.salida', '>=', $hoy)
+                ->limit(self::CHOQUES_MAXIMOS)
+                ->get(['r.id as r_id', 'o.id as o_id', 'r.llegada as r_llegada', 'r.salida as r_salida', 'o.llegada as o_llegada', 'o.salida as o_salida']);
+            foreach ($conReservas as $fila) {
+                // Se encuentra desde las dos unidades: la clave va con el número menor primero.
+                [$a, $b] = [min((int) $fila->r_id, (int) $fila->o_id), max((int) $fila->r_id, (int) $fila->o_id)];
+                $vigentes['v:r:'.$a.':r:'.$b] ??= [
+                    'unidad_id' => $unidad,
+                    'desde' => max((string) $fila->r_llegada, (string) $fila->o_llegada),
+                    'hasta' => min((string) $fila->r_salida, (string) $fila->o_salida),
+                    'tipo' => TipoChoque::ReservaReserva,
+                    'reserva_id' => $a,
+                    'reserva2_id' => $b,
+                ];
+            }
         }
 
         return $vigentes;

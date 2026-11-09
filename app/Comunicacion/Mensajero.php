@@ -40,6 +40,7 @@ use App\Modulos\Modulos;
 use App\Publico\MiReserva;
 use App\Reservas\Mensualidades;
 use App\Seguridad\ClienteExterno;
+use App\Support\Contactos;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
 use RuntimeException;
@@ -205,6 +206,7 @@ final class Mensajero
                 CanalEnvio::Correo => $this->enviarCorreo($envio),
                 CanalEnvio::Webhook => $this->enviarWebhook($envio),
                 CanalEnvio::WhatsappEnlace => null,
+                CanalEnvio::WhatsappApi => $this->enviarWhatsapp($envio),
             };
         } catch (Throwable $e) {
             $this->anotarFallo($envio, $e);
@@ -471,6 +473,9 @@ final class Mensajero
 
     private function programar(Automatizacion $automatizacion, Reserva $reserva, string $ocasion): ?Envio
     {
+        if ($automatizacion->accion === AccionAutomatizacion::WhatsappHuesped) {
+            return $this->programarWhatsapp($automatizacion, $reserva, $ocasion);
+        }
         if (! $automatizacion->accion->esCorreo()) {
             $this->accionInterna($automatizacion, $reserva, $ocasion);
 
@@ -504,6 +509,57 @@ final class Mensajero
             'estado' => $estado,
             'ultimo_error' => $estado === EstadoEnvio::Omitido ? __('mensajes.omitido_sin_destino', [], $idioma) : null,
         ]);
+    }
+
+    /**
+     * Una plantilla aprobada de WhatsApp al teléfono del huésped (D-160), con las variables en el orden de la plantilla. Sin teléfono,
+     * sin plantilla o sin WhatsApp configurado se anota omitido con la razón: así se ve en la lista de envíos.
+     */
+    private function programarWhatsapp(Automatizacion $automatizacion, Reserva $reserva, string $ocasion): ?Envio
+    {
+        $reserva->loadMissing(['titular.contactos', 'unidad', 'propiedad']);
+        if (Omisiones::estaOmitido($reserva->titular_id, $reserva->propiedad_id, LugarOmision::Mensajes)) {
+            return null;
+        }
+        $idioma = self::idiomaDe($reserva);
+        $ajuste = (array) $automatizacion->whatsapp;
+        $plantilla = (string) ($ajuste['plantilla'] ?? '');
+        $telefono = Contactos::internacional(self::telefonoDe($reserva), $reserva->propiedad->pais);
+        $valores = VariablesMensaje::de($reserva, $idioma);
+        $parametros = array_map(fn (mixed $variable): string => (string) ($valores[(string) $variable] ?? ''), $ajuste['variables'] ?? []);
+        $motivo = match (true) {
+            $telefono === null => __('mensajes.whatsapp.sin_telefono', [], $idioma),
+            $plantilla === '' => __('mensajes.whatsapp.sin_plantilla', [], $idioma),
+            ! (new WhatsappCloud($reserva->propiedad_id))->configurado() => __('mensajes.whatsapp.sin_configurar', [], $idioma),
+            default => null,
+        };
+
+        return $this->crearUnaVez('auto:'.$automatizacion->id.':reserva:'.$reserva->id.':'.$ocasion, [
+            'propiedad_id' => $reserva->propiedad_id,
+            'reserva_id' => $reserva->id,
+            'huesped_id' => $reserva->titular_id,
+            'automatizacion_id' => $automatizacion->id,
+            'canal' => CanalEnvio::WhatsappApi,
+            'destino' => $telefono,
+            'idioma' => $idioma,
+            'asunto' => mb_substr($plantilla, 0, 255),
+            // Lo que verá recepción en la lista: la plantilla y sus valores, no el texto que pone Meta.
+            'cuerpo' => $plantilla.($parametros === [] ? '' : ': '.implode(' · ', $parametros)),
+            'datos' => ['plantilla' => $plantilla, 'idioma' => (string) ($ajuste['idioma'] ?? 'es_MX'), 'parametros' => $parametros],
+            'estado' => $motivo === null ? EstadoEnvio::Pendiente : EstadoEnvio::Omitido,
+            'ultimo_error' => $motivo,
+        ]);
+    }
+
+    private function enviarWhatsapp(Envio $envio): void
+    {
+        $datos = (array) $envio->datos;
+        (new WhatsappCloud($envio->propiedad_id))->enviarPlantilla(
+            (string) $envio->destino,
+            (string) ($datos['plantilla'] ?? ''),
+            (string) ($datos['idioma'] ?? 'es_MX'),
+            array_map('strval', array_values((array) ($datos['parametros'] ?? []))),
+        );
     }
 
     /**

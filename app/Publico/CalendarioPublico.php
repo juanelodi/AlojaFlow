@@ -15,6 +15,7 @@ use App\Models\Tarifa;
 use App\Models\Unidad;
 use App\Motor\AjustesMotor;
 use App\Motor\MotorReservas;
+use App\Reservas\UnidadesVinculadas;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -69,25 +70,39 @@ final class CalendarioPublico
     }
 
     /**
-     * Por día, las que no se pueden vender: con reserva o con un bloqueo de otro calendario.
+     * Por día, las que no se pueden vender: con reserva, con un bloqueo de otro calendario o con una unidad vinculada ocupada (D-155).
      *
      * @param  list<int>  $unidades
      * @return array<string, array<int, true>>
      */
     private function ocupadas(array $unidades, CarbonImmutable $inicio, CarbonImmutable $fin): array
     {
+        $vinculadas = UnidadesVinculadas::mapa($unidades);
+        $porMirar = array_values(array_unique([...$unidades, ...array_merge([], ...array_values($vinculadas))]));
         $desde = $inicio->format('Y-m-d');
         $hasta = $fin->format('Y-m-d');
         $ocupadas = [];
-        foreach (DB::table('reservas_noches')->whereIn('unidad_id', $unidades)->whereBetween('fecha', [$desde, $hasta])->get(['fecha', 'unidad_id']) as $noche) {
+        foreach (DB::table('reservas_noches')->whereIn('unidad_id', $porMirar)->whereBetween('fecha', [$desde, $hasta])->get(['fecha', 'unidad_id']) as $noche) {
             $ocupadas[substr((string) $noche->fecha, 0, 10)][(int) $noche->unidad_id] = true;
         }
-        foreach (DB::table('bloqueos_externos')->whereIn('unidad_id', $unidades)->whereNull('eliminado_en')->where('llegada', '<=', $hasta)->where('salida', '>', $desde)->get(['unidad_id', 'llegada', 'salida']) as $bloqueo) {
+        foreach (DB::table('bloqueos_externos')->whereIn('unidad_id', $porMirar)->whereNull('eliminado_en')->where('llegada', '<=', $hasta)->where('salida', '>', $desde)->get(['unidad_id', 'llegada', 'salida']) as $bloqueo) {
             $dia = CarbonImmutable::parse(max($desde, substr((string) $bloqueo->llegada, 0, 10)));
             $salida = substr((string) $bloqueo->salida, 0, 10);
             for (; $dia->format('Y-m-d') < $salida && $dia->format('Y-m-d') <= $hasta; $dia = $dia->addDay()) {
                 $ocupadas[$dia->format('Y-m-d')][(int) $bloqueo->unidad_id] = true;
             }
+        }
+        // Solo cuentan las que se venden: una parte que no está en el motor no suma, pero sí cierra la que la incluye.
+        $vendibles = array_flip($unidades);
+        // Contra lo ocupado de verdad: un cuarto vendido cierra la casa, pero eso no cierra los otros cuartos.
+        foreach ($ocupadas as $fecha => $deDia) {
+            $reales = $deDia;
+            foreach ($vinculadas as $unidad => $otras) {
+                if (array_intersect_key($reales, array_flip($otras)) !== []) {
+                    $deDia[$unidad] = true;
+                }
+            }
+            $ocupadas[$fecha] = array_intersect_key($deDia, $vendibles);
         }
 
         return $ocupadas;

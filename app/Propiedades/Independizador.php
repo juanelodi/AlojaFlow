@@ -16,6 +16,7 @@ use App\Enums\MetodoPago;
 use App\Enums\ModoPropiedad;
 use App\Models\Aviso;
 use App\Models\EjecucionSincronizacion;
+use App\Models\MarcaEstancia;
 use App\Models\Principal;
 use App\Models\Propiedad;
 use App\Models\RegistroAuditoria;
@@ -107,6 +108,7 @@ final class Independizador
         $this->comprobarSinSincronizacion($bloqueada);
 
         $this->crearSaldosIniciales($propiedad);
+        $this->pasarMarcasEstancia($propiedad);
         foreach (self::TABLAS_CON_ORIGEN as $tabla) {
             DB::table($tabla)->where('propiedad_id', $propiedad->id)->update(['sincronizada' => false]);
         }
@@ -132,6 +134,22 @@ final class Independizador
         RegistroAuditoria::anotar('propiedad.independizar', $propiedad, ['reservas' => $reservas], $propiedad->id);
 
         return $reservas;
+    }
+
+    /**
+     * Las llegadas y salidas que se registraron aquí (D-153) pasan a la reserva, que desde ahora es propia. Lo que ya traía de la
+     * principal se queda.
+     */
+    private function pasarMarcasEstancia(Propiedad $propiedad): void
+    {
+        MarcaEstancia::query()->whereIn('reserva_id', DB::table('reservas')->select('id')->where('propiedad_id', $propiedad->id))
+            ->each(function (MarcaEstancia $marca): void {
+                foreach (['entrada' => $marca->entrada_en, 'salida' => $marca->salida_en] as $lado => $momento) {
+                    if ($momento !== null) {
+                        DB::table('reservas')->where('id', $marca->reserva_id)->whereNull($lado.'_registrada_en')->update([$lado.'_registrada_en' => $momento->copy()->utc()]);
+                    }
+                }
+            });
     }
 
     /**

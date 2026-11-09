@@ -149,6 +149,55 @@
 .af-leyenda span { display: inline-flex; align-items: center; gap: .375rem; }
 .af-leyenda i { display: inline-block; width: 1.25rem; height: .75rem; border-radius: .25rem; }
 
+/*
+ * Opciones del calendario (D-154). Las aplica alojaflow.js en <html>: colorear por pago, como la tabla de HotelDruid, y soltar la
+ * columna de las unidades o la fila de los días. Fijas de entrada; la fila, con el calendario a la altura de la pantalla.
+ */
+.af-calendario { max-height: max(22rem, calc(100vh - 11rem)); max-height: max(22rem, calc(100dvh - 11rem)); }
+html[data-af-cal-sueltos-dias] .af-calendario { max-height: none; }
+html[data-af-cal-sueltos-dias] .af-cal-fila--cabecera { position: static; }
+html[data-af-cal-sueltas-unidades] .af-cal-unidad,
+html[data-af-cal-sueltas-unidades] .af-cal-fila--grupo > div { position: static; }
+.af-leyenda--pago, [data-af-cal-colores="pago"] .af-leyenda--estado { display: none; }
+[data-af-cal-colores="pago"] .af-leyenda--pago { display: flex; }
+[data-af-cal-colores="pago"] .af-pago--total { background: var(--success-700); color: white; }
+[data-af-cal-colores="pago"] .af-pago--anticipo { background: #fde68a; color: var(--gray-950); }
+[data-af-cal-colores="pago"] .af-pago--sin-anticipo { background: #c2410c; color: white; }
+[data-af-cal-colores="pago"] .af-pago--sin-confirmar { background: var(--danger-600); color: white; }
+.af-cal-opciones { position: relative; }
+.af-cal-opciones > summary {
+    list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: .375rem; min-height: 2.25rem; padding: .375rem .75rem;
+    border-radius: .5rem; font-size: .875rem; font-weight: 600; color: var(--gray-950); background: white; box-shadow: 0 0 0 1px var(--gray-950-10, rgb(3 7 18 / .1));
+}
+.af-cal-opciones > summary::-webkit-details-marker { display: none; }
+.af-cal-opciones > summary::after { content: '▾'; color: var(--gray-500); }
+.af-cal-opciones > summary:focus-visible { outline: 2px solid var(--primary-600); outline-offset: 2px; }
+.dark .af-cal-opciones > summary { color: white; background: var(--gray-900); box-shadow: 0 0 0 1px rgb(255 255 255 / .2); }
+.af-cal-opciones__panel {
+    position: absolute; inset-inline-end: 0; top: calc(100% + .375rem); z-index: 30; width: min(19rem, calc(100vw - 2rem));
+    display: grid; gap: .25rem; padding: .75rem 1rem; border-radius: .75rem; background: white;
+    border: 1px solid var(--gray-200); box-shadow: 0 10px 25px -5px rgb(15 23 42 / .15);
+}
+.dark .af-cal-opciones__panel { background: var(--gray-900); border-color: var(--gray-700); }
+.af-cal-opciones fieldset { border: 0; margin: 0 0 .25rem; padding: 0; display: grid; gap: .25rem; }
+.af-cal-opciones legend { font-size: .8125rem; font-weight: 600; color: var(--gray-700); margin-bottom: .125rem; }
+.dark .af-cal-opciones legend { color: var(--gray-300); }
+.af-cal-opciones label { display: flex; align-items: center; gap: .5rem; min-height: 2.25rem; font-size: .875rem; color: var(--gray-950); cursor: pointer; }
+.dark .af-cal-opciones label { color: var(--gray-100); }
+.af-cal-opciones input { width: 1.125rem; height: 1.125rem; accent-color: var(--primary-600); }
+.af-cal-opciones a { display: flex; align-items: center; min-height: 2.25rem; font-size: .875rem; font-weight: 600; color: var(--primary-700); }
+.dark .af-cal-opciones a { color: var(--primary-300); }
+/* Ocupada por una unidad vinculada (D-155): ni se pulsa ni se arrastra. */
+.af-barra--vinculada { background: repeating-linear-gradient(-45deg, var(--gray-200), var(--gray-200) 4px, var(--gray-100) 4px, var(--gray-100) 8px); color: var(--gray-800); box-shadow: inset 0 0 0 1px var(--gray-400); cursor: default; }
+.dark .af-barra--vinculada { background: repeating-linear-gradient(-45deg, var(--gray-800), var(--gray-800) 4px, var(--gray-900) 4px, var(--gray-900) 8px); color: var(--gray-200); box-shadow: inset 0 0 0 1px var(--gray-600); }
+/* Elegir llegada y última noche con dos clics (D-154). */
+.af-cal-dia.af-cal-dia--rango { background: color-mix(in oklab, var(--primary-500) 28%, transparent); }
+.af-cal-dia.af-cal-dia--elegido { background: color-mix(in oklab, var(--primary-500) 45%, transparent); outline: 2px solid var(--primary-700); outline-offset: -2px; }
+.af-cal-aviso { margin: 0; min-height: 3.25rem; display: flex; align-items: center; padding: .375rem .75rem; border-radius: .5rem; font-size: .8125rem; color: var(--gray-600); }
+.dark .af-cal-aviso { color: var(--gray-400); }
+.af-cal-aviso--activo { color: var(--primary-800); background: color-mix(in oklab, var(--primary-500) 10%, white); }
+.dark .af-cal-aviso--activo { color: var(--primary-200); background: color-mix(in oklab, var(--primary-500) 18%, var(--gray-900)); }
+
 /* Indicadores */
 /* Como las cifras: el importe manda sobre el ancho. El elemento vacío del final evita que el último renglón se estire. */
 .af-kpis { display: flex; flex-wrap: wrap; gap: .75rem; }

@@ -8,10 +8,11 @@
     <x-filament::badge color="danger">{{ $reserva->estado->etiqueta() }}</x-filament::badge>
 @elseif ($reserva->estado === EstadoReserva::SinConfirmar)
     <x-filament::badge color="warning">{{ __('ui.hoy.sin_confirmar') }}</x-filament::badge>
-@elseif ($reserva->salida_registrada_en)
-    <x-filament::badge color="gray">{{ __('ui.comun.salio') }}</x-filament::badge>
-@elseif ($reserva->entrada_registrada_en)
-    <x-filament::badge color="success">{{ __('ui.comun.en_casa') }}</x-filament::badge>
+@elseif ($salida = $reserva->salidaEn())
+    {{-- Con la hora, en la de la propiedad (D-153). --}}
+    <x-filament::badge color="gray">{{ __('ui.comun.salio') }} · {{ \App\Support\Formato::hora($salida, $reserva->propiedad->zona_horaria) }}</x-filament::badge>
+@elseif ($entrada = $reserva->entradaEn())
+    <x-filament::badge color="success">{{ __('ui.comun.en_casa') }} · {{ \App\Support\Formato::hora($entrada, $reserva->propiedad->zona_horaria) }}</x-filament::badge>
 @else
     <x-filament::badge color="info">{{ $reserva->estado->etiqueta() }}</x-filament::badge>
 @endif

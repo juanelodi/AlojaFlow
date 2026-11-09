@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Reservas;
 
+use App\Dinero\PagoRecibido;
 use App\Enums\EstadoReserva;
 use App\Enums\MetodoPago;
 use App\Enums\OrigenFila;
@@ -518,14 +519,15 @@ final class GestorReservas
 
     /**
      * @param  int  $importe  en la unidad menor; negativo = devolución
+     * @param  PagoRecibido|null  $recibido  si se pagó en la segunda moneda (D-157): lo que de verdad se recibió
      */
-    public function registrarPago(Reserva $reserva, int $importe, MetodoPago $metodo, CarbonImmutable $fecha, ?string $referencia = null, ?int $cajaId = null): Pago
+    public function registrarPago(Reserva $reserva, int $importe, MetodoPago $metodo, CarbonImmutable $fecha, ?string $referencia = null, ?int $cajaId = null, ?PagoRecibido $recibido = null): Pago
     {
         if ($importe === 0) {
             throw new ReservaRechazada(__('ui.pagos.error_importe'), 'importe');
         }
 
-        return DB::transaction(function () use ($reserva, $importe, $metodo, $fecha, $referencia, $cajaId): Pago {
+        return DB::transaction(function () use ($reserva, $importe, $metodo, $fecha, $referencia, $cajaId, $recibido): Pago {
             $actual = $this->bloquear($reserva);
             if ($actual->tipo !== TipoReserva::Reserva) {
                 throw new ReservaRechazada(__('ui.pagos.error_bloqueo'), 'importe');
@@ -540,11 +542,15 @@ final class GestorReservas
                 'moneda' => $actual->moneda,
                 'referencia' => $referencia === '' ? null : $referencia,
                 'user_id' => auth()->id(),
+                'moneda_recibida' => $recibido?->moneda,
+                'importe_recibido' => $recibido?->importe,
+                'tipo_cambio' => $recibido?->tipoCambio,
             ]);
             $pago->save();
             $this->recalcularPagado($actual);
             if ($this->registrar) {
-                RegistroAuditoria::anotar('pago.registrar', $pago, ['reserva' => $actual->id, 'importe' => $importe, 'moneda' => $actual->moneda], $actual->propiedad_id);
+                RegistroAuditoria::anotar('pago.registrar', $pago, ['reserva' => $actual->id, 'importe' => $importe, 'moneda' => $actual->moneda]
+                    + ($recibido === null ? [] : ['moneda_recibida' => $recibido->moneda, 'importe_recibido' => $recibido->importe, 'tipo_cambio' => $recibido->tipoCambio]), $actual->propiedad_id);
             }
 
             return $pago;
@@ -745,6 +751,8 @@ final class GestorReservas
             return;
         }
 
+        $this->revisarVinculadas($reserva);
+
         $cuantas = (int) $reserva->llegada->diffInDays($reserva->salida);
         $filas = [];
         foreach (Dinero::repartir($reserva->total, $cuantas) as $i => $importe) {
@@ -765,6 +773,28 @@ final class GestorReservas
                 throw new ReservaRechazada(__('ui.reservas.error_ocupada'), 'unidad_id');
             }
             throw $e;
+        }
+    }
+
+    /**
+     * Una unidad vinculada ocupada en esas fechas cierra esta (D-155). El índice único solo ve la misma unidad: aquí, el candado
+     * sobre las unidades vinculadas, siempre en el mismo orden, hace esperar a otra reserva que llegue a la vez, y la lectura con
+     * candado ve lo que esa otra ya guardó.
+     */
+    private function revisarVinculadas(Reserva $reserva): void
+    {
+        $vinculadas = UnidadesVinculadas::conflictos($reserva->unidad_id);
+        if ($vinculadas === []) {
+            return;
+        }
+        $todas = [...$vinculadas, $reserva->unidad_id];
+        sort($todas);
+        Unidad::query()->whereIn('id', $todas)->orderBy('id')->lockForUpdate()->pluck('id');
+        $ocupada = DB::table('reservas_noches')->whereIn('unidad_id', $vinculadas)
+            ->where('fecha', '>=', $reserva->llegada->format('Y-m-d'))->where('fecha', '<', $reserva->salida->format('Y-m-d'))
+            ->where('reserva_id', '!=', $reserva->id)->orderBy('fecha')->sharedLock()->value('unidad_id');
+        if ($ocupada !== null) {
+            throw new ReservaRechazada(__('ui.reservas.error_vinculada', ['unidad' => (string) Unidad::query()->whereKey((int) $ocupada)->value('nombre')]), 'unidad_id');
         }
     }
 

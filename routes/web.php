@@ -14,6 +14,7 @@ use App\Http\Controllers\CodigoFuenteController;
 use App\Http\Controllers\DecidirMejoraContinuaController;
 use App\Http\Controllers\EnlacePagoController;
 use App\Http\Controllers\EntradaInstalacionController;
+use App\Http\Controllers\ErrorNavegadorController;
 use App\Http\Controllers\GrupoPublicoController;
 use App\Http\Controllers\IcalController;
 use App\Http\Controllers\LlegadaController;
@@ -131,6 +132,9 @@ Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class, 'th
 Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class])->get('/actualizaciones/{actualizacion}/copia-base-datos', [ActualizacionController::class, 'copiaBaseDatos'])
     ->name('actualizaciones.copia-base-datos');
 
+// Mejora continua (D-150): errores de JavaScript del panel. Solo se guardan con permiso.
+Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class, 'throttle:30,1'])->post('/mejora-continua/error-navegador', ErrorNavegadorController::class)
+    ->name('mejora-continua.error-navegador');
 // Mejora continua (D-150): los botones del aviso para decidir si se mandan datos. Lo comprueba el controlador.
 Route::middleware(['auth', AuthenticateSession::class, UsuarioActivo::class, 'throttle:30,1'])->post('/mejora-continua/decidir', DecidirMejoraContinuaController::class)
     ->name('mejora-continua.decidir');

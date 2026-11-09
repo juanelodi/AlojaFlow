@@ -312,3 +312,199 @@
         arrancar();
     }
 })();
+
+/*
+ * Opciones del calendario (D-154): colorear por estado o por pago, y fijar la columna de las unidades y la fila de los días. Las
+ * recuerda este navegador y van en <html>, que Livewire no vuelve a pintar; sin guardar, duran lo que la página.
+ */
+(() => {
+    if (window.alojaFlowCalendario) {
+        return;
+    }
+    window.alojaFlowCalendario = true;
+
+    const llave = 'alojaflow.calendario.opciones';
+    let opciones = {};
+    try {
+        const guardadas = JSON.parse(localStorage.getItem(llave) ?? '{}');
+        opciones = guardadas !== null && typeof guardadas === 'object' ? guardadas : {};
+    } catch (error) {
+        opciones = {};
+    }
+
+    const aplicar = () => {
+        const raiz = document.documentElement;
+        raiz.dataset.afCalColores = opciones.colores === 'pago' ? 'pago' : 'estado';
+        raiz.toggleAttribute('data-af-cal-sueltas-unidades', opciones['fijar-unidades'] === false);
+        raiz.toggleAttribute('data-af-cal-sueltos-dias', opciones['fijar-dias'] === false);
+    };
+
+    const reflejar = () => document.querySelectorAll('[data-af-cal-opcion]').forEach((campo) => {
+        const valor = opciones[campo.dataset.afCalOpcion];
+        campo.checked = campo.type === 'radio' ? campo.value === (valor ?? 'estado') : valor !== false;
+    });
+
+    aplicar();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', reflejar, { once: true });
+    } else {
+        reflejar();
+    }
+
+    document.addEventListener('change', (evento) => {
+        const campo = evento.target instanceof Element ? evento.target.closest('[data-af-cal-opcion]') : null;
+        if (campo === null) {
+            return;
+        }
+        opciones[campo.dataset.afCalOpcion] = campo.type === 'radio' ? campo.value : campo.checked;
+        try {
+            localStorage.setItem(llave, JSON.stringify(opciones));
+        } catch (error) {
+            // Sin almacenamiento sigue valiendo en esta página.
+        }
+        aplicar();
+    });
+})();
+
+/*
+ * Elegir las fechas en el calendario como en la tabla de HotelDruid (D-154): el primer clic en un día libre marca la llegada y el
+ * segundo, en la misma unidad, la última noche; entonces abre la reserva nueva con las dos. Dos veces el mismo día es una noche.
+ * Solo se llega hasta el primer día ocupado, y Esc lo deja. Sin este archivo, cada día libre abre una reserva de una noche.
+ */
+(() => {
+    if (window.alojaFlowFechasCalendario) {
+        return;
+    }
+    window.alojaFlowFechasCalendario = true;
+
+    let inicio = null;
+
+    const celdasDe = (celda) => [...celda.parentElement.querySelectorAll(':scope > .af-cal-dia')];
+
+    // De la llegada al día anterior al primero ocupado: hasta ahí se puede elegir.
+    const alcance = (celda) => {
+        const celdas = celdasDe(celda);
+        const desde = celdas.indexOf(celda);
+        let hasta = desde;
+        while (hasta + 1 < celdas.length && celdas[hasta + 1].classList.contains('af-cal-dia--libre')) {
+            hasta++;
+        }
+
+        return celdas.slice(desde, hasta + 1);
+    };
+
+    const avisoDe = (celda) => celda.closest('.af-solo-vista-mes')?.querySelector('[data-af-cal-aviso]') ?? null;
+
+    const pintar = (hasta) => {
+        const tramo = alcance(inicio);
+        const fin = tramo.indexOf(hasta);
+        tramo.forEach((celda, i) => celda.classList.toggle('af-cal-dia--rango', fin >= 0 && i <= fin));
+    };
+
+    const soltar = () => {
+        if (inicio !== null && inicio.isConnected) {
+            celdasDe(inicio).forEach((celda) => celda.classList.remove('af-cal-dia--elegido', 'af-cal-dia--rango'));
+            const aviso = avisoDe(inicio);
+            if (aviso !== null) {
+                aviso.textContent = aviso.dataset.inicial ?? '';
+                aviso.classList.remove('af-cal-aviso--activo');
+            }
+        }
+        inicio = null;
+    };
+
+    const elegir = (celda) => {
+        inicio = celda;
+        celda.classList.add('af-cal-dia--elegido', 'af-cal-dia--rango');
+        const aviso = avisoDe(celda);
+        if (aviso === null) {
+            return;
+        }
+        const unidad = celda.parentElement.querySelector('.af-cal-unidad')?.firstChild?.textContent.trim() ?? '';
+        const fecha = new Intl.DateTimeFormat(document.documentElement.lang || undefined, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
+            .format(new Date(`${celda.dataset.fecha}T00:00:00Z`));
+        aviso.textContent = aviso.dataset.texto.replace(':fecha', fecha).replace(':unidad', unidad);
+        aviso.classList.add('af-cal-aviso--activo');
+    };
+
+    document.addEventListener('click', (evento) => {
+        const celda = evento.target instanceof Element ? evento.target.closest('a.af-cal-dia--libre') : null;
+        // Abrirla en otra pestaña sigue como siempre.
+        if (celda === null || evento.button !== 0 || evento.ctrlKey || evento.metaKey || evento.shiftKey || evento.altKey) {
+            return;
+        }
+        evento.preventDefault();
+        // Livewire pudo volver a pintar el mes: lo elegido ya no se ve.
+        if (inicio !== null && (!inicio.isConnected || !inicio.classList.contains('af-cal-dia--elegido'))) {
+            inicio = null;
+        }
+        if (inicio !== null && alcance(inicio).includes(celda)) {
+            const destino = new URL(inicio.href);
+            destino.searchParams.set('salida', new URL(celda.href).searchParams.get('salida') ?? '');
+            soltar();
+            window.location.assign(destino.toString());
+
+            return;
+        }
+        soltar();
+        elegir(celda);
+    });
+
+    const seguir = (evento) => {
+        const celda = inicio !== null && evento.target instanceof Element ? evento.target.closest('.af-cal-dia') : null;
+        if (celda !== null && inicio.isConnected && celda.parentElement === inicio.parentElement) {
+            pintar(celda);
+        }
+    };
+    document.addEventListener('mouseover', seguir);
+    document.addEventListener('focusin', seguir);
+
+    document.addEventListener('keydown', (evento) => {
+        if (evento.key === 'Escape' && inicio !== null) {
+            soltar();
+        }
+    });
+})();
+
+/*
+ * Errores de JavaScript para la mejora continua (D-150): solo si hay permiso (la cabecera trae la dirección),
+ * pocos por página y sin repetir. Se manda el mensaje, el archivo, la línea y la pila; nada de lo escrito.
+ */
+(() => {
+    const destino = document.querySelector('meta[name="af-errores-url"]')?.content;
+    const ficha = document.querySelector('meta[name="csrf-token"]')?.content;
+    if (!destino || !ficha) {
+        return;
+    }
+    const vistos = new Set();
+    const mandar = (tipo, mensaje, archivo, linea, pila) => {
+        const llave = tipo + mensaje + archivo + linea;
+        if (vistos.size >= 5 || vistos.has(llave)) {
+            return;
+        }
+        vistos.add(llave);
+        fetch(destino, {
+            method: 'POST',
+            credentials: 'same-origin',
+            keepalive: true,
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': ficha },
+            body: JSON.stringify({
+                tipo: String(tipo || 'Error').slice(0, 40),
+                mensaje: String(mensaje || '').slice(0, 1000),
+                archivo: archivo ? String(archivo).slice(0, 500) : null,
+                linea: Number.isInteger(linea) ? linea : null,
+                pila: pila ? String(pila).slice(0, 4000) : null,
+                pantalla: location.pathname.slice(0, 300),
+            }),
+        }).catch(() => {});
+    };
+    window.addEventListener('error', (evento) => {
+        if (evento.error || evento.message) {
+            mandar(evento.error?.name, evento.message, evento.filename, evento.lineno, evento.error?.stack);
+        }
+    });
+    window.addEventListener('unhandledrejection', (evento) => {
+        const razon = evento.reason;
+        mandar(razon?.name || 'PromesaRechazada', razon?.message || String(razon), null, null, razon?.stack);
+    });
+})();

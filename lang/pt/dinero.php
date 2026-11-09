@@ -9,6 +9,18 @@
 declare(strict_types=1);
 
 return [
+    'segunda' => [
+        'moneda' => 'Segunda moeda',
+        'moneda_ayuda' => 'Opcional, como USD. Mostra-se junto aos preços e pode receber-se dinheiro nela; tudo se soma na moeda da propriedade.',
+        'tipo' => 'Taxa de câmbio',
+        'tipo_ayuda' => 'Quanto vale 1 :segunda em :moneda. É você quem a escreve: altere-a quando mudar.',
+        'recibido_en' => 'Recebido em',
+        'tipo_pago' => 'Taxa de câmbio deste pagamento',
+        'se_anota' => 'Na reserva fica registado :importe.',
+        'recibido' => ':importe a :tipo',
+        'recibido_titulo' => 'Recebido',
+        'efectivo_en' => 'Dinheiro em :moneda (conta-se à parte)',
+    ],
     'politicas' => [
         'no_reembolsable' => 'Não reembolsável',
         'no_reembolsable_ayuda' => 'Se cancelarem, em qualquer momento, é cobrado o total.',

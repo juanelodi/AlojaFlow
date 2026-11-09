@@ -9,6 +9,18 @@
 declare(strict_types=1);
 
 return [
+    'segunda' => [
+        'moneda' => 'Second currency',
+        'moneda_ayuda' => 'Optional, such as USD. It is shown next to prices and cash can be received in it; everything adds up in the property’s currency.',
+        'tipo' => 'Exchange rate',
+        'tipo_ayuda' => 'How much 1 :segunda is worth in :moneda. You enter it: change it when it changes.',
+        'recibido_en' => 'Received in',
+        'tipo_pago' => 'Exchange rate for this payment',
+        'se_anota' => 'The booking records :importe.',
+        'recibido' => ':importe at :tipo',
+        'recibido_titulo' => 'Received',
+        'efectivo_en' => 'Cash in :moneda (counted separately)',
+    ],
     'politicas' => [
         'no_reembolsable' => 'Non-refundable',
         'no_reembolsable_ayuda' => 'If they cancel, at any time, the full amount is charged.',

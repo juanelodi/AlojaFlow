@@ -75,6 +75,7 @@ return [
         'enlace_reserva' => 'Per vedere la prenotazione online',
         'enlace_llegada' => 'Per compilare la registrazione di arrivo',
         'enlace_mi_reserva' => 'Per vedere i suoi dati, i pagamenti e la guida',
+        'codigo_acceso' => 'Codice di accesso della prenotazione, o quello fisso della sua unità',
         'enlace_opinion' => 'Per lasciare un’opinione',
         'h_numero' => 'Numero di riga: 1, 2, 3…',
         'h_nombre' => 'Nome completo',

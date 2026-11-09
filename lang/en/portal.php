@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 return [
     'mi_reserva' => 'My booking',
+    'codigo_acceso' => 'Access code',
     'guia' => 'Stay guide',
     'guia_de' => 'Guide to :unidad',
     'guia_vacia' => 'Nothing here yet. Ask the property.',

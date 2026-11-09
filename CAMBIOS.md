@@ -2,6 +2,34 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.40 — 2026-11-08
+
+**Copias fuera del servidor.** En Copias de seguridad puedes mandar cada copia programada a un almacenamiento aparte (DreamObjects, Backblaze, Wasabi, Cloudflare R2 o WebDAV), cifrada con una clave que solo tú conoces. Se guardan siete diarias y doce mensuales. **Anota la clave en un lugar seguro:** sin ella no se pueden abrir.
+
+**Hoy: quién ya llegó y quién ya salió.** Cada sección dice «Ya llegaron 3 de 5» y cada reserva la hora en que llegó o salió. Ahora también se marca en las propiedades subordinadas, sin tocar la principal.
+
+**Calendario como en HotelDruid.**
+
+- **Colores por pago:** pagada por completo, anticipo pagado, sin anticipo y sin confirmar, con su leyenda. Se elige en «Opciones», y los colores de cada uno se cambian en tu perfil.
+- **«Situación a las 8:05 del 01/11/2026»** arriba del calendario; en una subordinada, también de cuándo es la copia de la principal.
+- **Fijar o soltar** la columna de las unidades y la fila de los días.
+- **Elige la llegada y la última noche con dos clics** y se abre la reserva nueva con esas fechas.
+
+**Unidades vinculadas.** Una unidad puede componerse de otras, como la casa completa y sus cuartos: al ocupar una, las otras se cierran, también en el motor, en el calendario público y en el iCal que va a los portales.
+
+**Códigos de acceso.** El de la cerradura o la caja de llaves, por reserva o fijo por unidad, guardado cifrado. El huésped lo ve en «Mi reserva» desde el día antes de llegar, y va en los mensajes con `{codigo_acceso}`.
+
+**Segunda moneda.** En la propiedad puedes poner una segunda moneda y su tipo de cambio: los precios se muestran también en ella y puedes recibir efectivo en ella; la caja lo cuenta aparte.
+
+**Motor de reservas.**
+
+- **Varias unidades en una sola reserva,** con un solo pago (hasta 3 de entrada; se cambia en el motor).
+- **PayPal** como pasarela, además de Stripe, Mercado Pago y Redsys. Haz un cobro de prueba con su cuenta Sandbox antes de usarla con huéspedes.
+
+**WhatsApp automático.** Con la API de Meta, una automatización puede mandar una plantilla aprobada de WhatsApp, con sus datos: la víspera de la llegada, el código de acceso. Se configura por propiedad en Comunicación → WhatsApp. Las automatizaciones tienen una condición nueva: el idioma del huésped.
+
+**Más errores para la mejora continua.** Si diste permiso, también se anotan los errores del navegador y los avisos del sistema, sin nada de lo escrito.
+
 ## 1.0.39 — 2026-11-08
 
 **Actualizaciones automáticas.** En Sistema → Actualizaciones puedes prender que cada versión nueva se instale sola a las 3:00, en la hora de tu instalación. Antes se baja, se revisa su firma y se hace una copia de la base; si algo falla, se deshace y se intenta otro día. Llegan apagadas.

@@ -28,6 +28,7 @@ use App\Filament\Resources\Propiedades\PropiedadResource;
 use App\Filament\Resources\Usuarios\UsuarioResource;
 use App\Models\Aviso;
 use App\Models\Huesped;
+use App\Models\MarcaEstancia;
 use App\Models\Principal;
 use App\Models\Propiedad;
 use App\Models\Reserva;
@@ -116,6 +117,23 @@ describe('pasar a independiente', function () {
 
         $nueva = $gestor->crear($propiedad, ['llegada' => '2030-02-10', 'salida' => '2030-02-11'] + $datos);
         expect($nueva->numero)->toBe('59');
+    });
+
+    it('las llegadas y salidas registradas aquí pasan a la reserva, sin pisar las de la principal', function () {
+        $this->mock(GestorCopias::class)->shouldReceive('crear')->once()->andReturn([]);
+        $propiedad = subordinadaConDatos();
+        $llego = Reserva::query()->where('numero', '57')->firstOrFail();
+        $deLaPrincipal = Reserva::query()->where('numero', '58')->firstOrFail();
+        DB::table('reservas')->where('id', $deLaPrincipal->id)->update(['entrada_registrada_en' => '2030-01-20 15:00:00']);
+        MarcaEstancia::query()->create(['reserva_id' => $llego->id, 'entrada_en' => '2030-01-10 14:30:00', 'salida_en' => '2030-01-12 11:00:00']);
+        MarcaEstancia::query()->create(['reserva_id' => $deLaPrincipal->id, 'entrada_en' => '2030-01-20 16:00:00']);
+
+        app(Independizador::class)->independizar($propiedad);
+
+        expect($llego->refresh()->entrada_registrada_en?->format('Y-m-d H:i'))->toBe('2030-01-10 14:30')
+            ->and($llego->salida_registrada_en?->format('Y-m-d H:i'))->toBe('2030-01-12 11:00')
+            ->and($deLaPrincipal->refresh()->entrada_registrada_en?->format('Y-m-d H:i'))->toBe('2030-01-20 15:00')
+            ->and($deLaPrincipal->salidaEn())->toBeNull();
     });
 
     it('se niega si hay dobles reservas y dice cuáles', function () {

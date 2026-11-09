@@ -24,9 +24,13 @@
             <tr><th scope="row">{{ __('ui.comun.llegada') }}</th><td>{{ Formato::fecha($reserva->llegada, 'dddd LL') }}</td></tr>
             <tr><th scope="row">{{ __('ui.comun.salida') }}</th><td>{{ Formato::fecha($reserva->salida, 'dddd LL') }}</td></tr>
             <tr><th scope="row">{{ __('ui.comun.personas') }}</th><td>{{ $reserva->personas }}</td></tr>
-            <tr><th scope="row">{{ __('ui.comun.total') }}</th><td><strong>{{ Formato::dinero($reserva->total, $reserva->moneda) }}</strong></td></tr>
+            @if ($codigoAcceso !== null)
+                {{-- Desde el día antes de llegar (D-156). --}}
+                <tr><th scope="row">{{ __('portal.codigo_acceso') }}</th><td><strong>{{ $codigoAcceso }}</strong></td></tr>
+            @endif
+            <tr><th scope="row">{{ __('ui.comun.total') }}</th><td><strong>{{ Formato::dinero($reserva->total, $reserva->moneda) }}</strong>@if ($segunda = (new \App\Dinero\SegundaMoneda($propiedad))->texto($reserva->total)) <span class="gris">{{ $segunda }}</span>@endif</td></tr>
             <tr><th scope="row">{{ __('ui.comun.pagado') }}</th><td>{{ Formato::dinero($reserva->pagado, $reserva->moneda) }}</td></tr>
-            <tr><th scope="row">{{ __('ui.comun.pendiente') }}</th><td>{{ Formato::dinero($reserva->pendiente, $reserva->moneda) }}</td></tr>
+            <tr><th scope="row">{{ __('ui.comun.pendiente') }}</th><td>{{ Formato::dinero($reserva->pendiente, $reserva->moneda) }}@if ($reserva->pendiente > 0 && ($segunda = (new \App\Dinero\SegundaMoneda($propiedad))->texto($reserva->pendiente))) <span class="gris">{{ $segunda }}</span>@endif</td></tr>
         </table>
         <p style="margin:12px 0 0"><a class="boton secundario" href="{{ route('mi-reserva.pdf', ['token' => $token, 'idioma' => app()->getLocale()]) }}">{{ __('documentos.descargar_confirmacion') }}</a></p>
     </section>

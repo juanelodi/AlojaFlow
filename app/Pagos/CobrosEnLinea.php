@@ -41,11 +41,29 @@ final class CobrosEnLinea
     }
 
     /**
-     * Lo que falta por cobrar para garantizar la reserva y, con calendario de cobros, lo que toca pagar de él.
+     * Lo que falta por cobrar para garantizar la reserva y, con calendario de cobros, lo que toca pagar de él. La primera de un
+     * pedido de varias unidades cobra por todas (D-158).
      */
     public function porCobrar(Reserva $reserva): int
     {
+        return $this->delPedido($reserva)->sum(fn (Reserva $una): int => $this->porCobrarUna($una));
+    }
+
+    private function porCobrarUna(Reserva $reserva): int
+    {
         return max(0, min($reserva->pendiente, max($reserva->deposito - $reserva->pagado, Mensualidades::porPagar($reserva))));
+    }
+
+    /**
+     * Las reservas que paga un cobro de esta: todo el pedido si es la primera (D-158), y si no, solo ella.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, Reserva>
+     */
+    private function delPedido(Reserva $reserva): \Illuminate\Database\Eloquent\Collection
+    {
+        return $reserva->reserva_principal_id === null && $reserva->acompanantes()->exists()
+            ? $reserva->pedido()
+            : new \Illuminate\Database\Eloquent\Collection([$reserva]);
     }
 
     public function iniciar(Reserva $reserva, ProveedorPago $proveedor, string $concepto, string $urlExito, string $urlCancelar, string $urlAviso, ?EnlacePago $enlace = null): string
@@ -136,24 +154,26 @@ final class CobrosEnLinea
             }
             $reserva = $bloqueado->reserva;
             $enlace = $bloqueado->enlace_pago_id === null ? null : EnlacePago::query()->lockForUpdate()->find($bloqueado->enlace_pago_id);
+            // Un enlace es de una sola reserva; sin él, la primera de un pedido paga por todas (D-158).
+            $pedido = $enlace === null ? $this->delPedido($reserva) : new \Illuminate\Database\Eloquent\Collection([$reserva]);
             // El dinero ya entró a la cuenta, así que se anota de todos modos; devolverlo lo decide una persona. Un enlace puede
             // cobrar un extra que no está en el total: ahí no hay duplicado, salvo que el mismo enlace se pague dos veces.
-            if ($enlace === null ? $bloqueado->importe > max(0, $reserva->pendiente) : $enlace->pagado_en !== null) {
+            if ($enlace === null ? $bloqueado->importe > max(0, (int) $pedido->sum('pendiente')) : $enlace->pagado_en !== null) {
                 Aviso::abrir($reserva->propiedad_id, 'pago_duplicado', NivelAviso::Error, ['reserva' => $reserva->numero]);
             }
-            $pago = $this->reservas->registrarPago(
-                $reserva,
-                $bloqueado->importe,
-                $resultado->metodo ?? MetodoPago::Tarjeta,
-                CarbonImmutable::now($reserva->propiedad->zona_horaria),
-                mb_substr($proveedor->nombre().' '.($resultado->idPago ?? $bloqueado->referencia), 0, 100),
-                $enlace?->caja_id,
-            );
-            $bloqueado->update(['estado' => 'pagado', 'pago_id' => $pago->id, 'datos' => ['id_pago' => $resultado->idPago]]);
-            if ($enlace !== null && $enlace->pagado_en === null) {
-                $enlace->update(['pagado_en' => now('UTC'), 'pago_id' => $pago->id]);
+            $referencia = mb_substr($proveedor->nombre().' '.($resultado->idPago ?? $bloqueado->referencia), 0, 100);
+            $pago = null;
+            foreach ($this->repartir($pedido, $bloqueado->importe) as [$una, $parte]) {
+                $hecho = $this->reservas->registrarPago($una, $parte, $resultado->metodo ?? MetodoPago::Tarjeta, CarbonImmutable::now($una->propiedad->zona_horaria), $referencia, $enlace?->caja_id);
+                $pago ??= $hecho;
             }
-            $this->asegurarReserva($reserva->refresh());
+            $bloqueado->update(['estado' => 'pagado', 'pago_id' => $pago?->id, 'datos' => ['id_pago' => $resultado->idPago]]);
+            if ($enlace !== null && $enlace->pagado_en === null) {
+                $enlace->update(['pagado_en' => now('UTC'), 'pago_id' => $pago?->id]);
+            }
+            foreach ($pedido as $una) {
+                $this->asegurarReserva($una->refresh());
+            }
 
             return $bloqueado;
         });
@@ -173,18 +193,20 @@ final class CobrosEnLinea
             // Un segundo aviso puede traer menos que el primero: lo que ya se sabe de la ficha no se borra.
             $datos = array_filter(['instrucciones' => $resultado->instrucciones, 'vence' => $resultado->venceEn], fn (mixed $valor): bool => $valor !== null) + (array) $bloqueado->datos;
             $bloqueado->update(['estado' => 'en_espera', 'datos' => $datos]);
-            $reserva = $bloqueado->reserva;
-            // La que no tiene retención (la hizo recepción y mandó un enlace de pago) no empieza a caducar por esto.
-            if ($reserva->expira_en === null) {
-                return;
-            }
-            try {
-                if ($reserva->estado === EstadoReserva::Cancelada) {
-                    $this->reservas->reactivar($reserva);
+            $pedido = $bloqueado->enlace_pago_id === null ? $this->delPedido($bloqueado->reserva) : new \Illuminate\Database\Eloquent\Collection([$bloqueado->reserva]);
+            foreach ($pedido as $reserva) {
+                // La que no tiene retención (la hizo recepción y mandó un enlace de pago) no empieza a caducar por esto.
+                if ($reserva->expira_en === null) {
+                    continue;
                 }
-                $this->reservas->fijarVencimiento($reserva->refresh(), $this->hastaCuandoEspera($reserva, $datos['vence'] ?? null));
-            } catch (ReservaRechazada) {
-                // Las noches ya se vendieron. Si paga, se avisa: lo resuelve el alojamiento.
+                try {
+                    if ($reserva->estado === EstadoReserva::Cancelada) {
+                        $this->reservas->reactivar($reserva);
+                    }
+                    $this->reservas->fijarVencimiento($reserva->refresh(), $this->hastaCuandoEspera($reserva, $datos['vence'] ?? null));
+                } catch (ReservaRechazada) {
+                    // Las noches ya se vendieron. Si paga, se avisa: lo resuelve el alojamiento.
+                }
             }
         });
     }
@@ -211,11 +233,37 @@ final class CobrosEnLinea
                 return;
             }
             $bloqueado->update(['estado' => 'fallido']);
-            $reserva = $bloqueado->reserva;
-            if ($reserva->expira_en !== null) {
-                $this->reservas->fijarVencimiento($reserva, now('UTC')->addMinutes((new AjustesMotor($reserva->propiedad))->minutosRetencion()));
+            $pedido = $bloqueado->enlace_pago_id === null ? $this->delPedido($bloqueado->reserva) : new \Illuminate\Database\Eloquent\Collection([$bloqueado->reserva]);
+            foreach ($pedido as $reserva) {
+                if ($reserva->expira_en !== null) {
+                    $this->reservas->fijarVencimiento($reserva, now('UTC')->addMinutes((new AjustesMotor($reserva->propiedad))->minutosRetencion()));
+                }
             }
         });
+    }
+
+    /**
+     * Cuánto le toca a cada reserva de un cobro: a cada una lo que le faltaba, en orden, y lo que sobre a la primera (D-158). Se
+     * calcula antes de anotar nada: cada pago cambia lo que falta.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, Reserva>  $pedido
+     * @return list<array{0: Reserva, 1: int}>
+     */
+    private function repartir(\Illuminate\Database\Eloquent\Collection $pedido, int $importe): array
+    {
+        if ($pedido->count() === 1) {
+            return [[$pedido->first(), $importe]];
+        }
+        $partes = [];
+        $resta = $importe;
+        foreach ($pedido as $una) {
+            $parte = min($resta, $this->porCobrarUna($una));
+            $partes[] = [$una, $parte];
+            $resta -= $parte;
+        }
+        $partes[0][1] += $resta;
+
+        return array_values(array_filter($partes, fn (array $parte): bool => $parte[1] !== 0));
     }
 
     /**

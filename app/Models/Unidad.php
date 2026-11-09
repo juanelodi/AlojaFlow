@@ -121,6 +121,26 @@ class Unidad extends ModeloBase
         return array_values(array_unique($this->tarifa_id === null ? $otras : [$this->tarifa_id, ...$otras]));
     }
 
+    /**
+     * De qué otras se compone, como la casa completa y sus cuartos (D-155).
+     *
+     * @return BelongsToMany<Unidad, $this>
+     */
+    public function partes(): BelongsToMany
+    {
+        return $this->belongsToMany(Unidad::class, 'unidades_partes', 'unidad_id', 'parte_id');
+    }
+
+    /**
+     * Las que la incluyen (D-155).
+     *
+     * @return BelongsToMany<Unidad, $this>
+     */
+    public function contenedores(): BelongsToMany
+    {
+        return $this->belongsToMany(Unidad::class, 'unidades_partes', 'parte_id', 'unidad_id');
+    }
+
     /** @return HasMany<Reserva, $this> */
     public function reservas(): HasMany
     {

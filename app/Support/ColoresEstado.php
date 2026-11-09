@@ -17,8 +17,18 @@ use App\Models\User;
  */
 final class ColoresEstado
 {
-    /** Como se guarda (y se traduce) => su clase en el calendario. */
-    public const ESTADOS = ['confirmada' => 'confirmada', 'sin_confirmar' => 'sin-confirmar', 'en_casa' => 'en-casa', 'salio' => 'salio'];
+    /** Como se guarda (y se traduce) => a qué barras del calendario se aplica. */
+    public const ESTADOS = [
+        'confirmada' => '.af-barra--confirmada',
+        'sin_confirmar' => '.af-barra--sin-confirmar',
+        'en_casa' => '.af-barra--en-casa',
+        'salio' => '.af-barra--salio',
+        // Al colorear por pago (D-154): también la leyenda. Más específicas que las de alojaflow.css, que van sin «html».
+        'pago_total' => 'html[data-af-cal-colores="pago"] .af-pago--total',
+        'pago_anticipo' => 'html[data-af-cal-colores="pago"] .af-pago--anticipo',
+        'pago_sin_anticipo' => 'html[data-af-cal-colores="pago"] .af-pago--sin-anticipo',
+        'pago_sin_confirmar' => 'html[data-af-cal-colores="pago"] .af-pago--sin-confirmar',
+    ];
 
     /**
      * Las reglas de estilo de ese usuario. Solo pasa lo que es un color: esto se escribe en la página.
@@ -28,7 +38,7 @@ final class ColoresEstado
         $reglas = '';
         foreach ((array) $usuario?->colores_estado as $estado => $color) {
             if (isset(self::ESTADOS[$estado]) && is_string($color) && preg_match('/^#[0-9a-fA-F]{6}$/', $color) === 1) {
-                $reglas .= '.af-barra--'.self::ESTADOS[$estado].'{background:'.$color.';color:'.self::letraPara($color).'}';
+                $reglas .= self::ESTADOS[$estado].'{background:'.$color.';color:'.self::letraPara($color).'}';
             }
         }
 

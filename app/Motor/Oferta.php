@@ -25,6 +25,7 @@ final readonly class Oferta
      * @param  string|null  $politicaNombre  cómo se llaman
      * @param  float  $anticipo  el porcentaje que se pide al reservar
      * @param  Unidad|null  $unidad  la que le tocaría
+     * @param  int  $cantidad  cuántas unidades pide (D-158); el presupuesto ya es de todas
      */
     public function __construct(
         public Tarifa $tarifa,
@@ -38,6 +39,7 @@ final readonly class Oferta
         public ?string $politicaNombre = null,
         public float $anticipo = 0.0,
         public ?Unidad $unidad = null,
+        public int $cantidad = 1,
     ) {
     }
 }

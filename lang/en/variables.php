@@ -75,6 +75,7 @@ return [
         'enlace_reserva' => 'To see the online booking',
         'enlace_llegada' => 'To fill in the arrival form',
         'enlace_mi_reserva' => 'To see their details, payments and guide',
+        'codigo_acceso' => 'Booking access code, or its unit’s fixed code',
         'enlace_opinion' => 'To leave a review',
         'h_numero' => 'Line number: 1, 2, 3…',
         'h_nombre' => 'Full name',

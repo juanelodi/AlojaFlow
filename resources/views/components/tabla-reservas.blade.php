@@ -56,9 +56,9 @@
                             @if (in_array($reserva->propiedad_id, $gestionables, true))
                                 {{-- Junto al nombre: es lo primero que busca recepción y no queda fuera de la pantalla. --}}
                                 <div class="af-accion-fila">
-                                    @if ($reserva->entrada_registrada_en === null)
+                                    @if ($reserva->entradaEn() === null)
                                         <x-filament::button size="xs" color="success" wire:click="registrarEntrada({{ $reserva->id }})" wire:loading.attr="disabled">{{ __('ui.reservas.registrar_entrada') }}</x-filament::button>
-                                    @elseif ($reserva->salida_registrada_en === null)
+                                    @elseif ($reserva->salidaEn() === null)
                                         <x-filament::button size="xs" color="info" wire:click="registrarSalida({{ $reserva->id }})" wire:loading.attr="disabled">{{ __('ui.reservas.registrar_salida') }}</x-filament::button>
                                     @endif
                                 </div>

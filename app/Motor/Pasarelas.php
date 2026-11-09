@@ -15,6 +15,7 @@ use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Pagos\ProveedorMercadoPago;
 use App\Pagos\ProveedorPago;
+use App\Pagos\ProveedorPayPal;
 use App\Pagos\ProveedorRedsys;
 use App\Pagos\ProveedorStripe;
 
@@ -30,6 +31,8 @@ final class Pasarelas
     public const REDSYS = 'redsys';
 
     public const BIZUM = 'bizum';
+
+    public const PAYPAL = 'paypal';
 
     public function __construct(private readonly Propiedad $propiedad)
     {
@@ -55,6 +58,11 @@ final class Pasarelas
         }
         if ($ajustes->tieneLlave('mercadopago_token')) {
             $disponibles[self::MERCADOPAGO] = new ProveedorMercadoPago((string) $ajustes->llave('mercadopago_token'), $ajustes->llave('mercadopago_webhook'));
+        }
+        // PayPal (D-159): el identificador de la aplicación no es secreto; el secreto, sí.
+        $paypal = $ajustes->paypal();
+        if ($paypal['cliente'] !== '' && $ajustes->tieneLlave('paypal_secreto')) {
+            $disponibles[self::PAYPAL] = new ProveedorPayPal($paypal['cliente'], (string) $ajustes->llave('paypal_secreto'), $ajustes->llave('paypal_webhook'), $paypal['pruebas']);
         }
         $redsys = $ajustes->redsys();
         if ($this->propiedad->moneda === 'EUR' && $ajustes->tieneLlave('redsys_clave') && filled($redsys['comercio'])) {

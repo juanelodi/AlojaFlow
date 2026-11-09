@@ -22,8 +22,8 @@
         $sinDetalle ? null : trans_choice('ui.comun.n_personas', $reserva->personas),
         $sinDetalle ? null : $reserva->origen_texto,
     ]);
-    $conEntrada = $gestionable && $reserva->entrada_registrada_en === null;
-    $conSalida = $gestionable && $reserva->entrada_registrada_en !== null && $reserva->salida_registrada_en === null;
+    $conEntrada = $gestionable && $reserva->entradaEn() === null;
+    $conSalida = $gestionable && $reserva->entradaEn() !== null && $reserva->salidaEn() === null;
 @endphp
 <div {{ $attributes->class('af-fila-movil af-tarjeta-reserva') }}>
     <div class="af-fila-movil__cabecera">

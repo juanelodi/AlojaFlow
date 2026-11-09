@@ -4,7 +4,7 @@ AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequ
 **desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
 (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
 
-- **Estado (2026-11-08): versión de prueba 1.0.39**, a la espera de que el usuario la pruebe
+- **Estado (2026-11-08): versión de prueba 1.0.40**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
   aprobado; la especificación sigue en redacción. Las decisiones tomadas por delegación (D-024 a
   D-029) y D-036 se revisan con el usuario. El plan de [docs/plan-paridad.md](docs/plan-paridad.md) quedó completo en la 1.0.24, y lo que se eligió del núcleo heredado ([docs/nucleo-heredado.md](docs/nucleo-heredado.md), D-117), en la 1.0.29.
@@ -118,7 +118,7 @@ spatie/laravel-permission 8, Pest 4, Larastan 3.
 | Copias de seguridad | Propias, sin `mysqldump` (`App\Copias`, D-038) | — |
 | Calendarios iCal (Airbnb, Booking, Vrbo) | sabre/vobject | BSD-3 |
 | PDF (recibos, contratos) | barryvdh/laravel-dompdf (dompdf) | MIT / LGPL-2.1 |
-| Pagos en línea | Stripe y Mercado Pago por su API, sin SDK (`App\Pagos`, D-042) | — |
+| Pagos en línea | Stripe, Mercado Pago, Redsys y PayPal por su API, sin SDK (`App\Pagos`, D-042, D-159) | — |
 | Colas y tareas | driver `database` + programador de Laravel con un solo cron por minuto (sin Redis ni Supervisor) | — |
 | Pruebas | Pest | MIT |
 | Análisis estático | Larastan (PHPStan) | MIT |
@@ -205,6 +205,11 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 - `app/Reservas/UtilidadReserva.php` y `CargosSugeridos.php`, cargos de los canales y utilidad bruta y neta (D-149). `GestorPreciosTarifa.php` y `app/Servicios/CalendarioTarifas.php`, calendario de tarifas (D-148).
 - `app/Reservas/ImportadorDatos.php`, traer huéspedes y reservas de un archivo (D-127). `app/Reservas/DetectorDuplicados.php` (D-088). `app/Propiedades/RegistrosTuristicos.php` (D-091). `app/Paises/CatalogoRegiones.php` (D-092).
 - `app/Reservas/Restricciones.php` (D-084) e `ImportadorPrecios.php` (D-083). `app/Pagos/GestorEnlacesPago.php` (D-085). `app/Comunicacion/Opiniones.php` (D-087).
+- `app/Reservas/GestorEstancias.php`, llegó y salió también en subordinadas, con `MarcaEstancia` (D-153). `UnidadesVinculadas.php`, la casa
+  completa y sus cuartos: `GestorReservas::revisarVinculadas` las bloquea en orden antes de ocupar noches (D-155). `CodigosAcceso.php` (D-156).
+- `app/Dinero/SegundaMoneda.php` y `PagoRecibido.php`, segunda moneda con tipo a mano (D-157). Un pedido de varias unidades del motor son
+  reservas con `reserva_principal_id`; `CobrosEnLinea` cobra y reparte desde la primera (D-158).
+- `app/Comunicacion/WhatsappCloud.php`, plantillas aprobadas por la API de Meta desde las automatizaciones (D-160).
 - `app/Motor/` y `app/Pagos/` — motor de reservas y pasarelas (D-042). `app/Propiedades/Independizador.php`,
   pasar una subordinada a independiente (D-043).
 - `app/Caja/GestorTurnos.php`, turnos y arqueo (D-080). `app/Sincronizacion/ProyeccionCaja.php`, la caja de la principal (D-078).
@@ -225,7 +230,8 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   `app/Seguridad/ClienteExterno.php`, peticiones a direcciones que escribe un usuario, solo a redes públicas.
 - `instalador/instalar.php` — plantilla del instalador de un solo archivo (D-040, D-071); sin sintaxis
   moderna a propósito: **Pint no se corre sobre él**, y `pint.json` lo excluye. `app/Instalacion/Instalador.php`, lo que hace dentro de la aplicación.
-- `app/Copias/GestorCopias.php` — copias de seguridad (D-038). `app/Programador/`, tareas sin cron (D-039).
+- `app/Copias/GestorCopias.php` — copias de seguridad (D-038); `CopiaExterna`, `CifradoCopia` y `FirmaS3`, la copia cifrada fuera del servidor (D-152).
+  `app/Programador/`, tareas sin cron (D-039).
 - `app/Demo/` — `GeneradorDemo`, la propiedad de demostración con datos inventados (D-037), y `ModoDemo`,
   la demostración pública (D-044).
 - `app/Models/` — modelos en español sobre `ModeloBase` (`creado_en`/`actualizado_en`). Las

@@ -10,11 +10,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Propiedades\Schemas;
 
+use App\Dinero\SegundaMoneda;
 use App\Enums\MetodoPeticion;
 use App\Enums\ModoPropiedad;
 use App\Enums\PaquetePais;
 use App\Enums\TipoPrincipal;
 use App\Models\Principal;
+use App\Models\Propiedad;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Paises\CatalogoPaises;
@@ -101,6 +103,14 @@ class PropiedadForm
                         ->options(Formato::zonasHorarias())->searchable()->required()->default('America/Mexico_City'),
                     TextInput::make('moneda')->label(__('ui.propiedades.moneda'))->required()->length(3)->regex('/^[A-Za-z]{3}$/')
                         ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))->default('MXN'),
+                    // La segunda moneda y su tipo de cambio (D-157): se guardan en los ajustes al guardar la propiedad.
+                    TextInput::make('segunda_moneda')->label(__('dinero.segunda.moneda'))->helperText(__('dinero.segunda.moneda_ayuda'))
+                        ->length(3)->regex('/^[A-Za-z]{3}$/')->different('moneda')
+                        ->formatStateUsing(fn (?Propiedad $record): ?string => $record === null ? null : (new SegundaMoneda($record))->moneda()),
+                    TextInput::make('tipo_cambio')->label(__('dinero.segunda.tipo'))->numeric()->step('any')->minValue(0.000001)->maxValue(1000000)
+                        ->requiredWith('segunda_moneda')
+                        ->helperText(fn (Get $get): string => __('dinero.segunda.tipo_ayuda', ['segunda' => strtoupper((string) ($get('segunda_moneda') ?: 'USD')), 'moneda' => strtoupper((string) ($get('moneda') ?: 'MXN'))]))
+                        ->formatStateUsing(fn (?Propiedad $record): ?string => $record === null ? null : (new SegundaMoneda($record))->tipo()),
                 ]),
             Section::make(__('ui.propiedades.principal'))->columnSpanFull()
                 ->description(__('ui.propiedades.principal_ayuda'))

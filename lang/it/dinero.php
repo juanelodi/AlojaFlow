@@ -9,6 +9,18 @@
 declare(strict_types=1);
 
 return [
+    'segunda' => [
+        'moneda' => 'Seconda valuta',
+        'moneda_ayuda' => 'Facoltativa, come USD. Si mostra accanto ai prezzi e si possono ricevere contanti in essa; tutto si somma nella valuta della struttura.',
+        'tipo' => 'Tasso di cambio',
+        'tipo_ayuda' => 'Quanto vale 1 :segunda in :moneda. Lo scrivi tu: cambialo quando cambia.',
+        'recibido_en' => 'Ricevuto in',
+        'tipo_pago' => 'Tasso di cambio di questo pagamento',
+        'se_anota' => 'Nella prenotazione si registrano :importe.',
+        'recibido' => ':importe a :tipo',
+        'recibido_titulo' => 'Ricevuto',
+        'efectivo_en' => 'Contanti in :moneda (si contano a parte)',
+    ],
     'politicas' => [
         'no_reembolsable' => 'Non rimborsabile',
         'no_reembolsable_ayuda' => 'Se cancellano, in qualsiasi momento, si addebita il totale.',

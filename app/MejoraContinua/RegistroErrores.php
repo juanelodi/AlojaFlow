@@ -26,12 +26,59 @@ final class RegistroErrores
 
     public static function anotar(Throwable $error): void
     {
+        self::conCuidado(function () use ($error): void {
+            $mensaje = $error instanceof QueryException
+                ? 'SQLSTATE['.$error->getCode().'] '.$error->getSql()
+                : $error->getMessage();
+            $traza = self::traza($error);
+            self::guardar($error::class, $mensaje, (string) $error->getCode(), Saneador::ruta($error->getFile()), $error->getLine(), $traza, self::contexto());
+        });
+    }
+
+    /**
+     * Un error de JavaScript en el navegador de alguien del equipo (pantalla en blanco, botón que no responde).
+     *
+     * @param  array{tipo: string, mensaje: string, archivo: ?string, linea: ?int, pila: ?string, pantalla: ?string}  $datos
+     */
+    public static function anotarNavegador(array $datos): void
+    {
+        self::conCuidado(function () use ($datos): void {
+            $traza = [];
+            foreach (array_slice(preg_split('/\R/', (string) $datos['pila']) ?: [], 0, 20) as $renglon) {
+                if (preg_match('/(?:at\s+)?(.*?)\s*\(?((?:https?:\/\/[^\s)]+|\/[^\s)]+)):(\d+)(?::\d+)?\)?$/', trim($renglon), $c) === 1) {
+                    $traza[] = ['archivo' => Saneador::ruta((string) parse_url($c[2], PHP_URL_PATH)), 'linea' => (int) $c[3], 'funcion' => Saneador::corto($c[1] !== '' ? $c[1] : null)];
+                }
+            }
+            $pantalla = preg_replace('/\d+/', '{n}', (string) parse_url((string) $datos['pantalla'], PHP_URL_PATH));
+            self::guardar(
+                'JavaScript\\'.(preg_match('/^[A-Za-z]{1,40}$/', $datos['tipo']) === 1 ? $datos['tipo'] : 'Error'),
+                $datos['mensaje'],
+                null,
+                Saneador::ruta($datos['archivo'] === null ? null : (string) parse_url($datos['archivo'], PHP_URL_PATH)),
+                $datos['linea'],
+                $traza,
+                array_filter(['origen' => 'navegador', 'ruta' => Saneador::corto($pantalla, 150)] + self::contexto(), fn (mixed $v): bool => $v !== null),
+            );
+        });
+    }
+
+    /**
+     * Un problema que el sistema anotó en su registro sin que fuera una excepción (una consulta que no
+     * respondió, una copia que no salió).
+     */
+    public static function anotarProblema(string $nivel, string $mensaje): void
+    {
+        self::conCuidado(fn () => self::guardar('Registro\\'.ucfirst($nivel), $mensaje, null, null, null, [], ['origen' => 'registro'] + self::contexto()));
+    }
+
+    private static function conCuidado(callable $anotar): void
+    {
         if (self::$anotando || ! Permiso::activa()) {
             return;
         }
         self::$anotando = true;
         try {
-            self::guardar($error);
+            $anotar();
         } catch (Throwable) {
             // Sin base de datos, o la tabla todavía no existe (a mitad de una actualización): se pierde este.
         } finally {
@@ -39,17 +86,16 @@ final class RegistroErrores
         }
     }
 
-    private static function guardar(Throwable $error): void
+    /**
+     * @param  list<array{archivo: ?string, linea: ?int, funcion: ?string}>  $traza
+     * @param  array<string, string|bool>  $contexto
+     */
+    private static function guardar(string $clase, string $mensaje, ?string $codigo, ?string $archivo, ?int $linea, array $traza, array $contexto): void
     {
-        $mensaje = $error instanceof QueryException
-            ? 'SQLSTATE['.$error->getCode().'] '.$error->getSql()
-            : $error->getMessage();
         $mensaje = Saneador::texto($mensaje);
-        $traza = self::traza($error);
-        $archivo = Saneador::ruta($error->getFile());
         $funcion = $traza[0]['funcion'] ?? null;
         $version = (string) config('alojaflow.version');
-        $huella = hash('sha256', implode("\n", [$error::class, $archivo, $error->getLine(), Saneador::plantilla($mensaje)]));
+        $huella = hash('sha256', implode("\n", [$clase, $archivo, $linea, Saneador::plantilla($mensaje)]));
         $ahora = now('UTC');
 
         $filas = DB::table('mejora_errores')->where(['huella' => $huella, 'fecha' => $ahora->toDateString(), 'version' => $version])
@@ -61,14 +107,14 @@ final class RegistroErrores
             'huella' => $huella,
             'fecha' => $ahora->toDateString(),
             'version' => $version,
-            'clase' => mb_substr($error::class, 0, 255),
+            'clase' => mb_substr($clase, 0, 255),
             'mensaje' => $mensaje,
-            'codigo' => Saneador::corto((string) $error->getCode(), 40),
+            'codigo' => Saneador::corto($codigo, 40),
             'archivo' => $archivo,
-            'linea' => $error->getLine(),
+            'linea' => $linea,
             'funcion' => $funcion,
             'traza' => json_encode($traza),
-            'contexto' => json_encode(self::contexto()),
+            'contexto' => json_encode($contexto),
             'veces' => 1,
             'primera_vez' => $ahora,
             'ultima_vez' => $ahora,

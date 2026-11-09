@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Propiedades\Pages;
 
 use App\Copias\ErrorCopia;
+use App\Dinero\SegundaMoneda;
 use App\Filament\Resources\Propiedades\AccionesSincronizacion;
 use App\Filament\Resources\Propiedades\PropiedadResource;
 use App\Models\Propiedad;
@@ -79,8 +80,28 @@ class EditPropiedad extends EditRecord
         ];
     }
 
+    private ?string $segundaMoneda = null;
+
+    private ?string $tipoCambio = null;
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $this->segundaMoneda = filled($data['segunda_moneda'] ?? null) ? (string) $data['segunda_moneda'] : null;
+        $this->tipoCambio = filled($data['tipo_cambio'] ?? null) ? (string) $data['tipo_cambio'] : null;
+        unset($data['segunda_moneda'], $data['tipo_cambio']);
+
+        return $data;
+    }
+
     protected function afterSave(): void
     {
+        $propiedad = $this->record;
+        assert($propiedad instanceof Propiedad);
+        (new SegundaMoneda($propiedad))->guardar($this->segundaMoneda, $this->tipoCambio);
         // Sin valores: nunca se anotan credenciales (regla 13).
         RegistroAuditoria::anotar('propiedad.editar', $this->record, ['campos' => array_keys($this->record->getChanges())], (int) $this->record->getKey());
     }

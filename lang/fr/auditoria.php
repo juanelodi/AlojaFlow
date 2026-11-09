@@ -44,12 +44,18 @@ return [
             'revocar' => 'Connexion partagée révoquée',
         ],
         'copia' => [
+            'externa' => 'Copie hors du serveur configurée',
+            'externa_quitar' => 'Copie hors du serveur supprimée',
             'ajustes' => 'Réglages des sauvegardes modifiés',
             'crear' => 'Sauvegarde créée',
             'descargar' => 'Sauvegarde téléchargée',
             'descargar_env' => 'Fichier de configuration téléchargé',
             'eliminar' => 'Sauvegarde supprimée',
             'restaurar' => 'Sauvegarde restaurée',
+        ],
+        'whatsapp' => [
+            'ajustes' => 'Réglages WhatsApp modifiés',
+            'quitar' => 'WhatsApp supprimé',
         ],
         'correo' => [
             'ajustes' => 'Réglages d’e-mail modifiés',
@@ -146,6 +152,7 @@ return [
         ],
         'reserva' => [
             'cancelada_por_huesped' => 'Annulée par le client',
+            'codigo_acceso' => 'Code d’accès de la réservation modifié',
             'cancelar' => 'Réservation annulée',
             'confirmar' => 'Réservation confirmée',
             'crear' => 'Réservation créée',
@@ -168,6 +175,10 @@ return [
         ],
         'tarifas' => [
             'importar' => 'Prix importés',
+        ],
+        'unidad' => [
+            'codigo_acceso' => 'Code d’accès de l’unité modifié',
+            'partes' => 'Parties de l’unité modifiées',
         ],
         'turno' => [
             'abrir' => 'Service de caisse ouvert',
@@ -335,6 +346,7 @@ return [
         'grupo_id' => 'Groupe',
     ],
     'valores' => [
+        'guardar' => 'Enregistré',
         'confirmada' => 'Confirmée',
         'sin_confirmar' => 'Non confirmée',
         'cancelada' => 'Annulée',

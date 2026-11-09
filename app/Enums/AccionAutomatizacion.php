@@ -18,6 +18,8 @@ enum AccionAutomatizacion: string
     case CorreoFijo = 'correo_fijo';
     case CrearTarea = 'crear_tarea';
     case NotaBitacora = 'nota_bitacora';
+    // Una plantilla aprobada de WhatsApp, por la API de Meta (D-160).
+    case WhatsappHuesped = 'whatsapp_huesped';
 
     public function esCorreo(): bool
     {

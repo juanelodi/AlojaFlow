@@ -16,6 +16,9 @@
 
     <table class="importes" style="margin-top: 16px">
         <tr class="total"><td>{{ __('ui.pagos.importe') }}</td><td class="num">{{ Formato::dinero(abs($pago->importe), $pago->moneda) }}</td></tr>
+        @if ($pago->moneda_recibida !== null)
+            <tr><td>{{ __('dinero.segunda.recibido_titulo') }}</td><td class="num">{{ __('dinero.segunda.recibido', ['importe' => Formato::dinero(abs((int) $pago->importe_recibido), $pago->moneda_recibida), 'tipo' => Formato::tasa($pago->tipo_cambio)]) }}</td></tr>
+        @endif
         <tr><td>{{ __('ui.comun.total') }}</td><td class="num">{{ Formato::dinero($reserva->total, $reserva->moneda) }}</td></tr>
         <tr><td>{{ __('ui.comun.pagado') }}</td><td class="num">{{ Formato::dinero($reserva->pagado, $reserva->moneda) }}</td></tr>
         <tr><td><strong>{{ __('ui.comun.pendiente') }}</strong></td><td class="num"><strong>{{ Formato::dinero($reserva->pendiente, $reserva->moneda) }}</strong></td></tr>

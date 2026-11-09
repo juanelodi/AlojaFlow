@@ -44,12 +44,18 @@ return [
             'revocar' => 'Ligação partilhada revogada',
         ],
         'copia' => [
+            'externa' => 'Cópia fora do servidor configurada',
+            'externa_quitar' => 'Cópia fora do servidor removida',
             'ajustes' => 'Definições das cópias alteradas',
             'crear' => 'Cópia de segurança criada',
             'descargar' => 'Cópia de segurança descarregada',
             'descargar_env' => 'Ficheiro de configuração descarregado',
             'eliminar' => 'Cópia de segurança eliminada',
             'restaurar' => 'Cópia de segurança restaurada',
+        ],
+        'whatsapp' => [
+            'ajustes' => 'Definições de WhatsApp alteradas',
+            'quitar' => 'WhatsApp removido',
         ],
         'correo' => [
             'ajustes' => 'Definições de e-mail alteradas',
@@ -146,6 +152,7 @@ return [
         ],
         'reserva' => [
             'cancelada_por_huesped' => 'Cancelada pelo hóspede',
+            'codigo_acceso' => 'Código de acesso da reserva alterado',
             'cancelar' => 'Reserva cancelada',
             'confirmar' => 'Reserva confirmada',
             'crear' => 'Reserva criada',
@@ -168,6 +175,10 @@ return [
         ],
         'tarifas' => [
             'importar' => 'Preços importados',
+        ],
+        'unidad' => [
+            'codigo_acceso' => 'Código de acesso da unidade alterado',
+            'partes' => 'Partes da unidade alteradas',
         ],
         'turno' => [
             'abrir' => 'Turno de caixa aberto',
@@ -335,6 +346,7 @@ return [
         'grupo_id' => 'Grupo',
     ],
     'valores' => [
+        'guardar' => 'Guardado',
         'confirmada' => 'Confirmada',
         'sin_confirmar' => 'Não confirmada',
         'cancelada' => 'Cancelada',

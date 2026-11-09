@@ -13,6 +13,10 @@
     <div class="af-kpi"><dt>{{ __('caja.turnos.entradas') }}</dt><dd>{{ Formato::dinero((int) ($resumen['entradas'] ?? 0), $moneda) }}</dd></div>
     <div class="af-kpi"><dt>{{ __('caja.turnos.salidas') }}</dt><dd>{{ Formato::dinero((int) ($resumen['salidas'] ?? 0), $moneda) }}</dd></div>
     <div class="af-kpi"><dt>{{ __('caja.turnos.esperado') }}</dt><dd>{{ Formato::dinero((int) $turno->esperado, $moneda) }}</dd></div>
+    {{-- Lo que se recibió en efectivo en la segunda moneda, para contarlo aparte (D-157). --}}
+    @foreach ((array) ($resumen['otras_monedas'] ?? []) as $otra => $importe)
+        <div class="af-kpi"><dt>{{ __('dinero.segunda.efectivo_en', ['moneda' => $otra]) }}</dt><dd>{{ Formato::dinero((int) $importe, (string) $otra) }}</dd></div>
+    @endforeach
     <div class="af-kpi"><dt>{{ __('caja.turnos.contado') }}</dt><dd>{{ Formato::dinero((int) $turno->contado, $moneda) }}</dd></div>
     <div class="af-kpi"><dt>{{ __('caja.turnos.diferencia') }}</dt><dd>{{ Formato::dinero((int) $turno->diferencia, $moneda) }}</dd></div>
     @foreach ((array) ($resumen['por_metodo'] ?? []) as $metodo => $importe)

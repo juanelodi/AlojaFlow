@@ -9,6 +9,18 @@
 declare(strict_types=1);
 
 return [
+    'segunda' => [
+        'moneda' => 'Segunda moneda',
+        'moneda_ayuda' => 'Opcional, como USD. Se muestra junto a los precios y se puede recibir efectivo en ella; todo se suma en la moneda de la propiedad.',
+        'tipo' => 'Tipo de cambio',
+        'tipo_ayuda' => 'Cuánto vale 1 :segunda en :moneda. Lo escribes tú: cámbialo cuando cambie.',
+        'recibido_en' => 'Recibido en',
+        'tipo_pago' => 'Tipo de cambio de este pago',
+        'se_anota' => 'En la reserva se anotan :importe.',
+        'recibido' => ':importe a :tipo',
+        'recibido_titulo' => 'Recibido',
+        'efectivo_en' => 'Efectivo en :moneda (se cuenta aparte)',
+    ],
     'politicas' => [
         'no_reembolsable' => 'No reembolsable',
         'no_reembolsable_ayuda' => 'Si cancelan, en cualquier momento, se cobra el total.',

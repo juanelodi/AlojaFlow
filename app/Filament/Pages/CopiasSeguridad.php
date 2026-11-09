@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Copias\CifradoCopia;
+use App\Copias\CopiaExterna;
 use App\Copias\ErrorCopia;
 use App\Copias\GestorCopias;
 use App\Demo\ModoDemo;
@@ -19,10 +21,12 @@ use App\Support\Ajustes;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -106,17 +110,32 @@ class CopiasSeguridad extends Page
                     FileUpload::make('archivo')->label(__('copias.archivo'))->required()->storeFiles(false)
                         ->acceptedFileTypes(['application/zip', 'application/x-zip-compressed', 'application/octet-stream'])
                         ->maxSize(1024 * 1024),
+                    // Solo para una copia cifrada de las que salen del servidor (.afcopia).
+                    TextInput::make('clave')->label(__('copias.externa.clave_para_subir'))->password()->revealable()->autocomplete('off'),
                 ])
                 ->action(function (array $data): void {
                     $archivo = $data['archivo'] ?? null;
                     if (! $archivo instanceof TemporaryUploadedFile) {
                         return;
                     }
+                    $ruta = $archivo->getRealPath();
+                    $descifrada = null;
                     try {
-                        $nombre = $this->gestor()->importar($archivo->getRealPath(), $archivo->getClientOriginalName());
+                        if (CifradoCopia::esCifrada($ruta)) {
+                            if (! filled($data['clave'] ?? null)) {
+                                throw new ErrorCopia(__('copias.externa.falta_clave'));
+                            }
+                            $descifrada = $ruta.'.zip';
+                            CifradoCopia::descifrar($ruta, $descifrada, (string) $data['clave']);
+                            $ruta = $descifrada;
+                        }
+                        $nombre = $this->gestor()->importar($ruta, $archivo->getClientOriginalName());
                         Notification::make()->success()->title(__('copias.subida', ['nombre' => $nombre]))->send();
                     } catch (ErrorCopia $e) {
                         Notification::make()->danger()->title($e->getMessage())->persistent()->send();
+                    }
+                    if ($descifrada !== null) {
+                        @unlink($descifrada);
                     }
                     $archivo->delete();
                 }),
@@ -135,6 +154,67 @@ class CopiasSeguridad extends Page
                     RegistroAuditoria::anotar('copia.ajustes', null, ['automaticas' => (bool) $data['automaticas'], 'conservar' => (int) $data['conservar']]);
                     Notification::make()->success()->title(__('copias.ajustes_guardados'))->send();
                 }),
+            Action::make('externa')
+                ->label(__('copias.externa.titulo'))
+                ->icon(Heroicon::OutlinedCloudArrowUp)
+                ->color('gray')
+                ->modalHeading(__('copias.externa.titulo'))
+                ->modalDescription(__('copias.externa.ayuda'))
+                ->fillForm(fn (): array => app(CopiaExterna::class)->configuracion())
+                ->schema([
+                    Select::make('tipo')->label(__('copias.externa.tipo'))->required()->native(false)->live()
+                        ->options(['s3' => __('copias.externa.tipo_s3'), 'webdav' => __('copias.externa.tipo_webdav')]),
+                    TextInput::make('endpoint')->label(__('copias.externa.endpoint'))->helperText(__('copias.externa.endpoint_ayuda'))->url()->maxLength(255)
+                        ->visible(fn (Get $get): bool => $get('tipo') === 's3')->required(fn (Get $get): bool => $get('tipo') === 's3'),
+                    TextInput::make('region')->label(__('copias.externa.region'))->maxLength(50)->visible(fn (Get $get): bool => $get('tipo') === 's3'),
+                    TextInput::make('bucket')->label(__('copias.externa.bucket'))->maxLength(100)->alphaDash()
+                        ->visible(fn (Get $get): bool => $get('tipo') === 's3')->required(fn (Get $get): bool => $get('tipo') === 's3'),
+                    TextInput::make('llave')->label(__('copias.externa.llave'))->maxLength(200)->autocomplete('off')
+                        ->visible(fn (Get $get): bool => $get('tipo') === 's3')->required(fn (Get $get): bool => $get('tipo') === 's3'),
+                    TextInput::make('url')->label(__('copias.externa.url'))->url()->maxLength(255)
+                        ->visible(fn (Get $get): bool => $get('tipo') === 'webdav')->required(fn (Get $get): bool => $get('tipo') === 'webdav'),
+                    TextInput::make('usuario')->label(__('copias.externa.usuario'))->maxLength(200)->autocomplete('off')->visible(fn (Get $get): bool => $get('tipo') === 'webdav'),
+                    TextInput::make('secreto')->label(__('copias.externa.secreto'))->password()->revealable()->autocomplete('new-password')->maxLength(500)
+                        ->helperText(fn (): string => Ajustes::secreto(CopiaExterna::AJUSTE_SECRETO) !== null ? __('copias.externa.guardado_ya') : '')
+                        ->required(fn (): bool => Ajustes::secreto(CopiaExterna::AJUSTE_SECRETO) === null),
+                    TextInput::make('carpeta')->label(__('copias.externa.carpeta'))->maxLength(100)->regex('/^[A-Za-z0-9._\-\/]*$/'),
+                    TextInput::make('clave')->label(__('copias.externa.clave'))->helperText(__('copias.externa.clave_ayuda'))->password()->revealable()->autocomplete('new-password')
+                        ->minLength(12)->maxLength(200)->confirmed()
+                        ->required(fn (): bool => Ajustes::secreto(CopiaExterna::AJUSTE_CLAVE) === null),
+                    TextInput::make('clave_confirmation')->label(__('copias.externa.clave_repite'))->password()->autocomplete('new-password')
+                        ->required(fn (Get $get): bool => filled($get('clave'))),
+                ])
+                ->action(function (array $data, Action $action): void {
+                    try {
+                        app(CopiaExterna::class)->guardar($data, $data['secreto'] ?? null, $data['clave'] ?? null);
+                    } catch (ErrorCopia $e) {
+                        Notification::make()->danger()->title($e->getMessage())->persistent()->send();
+                        $action->halt();
+
+                        return;
+                    }
+                    Notification::make()->success()->title(__('copias.externa.guardada'))->send();
+                }),
+            Action::make('subirExterna')
+                ->label(__('copias.externa.subir_ahora'))
+                ->icon(Heroicon::OutlinedArrowUpOnSquare)
+                ->color('gray')
+                ->visible(fn (): bool => app(CopiaExterna::class)->configurada() && $this->copias() !== [])
+                ->action(function (): void {
+                    $externa = app(CopiaExterna::class);
+                    $externa->subir($this->gestor()->ruta($this->copias()[0]['nombre']))
+                        ? Notification::make()->success()->title(__('copias.externa.subida'))->send()
+                        : Notification::make()->danger()->persistent()->title(__('copias.externa.no_subida', ['motivo' => (string) ($externa->ultima()['error'] ?? '')]))->send();
+                }),
+            Action::make('quitarExterna')
+                ->label(__('copias.externa.quitar'))
+                ->icon(Heroicon::OutlinedTrash)
+                ->color('danger')
+                ->outlined()
+                ->requiresConfirmation()
+                ->modalDescription(__('copias.externa.quitar_ayuda'))
+                ->visible(fn (): bool => app(CopiaExterna::class)->configuracion()['tipo'] !== '')
+                ->action(fn () => app(CopiaExterna::class)->quitar()),
             Action::make('descargarEnv')
                 ->label(__('copias.descargar_env'))
                 ->icon(Heroicon::OutlinedKey)

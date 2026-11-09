@@ -14,10 +14,12 @@ use App\Camping\AtributosLugar;
 use App\Enums\TipoLugar;
 use App\Filament\Resources\Unidades\UnidadResource;
 use App\Models\Propiedad;
+use App\Models\RegistroAuditoria;
 use App\Models\Tarifa;
 use App\Models\Unidad;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
+use App\Reservas\CodigosAcceso;
 use App\Seguridad\Acceso;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -48,6 +50,35 @@ class UnidadForm
         $unidad->otrasTarifas()->sync(Tarifa::query()->where('propiedad_id', $unidad->propiedad_id)->whereIn('id', array_map('intval', $tarifas))->whereKeyNot((int) $unidad->tarifa_id)->pluck('id')->all());
     }
 
+    /**
+     * De qué se compone (D-155). Solo unidades de su propiedad, sin ella misma y sin las que ya tienen partes: un solo nivel. Si la
+     * unidad ya es parte de otra, no puede tenerlas. Null: el campo no venía, no se toca.
+     *
+     * @param  array<int, mixed>|null  $partes
+     */
+    public static function guardarPartes(Unidad $unidad, ?array $partes): void
+    {
+        if ($partes === null || $unidad->contenedores()->exists()) {
+            return;
+        }
+        $validas = self::posiblesPartes($unidad->propiedad_id, $unidad)->whereIn('id', array_map('intval', $partes))->pluck('id')->map(fn (mixed $id): int => (int) $id)->all();
+        $cambios = $unidad->partes()->sync($validas);
+        if (array_filter($cambios) !== []) {
+            RegistroAuditoria::anotar('unidad.partes', $unidad, ['partes' => $validas], $unidad->propiedad_id);
+        }
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Builder<Unidad>
+     */
+    private static function posiblesPartes(mixed $propiedadId, ?Unidad $unidad): \Illuminate\Database\Eloquent\Builder
+    {
+        return Unidad::query()->where('propiedad_id', (int) $propiedadId)->where('activa', true)
+            ->when($unidad !== null, fn ($query) => $query->whereKeyNot($unidad->id))
+            ->whereDoesntHave('partes')
+            ->orderBy('orden')->orderBy('nombre');
+    }
+
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
@@ -76,6 +107,19 @@ class UnidadForm
                         ->options(fn (Get $get): array => blank($get('propiedad_id')) ? [] : Tarifa::query()->where('propiedad_id', Acceso::propiedadElegida($get('propiedad_id'), UnidadResource::propiedadesGestionables()))->orderBy('nombre')->pluck('nombre', 'id')->all())
                         ->formatStateUsing(fn (?Unidad $record): array => $record === null ? [] : $record->otrasTarifas()->pluck('tarifas.id')->map(fn (mixed $id): int => (int) $id)->all())
                         ->columnSpanFull(),
+                    // La casa completa y sus cuartos (D-155): ocupar una cierra las otras.
+                    Select::make('partes')->label(__('ui.unidades.partes'))->multiple()->native(false)
+                        ->options(fn (Get $get, ?Unidad $record): array => blank($get('propiedad_id')) ? [] : self::posiblesPartes(Acceso::propiedadElegida($get('propiedad_id'), UnidadResource::propiedadesGestionables()), $record)->pluck('nombre', 'id')->all())
+                        ->formatStateUsing(fn (?Unidad $record): array => $record === null ? [] : $record->partes()->pluck('unidades.id')->map(fn (mixed $id): int => (int) $id)->all())
+                        ->disabled(fn (?Unidad $record): bool => $record !== null && $record->contenedores()->exists())
+                        ->helperText(fn (?Unidad $record): string => $record !== null && $record->contenedores()->exists()
+                            ? __('ui.unidades.partes_ya_es_parte', ['unidades' => $record->contenedores()->orderBy('nombre')->pluck('nombre')->implode(', ')])
+                            : __('ui.unidades.partes_ayuda'))
+                        ->columnSpanFull(),
+                    // La caja de llaves o la cerradura de siempre (D-156). Una reserva puede tener el suyo.
+                    TextInput::make('codigo_acceso')->label(__('ui.unidades.codigo_acceso'))->helperText(__('ui.unidades.codigo_acceso_ayuda'))
+                        ->maxLength(CodigosAcceso::LARGO_MAXIMO)->autocomplete('off')
+                        ->formatStateUsing(fn (?Unidad $record): ?string => $record === null ? null : CodigosAcceso::deUnidad($record->id)),
                     TextInput::make('piso')->label(__('ui.unidades.piso'))->maxLength(50),
                     TextInput::make('edificio')->label(__('ui.unidades.edificio'))->maxLength(50),
                     TextInput::make('orden')->label(__('ui.unidades.orden'))->helperText(__('ui.unidades.orden_ayuda'))->numeric()->minValue(-100000)->maxValue(100000)->default(0),

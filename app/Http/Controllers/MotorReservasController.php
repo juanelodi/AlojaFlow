@@ -74,6 +74,7 @@ class MotorReservasController extends Controller
         'cantidades' => ['nullable', 'array', 'max:50'],
         'cantidades.*' => ['integer', 'min:0', 'max:50'],
         'unidad_id' => ['nullable', 'integer'],
+        'unidades' => ['nullable', 'integer', 'min:1', 'max:10'],
         'tipo_lugar' => ['nullable', 'string', 'max:20'],
         'con_luz' => ['nullable', 'boolean'],
         'con_agua' => ['nullable', 'boolean'],
@@ -100,6 +101,8 @@ class MotorReservasController extends Controller
         $llegada = $this->fecha($request->query('llegada'));
         $salida = $this->fecha($request->query('salida'));
         $personas = max(1, min(100, $request->integer('personas', 2)));
+        $unidadesMaximas = (new AjustesMotor($propiedad))->unidadesMaximas();
+        $unidades = max(1, min($unidadesMaximas, $personas, $request->integer('unidades', 1)));
         $error = null;
         $ofertas = null;
         $filtro = $this->filtro($request->query());
@@ -107,8 +110,8 @@ class MotorReservasController extends Controller
         if ($llegada !== null && $salida !== null) {
             $error = $this->motor->motivoFechas($propiedad, $llegada, $salida);
             if ($error === null) {
-                $ofertas = $this->motor->ofertas($propiedad, $llegada, $salida, $personas, $filtro);
-                $mapas = $this->motor->mapas($propiedad, $ofertas, $llegada, $salida, $personas, $filtro);
+                $ofertas = $this->motor->ofertas($propiedad, $llegada, $salida, $personas, $filtro, $unidades);
+                $mapas = $unidades > 1 ? [] : $this->motor->mapas($propiedad, $ofertas, $llegada, $salida, $personas, $filtro);
             }
         }
 
@@ -123,6 +126,8 @@ class MotorReservasController extends Controller
             'llegada' => $llegada?->format('Y-m-d') ?? $primerDia->format('Y-m-d'),
             'salida' => $salida?->format('Y-m-d') ?? $primerDia->addDay()->format('Y-m-d'),
             'personas' => $personas,
+            'unidades' => $unidades,
+            'unidadesMaximas' => $unidadesMaximas,
             'ofertas' => $ofertas,
             'conEstanciasLargas' => Modulos::activo(Modulo::EstanciasLargas),
             'conCalendario' => (new AjustesMotor($propiedad))->calendarioPublico(),
@@ -207,6 +212,7 @@ class MotorReservasController extends Controller
                 'idioma' => app()->getLocale(),
                 'filtro' => $this->filtro($datos),
                 'unidad_id' => (int) ($datos['unidad_id'] ?? 0),
+                'unidades' => (int) ($datos['unidades'] ?? 1),
                 'equipo' => (new AjustesMotor($propiedad))->pideEquipo() ? ['tipo' => TipoEquipo::tryFrom((string) ($datos['tipo_equipo'] ?? ''))?->value, 'largo' => $datos['largo'] ?? null, 'vehiculos' => $datos['vehiculos'] ?? null, 'placas' => $datos['placas'] ?? null] : null,
             ]);
         } catch (ReservaRechazada $e) {
@@ -216,13 +222,19 @@ class MotorReservasController extends Controller
         return redirect()->route('motor.reserva', ['codigo' => $codigo, 'publico' => $reserva->codigo_publico, 'idioma' => app()->getLocale()]);
     }
 
-    public function reserva(Request $request, string $codigo, string $publico): View
+    public function reserva(Request $request, string $codigo, string $publico): View|RedirectResponse
     {
         $propiedad = $this->propiedad($request, $codigo, soloActivo: false);
         $reserva = $this->buscarReserva($propiedad, $publico);
+        // Las demás de un pedido llevan a la primera, que es la que se paga (D-158).
+        if ($reserva->reservaPrincipal !== null) {
+            return redirect()->route('motor.reserva', ['codigo' => $codigo, 'publico' => $reserva->reservaPrincipal->codigo_publico, 'idioma' => app()->getLocale()]);
+        }
         $ajustes = new AjustesMotor($propiedad);
 
         return view('publico.motor-reserva', [
+            // Todas las del pedido (D-158): se pagan juntas desde la primera.
+            'pedido' => $reserva->pedido(),
             'propiedad' => $propiedad,
             'reserva' => $reserva,
             'ajustes' => $ajustes,
@@ -377,11 +389,12 @@ class MotorReservasController extends Controller
             return redirect()->route('motor.buscar', ['codigo' => $propiedad->codigo, 'idioma' => app()->getLocale()]);
         }
         $filtro = $this->filtro($valores);
-        $oferta = collect($this->motor->ofertas($propiedad, $llegada, $salida, $personas, $filtro))->first(fn ($o): bool => $o->tarifa->id === $tarifa->id);
+        $unidades = max(1, min((new AjustesMotor($propiedad))->unidadesMaximas(), $personas, (int) ($valores['unidades'] ?? 1)));
+        $oferta = collect($this->motor->ofertas($propiedad, $llegada, $salida, $personas, $filtro, $unidades))->first(fn ($o): bool => $o->tarifa->id === $tarifa->id);
         $ajustes = new AjustesMotor($propiedad);
         $lugar = null;
         $unidadId = (int) ($valores['unidad_id'] ?? $valores['unidad'] ?? 0);
-        if ($oferta !== null && $unidadId > 0 && $ajustes->elegirLugar()) {
+        if ($oferta !== null && $unidadId > 0 && $ajustes->elegirLugar() && $unidades === 1) {
             $lugar = $this->motor->libres($propiedad, $llegada, $salida, $personas, $filtro)->first(fn (Unidad $u): bool => $u->id === $unidadId && in_array($tarifa->id, $u->tarifasIds(), true));
             $oferta = $lugar === null ? null : $this->motor->conLugar($oferta, $lugar, $llegada, $salida, $personas);
         }
@@ -397,7 +410,9 @@ class MotorReservasController extends Controller
             'tarifa' => $tarifa,
             'filtro' => $filtro,
             'lugar' => $lugar,
-            'cupos' => $this->motor->cupos($cargos = $this->motor->cargosOpcionales($propiedad, $lugar ?? $oferta->unidad, $tarifa->id, $llegada, $salida, $personas), $llegada, $salida),
+            // Los extras y el cupón son de una sola unidad (D-158).
+            'cupos' => $this->motor->cupos($cargos = $unidades > 1 ? new \Illuminate\Database\Eloquent\Collection() : $this->motor->cargosOpcionales($propiedad, $lugar ?? $oferta->unidad, $tarifa->id, $llegada, $salida, $personas), $llegada, $salida),
+            'unidades' => $unidades,
             'unidadLargo' => AtributosLugar::unidadLargo($propiedad),
             'llegada' => $llegada,
             'salida' => $salida,

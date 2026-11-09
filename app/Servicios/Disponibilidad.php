@@ -11,6 +11,8 @@ declare(strict_types=1);
 namespace App\Servicios;
 
 use App\Models\Unidad;
+use App\Reservas\UnidadesVinculadas;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +28,7 @@ final class Disponibilidad
      */
     public static function libres(array $propiedades, string $llegada, string $salida, int $personas): Collection
     {
-        return Unidad::query()->with('propiedad')
+        $libres = Unidad::query()->with('propiedad')
             ->whereIn('propiedad_id', $propiedades)
             ->where('activa', true)
             // capacidad 0 = la principal no la indicó: se muestra igual.
@@ -51,6 +53,25 @@ final class Disponibilidad
             })
             ->orderBy('propiedad_id')->orderBy('orden')->orderBy('nombre')
             ->get();
+
+        return self::sinVinculadasOcupadas($libres, $llegada, $salida);
+    }
+
+    /**
+     * Fuera las que tienen ocupada una unidad vinculada (D-155): la casa completa con un cuarto vendido, o un cuarto con la casa vendida.
+     *
+     * @param  Collection<int, Unidad>  $libres
+     * @return Collection<int, Unidad>
+     */
+    private static function sinVinculadasOcupadas(Collection $libres, string $llegada, string $salida): Collection
+    {
+        $mapa = UnidadesVinculadas::mapa($libres->map(fn (Unidad $unidad): int => $unidad->id)->all());
+        if ($mapa === []) {
+            return $libres;
+        }
+        $ocupadas = UnidadesVinculadas::ocupadas(array_values(array_unique(array_merge(...array_values($mapa)))), CarbonImmutable::parse($llegada), CarbonImmutable::parse($salida));
+
+        return $libres->reject(fn (Unidad $unidad): bool => array_intersect($mapa[$unidad->id] ?? [], $ocupadas) !== [])->values();
     }
 
     /**

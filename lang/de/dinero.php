@@ -9,6 +9,18 @@
 declare(strict_types=1);
 
 return [
+    'segunda' => [
+        'moneda' => 'Zweite Währung',
+        'moneda_ayuda' => 'Optional, etwa USD. Sie wird neben den Preisen angezeigt, und Bargeld kann darin angenommen werden; alles wird in der Währung der Unterkunft summiert.',
+        'tipo' => 'Wechselkurs',
+        'tipo_ayuda' => 'Wie viel 1 :segunda in :moneda wert ist. Sie geben ihn ein: ändern Sie ihn, wenn er sich ändert.',
+        'recibido_en' => 'Erhalten in',
+        'tipo_pago' => 'Wechselkurs dieser Zahlung',
+        'se_anota' => 'In der Buchung werden :importe erfasst.',
+        'recibido' => ':importe zu :tipo',
+        'recibido_titulo' => 'Erhalten',
+        'efectivo_en' => 'Bargeld in :moneda (separat zählen)',
+    ],
     'politicas' => [
         'no_reembolsable' => 'Nicht erstattbar',
         'no_reembolsable_ayuda' => 'Bei Stornierung, jederzeit, wird der Gesamtbetrag berechnet.',

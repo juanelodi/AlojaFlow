@@ -25,6 +25,7 @@
             {{ Formato::fecha($llegada, 'ddd D MMM') }} → {{ Formato::fecha($salida, 'ddd D MMM') }}
             · {{ trans_choice('ui.comun.n_noches', $noches) }}
             · {{ trans_choice('motor.n_personas', $personas) }}
+            @if ($unidades > 1) · {{ trans_choice('motor.n_unidades', $unidades) }}@endif
         </p>
         <table style="margin-top:10px">
             <tr><td>{{ __('documentos.alojamiento') }}</td><td class="num">{{ Formato::dinero($oferta->presupuesto->alojamiento, $propiedad->moneda) }}</td></tr>
@@ -37,6 +38,9 @@
                 @endunless
             @endforeach
             <tr class="total"><td>{{ __('ui.comun.total') }}</td><td class="num">{{ Formato::dinero($oferta->presupuesto->total(), $propiedad->moneda) }}</td></tr>
+            @if ($segunda = (new \App\Dinero\SegundaMoneda($propiedad))->texto($oferta->presupuesto->total()))
+                <tr><td></td><td class="num gris">{{ $segunda }}</td></tr>
+            @endif
         </table>
         @if ($oferta->anticipo > 0)
             <p class="gris" style="margin:8px 0 0">{{ __('motor.anticipo', ['porcentaje' => Formato::tasa($oferta->anticipo)]) }}</p>
@@ -69,6 +73,7 @@
         <input type="hidden" name="llegada" value="{{ $llegada->format('Y-m-d') }}">
         <input type="hidden" name="salida" value="{{ $salida->format('Y-m-d') }}">
         <input type="hidden" name="personas" value="{{ $personas }}">
+        <input type="hidden" name="unidades" value="{{ $unidades }}">
         @if ($lugar)
             <input type="hidden" name="unidad_id" value="{{ $lugar->id }}">
         @endif
@@ -155,7 +160,7 @@
             @endforeach
         @endif
 
-        @if (\App\Modulos\Modulos::activo(\App\Modulos\Modulo::Cupones))
+        @if (\App\Modulos\Modulos::activo(\App\Modulos\Modulo::Cupones) && $unidades === 1)
             {{-- Casi nadie trae uno: plegado, salvo si ya escribió algo. --}}
             <details class="filtros" @if (filled($valores['cupon'] ?? null) || $errores->has('cupon')) open @endif>
                 <summary>{{ __('motor.cupon_pregunta') }}</summary>

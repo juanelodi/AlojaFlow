@@ -30,6 +30,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $importe
  * @property string $moneda
  * @property string|null $referencia
+ * @property string|null $moneda_recibida
+ * @property int|null $importe_recibido
+ * @property string|null $tipo_cambio
  * @property int|null $user_id
  * @property-read Reserva $reserva
  * @property-read User|null $usuario
@@ -48,6 +51,8 @@ class Pago extends ModeloBase
             'fecha' => 'immutable_date',
             'metodo' => MetodoPago::class,
             'importe' => 'integer',
+            'importe_recibido' => 'integer',
+            'tipo_cambio' => 'decimal:6',
             'sincronizada' => 'boolean',
         ];
     }

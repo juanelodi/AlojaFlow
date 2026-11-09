@@ -16,6 +16,7 @@ use App\Support\Formato;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -47,12 +48,24 @@ class EditarPerfil extends EditProfile
             $this->getNameFormComponent(),
             $this->getEmailFormComponent(),
             ...$preferencias,
-            Section::make(__('herramientas.colores.titulo'))->description(__('herramientas.colores.ayuda'))->collapsed()->columns(['default' => 1, 'md' => 2])->schema(
-                array_map(fn (string $estado): ColorPicker => ColorPicker::make('colores_estado.'.$estado)->label(__('ui.calendario.'.$estado))->regex('/^#[0-9a-fA-F]{6}$/'), array_keys(ColoresEstado::ESTADOS)),
-            ),
+            // Desde el calendario se llega con ?colores y abierta (D-154).
+            Section::make(__('herramientas.colores.titulo'))->description(__('herramientas.colores.ayuda'))->collapsed(! request()->has('colores'))->schema([
+                Fieldset::make(__('ui.calendario.colorear_estado'))->columns(['default' => 1, 'md' => 2])->schema(self::selectoresColor(false)),
+                Fieldset::make(__('ui.calendario.colorear_pago'))->columns(['default' => 1, 'md' => 2])->schema(self::selectoresColor(true)),
+            ]),
             $this->getPasswordFormComponent(),
             $this->getPasswordConfirmationFormComponent(),
             $this->getCurrentPasswordFormComponent(),
         ]);
+    }
+
+    /**
+     * @return list<ColorPicker>
+     */
+    private static function selectoresColor(bool $dePago): array
+    {
+        $claves = array_filter(array_keys(ColoresEstado::ESTADOS), fn (string $clave): bool => str_starts_with($clave, 'pago_') === $dePago);
+
+        return array_values(array_map(fn (string $estado): ColorPicker => ColorPicker::make('colores_estado.'.$estado)->label(__('ui.calendario.'.$estado))->regex('/^#[0-9a-fA-F]{6}$/'), $claves));
     }
 }

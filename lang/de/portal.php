@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 return [
     'mi_reserva' => 'Meine Buchung',
+    'codigo_acceso' => 'Zugangscode',
     'guia' => 'Aufenthaltsführer',
     'guia_de' => 'Führer für :unidad',
     'guia_vacia' => 'Noch nichts hier. Fragen Sie die Unterkunft.',

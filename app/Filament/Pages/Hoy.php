@@ -20,7 +20,7 @@ use App\Models\Reserva;
 use App\Models\Tarea;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
-use App\Reservas\GestorReservas;
+use App\Reservas\GestorEstancias;
 use App\Reservas\ReservaRechazada;
 use App\Seguridad\Acceso;
 use App\Seguridad\Limites;
@@ -110,12 +110,23 @@ class Hoy extends Page
 
     public function registrarEntrada(int $reservaId): void
     {
-        $this->cambiar($reservaId, fn (GestorReservas $g, Reserva $r) => $g->registrarEntrada($r), __('ui.reservas.entrada_ok'));
+        $this->cambiar($reservaId, fn (GestorEstancias $g, Reserva $r) => $g->registrarEntrada($r, Acceso::usuarioActual()), __('ui.reservas.entrada_ok'));
     }
 
     public function registrarSalida(int $reservaId): void
     {
-        $this->cambiar($reservaId, fn (GestorReservas $g, Reserva $r) => $g->registrarSalida($r), __('ui.reservas.salida_ok'));
+        $this->cambiar($reservaId, fn (GestorEstancias $g, Reserva $r) => $g->registrarSalida($r, Acceso::usuarioActual()), __('ui.reservas.salida_ok'));
+    }
+
+    /**
+     * Dónde se puede registrar que alguien llegó o salió: las independientes con permiso de reservas y, desde la
+     * 1.0.40, también las subordinadas, con una marca propia (D-153).
+     *
+     * @return list<int>
+     */
+    public function propiedadesMarcables(): array
+    {
+        return array_values(array_intersect($this->propiedadesElegidas(), Acceso::propiedades(Acceso::usuarioActual(), Acceso::RESERVAS)));
     }
 
     /**
@@ -166,13 +177,13 @@ class Hoy extends Page
     }
 
     /**
-     * @param  callable(GestorReservas, Reserva): mixed  $accion
+     * @param  callable(GestorEstancias, Reserva): mixed  $accion
      */
     private function cambiar(int $reservaId, callable $accion, string $mensaje): void
     {
-        $reserva = Limites::reservasVisibles(Reserva::query()->whereIn('propiedad_id', ReservaResource::propiedadesGestionables()), Acceso::usuarioActual())->findOrFail($reservaId);
+        $reserva = Limites::reservasVisibles(Reserva::query()->whereIn('propiedad_id', $this->propiedadesMarcables()), Acceso::usuarioActual())->findOrFail($reservaId);
         try {
-            $accion(app(GestorReservas::class), $reserva);
+            $accion(app(GestorEstancias::class), $reserva);
             Notification::make()->success()->title($mensaje)->send();
         } catch (ReservaRechazada $e) {
             Notification::make()->danger()->title($e->getMessage())->send();

@@ -44,12 +44,18 @@ return [
             'revocar' => 'Shared connection revoked',
         ],
         'copia' => [
+            'externa' => 'Off-server copy set up',
+            'externa_quitar' => 'Off-server copy removed',
             'ajustes' => 'Backup settings changed',
             'crear' => 'Backup created',
             'descargar' => 'Backup downloaded',
             'descargar_env' => 'Configuration file downloaded',
             'eliminar' => 'Backup deleted',
             'restaurar' => 'Backup restored',
+        ],
+        'whatsapp' => [
+            'ajustes' => 'WhatsApp settings changed',
+            'quitar' => 'WhatsApp removed',
         ],
         'correo' => [
             'ajustes' => 'Email settings changed',
@@ -146,6 +152,7 @@ return [
         ],
         'reserva' => [
             'cancelada_por_huesped' => 'Cancelled by the guest',
+            'codigo_acceso' => 'Booking access code changed',
             'cancelar' => 'Booking cancelled',
             'confirmar' => 'Booking confirmed',
             'crear' => 'Booking created',
@@ -168,6 +175,10 @@ return [
         ],
         'tarifas' => [
             'importar' => 'Prices imported',
+        ],
+        'unidad' => [
+            'codigo_acceso' => 'Unit access code changed',
+            'partes' => 'Unit parts changed',
         ],
         'turno' => [
             'abrir' => 'Cash shift opened',
@@ -335,6 +346,7 @@ return [
         'grupo_id' => 'Group',
     ],
     'valores' => [
+        'guardar' => 'Saved',
         'confirmada' => 'Confirmed',
         'sin_confirmar' => 'Unconfirmed',
         'cancelada' => 'Cancelled',

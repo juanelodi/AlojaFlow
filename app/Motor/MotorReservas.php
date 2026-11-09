@@ -34,6 +34,7 @@ use App\Modulos\Modulos;
 use App\Reservas\Cotizador;
 use App\Reservas\Cupones;
 use App\Reservas\GestorReservas;
+use App\Reservas\Presupuesto;
 use App\Reservas\ReglasCargo;
 use App\Reservas\ReservaRechazada;
 use App\Reservas\Restricciones;
@@ -88,23 +89,27 @@ final class MotorReservas
     /**
      * @return list<Oferta>
      */
-    public function ofertas(Propiedad $propiedad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas, ?FiltroLugares $filtro = null): array
+    public function ofertas(Propiedad $propiedad, CarbonImmutable $llegada, CarbonImmutable $salida, int $personas, ?FiltroLugares $filtro = null, int $cantidad = 1): array
     {
         $ofertas = [];
-        $libres = $this->libres($propiedad, $llegada, $salida, $personas, $filtro);
+        $reparto = self::reparto($personas, $cantidad);
+        $libres = $this->libres($propiedad, $llegada, $salida, $reparto[0], $filtro);
         $ajustes = new AjustesMotor($propiedad);
+        $compuestas = $cantidad > 1 ? self::compuestas($propiedad) : [];
 
         foreach (Tarifa::query()->with(['politica', 'base.politica'])->where('propiedad_id', $propiedad->id)->where('activa', true)->where('visible_motor', true)->get() as $tarifa) {
-            $unidades = $libres->filter(fn (Unidad $u): bool => in_array($tarifa->id, $u->tarifasIds(), true));
-            if ($unidades->isEmpty() || ! $tarifa->admitePersonas($personas)) {
+            $unidades = $libres->filter(fn (Unidad $u): bool => in_array($tarifa->id, $u->tarifasIds(), true) && ($cantidad === 1 || ! in_array($u->id, $compuestas, true)));
+            if ($unidades->count() < $cantidad || ! $tarifa->admitePersonas($reparto[0])) {
                 continue;
             }
             /** @var Unidad $primera */
             $primera = $unidades->first();
-            $presupuesto = Cotizador::presupuesto($primera, $llegada, $salida, $personas, tarifaId: $tarifa->id);
-            if ($presupuesto->cotizacion === null) {
+            // Una por unidad, con las personas que le tocan (D-158).
+            $partes = array_map(fn (int $suyas): Presupuesto => Cotizador::presupuesto($primera, $llegada, $salida, $suyas, tarifaId: $tarifa->id), $reparto);
+            if (array_filter($partes, fn (Presupuesto $parte): bool => $parte->cotizacion === null) !== []) {
                 continue;
             }
+            $presupuesto = count($partes) === 1 ? $partes[0] : Presupuesto::sumar($partes);
             $politica = $tarifa->politicaPropia();
             $ofertas[] = new Oferta(
                 $tarifa,
@@ -118,12 +123,40 @@ final class MotorReservas
                 $politica?->nombre,
                 $this->anticipo($tarifa, $ajustes),
                 $primera,
+                $cantidad,
             );
         }
         // La más barata primero. Lo de cada noche ya está calculado: el precio base no dice nada de una que sale de otra.
         usort($ofertas, fn (Oferta $a, Oferta $b): int => $a->presupuesto->total() <=> $b->presupuesto->total());
 
         return $ofertas;
+    }
+
+    /**
+     * Las que se componen de otras, como la casa completa (D-155). En un pedido de varias unidades no entran: sus partes nunca
+     * chocan entre sí, y la casa con un cuarto nunca cabe junta.
+     *
+     * @return list<int>
+     */
+    private static function compuestas(Propiedad $propiedad): array
+    {
+        return Unidad::query()->where('propiedad_id', $propiedad->id)->whereHas('partes')->pluck('id')->map(fn (mixed $id): int => (int) $id)->all();
+    }
+
+    /**
+     * Las personas de cada unidad, lo más parejo posible y las que sobran en las primeras: 5 en 2 son 3 y 2 (D-158).
+     *
+     * @return non-empty-list<int>
+     */
+    public static function reparto(int $personas, int $cantidad): array
+    {
+        $cantidad = max(1, min($cantidad, $personas));
+        $reparto = [];
+        for ($i = 0; $i < $cantidad; $i++) {
+            $reparto[] = intdiv($personas, $cantidad) + ($i < $personas % $cantidad ? 1 : 0);
+        }
+
+        return $reparto;
     }
 
     /**
@@ -230,7 +263,7 @@ final class MotorReservas
     /**
      * Crea la reserva. Si otra petición se lleva la unidad en el último momento, prueba la siguiente.
      *
-     * @param  array{tarifa_id: int, llegada: string, salida: string, personas: int, nombre: string, apellido: string|null, correo: string, telefono: string|null, comentario: string|null, cupon: string|null, cargos: list<int>, idioma: string, filtro?: FiltroLugares|null, unidad_id?: int, cantidades?: array<int, int>, equipo?: array<string, mixed>|null}  $datos
+     * @param  array{tarifa_id: int, llegada: string, salida: string, personas: int, nombre: string, apellido: string|null, correo: string, telefono: string|null, comentario: string|null, cupon: string|null, cargos: list<int>, idioma: string, filtro?: FiltroLugares|null, unidad_id?: int, cantidades?: array<int, int>, equipo?: array<string, mixed>|null, unidades?: int}  $datos
      */
     public function reservar(Propiedad $propiedad, array $datos): Reserva
     {
@@ -247,15 +280,29 @@ final class MotorReservas
         $this->comprobarLimites($propiedad, $datos['correo']);
 
         $tarifa = Tarifa::query()->where('propiedad_id', $propiedad->id)->where('activa', true)->where('visible_motor', true)->find($datos['tarifa_id']);
-        if ($tarifa === null || ! $tarifa->admitePersonas($datos['personas'])) {
+        if ($tarifa === null) {
             throw new ReservaRechazada(__('motor.error.sin_lugar'));
         }
-        $candidatas = $this->libres($propiedad, $llegada, $salida, $datos['personas'], $datos['filtro'] ?? null)->filter(fn (Unidad $u): bool => in_array($tarifa->id, $u->tarifasIds(), true));
-        if ($candidatas->isEmpty()) {
+        // Varias unidades en un solo pedido (D-158): sin cupón, sin extras y sin elegir lugar; eso es de una sola. La tarifa se
+        // mide con las personas de cada unidad.
+        $reparto = self::reparto($datos['personas'], min((int) ($datos['unidades'] ?? 1), $ajustes->unidadesMaximas()));
+        $varias = count($reparto) > 1;
+        if ($varias) {
+            $datos['cupon'] = null;
+            $datos['cargos'] = [];
+            $datos['cantidades'] = [];
+        }
+        if (! $tarifa->admitePersonas($reparto[0])) {
+            throw new ReservaRechazada(__('motor.error.sin_lugar'));
+        }
+        $compuestas = $varias ? self::compuestas($propiedad) : [];
+        $candidatas = $this->libres($propiedad, $llegada, $salida, $reparto[0], $datos['filtro'] ?? null)
+            ->filter(fn (Unidad $u): bool => in_array($tarifa->id, $u->tarifasIds(), true) && ! in_array($u->id, $compuestas, true));
+        if ($candidatas->count() < count($reparto)) {
             throw new ReservaRechazada(__('motor.error.sin_lugar'));
         }
         // El lugar que eligió en el plano, y ningún otro: si ya se ocupó, decide él.
-        $elegida = $ajustes->elegirLugar() ? (int) ($datos['unidad_id'] ?? 0) : 0;
+        $elegida = $ajustes->elegirLugar() && ! $varias ? (int) ($datos['unidad_id'] ?? 0) : 0;
         if ($elegida > 0) {
             $candidatas = $candidatas->where('id', $elegida);
             if ($candidatas->isEmpty()) {
@@ -285,7 +332,7 @@ final class MotorReservas
             $elegidos[$ajustes->cargoLugarId()] = 1.0;
         }
 
-        $reserva = DB::transaction(function () use ($propiedad, $ajustes, $datos, $tarifa, $candidatas, $llegada, $salida, $cupon, $elegidos): Reserva {
+        $reservas = DB::transaction(function () use ($propiedad, $ajustes, $datos, $tarifa, $candidatas, $llegada, $salida, $cupon, $elegidos, $reparto): array {
             if (Modulos::activo(Modulo::Camping)) {
                 CupoExtras::apartar($elegidos, $llegada, $salida);
             }
@@ -294,60 +341,87 @@ final class MotorReservas
                 Cupon::query()->whereKey($cupon->id)->lockForUpdate()->first();
             }
             $huesped = $this->huesped($propiedad, $datos);
-            /** @var Unidad $primera */
-            $primera = $candidatas->first();
-            $presupuesto = Cotizador::presupuesto($primera, $llegada, $salida, $datos['personas'], $elegidos, $cupon, tarifaId: $tarifa->id);
-            if ($presupuesto->cotizacion === null || ! $presupuesto->cotizacion->cumpleEstanciaMinima()) {
-                throw new ReservaRechazada(__('motor.error.estancia_minima', ['noches' => $presupuesto->cotizacion->estanciaMinima ?? 1]));
+            $hechas = [];
+            $libres = $candidatas->values();
+            foreach ($reparto as $personas) {
+                /** @var Unidad $primera */
+                $primera = $libres->first();
+                $presupuesto = Cotizador::presupuesto($primera, $llegada, $salida, $personas, $elegidos, $cupon, tarifaId: $tarifa->id);
+                if ($presupuesto->cotizacion === null || ! $presupuesto->cotizacion->cumpleEstanciaMinima()) {
+                    throw new ReservaRechazada(__('motor.error.estancia_minima', ['noches' => $presupuesto->cotizacion->estanciaMinima ?? 1]));
+                }
+                $hecha = $this->crearEnAlguna($propiedad, $ajustes, $libres, $datos + ['huesped' => $huesped], $tarifa, $presupuesto, $personas, $llegada, $salida, $cupon, $elegidos);
+                $hechas[] = $hecha;
+                $libres = $libres->reject(fn (Unidad $unidad): bool => $unidad->id === $hecha->unidad_id)->values();
             }
-            $total = $presupuesto->total();
-            $anticipo = (int) round($total * $this->anticipo($tarifa, $ajustes) / 100);
-            $pagaraEnLinea = $anticipo > 0 && (new Pasarelas($propiedad))->disponibles() !== [];
-            $confirmada = ! $pagaraEnLinea && $ajustes->confirmacionInmediata();
+            // Las demás apuntan a la primera, que es la que se paga por todas (D-158).
+            if (count($hechas) > 1) {
+                DB::table('reservas')->whereIn('id', array_map(fn (Reserva $r): int => $r->id, array_slice($hechas, 1)))->update(['reserva_principal_id' => $hechas[0]->id]);
+            }
 
-            foreach ($candidatas as $unidad) {
-                /** @var Unidad $unidad */
-                try {
-                    return $this->reservas->crear($propiedad, [
-                        'unidad_id' => $unidad->id,
-                        'tarifa_id' => $tarifa->id,
-                        'titular_id' => $huesped->id,
-                        'llegada' => $llegada->format('Y-m-d'),
-                        'salida' => $salida->format('Y-m-d'),
-                        'personas' => $datos['personas'],
-                        'estado' => ($confirmada ? EstadoReserva::Confirmada : EstadoReserva::SinConfirmar)->value,
-                        'total' => $total,
-                        'deposito' => $anticipo,
-                        'descuento' => $presupuesto->descuento,
-                        'origen_texto' => __('motor.origen'),
-                        'comentario' => $datos['comentario'],
-                        'cupon_codigo' => $cupon->codigo ?? '',
-                        'idioma' => $datos['idioma'],
-                        // Nada retiene noches para siempre desde un formulario público: si no paga
-                        // o nadie la revisa a tiempo, las noches vuelven a venderse.
-                        'expira_en' => match (true) {
-                            $pagaraEnLinea => now('UTC')->addMinutes($ajustes->minutosRetencion()),
-                            ! $confirmada && $ajustes->horasRevision() > 0 => now('UTC')->addHours($ajustes->horasRevision()),
-                            default => null,
-                        },
-                        'cargos' => array_map(fn (int $id): array => ['concepto_cargo_id' => $id, 'cantidad' => $elegidos[$id]], array_keys($elegidos)),
-                        'equipo' => $datos['equipo'] ?? null,
-                    ]);
-                } catch (ReservaRechazada $e) {
-                    if ($e->campo === 'cupon_codigo') {
-                        throw new ReservaRechazada(__('ui.cupones.error_no_valido'), 'cupon');
-                    }
-                    if ($e->campo !== 'unidad_id') {
-                        throw $e;
-                    }
+            return $hechas;
+        });
+        foreach ($reservas as $reserva) {
+            app(Mensajero::class)->avisarNuevaReserva($reserva, $ajustes->correoAviso());
+        }
+
+        return $reservas[0];
+    }
+
+    /**
+     * Crea la reserva en la primera de esas unidades que la acepte: otra petición pudo ocupar la que iba a tocarle.
+     *
+     * @param  \Illuminate\Support\Collection<int, Unidad>  $candidatas
+     * @param  array<string, mixed>  $datos
+     * @param  array<int, float>  $elegidos
+     */
+    private function crearEnAlguna(Propiedad $propiedad, AjustesMotor $ajustes, \Illuminate\Support\Collection $candidatas, array $datos, Tarifa $tarifa, Presupuesto $presupuesto, int $personas, CarbonImmutable $llegada, CarbonImmutable $salida, ?Cupon $cupon, array $elegidos): Reserva
+    {
+        $huesped = $datos['huesped'];
+        $total = $presupuesto->total();
+        $anticipo = (int) round($total * $this->anticipo($tarifa, $ajustes) / 100);
+        $pagaraEnLinea = $anticipo > 0 && (new Pasarelas($propiedad))->disponibles() !== [];
+        $confirmada = ! $pagaraEnLinea && $ajustes->confirmacionInmediata();
+
+        foreach ($candidatas as $unidad) {
+            /** @var Unidad $unidad */
+            try {
+                return $this->reservas->crear($propiedad, [
+                    'unidad_id' => $unidad->id,
+                    'tarifa_id' => $tarifa->id,
+                    'titular_id' => $huesped->id,
+                    'llegada' => $llegada->format('Y-m-d'),
+                    'salida' => $salida->format('Y-m-d'),
+                    'personas' => $personas,
+                    'estado' => ($confirmada ? EstadoReserva::Confirmada : EstadoReserva::SinConfirmar)->value,
+                    'total' => $total,
+                    'deposito' => $anticipo,
+                    'descuento' => $presupuesto->descuento,
+                    'origen_texto' => __('motor.origen'),
+                    'comentario' => $datos['comentario'],
+                    'cupon_codigo' => $cupon->codigo ?? '',
+                    'idioma' => $datos['idioma'],
+                    // Nada retiene noches para siempre desde un formulario público: si no paga
+                    // o nadie la revisa a tiempo, las noches vuelven a venderse.
+                    'expira_en' => match (true) {
+                        $pagaraEnLinea => now('UTC')->addMinutes($ajustes->minutosRetencion()),
+                        ! $confirmada && $ajustes->horasRevision() > 0 => now('UTC')->addHours($ajustes->horasRevision()),
+                        default => null,
+                    },
+                    'cargos' => array_map(fn (int $id): array => ['concepto_cargo_id' => $id, 'cantidad' => $elegidos[$id]], array_keys($elegidos)),
+                    'equipo' => $datos['equipo'] ?? null,
+                ]);
+            } catch (ReservaRechazada $e) {
+                if ($e->campo === 'cupon_codigo') {
+                    throw new ReservaRechazada(__('ui.cupones.error_no_valido'), 'cupon');
+                }
+                if ($e->campo !== 'unidad_id') {
+                    throw $e;
                 }
             }
+        }
 
-            throw new ReservaRechazada(__('motor.error.sin_lugar'));
-        });
-        app(Mensajero::class)->avisarNuevaReserva($reserva, $ajustes->correoAviso());
-
-        return $reserva;
+        throw new ReservaRechazada(__('motor.error.sin_lugar'));
     }
 
     /**

@@ -27,6 +27,7 @@ use App\Pagos\CobrosEnLinea;
 use App\Publico\GuiaDigital;
 use App\Publico\MiReserva;
 use App\Publico\PaginaPublica;
+use App\Reservas\CodigosAcceso;
 use App\Reservas\Mensualidades;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -85,6 +86,7 @@ class PortalController extends Controller
             'calendario' => $independiente && ! $cancelada ? Mensualidades::de($reserva) : null,
             'ajustes' => new AjustesMotor($propiedad),
             'comprobantes' => $reserva->comprobantes()->latest('id')->limit(20)->get(),
+            'codigoAcceso' => CodigosAcceso::visibleParaHuesped($reserva) ? CodigosAcceso::de($reserva) : null,
         ]);
     }
 

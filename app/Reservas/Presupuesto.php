@@ -28,6 +28,45 @@ final readonly class Presupuesto
     ) {
     }
 
+    /**
+     * Varias unidades de un mismo pedido (D-158): se suman, y los cargos y los impuestos que se llaman igual van juntos. La
+     * cotización es la de la primera: la estancia mínima es la misma para todas.
+     *
+     * @param  non-empty-list<self>  $partes
+     */
+    public static function sumar(array $partes): self
+    {
+        $cargos = [];
+        $impuestos = [];
+        foreach ($partes as $parte) {
+            foreach ($parte->cargos as $cargo) {
+                $llave = ($cargo['concepto_cargo_id'] ?? 'x').'|'.$cargo['nombre'];
+                if (isset($cargos[$llave])) {
+                    $cargos[$llave]['cantidad'] += $cargo['cantidad'];
+                    $cargos[$llave]['importe'] += $cargo['importe'];
+                } else {
+                    $cargos[$llave] = $cargo;
+                }
+            }
+            foreach ($parte->impuestos as $impuesto) {
+                $llave = $impuesto['nombre'].'|'.(int) $impuesto['incluido'].'|'.(int) $impuesto['canal'];
+                if (isset($impuestos[$llave])) {
+                    $impuestos[$llave]['importe'] += $impuesto['importe'];
+                } else {
+                    $impuestos[$llave] = $impuesto;
+                }
+            }
+        }
+
+        return new self(
+            $partes[0]->cotizacion,
+            array_sum(array_map(fn (self $parte): int => $parte->alojamiento, $partes)),
+            array_sum(array_map(fn (self $parte): int => $parte->descuento, $partes)),
+            array_values($cargos),
+            array_values($impuestos),
+        );
+    }
+
     public function totalCargos(): int
     {
         return array_sum(array_column($this->cargos, 'importe'));

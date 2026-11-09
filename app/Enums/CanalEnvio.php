@@ -17,4 +17,5 @@ enum CanalEnvio: string
     case Correo = 'correo';
     case WhatsappEnlace = 'whatsapp_enlace';
     case Webhook = 'webhook';
+    case WhatsappApi = 'whatsapp_api';
 }

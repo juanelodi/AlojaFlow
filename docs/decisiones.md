@@ -870,6 +870,97 @@ Junto con esto, en «Reportar o sugerir» (D-150) solo se aceptan JPG y PNG, rev
 vueltos a codificar antes de guardarse; hay un tipo «informe»; cada persona manda hasta diez por hora, y
 el apartado *Mejora continua* lo ve todo el equipo (los ajustes, solo el administrador).
 
+### D-152 · 2026-11-08 · Copias fuera del servidor, cifradas
+
+Pedido del usuario. Además de la copia en el propio servidor, cada copia programada se sube a un
+almacenamiento compatible con S3 (DreamObjects, Backblaze B2, Wasabi, Cloudflare R2) o a WebDAV, **cifrada
+antes de salir** con una clave que escribe el administrador (Argon2id + libsodium *secretstream*, formato
+`AFCOPIA1`): quien tenga acceso al almacenamiento no ve nada. Se guardan siete diarias (por día de la
+semana) y doce mensuales. La firma de S3 es propia (SigV4, sin SDK) y toda petición pasa por
+`ClienteExterno`. Antes de guardar los datos se sube un archivo de prueba. **La clave no se puede
+recuperar:** sin ella, las copias de fuera no sirven; el panel lo dice. Para restaurar, *Copias de
+seguridad* acepta el `.afcopia` con su clave, y `alojaflow:descifrar-copia` lo hace en la consola. El latido
+de la mejora continua dice solo si la última subida salió bien.
+
+### D-153 · 2026-11-08 · Llegadas y salidas también en las subordinadas
+
+En una subordinada la reserva es de la principal y AlojaFlow nunca escribe en ella, por eso *Hoy* no dejaba
+marcar quién llegó. Ahora se anota una **marca propia** (`marcas_estancia`), como el no-show (D-074), y vale
+igual que la de la principal: si la principal ya registró la llegada, aquí solo se anota la salida. Al pasar
+a independiente, las marcas pasan a la reserva. *Hoy* dice «Ya llegaron 3 de 5» y «Ya salieron 2 de 4», y
+cada reserva muestra la hora en la de la propiedad.
+
+### D-154 · 2026-11-08 · Calendario: colores por pago, situación, fijar y elegir dos fechas
+
+Pedido del usuario, como en la tabla de HotelDruid:
+
+- **Colorear por pago:** pagada por completo, anticipo pagado (falta el resto), sin anticipo y sin
+  confirmar. Lo ve solo quien tiene permiso de datos de la reserva; el detalle de cada barra dice cuánto
+  se ha pagado. Los colores de cada estado, por estado y por pago, se cambian en el perfil.
+- **«Situación a las 8:05 del 01/11/2026»**, y en una subordinada, de cuándo es la copia de la principal.
+- **Fijar** la columna de las unidades y la fila de los días (fijas de entrada).
+- **Elegir llegada y última noche con dos clics**, solo hasta el primer día ocupado; dos veces el mismo día
+  es una noche y Esc lo deja.
+
+Las opciones las recuerda el navegador y van en `<html>`, que Livewire no vuelve a pintar; sin
+`alojaflow.js`, cada día libre abre una reserva de una noche, como antes.
+
+### D-155 · 2026-11-08 · Unidades vinculadas
+
+Una unidad puede **componerse de otras** (la casa completa y sus cuartos): ocupar una cierra las otras, y
+dos que comparten un cuarto también chocan. Un solo nivel. Al guardar una reserva se bloquean las unidades
+vinculadas siempre en el mismo orden y se revisan sus noches con una lectura con candado: dos reservas que
+llegan a la vez no se cuelan. La búsqueda, el motor, el calendario público, el iCal que va a los portales y el
+calendario por habitaciones lo toman en cuenta, y lo que ya chocaba cuando se vincularon sale en *Choques*.
+Los indicadores siguen contando cada unidad por separado.
+
+### D-156 · 2026-11-08 · Códigos de acceso por reserva
+
+El código de la cerradura o de la caja de llaves: uno por reserva (escrito o generado al azar) o uno fijo
+por unidad. Va **cifrado**, la auditoría dice que cambió pero no cuál es, y es un dato propio, así que vale
+también en subordinadas. El huésped lo ve en *Mi reserva* desde el día antes de llegar hasta que sale, y va
+en los mensajes con `{codigo_acceso}`.
+
+### D-157 · 2026-11-08 · Segunda moneda con tipo de cambio a mano
+
+Cada propiedad puede tener una segunda moneda (USD en la costa) y su tipo de cambio, que escribe el
+alojamiento. Todo se cobra y se suma en la moneda de la propiedad; la segunda se **muestra** junto a los
+precios (motor, *Mi reserva*, ficha de la reserva) y se puede **recibir efectivo** en ella: el pago guarda
+lo recibido y el tipo de ese día, el recibo lo dice, y en la caja ese efectivo se cuenta aparte, no en el
+esperado en pesos.
+
+### D-158 · 2026-11-08 · Varias unidades en una reserva del motor
+
+El huésped puede pedir hasta N unidades (3 de entrada; 1 lo apaga) con un solo pago. Se crea **una reserva
+por unidad**, como siempre, con las personas repartidas lo más parejo posible, y las demás apuntan a la
+primera (`reserva_principal_id`), que cobra lo pendiente de todas; al confirmarse el pago se reparte entre
+ellas. Todo en una transacción: si no hay lugar para todas, no se aparta ninguna. Sin cupón, sin extras y
+sin elegir lugar en el plano: eso es de una sola unidad.
+
+### D-159 · 2026-11-08 · PayPal en el motor
+
+Con su API de órdenes (Orders v2) y sin SDK: la orden lleva la referencia firmada del cobro, el huésped la
+aprueba en PayPal y se **captura al volver** o, si cerró la ventana, con el aviso de que la aprobó. El
+resultado siempre sale de la API de PayPal, no de la dirección; si se da el identificador del webhook, la
+firma de cada aviso se comprueba con su propia API. Comprobado solo con respuestas simuladas, como las
+demás pasarelas: falta un cobro de prueba con una cuenta Sandbox.
+
+### D-160 · 2026-11-08 · WhatsApp por la API de Meta
+
+Meta solo deja que el negocio escriba primero con **plantillas aprobadas** en WhatsApp Manager. Una
+automatización nueva, «Plantilla de WhatsApp al huésped», manda una plantilla con las variables en su orden
+(`{{1}}`, `{{2}}`…) y el idioma de la plantilla; para otro idioma, otra automatización con la condición nueva
+«solo si el huésped habla…», que vale también para los correos. Cada propiedad pone el identificador de su
+número y un token permanente, que se guarda cifrado; sin teléfono, sin plantilla o sin configurar, el envío
+queda omitido con la razón. Las respuestas de los huéspedes siguen en el WhatsApp del alojamiento.
+
+### D-161 · 2026-11-08 · Más errores para la mejora continua
+
+Pedido del usuario: registrar todos los errores o problemas que se puedan. Con el permiso de D-150, también
+se anotan los **errores de JavaScript** del panel (como mucho cinco por página, sin repetir y sin nada de lo
+escrito) y los **avisos del registro** de nivel *warning* o más que no traen excepción. Van saneados como
+los demás.
+
 ## Pendientes
 
 - Precios y modelo de venta.

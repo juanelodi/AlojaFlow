@@ -75,6 +75,7 @@ return [
         'enlace_reserva' => 'Zum Ansehen der Online-Buchung',
         'enlace_llegada' => 'Zum Ausfüllen der Anreiseregistrierung',
         'enlace_mi_reserva' => 'Zum Ansehen von Daten, Zahlungen und Leitfaden',
+        'codigo_acceso' => 'Zugangscode der Buchung oder der feste Code ihrer Einheit',
         'enlace_opinion' => 'Zum Abgeben einer Bewertung',
         'h_numero' => 'Zeilennummer: 1, 2, 3…',
         'h_nombre' => 'Vollständiger Name',

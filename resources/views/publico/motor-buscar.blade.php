@@ -29,6 +29,17 @@
                 <label for="personas">{{ __('ui.comun.personas') }}</label>
                 <input type="number" id="personas" name="personas" value="{{ $personas }}" min="1" max="100" inputmode="numeric" autocomplete="off" required>
             </div>
+            @if ($unidadesMaximas > 1)
+                {{-- Varias unidades en un solo pedido, con un solo pago (D-158). --}}
+                <div>
+                    <label for="unidades">{{ __('motor.unidades') }}</label>
+                    <select id="unidades" name="unidades">
+                        @for ($i = 1; $i <= $unidadesMaximas; $i++)
+                            <option value="{{ $i }}" @selected($i === $unidades)>{{ $i }}</option>
+                        @endfor
+                    </select>
+                </div>
+            @endif
             <div><button type="submit">{{ __('motor.buscar') }}</button></div>
         </div>
         @if ($conFiltros)
@@ -100,13 +111,14 @@
                     <div class="oferta-compra">
                         <div>
                         <div class="precio">{{ Formato::dinero($oferta->presupuesto->total(), $propiedad->moneda) }}</div>
-                        <div class="gris">{{ trans_choice('ui.comun.n_noches', $noches) }}</div>
+                        @if ($segunda = (new \App\Dinero\SegundaMoneda($propiedad))->texto($oferta->presupuesto->total()))<div class="gris">{{ $segunda }}</div>@endif
+                        <div class="gris">{{ trans_choice('ui.comun.n_noches', $noches) }}@if ($oferta->cantidad > 1) · {{ trans_choice('motor.n_unidades', $oferta->cantidad) }}@endif</div>
                         @if ($oferta->presupuesto->cotizacion?->estanciaLarga)
                             <div class="gris">{{ __('estancias.motor.aplicado.'.$oferta->presupuesto->cotizacion->estanciaLarga) }}</div>
                         @endif
                         </div>
                         @if ($oferta->cumpleEstancia)
-                            <a class="boton" href="{{ route('motor.datos', ['codigo' => $propiedad->codigo, 'tarifa' => $oferta->tarifa->id, 'llegada' => $llegada, 'salida' => $salida, 'personas' => $personas, 'idioma' => app()->getLocale()] + $filtro->parametros()) }}">{{ __('motor.reservar') }}</a>
+                            <a class="boton" href="{{ route('motor.datos', ['codigo' => $propiedad->codigo, 'tarifa' => $oferta->tarifa->id, 'llegada' => $llegada, 'salida' => $salida, 'personas' => $personas, 'unidades' => $oferta->cantidad, 'idioma' => app()->getLocale()] + $filtro->parametros()) }}">{{ __('motor.reservar') }}</a>
                         @else
                             <div class="gris">{{ __('motor.error.estancia_minima', ['noches' => $oferta->estanciaMinima]) }}</div>
                         @endif

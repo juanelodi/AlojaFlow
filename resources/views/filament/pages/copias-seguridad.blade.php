@@ -13,7 +13,18 @@
                     {{ __('copias.estado_manuales') }}
                 @endif
             </p>
-            <p class="af-aviso" style="margin-top: .75rem">{{ __('copias.aviso_fuera') }}</p>
+            @php($externa = app(\App\Copias\CopiaExterna::class))
+            @php($ultimaExterna = $externa->ultima())
+            @if ($externa->configurada())
+                <p class="af-nota" style="margin-top: .75rem">{{ __('copias.externa.estado', ['destino' => $externa->destino($externa->configuracion())]) }}</p>
+                @if (isset($ultimaExterna['en']))
+                    <p class="{{ ($ultimaExterna['ok'] ?? false) ? 'af-nota' : 'af-aviso' }}" style="margin-top: .5rem">
+                        {{ ($ultimaExterna['ok'] ?? false) ? __('copias.externa.ultima_ok', ['cuando' => Formato::momento(\Illuminate\Support\Carbon::parse($ultimaExterna['en']))]) : __('copias.externa.no_subida', ['motivo' => (string) ($ultimaExterna['error'] ?? '')]) }}
+                    </p>
+                @endif
+            @else
+                <p class="af-aviso" style="margin-top: .75rem">{{ __('copias.aviso_fuera') }} {{ __('copias.externa.sugerencia') }}</p>
+            @endif
         </x-filament::section>
 
         <x-filament::section :heading="__('copias.lista')">

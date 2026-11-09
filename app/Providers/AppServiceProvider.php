@@ -13,6 +13,7 @@ namespace App\Providers;
 use App\Demo\ModoDemo;
 use App\Filament\RecursosDelPanel;
 use App\Filament\Tablas\OrdenAutomatico;
+use App\MejoraContinua\RegistroErrores;
 use App\Models\User;
 use App\Seguridad\AuditoriaModelos;
 use App\Seguridad\Dispositivos;
@@ -27,6 +28,7 @@ use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Event;
@@ -54,6 +56,14 @@ class AppServiceProvider extends ServiceProvider
         $this->app->terminating(fn () => $this->app->make(MemoriaAcceso::class)->vaciar());
 
         AuditoriaModelos::registrar();
+
+        // Mejora continua (D-150): lo que el sistema anota como problema sin que sea una excepción (las
+        // excepciones ya llegan por report()). Solo con permiso, saneado.
+        Event::listen(MessageLogged::class, function (MessageLogged $registro): void {
+            if (in_array($registro->level, ['warning', 'error', 'critical', 'alert', 'emergency'], true) && ! isset($registro->context['exception'])) {
+                RegistroErrores::anotarProblema($registro->level, $registro->message);
+            }
+        });
 
         // «Mantener la sesión» usa dispositivos propios (D-076), en lugar del token único de Laravel, que no caduca.
         Event::listen(Login::class, function (Login $evento): void {

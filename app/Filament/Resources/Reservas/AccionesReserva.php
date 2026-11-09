@@ -35,6 +35,8 @@ use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Motor\Pasarelas;
 use App\Pagos\GestorEnlacesPago;
+use App\Reservas\CodigosAcceso;
+use App\Reservas\GestorEstancias;
 use App\Reservas\GestorReservas;
 use App\Reservas\ReservaRechazada;
 use App\Seguridad\Acceso;
@@ -65,9 +67,9 @@ final class AccionesReserva
             ->label(__('ui.reservas.registrar_entrada'))
             ->icon(Heroicon::OutlinedArrowRightEndOnRectangle)
             ->color('success')
-            ->visible(fn (Reserva $record): bool => self::gestionable($record) && $record->tipo === TipoReserva::Reserva
-                && $record->estado !== EstadoReserva::Cancelada && $record->entrada_registrada_en === null)
-            ->action(fn (Reserva $record) => self::ejecutar($record, fn (GestorReservas $g) => $g->registrarEntrada($record), __('ui.reservas.entrada_ok')));
+            ->visible(fn (Reserva $record): bool => self::marcable($record) && $record->tipo === TipoReserva::Reserva
+                && $record->estado !== EstadoReserva::Cancelada && $record->entradaEn() === null)
+            ->action(fn (Reserva $record) => self::marcar($record, fn (GestorEstancias $g) => $g->registrarEntrada($record, Acceso::usuarioActual()), __('ui.reservas.entrada_ok')));
     }
 
     /**
@@ -76,6 +78,34 @@ final class AccionesReserva
     /**
      * Vale también en subordinadas: la marca es un dato propio.
      */
+    /**
+     * El código de la cerradura o de la caja de llaves (D-156). Vale también en subordinadas: es un dato propio.
+     */
+    public static function codigoAcceso(): Action
+    {
+        return Action::make('codigoAcceso')
+            ->label(__('ui.reservas.codigo_acceso'))
+            ->icon(Heroicon::OutlinedKey)
+            ->color('gray')
+            ->visible(fn (Reserva $record): bool => $record->tipo === TipoReserva::Reserva && $record->estado !== EstadoReserva::Cancelada
+                && Acceso::puede(Acceso::usuarioActual(), Acceso::RESERVAS, $record->propiedad_id))
+            ->modalDescription(__('ui.reservas.codigo_acceso_ayuda'))
+            ->fillForm(fn (Reserva $record): array => ['codigo' => CodigosAcceso::propio($record)])
+            ->schema(fn (Reserva $record): array => [
+                TextInput::make('codigo')->label(__('ui.reservas.codigo_acceso'))->maxLength(CodigosAcceso::LARGO_MAXIMO)->autocomplete('off')
+                    ->helperText(fn (): ?string => ($fijo = CodigosAcceso::deUnidad($record->unidad_id)) === null ? null : __('ui.reservas.codigo_acceso_fijo', ['codigo' => $fijo]))
+                    ->suffixAction(
+                        Action::make('generarCodigo')->label(__('ui.reservas.codigo_generar'))->tooltip(__('ui.reservas.codigo_generar'))
+                            ->icon(Heroicon::OutlinedSparkles)
+                            ->action(fn (Set $set) => $set('codigo', CodigosAcceso::generar()))
+                    ),
+            ])
+            ->action(function (Reserva $record, array $data): void {
+                CodigosAcceso::guardar($record, $data['codigo'] ?? null);
+                Notification::make()->success()->title(__('ui.reservas.codigo_acceso_ok'))->send();
+            });
+    }
+
     public static function noShow(): Action
     {
         return Action::make('noShow')
@@ -275,8 +305,8 @@ final class AccionesReserva
             ->label(__('ui.reservas.registrar_salida'))
             ->icon(Heroicon::OutlinedArrowLeftStartOnRectangle)
             ->color('info')
-            ->visible(fn (Reserva $record): bool => self::gestionable($record) && $record->estaEnCasa())
-            ->action(fn (Reserva $record) => self::ejecutar($record, fn (GestorReservas $g) => $g->registrarSalida($record), __('ui.reservas.salida_ok')));
+            ->visible(fn (Reserva $record): bool => self::marcable($record) && $record->entradaEn() !== null && $record->salidaEn() === null)
+            ->action(fn (Reserva $record) => self::marcar($record, fn (GestorEstancias $g) => $g->registrarSalida($record, Acceso::usuarioActual()), __('ui.reservas.salida_ok')));
     }
 
     public static function confirmacionPdf(): Action
@@ -353,6 +383,29 @@ final class AccionesReserva
             ->requiresConfirmation()
             ->visible(fn (Reserva $record): bool => self::gestionable($record) && $record->estado === EstadoReserva::Cancelada && Limites::puedeModificar(Acceso::usuarioActual(), $record))
             ->action(fn (Reserva $record) => self::ejecutar($record, fn (GestorReservas $g) => $g->reactivar($record), __('ui.reservas.reactivada_ok')));
+    }
+
+    /**
+     * Llegó o salió: también en una subordinada, con una marca propia (D-153).
+     */
+    private static function marcable(Reserva $reserva): bool
+    {
+        return Acceso::puede(Acceso::usuarioActual(), Acceso::RESERVAS, $reserva->propiedad_id) && ($reserva->sincronizada || self::gestionable($reserva));
+    }
+
+    /**
+     * @param  callable(GestorEstancias): mixed  $accion
+     */
+    private static function marcar(Reserva $reserva, callable $accion, string $mensaje): void
+    {
+        try {
+            $accion(app(GestorEstancias::class));
+            Notification::make()->success()->title($mensaje)->send();
+        } catch (ReservaRechazada $e) {
+            Notification::make()->danger()->title($e->getMessage())->persistent()->send();
+        }
+        $reserva->refresh();
+        $reserva->unsetRelation('marcaEstancia');
     }
 
     private static function gestionable(Reserva $reserva): bool

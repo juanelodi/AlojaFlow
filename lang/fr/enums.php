@@ -162,6 +162,7 @@ return [
     'CanalEnvio' => [
         'correo' => 'E-mail',
         'whatsapp_enlace' => 'WhatsApp',
+        'whatsapp_api' => 'WhatsApp (API Meta)',
         'webhook' => 'Notification à un autre système',
     ],
     'EstadoEnvio' => [
@@ -188,6 +189,7 @@ return [
     'AccionAutomatizacion' => [
         'crear_tarea' => 'Créer une tâche pour l’équipe',
         'nota_bitacora' => 'Laisser une note importante dans le journal',
+        'whatsapp_huesped' => 'Modèle WhatsApp au client',
         'correo_huesped' => 'E-mail au client',
         'correo_fijo' => 'E-mail à une adresse fixe',
     ],

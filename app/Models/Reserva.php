@@ -57,6 +57,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $ninos
  * @property int $version
  * @property int|null $grupo_id
+ * @property int|null $reserva_principal_id
  * @property int|null $cupon_id
  * @property Carbon|null $expira_en
  * @property string|null $idioma
@@ -142,6 +143,26 @@ class Reserva extends ModeloBase
         return $this->belongsTo(Huesped::class, 'titular_id');
     }
 
+    /** @return HasOne<MarcaEstancia, $this> */
+    public function marcaEstancia(): HasOne
+    {
+        return $this->hasOne(MarcaEstancia::class);
+    }
+
+    /**
+     * Cuándo llegó el huésped: lo registrado en la reserva o, en una subordinada, la marca propia (D-153). Una reserva propia
+     * no tiene marca: no se consulta.
+     */
+    public function entradaEn(): ?Carbon
+    {
+        return $this->entrada_registrada_en ?? ($this->sincronizada ? $this->marcaEstancia?->entrada_en : null);
+    }
+
+    public function salidaEn(): ?Carbon
+    {
+        return $this->salida_registrada_en ?? ($this->sincronizada ? $this->marcaEstancia?->salida_en : null);
+    }
+
     /** @return BelongsTo<Principal, $this> */
     public function principal(): BelongsTo
     {
@@ -182,6 +203,38 @@ class Reserva extends ModeloBase
     public function grupo(): BelongsTo
     {
         return $this->belongsTo(Grupo::class);
+    }
+
+    /**
+     * La primera de un pedido de varias unidades del motor (D-158), que es la que se paga por todas.
+     *
+     * @return BelongsTo<Reserva, $this>
+     */
+    public function reservaPrincipal(): BelongsTo
+    {
+        return $this->belongsTo(Reserva::class, 'reserva_principal_id');
+    }
+
+    /**
+     * Las demás del mismo pedido (D-158).
+     *
+     * @return HasMany<Reserva, $this>
+     */
+    public function acompanantes(): HasMany
+    {
+        return $this->hasMany(Reserva::class, 'reserva_principal_id')->orderBy('id');
+    }
+
+    /**
+     * Todas las del pedido, la principal primero. Una reserva sola es su propio pedido.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, Reserva>
+     */
+    public function pedido(): \Illuminate\Database\Eloquent\Collection
+    {
+        $principal = $this->reserva_principal_id === null ? $this : ($this->reservaPrincipal ?? $this);
+
+        return (new \Illuminate\Database\Eloquent\Collection([$principal]))->merge($principal->acompanantes()->get())->values();
     }
 
     /** @return BelongsTo<Cupon, $this> */

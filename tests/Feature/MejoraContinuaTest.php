@@ -376,3 +376,28 @@ it('avisa si alguna imagen se descartó', function () {
         ->call('enviar')
         ->assertNotified(__('mejora.reportar.imagenes_descartadas', ['cuantas' => '1']));
 });
+
+it('guarda los errores de JavaScript del panel y los problemas del registro, saneados y solo con permiso', function () {
+    $error = ['tipo' => 'TypeError', 'mensaje' => 'Cannot read properties of null (reading "ana@huesped.example")', 'archivo' => 'https://hotel.example/js/alojaflow/alojaflow.js?v=1', 'linea' => 42,
+        'pila' => "TypeError: x\n    at ordenar (https://hotel.example/js/alojaflow/alojaflow.js?v=1:42:10)", 'pantalla' => '/reservas/1234/editar'];
+
+    $this->actingAs($this->recepcion)->postJson(route('mejora-continua.error-navegador'), $error)->assertNoContent();
+    Illuminate\Support\Facades\Log::warning('No se pudo avisar a ana@huesped.example');
+    expect(DB::table('mejora_errores')->count())->toBe(0);
+
+    Permiso::guardar(true);
+    Ajustes::olvidar();
+    $this->actingAs($this->recepcion)->postJson(route('mejora-continua.error-navegador'), $error)->assertNoContent();
+    Illuminate\Support\Facades\Log::warning('No se pudo avisar a ana@huesped.example');
+
+    $filas = DB::table('mejora_errores')->orderBy('id')->get();
+    expect($filas)->toHaveCount(2)
+        ->and($filas[0]->clase)->toBe('JavaScript\TypeError')
+        ->and($filas[0]->archivo)->toBe('alojaflow.js')
+        ->and(json_decode((string) $filas[0]->contexto, true))->toMatchArray(['origen' => 'navegador', 'ruta' => '/reservas/{n}/editar'])
+        ->and($filas[1]->clase)->toBe('Registro\Warning')
+        ->and((string) json_encode($filas))->not->toContain('ana@huesped');
+    // Sin sesión no se acepta nada.
+    auth()->guard()->logout();
+    $this->post(route('mejora-continua.error-navegador'), $error)->assertRedirect();
+});

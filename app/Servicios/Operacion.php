@@ -41,7 +41,7 @@ final class Operacion
             ->vigentes()
             ->where('tipo', TipoReserva::Reserva->value)
             ->whereIn('propiedad_id', $propiedades)
-            ->with(['unidad', 'titular.contactos', 'propiedad', 'principal']), Acceso::usuarioActual());
+            ->with(['unidad', 'titular.contactos', 'propiedad', 'principal', 'marcaEstancia']), Acceso::usuarioActual());
     }
 
     /**

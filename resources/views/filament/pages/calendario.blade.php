@@ -10,6 +10,8 @@
         $propiedadAnterior = null;
         $variasPropiedades = count($this->propiedadesElegidas()) > 1;
         $gestionables = $this->propiedadesGestionables();
+        // Cuánto se ha pagado, en el color y en el detalle, solo con permiso de datos (D-154).
+        $conDatos = \App\Seguridad\Acceso::propiedades(\App\Seguridad\Acceso::usuarioActual(), \App\Seguridad\Acceso::DATOS);
         // Un mes con muchas unidades son miles de celdas: lo de cada día se calcula una sola vez.
         $urlNueva = \App\Filament\Resources\Reservas\ReservaResource::getUrl('create');
         $columnas = [];
@@ -69,6 +71,25 @@
                     {{ __('ui.comun.siguiente') }}
                 </x-filament::button>
             </div>
+            {{-- Las recuerda este navegador y las aplica alojaflow.js en <html> (D-154): Livewire no las vuelve a pintar. --}}
+            <details class="af-cal-opciones af-solo-vista-mes" wire:ignore>
+                <summary>{{ __('ui.calendario.opciones') }}</summary>
+                <div class="af-cal-opciones__panel">
+                    {{-- Por pago solo quien ve los datos de las reservas. --}}
+                    @if ($conDatos !== [])
+                    <fieldset>
+                        <legend>{{ __('ui.calendario.colorear') }}</legend>
+                        <label><input type="radio" name="af-cal-colores" value="estado" data-af-cal-opcion="colores" checked> {{ __('ui.calendario.colorear_estado') }}</label>
+                        <label><input type="radio" name="af-cal-colores" value="pago" data-af-cal-opcion="colores"> {{ __('ui.calendario.colorear_pago') }}</label>
+                    </fieldset>
+                    @endif
+                    <label><input type="checkbox" data-af-cal-opcion="fijar-unidades" checked> {{ __('ui.calendario.fijar_unidades') }}</label>
+                    <label><input type="checkbox" data-af-cal-opcion="fijar-dias" checked> {{ __('ui.calendario.fijar_dias') }}</label>
+                    @if (! \App\Demo\ModoDemo::activo())
+                        <a href="{{ filament()->getProfileUrl() }}?colores=1">{{ __('ui.calendario.personalizar_colores') }}</a>
+                    @endif
+                </div>
+            </details>
         </div>
 
         @if ($vista === 'dia')
@@ -79,7 +100,17 @@
 
         @if ($vista !== 'dia')
         <div class="af-solo-vista-mes af-pila">
-        <div class="af-leyenda" aria-label="{{ __('ui.calendario.leyenda') }}">
+        <p class="af-nota">{{ implode(' · ', $this->situacion()) }}</p>
+        @if ($conDatos !== [])
+        <div class="af-leyenda af-leyenda--pago" aria-label="{{ __('ui.calendario.leyenda') }}">
+            <span><i class="af-pago--total"></i>{{ __('ui.calendario.pago_total') }}</span>
+            <span><i class="af-pago--anticipo"></i>{{ __('ui.calendario.pago_anticipo') }}</span>
+            <span><i class="af-pago--sin-anticipo"></i>{{ __('ui.calendario.pago_sin_anticipo') }}</span>
+            <span><i class="af-pago--sin-confirmar"></i>{{ __('ui.calendario.pago_sin_confirmar') }}</span>
+            <span><i class="af-barra--bloqueo"></i>{{ __('ui.calendario.bloqueo') }}</span>
+        </div>
+        @endif
+        <div @class(["af-leyenda", "af-leyenda--estado" => $conDatos !== []]) aria-label="{{ __('ui.calendario.leyenda') }}">
             <span><i class="af-barra--confirmada"></i>{{ __('ui.calendario.confirmada') }}</span>
             <span><i class="af-barra--sin-confirmar"></i>{{ __('ui.calendario.sin_confirmar') }}</span>
             <span><i class="af-barra--en-casa"></i>{{ __('ui.calendario.en_casa') }}</span>
@@ -89,13 +120,17 @@
                 <span class="af-nota">{{ __('ui.comun.solo_consulta') }}</span>
             @endif
             @if ($gestionables !== [])
-                <span class="af-nota">{{ __('ui.calendario.ayuda_nueva') }} {{ __('ui.calendario.ayuda_mover') }}</span>
+                <span class="af-nota">{{ __('ui.calendario.ayuda_mover') }}</span>
             @endif
         </div>
 
         @if ($datos['filas'] === [])
             <x-filament::empty-state :heading="__('ui.calendario.sin_unidades')" icon="heroicon-o-calendar-days" />
         @else
+            {{-- Al elegir la llegada, alojaflow.js cambia el texto (D-154). Siempre ocupa su lugar: la cuadrícula no se mueve entre los dos clics. --}}
+            @if ($gestionables !== [])
+                <p class="af-cal-aviso" data-af-cal-aviso data-texto="{{ __('ui.calendario.elegir_fin') }}" data-inicial="{{ __('ui.calendario.ayuda_nueva') }}" aria-live="polite">{{ __('ui.calendario.ayuda_nueva') }}</p>
+            @endif
             {{-- Arrastrar se atiende aquí y no en cada celda: Alpine tendría que recorrer y preparar miles al arrancar. --}}
             <div class="af-calendario"
                  x-data="{
@@ -174,19 +209,25 @@
                                  style="grid-column: {{ $externo['columna'] + 1 }} / span {{ $externo['ancho'] }}"
                                  title="{{ __('ical.calendario_externo', ['fuente' => $externo['fuente']]) }}">{{ $externo['fuente'] }}</div>
                         @endforeach
+                        @foreach ($fila['vinculadas'] as $vinculada)
+                            <div @class(['af-barra', 'af-barra--vinculada', 'af-barra--sigue-antes' => $vinculada['sigue_antes'], 'af-barra--sigue-despues' => $vinculada['sigue_despues']])
+                                 style="grid-column: {{ $vinculada['columna'] + 1 }} / span {{ $vinculada['ancho'] }}"
+                                 title="{{ __('ui.calendario.vinculada', ['unidades' => $vinculada['unidades']]) }}">{{ $vinculada['unidades'] }}</div>
+                        @endforeach
                         @foreach ($fila['barras'] as $barra)
                             @php($reserva = $barra['reserva'])
                             @php($ajena = $barra['oculta'] || ! \App\Seguridad\Limites::puedeVer(\App\Seguridad\Acceso::usuarioActual(), $reserva))
                             @php($texto = $barra['oculta'] ? __('permisos.limites.ocupada') : \App\Servicios\Calendario::textoDe($reserva, \App\Seguridad\Acceso::usuarioActual()))
+                            @php($pago = ! $ajena && in_array($reserva->propiedad_id, $conDatos, true) ? $barra['pago'] : null)
                             {{-- Sin permiso de datos, la barra no lleva a la ficha: un enlace sin destino no se puede seguir. --}}
                             <a @if (! $ajena && \App\Seguridad\Acceso::puede(\App\Seguridad\Acceso::usuarioActual(), \App\Seguridad\Acceso::DATOS, $reserva->propiedad_id)) href="{{ \App\Filament\Resources\Reservas\ReservaResource::getUrl('view', ['record' => $reserva]) }}" @endif
                                @if (! $ajena && ! $reserva->sincronizada && $gestionable && $reserva->salida_registrada_en === null)
                                    draggable="true"
                                    data-reserva="{{ $reserva->id }}"
                                @endif
-                               @class(['af-barra', $barra['clase'], 'af-barra--marcada' => $barra['color'], 'af-barra--grupo' => $barra['grupo'], 'af-barra--sigue-antes' => $barra['sigue_antes'], 'af-barra--sigue-despues' => $barra['sigue_despues']])
+                               @class(['af-barra', $barra['clase'], 'af-pago--'.$pago => $pago !== null, 'af-barra--marcada' => $barra['color'], 'af-barra--grupo' => $barra['grupo'], 'af-barra--sigue-antes' => $barra['sigue_antes'], 'af-barra--sigue-despues' => $barra['sigue_despues']])
                                style="grid-column: {{ $barra['columna'] + 1 }} / span {{ $barra['ancho'] }}@if ($barra['color']); --af-marca: {{ $barra['color'] }}@endif @if ($barra['grupo']?->color); --af-grupo: {{ $barra['grupo']->color }}@endif"
-                               title="{{ __('ui.calendario.detalle', ['huesped' => $texto, 'noches' => $reserva->noches, 'llegada' => Formato::fechaCorta($reserva->llegada), 'salida' => Formato::fechaCorta($reserva->salida)]) }}@if (! $ajena && $barra['grupo']) · {{ $barra['grupo']->nombre }}@endif"
+                               title="{{ __('ui.calendario.detalle', ['huesped' => $texto, 'noches' => $reserva->noches, 'llegada' => Formato::fechaCorta($reserva->llegada), 'salida' => Formato::fechaCorta($reserva->salida)]) }}@if (! $ajena && $barra['grupo']) · {{ $barra['grupo']->nombre }}@endif @if ($pago !== null) · {{ __('ui.calendario.pagado_de', ['pagado' => Formato::dinero($reserva->pagado, $reserva->moneda), 'total' => Formato::dinero($reserva->total, $reserva->moneda)]) }}@endif"
                             >{{ $texto }}@if (! $ajena && ! $reserva->sincronizada && $gestionable && $reserva->salida_registrada_en === null && $barra['grupo'] === null)@if (! $barra['sigue_antes'] && $reserva->entrada_registrada_en === null)<span class="af-asa af-asa--inicio" draggable="true" data-asa="inicio" title="{{ __('ui.calendario.asa_inicio') }}"></span>@endif @if (! $barra['sigue_despues'])<span class="af-asa af-asa--fin" draggable="true" data-asa="fin" title="{{ __('ui.calendario.asa_fin') }}"></span>@endif @endif</a>
                         @endforeach
                     </div>

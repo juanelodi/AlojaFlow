@@ -19,6 +19,7 @@ use App\Models\ColorTipoCliente;
 use App\Models\Reserva;
 use App\Models\Unidad;
 use App\Models\User;
+use App\Reservas\UnidadesVinculadas;
 use App\Seguridad\Limites;
 use Carbon\CarbonImmutable;
 
@@ -29,7 +30,7 @@ final class Calendario
 {
     /**
      * @param  list<int>  $propiedades
-     * @return array{dias: list<CarbonImmutable>, filas: list<array{unidad: Unidad, barras: list<array{oculta: bool, reserva: Reserva, columna: int, ancho: int, sigue_antes: bool, sigue_despues: bool, clase: string, color: ?string}>, externos: list<array{columna: int, ancho: int, sigue_antes: bool, sigue_despues: bool, fuente: string}>, tapados: array<int, true>}>} en «tapados», los días del mes (desde 1) que quedan debajo de una barra
+     * @return array{dias: list<CarbonImmutable>, filas: list<array{unidad: Unidad, barras: list<array{oculta: bool, reserva: Reserva, columna: int, ancho: int, sigue_antes: bool, sigue_despues: bool, clase: string, pago: ?string, color: ?string}>, externos: list<array{columna: int, ancho: int, sigue_antes: bool, sigue_despues: bool, fuente: string}>, vinculadas: list<array{columna: int, ancho: int, sigue_antes: bool, sigue_despues: bool, unidades: string}>, tapados: array<int, true>}>} en «tapados», los días del mes (desde 1) que quedan debajo de una barra
      */
     public static function mes(array $propiedades, CarbonImmutable $inicio): array
     {
@@ -42,20 +43,22 @@ final class Calendario
 
         $unidades = self::unidades($propiedades);
 
-        $reservas = Reserva::query()->vigentes()->with(['titular.campos', 'grupo', 'habitacionGrupo'])
+        $reservas = Reserva::query()->vigentes()->with(['titular.campos', 'grupo', 'habitacionGrupo', 'marcaEstancia'])
             ->whereIn('propiedad_id', $propiedades)
             ->where('llegada', '<', $fin->format('Y-m-d'))
             ->where('salida', '>', $inicio->format('Y-m-d'))
             ->orderBy('llegada')
             ->get()
-            ->groupBy('unidad_id');
+            ->groupBy('unidad_id')->toBase();
 
         $externos = BloqueoExterno::query()->with('fuente')->whereIn('propiedad_id', $propiedades)->whereNull('eliminado_en')
             ->where('llegada', '<', $fin->format('Y-m-d'))->where('salida', '>', $inicio->format('Y-m-d'))
-            ->orderBy('llegada')->get()->groupBy('unidad_id');
+            ->orderBy('llegada')->get()->groupBy('unidad_id')->toBase();
 
         $colores = ColorTipoCliente::query()->whereIn('propiedad_id', $propiedades)->get();
         $omitidos = Omisiones::huespedes($propiedades, LugarOmision::Calendario);
+        $vinculos = UnidadesVinculadas::mapa($unidades->map(fn (Unidad $unidad): int => $unidad->id)->all());
+        $nombres = $unidades->pluck('nombre', 'id');
 
         $filas = [];
         foreach ($unidades as $unidad) {
@@ -74,6 +77,7 @@ final class Calendario
                     'sigue_antes' => $reserva->llegada->lt($inicio),
                     'sigue_despues' => $reserva->salida->gt($fin),
                     'clase' => $oculta ? 'af-barra--bloqueo' : self::clase($reserva),
+                    'pago' => $oculta ? null : self::pago($reserva),
                     'color' => $oculta ? null : self::colorDe($reserva, $colores),
                     'grupo' => $oculta ? null : $reserva->grupo,
                 ];
@@ -91,11 +95,12 @@ final class Calendario
                     'fuente' => $externo->fuente->nombre,
                 ];
             }
+            $vinculadas = self::vinculadas($vinculos[$unidad->id] ?? [], $reservas, $externos, $nombres, $inicio, $fin);
             $tapados = [];
-            foreach ([...$barras, ...$deportales] as $barra) {
+            foreach ([...$barras, ...$deportales, ...$vinculadas] as $barra) {
                 $tapados += array_fill($barra['columna'], $barra['ancho'], true);
             }
-            $filas[] = ['unidad' => $unidad, 'barras' => $barras, 'externos' => $deportales, 'tapados' => $tapados];
+            $filas[] = ['unidad' => $unidad, 'barras' => $barras, 'externos' => $deportales, 'vinculadas' => $vinculadas, 'tapados' => $tapados];
         }
 
         return ['dias' => $dias, 'filas' => $filas];
@@ -106,12 +111,12 @@ final class Calendario
      * duerme esa noche, aunque alguien salga de ella ese día: lo mismo que una celda libre del mes.
      *
      * @param  list<int>  $propiedades
-     * @return array{filas: list<array{unidad: Unidad, reservas: list<array{reserva: Reserva, momento: string, oculta: bool}>, externos: list<BloqueoExterno>, libre: bool}>, libres: int, ocupadas: int, llegan: int, salen: int}
+     * @return array{filas: list<array{unidad: Unidad, reservas: list<array{reserva: Reserva, momento: string, oculta: bool}>, externos: list<BloqueoExterno>, vinculadas: list<string>, libre: bool}>, libres: int, ocupadas: int, llegan: int, salen: int}
      */
     public static function dia(array $propiedades, CarbonImmutable $dia, ?User $usuario): array
     {
         $fecha = $dia->format('Y-m-d');
-        $reservas = Reserva::query()->vigentes()->with(['unidad', 'propiedad', 'titular.contactos', 'habitacionGrupo'])
+        $reservas = Reserva::query()->vigentes()->with(['unidad', 'propiedad', 'titular.contactos', 'habitacionGrupo', 'marcaEstancia'])
             ->whereIn('propiedad_id', $propiedades)
             ->where('llegada', '<=', $fecha)->where('salida', '>=', $fecha)
             ->orderBy('llegada')->get()->groupBy('unidad_id');
@@ -119,10 +124,15 @@ final class Calendario
             ->where('llegada', '<=', $fecha)->where('salida', '>', $fecha)->orderBy('llegada')->get()->groupBy('unidad_id');
 
         $omitidos = Omisiones::huespedes($propiedades, LugarOmision::Calendario);
+        $unidades = self::unidades($propiedades);
+        $vinculos = UnidadesVinculadas::mapa($unidades->map(fn (Unidad $unidad): int => $unidad->id)->all());
+        // Quién duerme ahí esa noche: quien sale ese día ya no cuenta.
+        $duermen = fn (int $unidad): bool => $reservas->get($unidad, collect())->contains(fn (Reserva $r): bool => $r->salida->format('Y-m-d') !== $fecha)
+            || $externos->has($unidad);
         $orden = ['sale' => 0, 'sigue' => 1, 'llega' => 2];
         $filas = [];
         $libres = $ocupadas = $llegan = $salen = 0;
-        foreach (self::unidades($propiedades) as $unidad) {
+        foreach ($unidades as $unidad) {
             $renglones = [];
             foreach ($reservas->get($unidad->id, collect()) as $reserva) {
                 /** @var Reserva $reserva */
@@ -141,12 +151,59 @@ final class Calendario
             }
             usort($renglones, fn (array $a, array $b): int => $orden[$a['momento']] <=> $orden[$b['momento']]);
             $deUnidad = $externos->get($unidad->id, collect())->values()->all();
-            $libre = $deUnidad === [] && array_filter($renglones, fn (array $r): bool => $r['momento'] !== 'sale') === [];
+            $cierran = $unidades->whereIn('id', array_filter($vinculos[$unidad->id] ?? [], $duermen))->pluck('nombre')->all();
+            $libre = $deUnidad === [] && $cierran === [] && array_filter($renglones, fn (array $r): bool => $r['momento'] !== 'sale') === [];
             $libre ? $libres++ : $ocupadas++;
-            $filas[] = ['unidad' => $unidad, 'reservas' => $renglones, 'externos' => $deUnidad, 'libre' => $libre];
+            $filas[] = ['unidad' => $unidad, 'reservas' => $renglones, 'externos' => $deUnidad, 'vinculadas' => $cierran, 'libre' => $libre];
         }
 
         return ['filas' => $filas, 'libres' => $libres, 'ocupadas' => $ocupadas, 'llegan' => $llegan, 'salen' => $salen];
+    }
+
+    /**
+     * Los días que una unidad vinculada ocupa esta (D-155), en tramos seguidos y con los nombres de las que la ocupan. Cualquier
+     * cosa cierra: una reserva, un bloqueo o lo de otro calendario.
+     *
+     * @param  list<int>  $otras
+     * @param  \Illuminate\Support\Collection<int|string, \Illuminate\Database\Eloquent\Collection<int, Reserva>>  $reservas
+     * @param  \Illuminate\Support\Collection<int|string, \Illuminate\Database\Eloquent\Collection<int, BloqueoExterno>>  $externos
+     * @param  \Illuminate\Support\Collection<int, string>  $nombres
+     * @return list<array{columna: int, ancho: int, sigue_antes: bool, sigue_despues: bool, unidades: string}>
+     */
+    private static function vinculadas(array $otras, \Illuminate\Support\Collection $reservas, \Illuminate\Support\Collection $externos, \Illuminate\Support\Collection $nombres, CarbonImmutable $inicio, CarbonImmutable $fin): array
+    {
+        $dias = [];
+        $antes = $despues = false;
+        foreach ($otras as $otra) {
+            foreach ([...$reservas->get($otra, collect()), ...$externos->get($otra, collect())] as $ocupa) {
+                /** @var Reserva|BloqueoExterno $ocupa */
+                $antes = $antes || $ocupa->llegada->lt($inicio);
+                $despues = $despues || $ocupa->salida->gt($fin);
+                for ($dia = $ocupa->llegada->max($inicio); $dia->lt($ocupa->salida->min($fin)); $dia = $dia->addDay()) {
+                    $dias[(int) $inicio->diffInDays($dia) + 1][$otra] = true;
+                }
+            }
+        }
+        ksort($dias);
+        $tramos = [];
+        $total = (int) $inicio->diffInDays($fin);
+        foreach ($dias as $columna => $quienes) {
+            $ultimo = array_key_last($tramos);
+            if ($ultimo !== null && $tramos[$ultimo]['columna'] + $tramos[$ultimo]['ancho'] === $columna) {
+                $tramos[$ultimo]['ancho']++;
+                $tramos[$ultimo]['quienes'] += $quienes;
+            } else {
+                $tramos[] = ['columna' => $columna, 'ancho' => 1, 'quienes' => $quienes];
+            }
+        }
+
+        return array_map(fn (array $tramo): array => [
+            'columna' => $tramo['columna'],
+            'ancho' => $tramo['ancho'],
+            'sigue_antes' => $antes && $tramo['columna'] === 1,
+            'sigue_despues' => $despues && $tramo['columna'] + $tramo['ancho'] - 1 === $total,
+            'unidades' => implode(', ', array_map(fn (int $id): string => (string) $nombres->get($id), array_keys($tramo['quienes']))),
+        ], $tramos);
     }
 
     /**
@@ -192,12 +249,27 @@ final class Calendario
         return null;
     }
 
+    /**
+     * Cuánto se ha pagado, para colorear por pago (D-154). La lógica de la tabla de HotelDruid: sin confirmar va primero; luego,
+     * pagada por completo, con el anticipo cubierto o sin él. Una reserva sin anticipo pedido que no ha pagado nada va sin anticipo.
+     */
+    public static function pago(Reserva $reserva): ?string
+    {
+        return match (true) {
+            $reserva->tipo !== TipoReserva::Reserva => null,
+            $reserva->estado === EstadoReserva::SinConfirmar => 'sin-confirmar',
+            $reserva->pagado >= $reserva->total => 'total',
+            $reserva->pagado > 0 && $reserva->pagado >= $reserva->deposito => 'anticipo',
+            default => 'sin-anticipo',
+        };
+    }
+
     private static function clase(Reserva $reserva): string
     {
         return match (true) {
             $reserva->tipo === TipoReserva::Bloqueo => 'af-barra--bloqueo',
-            $reserva->salida_registrada_en !== null => 'af-barra--salio',
-            $reserva->estaEnCasa() => 'af-barra--en-casa',
+            $reserva->salidaEn() !== null => 'af-barra--salio',
+            $reserva->entradaEn() !== null => 'af-barra--en-casa',
             $reserva->estado === EstadoReserva::SinConfirmar => 'af-barra--sin-confirmar',
             default => 'af-barra--confirmada',
         };

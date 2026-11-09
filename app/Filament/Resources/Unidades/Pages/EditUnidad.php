@@ -15,6 +15,7 @@ use App\Filament\Resources\Unidades\UnidadResource;
 use App\Models\RegistroAuditoria;
 use App\Models\Tarifa;
 use App\Models\Unidad;
+use App\Reservas\CodigosAcceso;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
@@ -24,6 +25,11 @@ class EditUnidad extends EditRecord
 
     /** @var array<int, mixed> */
     private array $otrasTarifas = [];
+
+    /** @var array<int, mixed>|null */
+    private ?array $partes = null;
+
+    private ?string $codigoAcceso = null;
 
     protected function getHeaderActions(): array
     {
@@ -43,7 +49,9 @@ class EditUnidad extends EditRecord
         }
         $data['codigo'] = $data['nombre'];
         $this->otrasTarifas = (array) ($data['otras_tarifas'] ?? []);
-        unset($data['otras_tarifas']);
+        $this->partes = array_key_exists('partes', $data) ? (array) $data['partes'] : null;
+        $this->codigoAcceso = isset($data['codigo_acceso']) ? (string) $data['codigo_acceso'] : null;
+        unset($data['otras_tarifas'], $data['partes'], $data['codigo_acceso']);
 
         return $data;
     }
@@ -53,6 +61,8 @@ class EditUnidad extends EditRecord
         /** @var Unidad $unidad */
         $unidad = $this->record;
         UnidadForm::guardarOtrasTarifas($unidad, $this->otrasTarifas);
+        UnidadForm::guardarPartes($unidad, $this->partes);
+        CodigosAcceso::guardarDeUnidad($unidad, $this->codigoAcceso);
         RegistroAuditoria::anotar('unidad.editar', $this->record, ['campos' => array_keys($this->record->getChanges())], (int) $this->record->getAttribute('propiedad_id'));
     }
 

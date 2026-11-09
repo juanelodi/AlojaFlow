@@ -17,6 +17,7 @@ use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Motor\AjustesMotor;
 use App\Publico\PaginaPublica;
+use App\Reservas\CodigosAcceso;
 use App\Reservas\Mensualidades;
 use App\Support\Ajustes;
 use App\Support\Contactos;
@@ -28,7 +29,7 @@ use Illuminate\Support\Str;
  */
 final class VariablesMensaje
 {
-    public const DISPONIBLES = ['huesped', 'nombre', 'propiedad', 'telefono_propiedad', 'correo_propiedad', 'numero', 'codigo', 'llegada', 'salida', 'noches', 'personas', 'unidad', 'total', 'pagado', 'pendiente', 'enlace_reserva', 'enlace_llegada', 'enlace_opinion', 'enlace_mi_reserva', 'cuota_importe', 'cuota_vence', 'cuota_periodo', 'pagina_propiedad', 'whatsapp_propiedad', 'mapa_propiedad'];
+    public const DISPONIBLES = ['huesped', 'nombre', 'propiedad', 'telefono_propiedad', 'correo_propiedad', 'numero', 'codigo', 'llegada', 'salida', 'noches', 'personas', 'unidad', 'total', 'pagado', 'pendiente', 'enlace_reserva', 'enlace_llegada', 'enlace_opinion', 'enlace_mi_reserva', 'cuota_importe', 'cuota_vence', 'cuota_periodo', 'pagina_propiedad', 'whatsapp_propiedad', 'mapa_propiedad', 'codigo_acceso'];
 
     public const AJUSTE_PROPIAS = 'mensajes.variables.';
 
@@ -53,6 +54,8 @@ final class VariablesMensaje
             'noches' => (string) $reserva->llegada->diffInDays($reserva->salida),
             'personas' => (string) $reserva->personas,
             'unidad' => (string) ($reserva->unidad->nombre ?? ''),
+            // El de la reserva o el fijo de su unidad (D-156).
+            'codigo_acceso' => (string) CodigosAcceso::de($reserva),
             'total' => Formato::dinero($reserva->total, $reserva->moneda),
             'pagado' => Formato::dinero($reserva->pagado, $reserva->moneda),
             'pendiente' => Formato::dinero($reserva->pendiente, $reserva->moneda),

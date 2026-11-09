@@ -14,6 +14,7 @@ use App\Enums\TipoReserva;
 use App\Filament\Campos\RangoFechas;
 use App\Filament\Concerns\ConPropiedadSeleccionada;
 use App\Filament\Resources\Reservas\ReservaResource;
+use App\Models\Principal;
 use App\Models\Propiedad;
 use App\Models\Reserva;
 use App\Models\Unidad;
@@ -325,5 +326,25 @@ class Calendario extends Page
     public function hoy(): CarbonImmutable
     {
         return Operacion::hoyDe($this->propiedadUnica());
+    }
+
+    /**
+     * «Situación a las 8:05 del 01/11/2026» (D-154): de cuándo es lo que se ve, en la hora de la propiedad. En una subordinada cuenta
+     * también la copia de la principal, porque el calendario dice lo que había entonces; con varias, la más vieja.
+     *
+     * @return list<string>
+     */
+    public function situacion(): array
+    {
+        $zona = $this->propiedadUnica()?->zona_horaria ?: (string) (Acceso::usuarioActual()?->zona_horaria ?: config('app.timezone'));
+        $ahora = CarbonImmutable::now($zona);
+        $lineas = [__('ui.calendario.situacion', ['hora' => Formato::hora($ahora), 'fecha' => Formato::fechaNumerica($ahora, true)])];
+        $copia = Principal::query()->whereIn('propiedad_id', $this->propiedadesElegidas())->min('ultima_correcta_en');
+        if (is_string($copia)) {
+            $copia = CarbonImmutable::parse($copia, (string) config('app.timezone'))->setTimezone($zona);
+            $lineas[] = __('ui.calendario.copia_principal', ['hora' => Formato::hora($copia), 'fecha' => Formato::fechaNumerica($copia, true)]);
+        }
+
+        return $lineas;
     }
 }

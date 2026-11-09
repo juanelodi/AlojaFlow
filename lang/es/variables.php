@@ -75,6 +75,7 @@ return [
         'enlace_reserva' => 'Para ver la reserva hecha en línea',
         'enlace_llegada' => 'Para llenar el registro de llegada',
         'enlace_mi_reserva' => 'Para ver sus datos, sus pagos y la guía',
+        'codigo_acceso' => 'Código de acceso de la reserva, o el fijo de su unidad',
         'enlace_opinion' => 'Para dejar su opinión',
         'h_numero' => 'Número de línea: 1, 2, 3…',
         'h_nombre' => 'Nombre completo',

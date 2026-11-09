@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Copias\CopiaExterna;
 use App\Copias\ErrorCopia;
 use App\Copias\GestorCopias;
 use App\Support\Ajustes;
@@ -40,6 +41,13 @@ class CrearCopia extends Command
             return self::FAILURE;
         }
         $this->info(__('copias.creada', ['nombre' => $copia['nombre']]));
+        // Fuera del servidor (D-152), si se configuró: cifrada.
+        $externa = app(CopiaExterna::class);
+        if ($externa->configurada()) {
+            $externa->subir($copias->ruta($copia['nombre']))
+                ? $this->info(__('copias.externa.subida'))
+                : $this->warn(__('copias.externa.no_subida', ['motivo' => (string) ($externa->ultima()['error'] ?? '')]));
+        }
 
         return self::SUCCESS;
     }

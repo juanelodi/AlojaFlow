@@ -40,13 +40,21 @@
             <tr><th>{{ __('ui.comun.llegada') }}</th><td>{{ Formato::fecha($reserva->llegada, 'dddd LL') }}</td></tr>
             <tr><th>{{ __('ui.comun.salida') }}</th><td>{{ Formato::fecha($reserva->salida, 'dddd LL') }}</td></tr>
             <tr><th>{{ __('ui.reservas.tarifa') }}</th><td>{{ $reserva->tarifa_nombre }}</td></tr>
-            <tr><th>{{ __('ui.comun.personas') }}</th><td>{{ $reserva->personas }}</td></tr>
+            @if ($pedido->count() > 1)
+                {{-- Un pedido de varias unidades (D-158): cada una con sus personas, y los importes de todas. --}}
+                @foreach ($pedido as $una)
+                    <tr><th>{{ __('motor.unidad_n', ['n' => $loop->iteration]) }}</th><td>{{ trans_choice('motor.n_personas', $una->personas) }} · {{ Formato::dinero($una->total, $una->moneda) }}</td></tr>
+                @endforeach
+            @else
+                <tr><th>{{ __('ui.comun.personas') }}</th><td>{{ $reserva->personas }}</td></tr>
+            @endif
             @foreach ($reserva->cargos as $cargo)
                 <tr><th>{{ $cargo->nombre }}</th><td>{{ Formato::dinero($cargo->importe, $reserva->moneda) }}</td></tr>
             @endforeach
-            <tr><th>{{ __('ui.comun.total') }}</th><td><strong>{{ Formato::dinero($reserva->total, $reserva->moneda) }}</strong></td></tr>
-            <tr><th>{{ __('ui.comun.pagado') }}</th><td>{{ Formato::dinero($reserva->pagado, $reserva->moneda) }}</td></tr>
-            <tr><th>{{ __('ui.comun.pendiente') }}</th><td>{{ Formato::dinero($reserva->pendiente, $reserva->moneda) }}</td></tr>
+            @php($total = (int) $pedido->sum('total'))
+            <tr><th>{{ __('ui.comun.total') }}</th><td><strong>{{ Formato::dinero($total, $reserva->moneda) }}</strong>@if ($segunda = (new \App\Dinero\SegundaMoneda($reserva->propiedad))->texto($total)) <span class="gris">{{ $segunda }}</span>@endif</td></tr>
+            <tr><th>{{ __('ui.comun.pagado') }}</th><td>{{ Formato::dinero((int) $pedido->sum('pagado'), $reserva->moneda) }}</td></tr>
+            <tr><th>{{ __('ui.comun.pendiente') }}</th><td>{{ Formato::dinero((int) $pedido->sum('pendiente'), $reserva->moneda) }}</td></tr>
         </table>
         <p style="margin:12px 0 0"><a class="boton secundario" href="{{ route('motor.pdf', ['codigo' => $propiedad->codigo, 'publico' => $reserva->codigo_publico, 'idioma' => app()->getLocale()]) }}">{{ __('documentos.descargar_confirmacion') }}</a></p>
     </section>

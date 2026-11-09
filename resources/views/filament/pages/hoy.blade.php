@@ -52,13 +52,16 @@
         @endif
 
         @foreach (['llegan', 'salen', 'continuan'] as $lista)
-            <x-filament::section class="af-seccion-lista" :heading="__('ui.hoy.'.$lista).' ('.$listas[$lista]->count().')'">
+            {{-- Cuántas ya llegaron o salieron (D-153): lo primero que pregunta recepción. --}}
+            @php($hechas = match ($lista) { 'llegan' => $listas[$lista]->filter(fn ($r) => $r->entradaEn() !== null)->count(), 'salen' => $listas[$lista]->filter(fn ($r) => $r->salidaEn() !== null)->count(), default => null })
+            <x-filament::section class="af-seccion-lista" :heading="__('ui.hoy.'.$lista).' ('.$listas[$lista]->count().')'"
+                :description="$hechas === null || $listas[$lista]->isEmpty() ? null : __('ui.hoy.ya_'.$lista, ['hechas' => $hechas, 'total' => $listas[$lista]->count()])">
                 <x-tabla-reservas
                     :reservas="$listas[$lista]"
                     :titulo="__('ui.hoy.'.$lista)"
                     :vacio="__('ui.hoy.vacio_'.$lista)"
                     :mostrar-propiedad="$variasPropiedades"
-                    :gestionables="$this->propiedadesGestionables()"
+                    :gestionables="$this->propiedadesMarcables()"
                 />
             </x-filament::section>
         @endforeach
