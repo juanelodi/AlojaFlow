@@ -30,7 +30,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property AccionAutomatizacion $accion
  * @property int|null $plantilla_id
  * @property string|null $destino
- * @property array{plantilla?: string, idioma?: string, variables?: list<string>}|null $whatsapp
  * @property bool $activa
  * @property \Illuminate\Support\Carbon|null $creado_en
  * @property Plantilla|null $plantilla
@@ -49,7 +48,6 @@ class Automatizacion extends ModeloBase
             'accion' => AccionAutomatizacion::class,
             'dias' => 'integer',
             'condiciones' => 'array',
-            'whatsapp' => 'array',
             'activa' => 'boolean',
         ];
     }
@@ -85,7 +83,7 @@ class Automatizacion extends ModeloBase
         if (($saldo === 'con_saldo' && $reserva->pendiente <= 0) || ($saldo === 'sin_saldo' && $reserva->pendiente > 0)) {
             return false;
         }
-        // Solo para quien habla ese idioma: un correo o una plantilla de WhatsApp por idioma (D-160).
+        // Solo para quien habla ese idioma: un correo distinto por idioma.
         $idioma = (string) ($condiciones['idioma'] ?? '');
         if ($idioma !== '' && Mensajero::idiomaDe($reserva) !== $idioma) {
             return false;

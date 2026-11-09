@@ -29,7 +29,6 @@ use Illuminate\Support\Carbon;
  * @property string|null $idioma
  * @property string|null $asunto
  * @property string|null $cuerpo
- * @property array<string, mixed>|null $datos
  * @property EstadoEnvio $estado
  * @property int $intentos
  * @property string|null $ultimo_error
@@ -54,7 +53,6 @@ class Envio extends ModeloBase
             'canal' => CanalEnvio::class,
             'estado' => EstadoEnvio::class,
             'intentos' => 'integer',
-            'datos' => 'array',
             'programado_para' => 'datetime',
             'enviado_en' => 'datetime',
         ];

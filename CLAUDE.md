@@ -209,7 +209,6 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   completa y sus cuartos: `GestorReservas::revisarVinculadas` las bloquea en orden antes de ocupar noches (D-155). `CodigosAcceso.php` (D-156).
 - `app/Dinero/SegundaMoneda.php` y `PagoRecibido.php`, segunda moneda con tipo a mano (D-157). Un pedido de varias unidades del motor son
   reservas con `reserva_principal_id`; `CobrosEnLinea` cobra y reparte desde la primera (D-158).
-- `app/Comunicacion/WhatsappCloud.php`, plantillas aprobadas por la API de Meta desde las automatizaciones (D-160).
 - `app/Motor/` y `app/Pagos/` — motor de reservas y pasarelas (D-042). `app/Propiedades/Independizador.php`,
   pasar una subordinada a independiente (D-043).
 - `app/Caja/GestorTurnos.php`, turnos y arqueo (D-080). `app/Sincronizacion/ProyeccionCaja.php`, la caja de la principal (D-078).

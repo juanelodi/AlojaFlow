@@ -189,7 +189,6 @@ return [
     'AccionAutomatizacion' => [
         'crear_tarea' => 'Aufgabe für das Team anlegen',
         'nota_bitacora' => 'Wichtige Notiz im Schichtbuch hinterlassen',
-        'whatsapp_huesped' => 'WhatsApp-Vorlage an den Gast',
         'correo_huesped' => 'E-Mail an den Gast',
         'correo_fijo' => 'E-Mail an eine feste Adresse',
     ],

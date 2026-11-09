@@ -162,6 +162,8 @@ return [
         'sin_saldo' => 'È tutto pagato',
         'canal' => 'Solo da questo canale',
         'canal_ayuda' => 'Come appare nell’origine della prenotazione. Vuoto: tutti.',
+        'idioma' => 'Solo se l’ospite parla',
+        'cualquier_idioma' => 'Qualsiasi lingua',
         'llegada_hecha' => 'Solo se ha già inviato i dati di arrivo',
         'contrato_aceptado' => 'Solo se ha già accettato i documenti',
         'esperar' => 'Se non è ancora così, continua a controllare fino all’arrivo',

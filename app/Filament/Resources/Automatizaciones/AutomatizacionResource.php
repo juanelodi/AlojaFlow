@@ -10,7 +10,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Automatizaciones;
 
-use App\Comunicacion\VariablesMensaje;
 use App\Enums\AccionAutomatizacion;
 use App\Enums\DisparadorAutomatizacion;
 use App\Enums\EstadoReserva;
@@ -27,7 +26,6 @@ use App\Support\Formato;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
@@ -110,13 +108,6 @@ class AutomatizacionResource extends RecursoDeCualquierPropiedad
         return array_filter(DisparadorAutomatizacion::opciones(), fn (string $disparador): bool => Modulos::activo(Modulo::EstanciasLargas) || ! DisparadorAutomatizacion::from($disparador)->esDeCuota(), ARRAY_FILTER_USE_KEY);
     }
 
-    private static function esWhatsapp(Get $get): bool
-    {
-        $accion = $get('accion');
-
-        return ($accion instanceof AccionAutomatizacion ? $accion : AccionAutomatizacion::tryFrom((string) $accion)) === AccionAutomatizacion::WhatsappHuesped;
-    }
-
     private static function esCorreo(Get $get): bool
     {
         $accion = $get('accion');
@@ -141,8 +132,8 @@ class AutomatizacionResource extends RecursoDeCualquierPropiedad
                 Select::make('condiciones.saldo')->label(__('operacion.automatizaciones.saldo'))->native(false)->placeholder(__('operacion.automatizaciones.saldo_cualquiera'))
                     ->options(['con_saldo' => __('operacion.automatizaciones.con_saldo'), 'sin_saldo' => __('operacion.automatizaciones.sin_saldo')]),
                 TextInput::make('condiciones.canal')->label(__('operacion.automatizaciones.canal'))->helperText(__('operacion.automatizaciones.canal_ayuda'))->maxLength(100),
-                // Un mensaje por idioma: sobre todo una plantilla de WhatsApp, que Meta aprueba idioma por idioma (D-160).
-                Select::make('condiciones.idioma')->label(__('mensajes.whatsapp.condicion_idioma'))->native(false)->placeholder(__('mensajes.whatsapp.cualquier_idioma'))
+                // Un mensaje por idioma: un correo distinto para quien habla cada uno.
+                Select::make('condiciones.idioma')->label(__('operacion.automatizaciones.idioma'))->native(false)->placeholder(__('operacion.automatizaciones.cualquier_idioma'))
                     ->options(Formato::idiomas()),
                 Toggle::make('condiciones.llegada_hecha')->label(__('operacion.automatizaciones.llegada_hecha')),
                 Toggle::make('condiciones.contrato_aceptado')->label(__('operacion.automatizaciones.contrato_aceptado')),
@@ -152,16 +143,7 @@ class AutomatizacionResource extends RecursoDeCualquierPropiedad
                 TextInput::make('destino')->label(__('mensajes.automatizaciones.destino'))->email()->maxLength(255)
                     ->required(fn (Get $get): bool => in_array($get('accion'), [AccionAutomatizacion::CorreoFijo, AccionAutomatizacion::CorreoFijo->value], true))
                     ->visible(fn (Get $get): bool => in_array($get('accion'), [AccionAutomatizacion::CorreoFijo, AccionAutomatizacion::CorreoFijo->value], true)),
-                TextInput::make('whatsapp.plantilla')->label(__('mensajes.whatsapp.plantilla'))->helperText(__('mensajes.whatsapp.plantilla_ayuda'))
-                    ->maxLength(512)->regex('/^[a-z0-9_]+$/')
-                    ->visible(fn (Get $get): bool => self::esWhatsapp($get))->required(fn (Get $get): bool => self::esWhatsapp($get)),
-                TextInput::make('whatsapp.idioma')->label(__('mensajes.whatsapp.idioma'))->helperText(__('mensajes.whatsapp.idioma_ayuda'))
-                    ->maxLength(10)->regex('/^[a-z]{2,3}(_[A-Z]{2})?$/')->default('es_MX')
-                    ->visible(fn (Get $get): bool => self::esWhatsapp($get))->required(fn (Get $get): bool => self::esWhatsapp($get)),
-                TagsInput::make('whatsapp.variables')->label(__('mensajes.whatsapp.variables'))->helperText(__('mensajes.whatsapp.variables_ayuda'))
-                    ->suggestions(VariablesMensaje::DISPONIBLES)->nestedRecursiveRules(['in:'.implode(',', VariablesMensaje::DISPONIBLES)])
-                    ->visible(fn (Get $get): bool => self::esWhatsapp($get))->columnSpanFull(),
-                Select::make('plantilla_id')->label(__('mensajes.automatizaciones.plantilla'))->hidden(fn (Get $get): bool => self::esWhatsapp($get))->helperText(fn (Get $get): ?string => self::esCorreo($get) ? null : __('operacion.automatizaciones.plantilla_opcional'))->required(fn (Get $get): bool => self::esCorreo($get))->native(false)
+                Select::make('plantilla_id')->label(__('mensajes.automatizaciones.plantilla'))->helperText(fn (Get $get): ?string => self::esCorreo($get) ? null : __('operacion.automatizaciones.plantilla_opcional'))->required(fn (Get $get): bool => self::esCorreo($get))->native(false)
                     ->options(fn (Get $get): array => Plantilla::query()->where('propiedad_id', self::propiedadDe($get))->where('activa', true)->orderBy('nombre')->pluck('nombre', 'id')->all()),
                 Toggle::make('activa')->label(__('mensajes.automatizaciones.activa'))->default(true),
             ]),

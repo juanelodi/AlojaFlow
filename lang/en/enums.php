@@ -126,7 +126,6 @@ return [
     'AccionAutomatizacion' => [
         'crear_tarea' => 'Create a task for the team',
         'nota_bitacora' => 'Leave an important note in the shift log',
-        'whatsapp_huesped' => 'WhatsApp template to the guest',
         'correo_huesped' => 'Email to the guest',
         'correo_fijo' => 'Email to a fixed address',
     ],

@@ -162,6 +162,8 @@ return [
         'sin_saldo' => 'Is fully paid',
         'canal' => 'Only from this channel',
         'canal_ayuda' => 'As it appears in the booking source. Empty: all.',
+        'idioma' => 'Only if the guest speaks',
+        'cualquier_idioma' => 'Any language',
         'llegada_hecha' => 'Only if the arrival details were sent',
         'contrato_aceptado' => 'Only if the documents were accepted',
         'esperar' => 'If not met yet, keep checking until arrival',

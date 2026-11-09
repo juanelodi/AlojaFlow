@@ -162,6 +162,8 @@ return [
         'sin_saldo' => 'Voll bezahlt ist',
         'canal' => 'Nur von diesem Kanal',
         'canal_ayuda' => 'Wie in der Herkunft der Buchung. Leer: alle.',
+        'idioma' => 'Nur wenn der Gast spricht',
+        'cualquier_idioma' => 'Jede Sprache',
         'llegada_hecha' => 'Nur wenn die Anreisedaten gesendet wurden',
         'contrato_aceptado' => 'Nur wenn die Dokumente akzeptiert wurden',
         'esperar' => 'Wenn noch nicht erfüllt, bis zur Anreise weiter prüfen',

@@ -17,5 +17,6 @@ enum CanalEnvio: string
     case Correo = 'correo';
     case WhatsappEnlace = 'whatsapp_enlace';
     case Webhook = 'webhook';
+    // Solo para el historial: AlojaFlow ya no manda por la API de Meta (D-171).
     case WhatsappApi = 'whatsapp_api';
 }

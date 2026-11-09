@@ -306,3 +306,52 @@ it('avisa al alojamiento de una reserva del motor y borra el texto viejo', funct
     $this->artisan('alojaflow:limpiar')->assertSuccessful();
     expect(Envio::query()->first()->cuerpo)->toBeNull();
 });
+
+it('la condición de idioma elige el correo de cada huésped', function () {
+    ($this->configurarCorreo)();
+    $this->travelTo($this->hoy->setTime(10, 30));
+    ($this->regla)(DisparadorAutomatizacion::AntesLlegada, ['dias' => 3, 'hora' => '10:00', 'condiciones' => ['idioma' => 'en']]);
+    ($this->reservar)();
+
+    expect(($this->mensajero)()->procesarTiempo())->toBe(0);
+    $this->huesped->update(['idioma' => 'en']);
+    expect(($this->mensajero)()->procesarTiempo())->toBe(1);
+});
+
+it('lo mandado por la API de WhatsApp queda en el historial, y lo pendiente ya no sale (D-171)', function () {
+    Http::fake();
+    $envio = Envio::query()->create(['propiedad_id' => $this->propiedad->id, 'huesped_id' => $this->huesped->id, 'canal' => CanalEnvio::WhatsappApi,
+        'destino' => '+525555500101', 'asunto' => 'llegada_manana', 'cuerpo' => 'llegada_manana: Ana', 'estado' => EstadoEnvio::Pendiente]);
+
+    expect(($this->mensajero)()->enviar($envio))->toBeFalse()
+        ->and($envio->refresh()->estado)->toBe(EstadoEnvio::Omitido)
+        ->and($envio->ultimo_error)->toBe(__('mensajes.whatsapp_api_retirada'))
+        ->and($envio->intentos)->toBe(0);
+    Http::assertNothingSent();
+
+    $this->actingAs(User::factory()->create(['es_administrador' => true, 'activo' => true, 'idioma' => 'es']));
+    $this->get(EnvioResource::getUrl())->assertOk()->assertSee('llegada_manana');
+});
+
+it('quitar la API de WhatsApp borra sus ajustes y automatizaciones y deja el historial (D-171)', function () {
+    $clave = 'whatsapp.'.$this->propiedad->id.'.';
+    Ajustes::guardar($clave.'numero_id', '1234567890');
+    Ajustes::guardarSecreto($clave.'token', 'EAAG-token-secreto');
+    ($this->configurarCorreo)();
+    $regla = Illuminate\Support\Facades\DB::table('automatizaciones')->insertGetId(['propiedad_id' => $this->propiedad->id, 'nombre' => 'Acceso',
+        'disparador' => DisparadorAutomatizacion::AntesLlegada->value, 'dias' => 1, 'accion' => 'whatsapp_huesped', 'activa' => true, 'creado_en' => now(), 'actualizado_en' => now()]);
+    $comun = ['propiedad_id' => $this->propiedad->id, 'automatizacion_id' => $regla, 'canal' => CanalEnvio::WhatsappApi, 'destino' => '+525555500101', 'cuerpo' => 'llegada_manana'];
+    $pendiente = Envio::query()->create($comun + ['estado' => EstadoEnvio::Pendiente]);
+    $enviado = Envio::query()->create($comun + ['estado' => EstadoEnvio::Enviado]);
+
+    (require database_path('migrations/2026_11_09_180000_quitar_whatsapp_api.php'))->up();
+    Ajustes::olvidar();
+
+    expect(Ajustes::obtener($clave.'numero_id'))->toBeNull()
+        ->and(Ajustes::obtener($clave.'token'))->toBeNull()
+        ->and(Ajustes::obtener('correo.host'))->toBe('smtp.example.com')
+        ->and(Automatizacion::query()->whereKey($regla)->exists())->toBeFalse()
+        ->and($pendiente->refresh()->estado)->toBe(EstadoEnvio::Omitido)
+        ->and($enviado->refresh()->estado)->toBe(EstadoEnvio::Enviado)
+        ->and($enviado->automatizacion_id)->toBeNull();
+});

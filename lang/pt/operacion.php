@@ -162,6 +162,8 @@ return [
         'sin_saldo' => 'Está todo pago',
         'canal' => 'Só deste canal',
         'canal_ayuda' => 'Como aparece na origem da reserva. Vazio: todos.',
+        'idioma' => 'Só se o hóspede falar',
+        'cualquier_idioma' => 'Qualquer idioma',
         'llegada_hecha' => 'Só se já enviou os dados de chegada',
         'contrato_aceptado' => 'Só se já aceitou os documentos',
         'esperar' => 'Se ainda não se cumprir, continuar revisando até a chegada',

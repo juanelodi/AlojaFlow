@@ -126,7 +126,6 @@ return [
     'AccionAutomatizacion' => [
         'crear_tarea' => 'Crear una tarea para el equipo',
         'nota_bitacora' => 'Dejar una nota importante en la bitácora',
-        'whatsapp_huesped' => 'Plantilla de WhatsApp al huésped',
         'correo_huesped' => 'Correo al huésped',
         'correo_fijo' => 'Correo a una dirección fija',
     ],

@@ -162,6 +162,8 @@ return [
         'sin_saldo' => 'Est entièrement payé',
         'canal' => 'Seulement de ce canal',
         'canal_ayuda' => 'Tel qu’il apparaît dans l’origine de la réservation. Vide : tous.',
+        'idioma' => 'Seulement si le client parle',
+        'cualquier_idioma' => 'Toute langue',
         'llegada_hecha' => 'Seulement si les données d’arrivée ont été envoyées',
         'contrato_aceptado' => 'Seulement si les documents ont été acceptés',
         'esperar' => 'Si ce n’est pas encore le cas, continuer à vérifier jusqu’à l’arrivée',

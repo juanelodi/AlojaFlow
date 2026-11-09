@@ -945,7 +945,7 @@ resultado siempre sale de la API de PayPal, no de la dirección; si se da el ide
 firma de cada aviso se comprueba con su propia API. Comprobado solo con respuestas simuladas, como las
 demás pasarelas: falta un cobro de prueba con una cuenta Sandbox.
 
-### D-160 · 2026-11-08 · WhatsApp por la API de Meta
+### D-160 · 2026-11-08 · WhatsApp por la API de Meta (retirada en D-171)
 
 Meta solo deja que el negocio escriba primero con **plantillas aprobadas** en WhatsApp Manager. Una
 automatización nueva, «Plantilla de WhatsApp al huésped», manda una plantilla con las variables en su orden
@@ -1119,6 +1119,21 @@ hará con una orden propia que pruebe que lo pide el dueño.
 Del mismo repaso: cada persona del soporte tiene su cuenta por su nombre exacto (slug más una huella del nombre), para
 que «José Pérez» y «Jose Perez» no compartan cuenta ni auditoría; y pedir otra contraseña en una instancia cuyo
 servidor SMTP dejó de estar en una red pública responde lo de siempre, sin mandar nada.
+
+### D-171 · 2026-11-09 · Sin WhatsApp por la API de Meta
+
+Por decisión del usuario, AlojaFlow ya no manda plantillas de WhatsApp por la API de Meta (retira D-160). Se quitan
+la pantalla Comunicación → WhatsApp, la acción «Plantilla de WhatsApp al huésped» y lo que guardaba cada propiedad
+(identificador del número y token cifrado). La migración también borra las automatizaciones de esa acción y deja
+omitido lo que faltaba por mandar. Lo ya mandado se queda en el historial de envíos, con su canal.
+
+Se quedan:
+- WhatsApp por enlace (`wa.me`, D-045);
+- la condición «solo si el huésped habla…», que sirve igual para los correos.
+
+Para mandar mensajes por otro servicio, los webhooks de Integraciones llevan el teléfono, el correo y el idioma del
+huésped en cada evento. Las versiones 1.0.40 y 1.0.41 se publicaron con la API, y la AGPL deja usar ese código a
+quien ya lo tiene.
 
 ## Pendientes
 

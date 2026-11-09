@@ -189,7 +189,6 @@ return [
     'AccionAutomatizacion' => [
         'crear_tarea' => 'Criar uma tarefa para a equipe',
         'nota_bitacora' => 'Deixar uma nota importante no diário',
-        'whatsapp_huesped' => 'Modelo de WhatsApp ao hóspede',
         'correo_huesped' => 'E-mail ao hóspede',
         'correo_fijo' => 'E-mail para um endereço fixo',
     ],
