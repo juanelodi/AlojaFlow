@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Instalacion\Instancia;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\File;
 
@@ -38,6 +39,7 @@ abstract class TestCase extends BaseTestCase
     protected function tearDown(): void
     {
         File::deleteDirectory($this->almacenDePrueba);
+        (new \ReflectionProperty(Instancia::class, 'carpeta'))->setValue(null, null);
 
         parent::tearDown();
     }

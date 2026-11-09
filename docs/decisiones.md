@@ -976,8 +976,8 @@ instalación normal no cambia.
   actualizar se apagan; las hace AlojaFlow App. Las tareas «por visita» tampoco corren: el programador lo lanza el
   agente de su servidor. `filament:optimize` no se corre en una instancia: escribiría en el código de todas.
 - `alojaflow:instalar` instala sin navegador (tablas, datos base y super administrador con una contraseña al azar)
-  y `alojaflow:enlace-entrada` da el enlace de un solo uso de D-071. Pendiente: que AlojaFlow pida crear la
-  contraseña al entrar así la primera vez (hoy el perfil pide la actual).
+  y `alojaflow:enlace-entrada` da el enlace de un solo uso de D-071. Al entrar así la primera vez, AlojaFlow pide
+  crear la contraseña (D-164).
 
 Por qué así y no una base compartida con un identificador de cliente: lo pide la regla de una base por cliente;
 un olvido en una consulta no puede mostrar los datos de otro; exportar, restaurar o borrar a un cliente es una
@@ -1001,6 +1001,18 @@ carpeta del hosting: el servidor web le dice su ruta con `SCRIPT_NAME`, y `APP_U
   (colores validados, JSON-LD con `JSON_HEX_TAG`, QR) o HTML limpiado con `Str::sanitizeHtml` (documentos
   propios); no hay HTML libre ni «código de seguimiento»; un archivo subido solo se abre en el navegador si es
   JPG, PNG, WebP o PDF. Queda como regla para lo que se agregue.
+
+### D-164 · 2026-11-09 · Crear la contraseña al primer ingreso
+
+`alojaflow:instalar` (D-162) deja al dueño con una contraseña al azar que nadie conoce, y el perfil pide la actual
+para cambiarla. Ahora el usuario queda marcado (`users.debe_crear_contrasena`) y, al entrar con el enlace de un solo
+uso, AlojaFlow lo lleva a **«Crea tu contraseña»**: la escribe dos veces, sin la actual, con las mismas reglas que el
+perfil (12 caracteres o más). Mientras no la crea, cualquier pantalla del panel lo regresa ahí (`ContrasenaPorCrear`);
+salir y la verificación en dos pasos que exija el panel siguen disponibles. Queda en la auditoría.
+
+- La marca solo la pone `alojaflow:instalar`. El instalador web no la pone: ahí la contraseña ya se escribió.
+- Cambiar la contraseña por cualquier otro camino (recuperarla por correo) quita la marca.
+- Si el dueño cierra sin crearla, AlojaFlow App le pide otro enlace con `alojaflow:enlace-entrada` y se le vuelve a pedir.
 
 ## Pendientes
 

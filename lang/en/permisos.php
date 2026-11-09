@@ -103,4 +103,12 @@ return [
         'dias_ayuda' => 'The oldest entries are deleted automatically. At least 30 days.',
         'plazo_guardado' => 'Saved.',
     ],
+    'crear_contrasena' => [
+        'titulo' => 'Create your password',
+        'ayuda' => 'This is your first sign-in. Choose the password you will use from now on with :correo.',
+        'nueva' => 'New password',
+        'confirmar' => 'Type it again',
+        'guardar' => 'Save password',
+        'lista' => 'Done: you can now sign in with your email and this password.',
+    ],
 ];

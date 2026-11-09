@@ -189,6 +189,7 @@ return [
         ],
         'usuario' => [
             'quitar_dos_pasos' => 'Verificação em dois passos removida',
+            'crear_contrasena' => 'Senha criada no primeiro acesso',
         ],
     ],
     'verbos' => [

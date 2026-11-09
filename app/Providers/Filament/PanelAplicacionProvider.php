@@ -24,6 +24,7 @@ use App\Filament\Pages\ReportarSugerir;
 use App\Filament\Pages\Resumen;
 use App\Filament\Pages\SesionesDispositivos;
 use App\Http\Middleware\AplicarIdioma;
+use App\Http\Middleware\ContrasenaPorCrear;
 use App\Http\Middleware\RecordarDispositivo;
 use App\MejoraContinua\Permiso;
 use App\Seguridad\Acceso;
@@ -161,6 +162,7 @@ class PanelAplicacionProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                 AplicarIdioma::class,
+                ContrasenaPorCrear::class,
             ]);
     }
 

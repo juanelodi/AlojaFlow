@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Filament\Pages\CrearContrasena;
 use App\Filament\Pages\Resumen;
 use App\Instalacion\EnlaceEntrada;
 use Illuminate\Http\RedirectResponse;
@@ -27,6 +28,10 @@ class EntradaInstalacionController extends Controller
         if ($usuario !== null) {
             Auth::login($usuario);
             $request->session()->regenerate();
+            // Instalada sin navegador (D-164): lo primero es crear su contraseña.
+            if ($usuario->debe_crear_contrasena) {
+                return redirect()->to(CrearContrasena::getUrl());
+            }
         }
 
         return redirect()->to(Resumen::getUrl());

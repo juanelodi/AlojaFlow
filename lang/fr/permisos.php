@@ -103,4 +103,12 @@ return [
         'dias_ayuda' => 'Le plus ancien est supprimé automatiquement. Minimum 30 jours.',
         'plazo_guardado' => 'Enregistré.',
     ],
+    'crear_contrasena' => [
+        'titulo' => 'Créez votre mot de passe',
+        'ayuda' => 'C\'est votre première connexion. Choisissez le mot de passe que vous utiliserez désormais avec :correo.',
+        'nueva' => 'Nouveau mot de passe',
+        'confirmar' => 'Saisissez-le à nouveau',
+        'guardar' => 'Enregistrer le mot de passe',
+        'lista' => 'C\'est fait : vous pouvez maintenant vous connecter avec votre e-mail et ce mot de passe.',
+    ],
 ];

@@ -189,6 +189,7 @@ return [
         ],
         'usuario' => [
             'quitar_dos_pasos' => 'Verifica in due passaggi rimossa',
+            'crear_contrasena' => 'Password creata al primo accesso',
         ],
     ],
     'verbos' => [

@@ -19,8 +19,8 @@ use RuntimeException;
 /**
  * Lo que hace el instalador web, sin navegador (D-162): con el .env ya escrito, crea las tablas, los datos base y
  * al super administrador, y deja la marca de instalada. Lo usa AlojaFlow App para cada instancia nueva. El super
- * administrador queda con una contraseña al azar que nadie conoce: entra con el enlace de un solo uso y crea la
- * suya. Si ya estaba instalada no toca nada, para que quien lo llama pueda repetir el paso.
+ * administrador queda con una contraseña al azar que nadie conoce: entra con el enlace de un solo uso y AlojaFlow
+ * le pide crear la suya (D-164). Si ya estaba instalada no toca nada, para que quien lo llama pueda repetir el paso.
  */
 class Instalar extends Command
 {
@@ -44,7 +44,8 @@ class Instalar extends Command
         $correo = strtolower(trim((string) $this->option('correo')));
         try {
             $instalador->migrar();
-            $instalador->crearAdministrador(trim((string) $this->option('nombre')), $correo, Str::password(48), $idioma);
+            $instalador->crearAdministrador(trim((string) $this->option('nombre')), $correo, Str::password(48), $idioma)
+                ->forceFill(['debe_crear_contrasena' => true])->save();
             $instalador->decidirMejoraContinua(false);
             $enlace = $instalador->terminar();
         } catch (ValidationException $e) {

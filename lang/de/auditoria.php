@@ -189,6 +189,7 @@ return [
         ],
         'usuario' => [
             'quitar_dos_pasos' => 'Zwei-Schritt-Verifizierung entfernt',
+            'crear_contrasena' => 'Passwort bei der ersten Anmeldung erstellt',
         ],
     ],
     'verbos' => [

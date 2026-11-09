@@ -103,4 +103,12 @@ return [
         'dias_ayuda' => 'Das Älteste wird automatisch gelöscht. Mindestens 30 Tage.',
         'plazo_guardado' => 'Gespeichert.',
     ],
+    'crear_contrasena' => [
+        'titulo' => 'Erstellen Sie Ihr Passwort',
+        'ayuda' => 'Dies ist Ihre erste Anmeldung. Wählen Sie das Passwort, mit dem Sie sich ab jetzt mit :correo anmelden.',
+        'nueva' => 'Neues Passwort',
+        'confirmar' => 'Erneut eingeben',
+        'guardar' => 'Passwort speichern',
+        'lista' => 'Fertig: Sie können sich jetzt mit Ihrer E-Mail-Adresse und diesem Passwort anmelden.',
+    ],
 ];

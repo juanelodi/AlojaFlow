@@ -103,4 +103,12 @@ return [
         'dias_ayuda' => 'Il più vecchio si cancella da solo. Minimo 30 giorni.',
         'plazo_guardado' => 'Salvato.',
     ],
+    'crear_contrasena' => [
+        'titulo' => 'Crea la tua password',
+        'ayuda' => 'È il tuo primo accesso. Scegli la password con cui entrerai d\'ora in poi con :correo.',
+        'nueva' => 'Nuova password',
+        'confirmar' => 'Scrivila di nuovo',
+        'guardar' => 'Salva password',
+        'lista' => 'Fatto: ora puoi accedere con la tua email e questa password.',
+    ],
 ];

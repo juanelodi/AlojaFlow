@@ -13,11 +13,9 @@ use App\Instalacion\Instancia;
 use App\Models\User;
 use App\Programador\TareasPorVisita;
 use App\Support\Ajustes;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Spatie\Permission\Models\Role;
-use Symfony\Component\Console\Output\BufferedOutput;
 
 afterEach(fn () => Ajustes::olvidar());
 
@@ -152,22 +150,6 @@ it('sin la variable, una instalación normal sigue igual', function () {
     expect(Instancia::activa())->toBeFalse()
         ->and(TareasPorVisita::tareas())->toHaveKey('alojaflow:buscar-version');
 });
-
-/**
- * Corre un comando como lo llama AlojaFlow App y lee su respuesta JSON.
- *
- * @param  array<string, mixed>  $opciones
- * @return array{0: int, 1: array<string, mixed>}
- */
-function comandoJson(string $comando, array $opciones): array
-{
-    $salida = new BufferedOutput();
-    $codigo = Artisan::call($comando, $opciones + ['--json' => true], $salida);
-    $lineas = array_filter(array_map('trim', explode("\n", $salida->fetch())), fn (string $linea): bool => str_starts_with($linea, '{'));
-    $json = json_decode((string) end($lineas), true);
-
-    return [$codigo, is_array($json) ? $json : []];
-}
 
 it('alojaflow:instalar crea al super administrador sin contraseña conocida y no repite', function () {
     [$codigo, $respuesta] = comandoJson('alojaflow:instalar', ['--nombre' => 'Dueña', '--correo' => 'Duena@Example.com', '--idioma' => 'es']);

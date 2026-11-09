@@ -103,4 +103,12 @@ return [
         'dias_ayuda' => 'O mais antigo é apagado sozinho. Mínimo de 30 dias.',
         'plazo_guardado' => 'Salvo.',
     ],
+    'crear_contrasena' => [
+        'titulo' => 'Crie sua senha',
+        'ayuda' => 'É o seu primeiro acesso. Escolha a senha com que vai entrar a partir de agora com :correo.',
+        'nueva' => 'Nova senha',
+        'confirmar' => 'Digite-a novamente',
+        'guardar' => 'Salvar senha',
+        'lista' => 'Pronto: agora você pode entrar com seu e-mail e esta senha.',
+    ],
 ];

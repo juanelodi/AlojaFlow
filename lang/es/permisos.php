@@ -103,4 +103,12 @@ return [
         'dias_ayuda' => 'Lo más antiguo se borra solo. Mínimo 30 días.',
         'plazo_guardado' => 'Guardado.',
     ],
+    'crear_contrasena' => [
+        'titulo' => 'Crea tu contraseña',
+        'ayuda' => 'Es tu primera entrada. Elige la contraseña con la que vas a entrar desde ahora con :correo.',
+        'nueva' => 'Contraseña nueva',
+        'confirmar' => 'Escríbela otra vez',
+        'guardar' => 'Guardar contraseña',
+        'lista' => 'Listo: ya puedes entrar con tu correo y esta contraseña.',
+    ],
 ];

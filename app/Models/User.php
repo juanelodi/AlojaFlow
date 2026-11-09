@@ -36,6 +36,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property bool $activo
  * @property bool $es_administrador
  * @property bool $es_superadministrador
+ * @property bool $debe_crear_contrasena
  * @property string|null $app_authentication_secret
  * @property array<string>|null $app_authentication_recovery_codes
  * @property \Illuminate\Support\Carbon|null $ultimo_acceso_en
@@ -55,6 +56,10 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         static::saving(function (User $usuario): void {
             if ($usuario->es_superadministrador) {
                 $usuario->es_administrador = true;
+            }
+            // Quien ya puso una contraseña (también la recuperada por correo) no tiene que crearla otra vez (D-164).
+            if ($usuario->exists && $usuario->isDirty('password') && ! $usuario->isDirty('debe_crear_contrasena')) {
+                $usuario->debe_crear_contrasena = false;
             }
         });
 
@@ -83,6 +88,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'activo' => 'boolean',
             'es_administrador' => 'boolean',
             'es_superadministrador' => 'boolean',
+            'debe_crear_contrasena' => 'boolean',
             'colores_estado' => 'array',
             'ultimo_acceso_en' => 'datetime',
         ];
