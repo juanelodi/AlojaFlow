@@ -57,11 +57,12 @@ final class EsquemaAlDia
      */
     public function quitarCachesViejas(): bool
     {
-        $configuracion = base_path('bootstrap/cache/config.php');
+        // En una instancia (D-162) la configuración guardada está en su carpeta, no en la del código.
+        $configuracion = app()->getCachedConfigPath();
         if (! is_file($configuracion)) {
             return false;
         }
-        CachesArranque::quitar(base_path());
+        CachesArranque::quitarActuales();
 
         // Si no se pudo borrar, redirigir no serviría de nada: volvería a pasar por aquí.
         return ! file_exists($configuracion);

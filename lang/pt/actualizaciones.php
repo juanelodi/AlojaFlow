@@ -137,6 +137,7 @@ return [
         'extension' => 'O PHP não tem a extensão :extension.',
         'php' => 'Esta versão precisa do PHP :minimo ou superior; o servidor tem :actual.',
         'copia_git' => 'Esta instalação é uma cópia de desenvolvimento (tem .git): atualiza-se com git, não a partir do painel.',
+        'instancia' => 'Esta instância é do serviço alojado: o AlojaFlow App atualiza-a juntamente com as outras.',
         'en_curso' => 'Já há uma atualização em curso.',
         'estado' => 'A atualização não está no passo esperado.',
         'paquete_cambiado' => 'O pacote mudou desde que foi verificado. Verifique-o novamente.',

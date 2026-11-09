@@ -62,6 +62,9 @@ class DescargaPorPedazos
         if ($this->actualizador->bloqueadaPorGit()) {
             throw new ErrorActualizacion(__('actualizaciones.error.copia_git'));
         }
+        if ($this->actualizador->bloqueadaPorInstancia()) {
+            throw new ErrorActualizacion(__('actualizaciones.error.instancia'));
+        }
         if ($this->actualizador->pendiente() !== null) {
             throw new ErrorActualizacion(__('actualizaciones.error.en_curso'));
         }

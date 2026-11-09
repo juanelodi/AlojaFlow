@@ -117,6 +117,9 @@ return [
             'huespedes' => 'Hóspedes importados',
             'reservas' => 'Reservas importadas',
         ],
+        'instalacion' => [
+            'enlace_entrada' => 'Ligação de entrada de uso único pedida',
+        ],
         'lectura' => [
             'crear' => 'Leitura do contador registada',
             'quitar' => 'Leitura do contador removida',

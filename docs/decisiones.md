@@ -961,6 +961,28 @@ se anotan los **errores de JavaScript** del panel (como mucho cinco por página,
 escrito) y los **avisos del registro** de nivel *warning* o más que no traen excepción. Van saneados como
 los demás.
 
+### D-162 · 2026-11-08 · Modo instancia, para el servicio alojado
+
+El servicio alojado (AlojaFlow App, un programa aparte que manda órdenes por la consola) corre **una instancia por
+cliente sobre un código compartido**: cada cliente tiene su base, su usuario de MySQL, su `.env`, su `storage` y
+sus cachés de arranque en una carpeta, y el código de cada versión existe una sola vez. AlojaFlow arranca como
+instancia cuando `ALOJAFLOW_INSTANCIA` apunta a esa carpeta (`App\Instalacion\Instancia`); sin la variable, una
+instalación normal no cambia.
+
+- **No arranca** si la carpeta no es de una instancia o si el entorno trae otra `APP_KEY` u otra base: Laravel no
+  reemplaza una variable que ya está en el entorno, y la instancia usaría los datos de otro. Sin `putenv`, el
+  `.env` de la instancia no pasa a los procesos que lanza el programador.
+- **Sin actualizaciones propias:** el código lo comparten todas, así que el panel, la consola y las tareas de
+  actualizar se apagan; las hace AlojaFlow App. Las tareas «por visita» tampoco corren: el programador lo lanza el
+  agente de su servidor. `filament:optimize` no se corre en una instancia: escribiría en el código de todas.
+- `alojaflow:instalar` instala sin navegador (tablas, datos base y super administrador con una contraseña al azar)
+  y `alojaflow:enlace-entrada` da el enlace de un solo uso de D-071. Pendiente: que AlojaFlow pida crear la
+  contraseña al entrar así la primera vez (hoy el perfil pide la actual).
+
+Por qué así y no una base compartida con un identificador de cliente: lo pide la regla de una base por cliente;
+un olvido en una consulta no puede mostrar los datos de otro; exportar, restaurar o borrar a un cliente es una
+base y una carpeta; y es el mismo AlojaFlow que se instala en un hosting.
+
 ## Pendientes
 
 - Precios y modelo de venta.

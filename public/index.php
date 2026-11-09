@@ -21,8 +21,10 @@ if (str_ends_with($carpetaPublica, '/public') && ! str_starts_with((string) ($_S
     $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
 }
 
-// Determine if the application is in maintenance mode...
-if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
+// Determine if the application is in maintenance mode... En el servicio alojado (D-162), el de la instancia.
+$instancia = $_SERVER['ALOJAFLOW_INSTANCIA'] ?? $_ENV['ALOJAFLOW_INSTANCIA'] ?? getenv('ALOJAFLOW_INSTANCIA');
+$almacen = is_string($instancia) && $instancia !== '' ? rtrim($instancia, '/\\').'/storage' : __DIR__.'/../storage';
+if (file_exists($maintenance = $almacen.'/framework/maintenance.php')) {
     require $maintenance;
 }
 

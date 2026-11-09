@@ -117,6 +117,9 @@ return [
             'huespedes' => 'Guests imported',
             'reservas' => 'Bookings imported',
         ],
+        'instalacion' => [
+            'enlace_entrada' => 'One-time sign-in link requested',
+        ],
         'lectura' => [
             'crear' => 'Meter reading recorded',
             'quitar' => 'Meter reading removed',

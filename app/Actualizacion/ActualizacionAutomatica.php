@@ -100,7 +100,7 @@ class ActualizacionAutomatica
      */
     public function puedeInstalarSola(): bool
     {
-        return TareasPorVisita::cronActivo() && ! $this->actualizador->bloqueadaPorGit() && ! ModoDemo::activo();
+        return TareasPorVisita::cronActivo() && ! $this->actualizador->bloqueadaPorGit() && ! $this->actualizador->bloqueadaPorInstancia() && ! ModoDemo::activo();
     }
 
     /**

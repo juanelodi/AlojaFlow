@@ -117,6 +117,9 @@ return [
             'huespedes' => 'Gäste importiert',
             'reservas' => 'Buchungen importiert',
         ],
+        'instalacion' => [
+            'enlace_entrada' => 'Einmal-Anmeldelink angefordert',
+        ],
         'lectura' => [
             'crear' => 'Zählerstand erfasst',
             'quitar' => 'Zählerstand entfernt',

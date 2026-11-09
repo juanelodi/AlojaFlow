@@ -117,6 +117,9 @@ return [
             'huespedes' => 'Ospiti importati',
             'reservas' => 'Prenotazioni importate',
         ],
+        'instalacion' => [
+            'enlace_entrada' => 'Link di accesso monouso richiesto',
+        ],
         'lectura' => [
             'crear' => 'Lettura del contatore registrata',
             'quitar' => 'Lettura del contatore rimossa',

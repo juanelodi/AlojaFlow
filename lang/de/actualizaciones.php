@@ -137,6 +137,7 @@ return [
         'extension' => 'PHP hat die Erweiterung :extension nicht.',
         'php' => 'Diese Version benötigt PHP :minimo oder höher; der Server hat :actual.',
         'copia_git' => 'Diese Installation ist eine Entwicklungskopie (sie enthält .git): Sie wird mit git aktualisiert, nicht über das Panel.',
+        'instancia' => 'Diese Instanz gehört zum gehosteten Dienst: AlojaFlow App aktualisiert sie zusammen mit den anderen.',
         'en_curso' => 'Es läuft bereits eine Aktualisierung.',
         'estado' => 'Die Aktualisierung ist nicht beim erwarteten Schritt.',
         'paquete_cambiado' => 'Das Paket hat sich seit der Prüfung geändert. Prüfen Sie es erneut.',

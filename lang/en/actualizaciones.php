@@ -139,6 +139,7 @@ return [
         'extension' => 'PHP is missing the :extension extension.',
         'php' => 'This version needs PHP :minimo or later; the server has :actual.',
         'copia_git' => 'This installation is a development copy (it has .git): update it with git, not from the panel.',
+        'instancia' => 'This is an instance of the hosted service: AlojaFlow App updates it along with the others.',
         'en_curso' => 'An update is already running.',
         'estado' => 'The update is not at the expected step.',
         'paquete_cambiado' => 'The package changed since it was reviewed. Review it again.',

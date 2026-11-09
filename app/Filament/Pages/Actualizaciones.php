@@ -16,6 +16,7 @@ use App\Actualizacion\ErrorActualizacion;
 use App\Actualizacion\UltimaVersion;
 use App\Demo\ModoDemo;
 use App\Enums\EstadoActualizacion;
+use App\Instalacion\Instancia;
 use App\Models\Actualizacion;
 use App\Models\RegistroAuditoria;
 use App\Seguridad\Acceso;
@@ -68,7 +69,8 @@ class Actualizaciones extends Page
 
     public static function canAccess(): bool
     {
-        return Acceso::puedeActualizar(Acceso::usuarioActual()) && ! ModoDemo::activo();
+        // En el servicio alojado (D-162) las actualizaciones las hace AlojaFlow App, para todas las instancias.
+        return Acceso::puedeActualizar(Acceso::usuarioActual()) && ! ModoDemo::activo() && ! Instancia::activa();
     }
 
     public static function getNavigationGroup(): ?string

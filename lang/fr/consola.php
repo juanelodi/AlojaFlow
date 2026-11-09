@@ -32,4 +32,15 @@ return [
         'para_actualizar' => 'Pour mettre à jour une installation : téléversez-le dans Système → :pantalla, ou dans la console :',
         'para_instalar' => 'Pour installer de zéro : téléversez :archivo sur l’hébergement et ouvrez-le dans le navigateur.',
     ],
+    // Instalar sin navegador y enlace de entrada (D-162).
+    'instalar' => [
+        'ya_estaba' => 'AlojaFlow était déjà installé ici : rien n’a été modifié.',
+        'idioma' => 'La langue doit être l’une de : :idiomas.',
+        'lista' => 'AlojaFlow installé. Super administrateur : :correo.',
+        'enlace' => 'Lien de connexion à usage unique (expire dans 30 minutes) :',
+    ],
+    'enlace_entrada' => [
+        'sin_super' => 'Aucun super administrateur actif avec cette adresse.',
+        'dos_pasos' => 'Ce super administrateur utilise la vérification en deux étapes : le lien ne fonctionne pas pour lui, il se connecte avec son mot de passe.',
+    ],
 ];

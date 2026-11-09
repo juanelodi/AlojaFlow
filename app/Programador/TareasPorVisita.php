@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Programador;
 
 use App\Demo\ModoDemo;
+use App\Instalacion\Instancia;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Support\Ajustes;
@@ -67,11 +68,23 @@ final class TareasPorVisita
     ];
 
     /**
+     * Las de actualizar: en una instancia del servicio alojado (D-162) las hace AlojaFlow App.
+     */
+    public const DE_ACTUALIZACION = [
+        'alojaflow:finalizar-actualizacion --pendientes',
+        'alojaflow:buscar-version',
+        'alojaflow:actualizacion-automatica --solo-consultar',
+    ];
+
+    /**
      * @return array<string, int>
      */
     public static function tareas(): array
     {
         $tareas = array_filter(self::TAREAS, fn (string $comando): bool => Modulos::disponible(self::DE_MODULO[$comando] ?? null), ARRAY_FILTER_USE_KEY);
+        if (Instancia::activa()) {
+            $tareas = array_diff_key($tareas, array_flip(self::DE_ACTUALIZACION));
+        }
         if (! ModoDemo::activo()) {
             return $tareas;
         }
@@ -118,7 +131,8 @@ final class TareasPorVisita
     public static function atender(): void
     {
         try {
-            if (self::cronActivo() || ! Cache::add('programador.visita', 1, 60)) {
+            // En una instancia (D-162) el programador lo corre el agente de su celda, nunca una visita.
+            if (Instancia::activa() || self::cronActivo() || ! Cache::add('programador.visita', 1, 60)) {
                 return;
             }
             // Corre dentro de la visita de cualquiera: los enlaces de los correos no deben salir de su cabecera Host.

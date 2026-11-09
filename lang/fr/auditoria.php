@@ -117,6 +117,9 @@ return [
             'huespedes' => 'Clients importés',
             'reservas' => 'Réservations importées',
         ],
+        'instalacion' => [
+            'enlace_entrada' => 'Lien de connexion à usage unique demandé',
+        ],
         'lectura' => [
             'crear' => 'Relevé de compteur enregistré',
             'quitar' => 'Relevé de compteur supprimé',

@@ -13,19 +13,23 @@ use App\Http\Middleware\ContarPantallas;
 use App\Http\Middleware\EsquemaActualizado;
 use App\Http\Middleware\ProgramadorPorVisitas;
 use App\Http\Middleware\RecordarDispositivo;
+use App\Instalacion\Instancia;
 use App\MejoraContinua\RegistroErrores;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 
+// Servicio alojado (D-162): con ALOJAFLOW_INSTANCIA, el .env, el storage y las cachés son los de esa carpeta.
+$instancia = Instancia::preparar();
+
 // Quien edita .env a mano (en un hosting compartido es lo normal) espera que cuente sin saber de cachés.
-$configuracionGuardada = __DIR__.'/cache/config.php';
-if (is_file($configuracionGuardada) && @filemtime(dirname(__DIR__).'/.env') > filemtime($configuracionGuardada)) {
+$configuracionGuardada = $instancia === null ? __DIR__.'/cache/config.php' : $instancia.'/cache/config.php';
+if (is_file($configuracionGuardada) && @filemtime(($instancia ?? dirname(__DIR__)).'/.env') > filemtime($configuracionGuardada)) {
     @unlink($configuracionGuardada);
 }
 
-return Application::configure(basePath: dirname(__DIR__))
+$aplicacion = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
@@ -58,3 +62,12 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
     })->create();
+
+if ($instancia !== null) {
+    $aplicacion->useEnvironmentPath($instancia);
+    $aplicacion->useStoragePath($instancia.'/storage');
+    // Laravel solo toma por absolutas las rutas de caché que empiezan con «/»: en Windows, «E:/…» sería relativa al código.
+    $aplicacion->addAbsoluteCachePathPrefix($instancia);
+}
+
+return $aplicacion;

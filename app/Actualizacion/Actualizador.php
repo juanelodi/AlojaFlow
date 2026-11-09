@@ -12,6 +12,7 @@ namespace App\Actualizacion;
 
 use App\Enums\EstadoActualizacion;
 use App\Instalacion\CachesArranque;
+use App\Instalacion\Instancia;
 use App\Models\Actualizacion;
 use App\Models\RegistroAuditoria;
 use App\Models\User;
@@ -88,6 +89,15 @@ class Actualizador
     }
 
     /**
+     * En el servicio alojado (D-162) el código lo comparten todas las instancias: un paquete instalado desde una
+     * cambiaría el de todas. Las actualiza AlojaFlow App.
+     */
+    public function bloqueadaPorInstancia(): bool
+    {
+        return Instancia::activa();
+    }
+
+    /**
      * Archivos de la versión instalada según su manifiesto firmado (manifiesto.json en la raíz,
      * que dejan la instalación desde el zip y cada actualización). Null si no hay o no es válido.
      *
@@ -150,6 +160,9 @@ class Actualizador
         );
         if ($this->bloqueadaPorGit()) {
             $revision->error(__('actualizaciones.error.copia_git'));
+        }
+        if ($this->bloqueadaPorInstancia()) {
+            $revision->error(__('actualizaciones.error.instancia'));
         }
 
         return $revision;

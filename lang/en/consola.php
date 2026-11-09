@@ -32,4 +32,15 @@ return [
         'para_actualizar' => 'To update an installation: upload it in System → :pantalla, or from the console:',
         'para_instalar' => 'To install from scratch: upload :archivo to the hosting and open it in the browser.',
     ],
+    // Instalar sin navegador y enlace de entrada (D-162).
+    'instalar' => [
+        'ya_estaba' => 'AlojaFlow was already installed here: nothing was changed.',
+        'idioma' => 'The language must be one of: :idiomas.',
+        'lista' => 'AlojaFlow installed. Super administrator: :correo.',
+        'enlace' => 'One-time sign-in link (expires in 30 minutes):',
+    ],
+    'enlace_entrada' => [
+        'sin_super' => 'There is no active super administrator with that email.',
+        'dos_pasos' => 'That super administrator uses two-step verification: the link does not work for them, they sign in with their password.',
+    ],
 ];

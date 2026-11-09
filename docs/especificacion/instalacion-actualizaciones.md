@@ -128,6 +128,28 @@ permite, corren por turnos al terminar de atender una visita, como mucho una vez
 tiempo máximo (`App\Programador\TareasPorVisita`, D-039). Cuando el cron da señales de vida, esto se
 apaga solo. **Sistema → Estado del sistema** dice cuál de los dos está funcionando.
 
+### 2.4 Como instancia del servicio alojado (D-162)
+
+AlojaFlow App corre una instancia por cliente sobre un código compartido. Una instancia es una carpeta:
+
+```
+instancias/casamexica/
+├── .env        su llave, su base (con su propio usuario de MySQL) y su dirección
+├── cache/      config.php, routes-v7.php y events.php (su bootstrap/cache)
+├── storage/    sus archivos, sesiones, caché y registros
+└── publico/    index.php: fija ALOJAFLOW_INSTANCIA y requiere el public/index.php de la versión
+```
+
+- `ALOJAFLOW_INSTANCIA` (en `$_SERVER` o en el entorno) apunta a la carpeta. `bootstrap/app.php` toma de ahí el
+  `.env`, el `storage` y las cachés, y `public/index.php` la página de mantenimiento.
+- Si la carpeta no es de una instancia, o el entorno trae otra `APP_KEY` u otra base, **no arranca**.
+- El código de la versión es de solo lectura y lo comparten todas: `packages.php`, `services.php` y los
+  componentes de Filament se generan al instalar la versión; una instancia no los toca.
+- No hay actualizaciones propias ni tareas por visita (§2.3): las actualizaciones y el `schedule:run` los lanza
+  AlojaFlow App.
+- Alta sin navegador: `php artisan alojaflow:instalar --nombre= --correo= --idioma= --json` (si ya estaba
+  instalada no toca nada) y `php artisan alojaflow:enlace-entrada --json` (enlace de un solo uso, 30 minutos).
+
 ## 3. Actualizar
 
 ### 3.1 Desde el panel

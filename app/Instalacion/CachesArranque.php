@@ -29,14 +29,18 @@ final class CachesArranque
 
     private const ARCHIVOS = ['packages.php', 'services.php', 'config.php', 'routes-v7.php', 'events.php'];
 
+    /** En una instancia (D-162), las que escriben en el código que comparten todas: las genera quien instala la versión. */
+    private const SOLO_DEL_CODIGO = ['filament:optimize'];
+
     public static function rehacer(): void
     {
         // En desarrollo y en las pruebas estorban: cada cambio tendría que borrarlas.
         if (! app()->isProduction()) {
             return;
         }
-        self::sinCambiarLaAplicacion(function (): void {
-            foreach (self::COMANDOS as $comando) {
+        $comandos = Instancia::activa() ? array_diff(self::COMANDOS, self::SOLO_DEL_CODIGO) : self::COMANDOS;
+        self::sinCambiarLaAplicacion(function () use ($comandos): void {
+            foreach ($comandos as $comando) {
                 try {
                     Artisan::call($comando);
                 } catch (Throwable $e) {
@@ -44,6 +48,23 @@ final class CachesArranque
                 }
             }
         });
+    }
+
+    /**
+     * Las de esta aplicación: en una instancia, solo las suyas (configuración, rutas y eventos); las del código las
+     * comparten todas las instancias de la versión.
+     */
+    public static function quitarActuales(): void
+    {
+        if (! Instancia::activa()) {
+            self::quitar(base_path());
+
+            return;
+        }
+        $aplicacion = app();
+        foreach ([$aplicacion->getCachedConfigPath(), $aplicacion->getCachedRoutesPath(), $aplicacion->getCachedEventsPath()] as $archivo) {
+            @unlink($archivo);
+        }
     }
 
     /**

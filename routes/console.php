@@ -9,6 +9,7 @@
 declare(strict_types=1);
 
 use App\Demo\ModoDemo;
+use App\Instalacion\Instancia;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Programador\TareasPorVisita;
@@ -26,14 +27,15 @@ Schedule::command('alojaflow:limpiar')->dailyAt('03:30');
 Schedule::command('alojaflow:autoridades')->everyTenMinutes();
 Schedule::command('alojaflow:grupos')->dailyAt('03:40')->when(fn (): bool => Modulos::activo(Modulo::Grupos));
 Schedule::command('alojaflow:copia --programada')->dailyAt('03:10')->withoutOverlapping(60)->skip(fn (): bool => ModoDemo::activo());
-Schedule::command('alojaflow:buscar-version')->dailyAt('03:50')->skip(fn (): bool => ModoDemo::activo());
+// En una instancia del servicio alojado (D-162) las actualizaciones las hace AlojaFlow App.
+Schedule::command('alojaflow:buscar-version')->dailyAt('03:50')->skip(fn (): bool => ModoDemo::activo() || Instancia::activa());
 // Actualizaciones sin nadie delante (D-151): la urgente en cuanto se sabe; la automática, a las 3:00 de la instalación.
 // En un minuto múltiplo de 10: hay hostings (DreamHost) que solo permiten el cron cada 10 minutos.
-Schedule::command('alojaflow:actualizacion-automatica')->hourlyAt(20)->withoutOverlapping(120)->skip(fn (): bool => ModoDemo::activo());
+Schedule::command('alojaflow:actualizacion-automatica')->hourlyAt(20)->withoutOverlapping(120)->skip(fn (): bool => ModoDemo::activo() || Instancia::activa());
 // Mejora continua (D-150): solo con permiso, salvo los reportes que alguien escribió.
 Schedule::command('alojaflow:mejora-continua')->hourlyAt(40)->withoutOverlapping(30)->skip(fn (): bool => ModoDemo::activo());
 Schedule::command('alojaflow:demo-reiniciar')->dailyAt('04:00')->when(fn (): bool => ModoDemo::activo());
 
 // Una actualización que se quedó sin terminar (se cerró el navegador entre las dos fases) o que
 // se cortó a medias: se termina o se deshace aquí, también en mantenimiento.
-Schedule::command('alojaflow:finalizar-actualizacion --pendientes')->everyMinute()->evenInMaintenanceMode()->withoutOverlapping(60);
+Schedule::command('alojaflow:finalizar-actualizacion --pendientes')->everyMinute()->evenInMaintenanceMode()->withoutOverlapping(60)->skip(fn (): bool => Instancia::activa());

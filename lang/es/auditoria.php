@@ -117,6 +117,9 @@ return [
             'huespedes' => 'Huéspedes importados',
             'reservas' => 'Reservas importadas',
         ],
+        'instalacion' => [
+            'enlace_entrada' => 'Enlace de entrada de un solo uso pedido',
+        ],
         'lectura' => [
             'crear' => 'Lectura de medidor registrada',
             'quitar' => 'Lectura de medidor quitada',
