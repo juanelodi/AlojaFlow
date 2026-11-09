@@ -42,6 +42,7 @@ return [
     'enlace_entrada' => [
         'sin_super' => 'There is no active super administrator with that email.',
         'dos_pasos' => 'That super administrator uses two-step verification: the link does not work for them, they sign in with their password.',
+        'ya_tiene_contrasena' => 'That super administrator has already created their password and signs in with it. The AlojaFlow team signs in as support, with the client\'s permission.',
     ],
     'tareas_pendientes' => [
         'nada' => 'Nothing pending.',

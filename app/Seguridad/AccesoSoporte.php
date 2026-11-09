@@ -107,7 +107,10 @@ final class AccesoSoporte
             $hasta = $permitido;
         }
 
-        $usuario = User::query()->firstOrNew(['email' => 'soporte-'.Str::slug($nombre).'@'.self::DOMINIO]);
+        // Una cuenta por nombre exacto: «José» y «Jose» darían el mismo slug, y uno heredaría la cuenta (y la
+        // auditoría) del otro.
+        $huella = substr(hash('sha256', mb_strtolower($nombre)), 0, 10);
+        $usuario = User::query()->firstOrNew(['email' => 'soporte-'.Str::slug($nombre).'-'.$huella.'@'.self::DOMINIO]);
         $usuario->forceFill([
             'name' => __('soporte.usuario', ['nombre' => $nombre], 'es'),
             'password' => Str::password(48),

@@ -10,9 +10,11 @@ declare(strict_types=1);
 
 namespace App\Programador;
 
+use App\Actualizacion\EsquemaAlDia;
 use App\Models\Ajuste;
 use Carbon\CarbonImmutable;
 use Cron\CronExpression;
+use DateTimeZone;
 use Illuminate\Console\Scheduling\CallbackEvent;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
@@ -38,8 +40,11 @@ final class TareasPendientes
 
     private const PREFIJO = 'programador.ultima.';
 
-    public function __construct(private readonly Application $app, private readonly Schedule $horario)
-    {
+    public function __construct(
+        private readonly Application $app,
+        private readonly Schedule $horario,
+        private readonly EsquemaAlDia $esquema,
+    ) {
     }
 
     /**
@@ -48,15 +53,63 @@ final class TareasPendientes
     public function ejecutar(int $ventanaMinutos = self::VENTANA_MINUTOS): array
     {
         $resultados = [];
+        $esquema = $this->esquemaAlDia();
+        if ($esquema !== null) {
+            $resultados[] = $esquema['resultado'];
+            if (! $esquema['seguir']) {
+                return $resultados;
+            }
+        }
         foreach ($this->horario->events() as $evento) {
-            $debia = $this->pendienteDesde($evento, $ventanaMinutos);
-            if ($debia === null || ! $this->puedeCorrer($evento) || ! $this->apartar($evento, $debia)) {
+            // Que una tarea no se pueda revisar (su filtro consulta la base, su zona no sirve) no detiene a las demás.
+            try {
+                $debia = $this->pendienteDesde($evento, $ventanaMinutos);
+                if ($debia === null || ! $this->puedeCorrer($evento) || ! $this->apartar($evento, $debia)) {
+                    continue;
+                }
+            } catch (Throwable $e) {
+                report($e);
+                $resultados[] = ['tarea' => self::nombre($evento), 'estado' => 'fallida', 'debia' => CarbonImmutable::now('UTC')->toIso8601String(), 'error' => class_basename($e), 'duracion_ms' => 0];
+
                 continue;
             }
             $resultados[] = $this->correr($evento, $debia);
         }
 
         return $resultados;
+    }
+
+    /**
+     * Antes de las tareas, la base al día, como hace EsquemaActualizado en cada petición: en el servicio alojado el
+     * código cambia sin que nadie abra la instancia, y unos archivos subidos a mano tampoco pasan por el navegador.
+     * Sin esto, las tareas correrían contra el esquema anterior. Null si ya estaba al día.
+     *
+     * @return array{resultado: array{tarea: string, estado: string, debia: string, duracion_ms: int, error?: string}, seguir: bool}|null
+     */
+    private function esquemaAlDia(): ?array
+    {
+        if ($this->app->isDownForMaintenance() || ! $this->esquema->hayQueRevisar()) {
+            return null;
+        }
+        $inicio = hrtime(true);
+        $resultado = ['tarea' => 'esquema', 'estado' => 'correcta', 'debia' => CarbonImmutable::now('UTC')->toIso8601String()];
+        $seguir = true;
+        try {
+            // Este proceso arrancó con la configuración guardada de la versión anterior: se migra en la ronda
+            // siguiente, que ya arranca limpia, y mientras tanto no corre nada.
+            if ($this->esquema->quitarCachesViejas()) {
+                $seguir = false;
+            } else {
+                $this->esquema->ponerAlDia();
+            }
+        } catch (Throwable $e) {
+            report($e);
+            $resultado['estado'] = 'fallida';
+            $resultado['error'] = class_basename($e);
+            $seguir = false;
+        }
+
+        return ['resultado' => $resultado + ['duracion_ms' => (int) round((hrtime(true) - $inicio) / 1e6)], 'seguir' => $seguir];
     }
 
     /**
@@ -91,7 +144,9 @@ final class TareasPendientes
      */
     private function pendienteDesde(Event $evento, int $ventanaMinutos): ?CarbonImmutable
     {
-        $zona = $evento->timezone ?? (string) config('app.timezone');
+        $zona = $evento->timezone ?? config('app.timezone');
+        // Laravel acepta la zona como texto o como DateTimeZone.
+        $zona = $zona instanceof DateTimeZone ? $zona->getName() : (string) $zona;
         $ahora = CarbonImmutable::now($zona);
         $debia = CarbonImmutable::instance((new CronExpression($evento->expression))->getPreviousRunDate($ahora, 0, true, (string) $zona))->utc();
         $ultima = self::ultima($evento) ?? $ahora->utc()->subMinutes($ventanaMinutos)->subSecond();

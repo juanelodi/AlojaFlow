@@ -16,6 +16,7 @@ use Filament\Auth\Pages\PasswordReset\RequestPasswordReset;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
+use RuntimeException;
 
 /**
  * Pedir el enlace para cambiar la contraseña olvidada. Solo tiene sentido con correo configurado: sin
@@ -40,8 +41,18 @@ class PedirRecuperacion extends RequestPasswordReset
         // El correo se configura desde el panel: la notificación sale con esa cuenta, no con la de .env (en el servicio
         // alojado, con la de la plataforma si el alojamiento no puso la suya).
         $correo = app(AjustesCorreo::class);
+        try {
+            $mailer = $correo->prepararMailer();
+        } catch (RuntimeException $e) {
+            // En el servicio alojado, el servidor del alojamiento dejó de estar en una red pública: no se manda nada,
+            // pero quien lo pide ve la misma respuesta de siempre.
+            report($e);
+            $this->getSentNotification(Password::RESET_LINK_SENT)?->send();
+
+            return;
+        }
         config([
-            'mail.default' => $correo->prepararMailer(),
+            'mail.default' => $mailer,
             'mail.from' => ['address' => $correo->remitente(), 'name' => $correo->nombreRemitente()],
         ]);
 

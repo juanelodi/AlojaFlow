@@ -80,6 +80,8 @@ it('el cliente da permiso 24 horas y el soporte entra una vez con el enlace, con
 
 it('el enlace del soporte caduca a los 5 minutos y no gasta el del dueño', function () {
     comoInstancia();
+    // El dueño todavía no crea su contraseña: solo entonces le sirve un enlace.
+    $this->dueno->forceFill(['debe_crear_contrasena' => true])->save();
     app(AccesoSoporte::class)->permitir($this->dueno);
     [, $delDueno] = comandoJson('alojaflow:enlace-entrada', []);
     [, $respuesta] = comandoJson('alojaflow:acceso-soporte', ['--nombre' => 'Juan', '--minutos' => 60]);
@@ -188,4 +190,16 @@ it('el soporte ve al equipo pero no crea ni cambia usuarios', function () {
     $this->get(UsuarioResource::getUrl('index'))->assertOk();
     $this->get(UsuarioResource::getUrl('create'))->assertForbidden();
     $this->get(UsuarioResource::getUrl('edit', ['record' => $recepcion]))->assertForbidden();
+});
+
+it('dos nombres que dan el mismo slug no comparten cuenta ni auditoría', function () {
+    comoInstancia();
+    app(AccesoSoporte::class)->permitir($this->dueno);
+
+    comandoJson('alojaflow:acceso-soporte', ['--nombre' => 'José Pérez', '--minutos' => 10]);
+    $jose = User::query()->where('es_soporte', true)->sole();
+    comandoJson('alojaflow:acceso-soporte', ['--nombre' => 'Jose Perez', '--minutos' => 10]);
+
+    expect(User::query()->where('es_soporte', true)->count())->toBe(2)
+        ->and($jose->refresh()->name)->toContain('José Pérez');
 });

@@ -42,6 +42,7 @@ return [
     'enlace_entrada' => [
         'sin_super' => 'Nessun super amministratore attivo con questa email.',
         'dos_pasos' => 'Questo super amministratore usa la verifica in due passaggi: il link non funziona, accede con la sua password.',
+        'ya_tiene_contrasena' => 'Questo super amministratore ha già creato la sua password e accede con quella. Il team di AlojaFlow accede come supporto, con il permesso del cliente.',
     ],
     'tareas_pendientes' => [
         'nada' => 'Niente in sospeso.',

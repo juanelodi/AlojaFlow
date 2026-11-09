@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Instalacion\EnlaceEntrada;
+use App\Instalacion\Instancia;
 use App\Models\RegistroAuditoria;
 use App\Models\User;
 use Illuminate\Console\Command;
@@ -37,6 +38,11 @@ class EnlaceEntradaComando extends Command
         $usuario = $consulta->first();
         if ($usuario === null) {
             return $this->fallar(__('consola.enlace_entrada.sin_super'));
+        }
+        // En el servicio alojado solo sirve mientras el dueño no ha creado su contraseña: después, el equipo de AlojaFlow
+        // entra como soporte y con el permiso del cliente (D-166), nunca como él.
+        if (Instancia::activa() && ! $usuario->debe_crear_contrasena) {
+            return $this->fallar(__('consola.enlace_entrada.ya_tiene_contrasena'));
         }
         if (filled($usuario->getAppAuthenticationSecret())) {
             return $this->fallar(__('consola.enlace_entrada.dos_pasos'));

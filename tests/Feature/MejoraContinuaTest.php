@@ -404,8 +404,8 @@ it('guarda los errores de JavaScript del panel y los problemas del registro, san
 
 describe('servicio alojado', function () {
     it('el latido, los errores y el registro llevan la marca de alojada y el código de la instancia', function () {
-        comoInstancia('/celda/instancias/casamexica');
-        config(['alojaflow.instancia.codigo' => 'casamexica']);
+        comoInstancia('/celda/instancias/posadaluna');
+        config(['alojaflow.instancia.codigo' => 'posadaluna']);
         // Lo que dejó alojaflow:instalar no cuenta: en el servicio alojado lo decide el contrato.
         Permiso::guardar(false);
         receptorFalso();
@@ -416,17 +416,17 @@ describe('servicio alojado', function () {
         expect(rutasPedidas())->toBe(['POST instalaciones', 'POST errores', 'POST latidos']);
         foreach (['instalaciones', 'errores', 'latidos'] as $ruta) {
             $cuerpo = json_decode((string) collect($this->peticiones)->firstWhere('ruta', $ruta)['cuerpo'], true);
-            expect($cuerpo['alojada'] ?? null)->toBe(['codigo' => 'casamexica']);
+            expect($cuerpo['alojada'] ?? null)->toBe(['codigo' => 'posadaluna']);
         }
         $latido = json_decode((string) collect($this->peticiones)->firstWhere('ruta', 'latidos')['cuerpo'], true);
         expect((string) json_encode($latido))->not->toContain('anastasia')->not->toContain('Posada');
     });
 
     it('sin código en el .env, usa el nombre de la carpeta de la instancia', function () {
-        comoInstancia('/celda/instancias/casamexica');
+        comoInstancia('/celda/instancias/posadaluna');
         config(['alojaflow.instancia.codigo' => null]);
 
-        expect(app(ArmadorLatido::class)->armar()['alojada'])->toBe(['codigo' => 'casamexica']);
+        expect(app(ArmadorLatido::class)->armar()['alojada'])->toBe(['codigo' => 'posadaluna']);
     });
 
     it('una instalación propia no lleva la marca', function () {

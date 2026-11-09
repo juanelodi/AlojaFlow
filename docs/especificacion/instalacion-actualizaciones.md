@@ -138,7 +138,11 @@ varias: la copia de las 3:10 corre en la primera ronda después de las 3:10, emp
   15 minutos (`--ventana=`).
 - Se marca antes de correr, bajo un candado: dos rondas encimadas no corren la misma tarea. Las que llevan
   `withoutOverlapping` siguen respetando su candado.
-- Una tarea que falla no detiene a las demás y no se repite hasta que le vuelva a tocar.
+- Una tarea que falla no detiene a las demás y no se repite hasta que le vuelva a tocar. Tampoco una que no se puede
+  revisar (su filtro falla): sale como `fallida`.
+- Antes de las tareas pone la base al día, como hace cada petición (`EsquemaActualizado`, D-089): en una instancia
+  el código cambia sin que nadie la abra. Si hubo algo que hacer, el JSON lo trae como la tarea `esquema`. Si el
+  proceso arrancó con las cachés de la versión anterior, las quita y no corre nada hasta la ronda siguiente.
 - `--json` responde `{"inicio", "duracion_ms", "corridas", "fallidas", "tareas": [{"tarea", "estado", "debia",
   "duracion_ms", "error"?}]}`, con `estado` `correcta`, `fallida` u `ocupada` (la corre otro proceso) y `error`
   solo la clase de la excepción o `exit N`. Sale con **0** si nada falló, **1** si falló alguna y **2** si la
@@ -150,7 +154,7 @@ varias: la copia de las 3:10 corre en la primera ronda después de las 3:10, emp
 AlojaFlow App corre una instancia por cliente sobre un código compartido. Una instancia es una carpeta:
 
 ```
-instancias/casamexica/
+instancias/posadaluna/
 ├── .env        su llave, su base (con su propio usuario de MySQL) y su dirección
 ├── cache/      config.php, routes-v7.php y events.php (su bootstrap/cache)
 ├── storage/    sus archivos, sesiones, caché y registros

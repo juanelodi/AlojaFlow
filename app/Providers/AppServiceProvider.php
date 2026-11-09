@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -68,7 +69,14 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Lo que corre schedule:run queda anotado: alojaflow:tareas-pendientes no lo repite (D-169).
-        Event::listen(ScheduledTaskStarting::class, fn (ScheduledTaskStarting $evento) => TareasPendientes::anotar($evento->task));
+        // schedule:run lanza este evento fuera de su try: si la base fallara aquí, no correría ninguna tarea, tampoco la
+        // que termina una actualización a medias. Sin la anotación, a lo sumo tareas-pendientes la repite.
+        Event::listen(ScheduledTaskStarting::class, function (ScheduledTaskStarting $evento): void {
+            try {
+                TareasPendientes::anotar($evento->task);
+            } catch (Throwable) {
+            }
+        });
 
         // «Mantener la sesión» usa dispositivos propios (D-076), en lugar del token único de Laravel, que no caduca.
         Event::listen(Login::class, function (Login $evento): void {

@@ -1099,6 +1099,27 @@ zona) es posterior a la última vez que corrió. Así:
 Se usa en una instancia y en cualquier hosting con un cron que no es de cada minuto. La especificación está en
 `instalacion-actualizaciones.md` §2.3.
 
+**Ajustes de la revisión de la 1.0.41 (2026-11-09):**
+- **La base al día antes de las tareas:** en una instancia el código cambia sin que nadie la abra, y la base solo se
+  ponía al día con una visita (`EsquemaActualizado`). Ahora `tareas-pendientes` hace lo mismo antes de correr nada y
+  lo informa como la tarea `esquema`. Si arrancó con cachés de la versión anterior, las quita y no corre nada hasta
+  la ronda siguiente.
+- **Una tarea que no se puede revisar** (su filtro falla o su zona viene como `DateTimeZone`) no detiene a las demás.
+- **La anotación de `schedule:run` no puede tumbarlo:** si la base falla al anotar, la tarea corre igual. Antes, un
+  error ahí detenía toda la ronda, también `finalizar-actualizacion`.
+
+### D-170 · 2026-11-09 · El enlace de entrada del dueño, solo hasta que crea su contraseña
+
+En una instancia, `alojaflow:enlace-entrada` solo da enlace al super administrador que todavía no ha creado su
+contraseña (`debe_crear_contrasena`). Después, quien opera AlojaFlow App podría entrar como el dueño sin su permiso,
+y eso es justo lo que evita el acceso de soporte (D-166): el equipo de AlojaFlow entra con su nombre, con el permiso
+del cliente o por emergencia con aviso. Si el portal de clientes (fase 2) necesita llevar al dueño a su sistema, lo
+hará con una orden propia que pruebe que lo pide el dueño.
+
+Del mismo repaso: cada persona del soporte tiene su cuenta por su nombre exacto (slug más una huella del nombre), para
+que «José Pérez» y «Jose Perez» no compartan cuenta ni auditoría; y pedir otra contraseña en una instancia cuyo
+servidor SMTP dejó de estar en una red pública responde lo de siempre, sin mandar nada.
+
 ## Pendientes
 
 - Precios y modelo de venta.

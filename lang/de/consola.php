@@ -42,6 +42,7 @@ return [
     'enlace_entrada' => [
         'sin_super' => 'Es gibt keinen aktiven Super-Administrator mit dieser E-Mail-Adresse.',
         'dos_pasos' => 'Dieser Super-Administrator nutzt die Zwei-Faktor-Verifizierung: Der Link funktioniert für ihn nicht, er meldet sich mit seinem Passwort an.',
+        'ya_tiene_contrasena' => 'Dieser Super-Administrator hat sein Passwort bereits erstellt und meldet sich damit an. Das AlojaFlow-Team meldet sich als Support an, mit der Erlaubnis des Kunden.',
     ],
     'tareas_pendientes' => [
         'nada' => 'Nichts ausstehend.',

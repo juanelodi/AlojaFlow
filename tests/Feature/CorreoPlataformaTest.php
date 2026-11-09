@@ -151,3 +151,17 @@ it('quien no es administrador no configura el correo', function () {
 
     $this->actingAs($gerente)->get(Correo::getUrl())->assertForbidden();
 });
+
+it('si el servidor del alojamiento deja de estar en una red pública, pedir otra contraseña responde igual y no manda nada', function () {
+    comoInstancia();
+    Ajustes::guardar('correo.host', 'smtp.posada.example');
+    $this->ips['smtp.posada.example'] = ['10.0.0.5'];
+    Ajustes::olvidar();
+    Illuminate\Support\Facades\Notification::fake();
+    $usuario = User::factory()->create(['activo' => true]);
+
+    Livewire::test(App\Filament\Pages\PedirRecuperacion::class)->set('data.email', $usuario->email)->call('request')
+        ->assertNotified(__('passwords.sent'));
+
+    Illuminate\Support\Facades\Notification::assertNothingSent();
+});

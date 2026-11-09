@@ -43,6 +43,7 @@ return [
     'enlace_entrada' => [
         'sin_super' => 'No hay ningún super administrador activo con ese correo.',
         'dos_pasos' => 'Ese super administrador usa la verificación en dos pasos: el enlace no le sirve, entra con su contraseña.',
+        'ya_tiene_contrasena' => 'Ese super administrador ya creó su contraseña y entra con ella. El equipo de AlojaFlow entra como soporte, con el permiso del cliente.',
     ],
     'tareas_pendientes' => [
         'nada' => 'Nada pendiente.',

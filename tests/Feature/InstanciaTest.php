@@ -195,3 +195,18 @@ it('alojaflow:enlace-entrada da el enlace al super administrador, nunca a quien 
     [$codigo] = comandoJson('alojaflow:enlace-entrada', ['--correo' => 'nadie@example.com']);
     expect($codigo)->not->toBe(0);
 });
+
+it('en una instancia, alojaflow:enlace-entrada solo sirve mientras el dueño no ha creado su contraseña', function () {
+    comoInstancia();
+    $super = User::factory()->create(['es_administrador' => true, 'es_superadministrador' => true, 'activo' => true, 'idioma' => 'es', 'debe_crear_contrasena' => true]);
+
+    [$codigo, $respuesta] = comandoJson('alojaflow:enlace-entrada', []);
+    expect($codigo)->toBe(0)->and($respuesta['enlace'])->toContain('/entrar/');
+
+    // Ya creó la suya: el equipo de AlojaFlow entra como soporte, con su permiso, nunca como el dueño.
+    $super->forceFill(['password' => 'Una-clave-larga-y-propia-2026'])->save();
+    [$codigo, $respuesta] = comandoJson('alojaflow:enlace-entrada', []);
+    expect($codigo)->not->toBe(0)
+        ->and($respuesta['enlace'])->toBeNull()
+        ->and($respuesta['error'])->toBe(__('consola.enlace_entrada.ya_tiene_contrasena'));
+});

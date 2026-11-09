@@ -42,6 +42,7 @@ return [
     'enlace_entrada' => [
         'sin_super' => 'Aucun super administrateur actif avec cette adresse.',
         'dos_pasos' => 'Ce super administrateur utilise la vérification en deux étapes : le lien ne fonctionne pas pour lui, il se connecte avec son mot de passe.',
+        'ya_tiene_contrasena' => 'Ce super administrateur a déjà créé son mot de passe et se connecte avec. L\'équipe d\'AlojaFlow se connecte en tant que support, avec l\'autorisation du client.',
     ],
     'tareas_pendientes' => [
         'nada' => 'Rien en attente.',

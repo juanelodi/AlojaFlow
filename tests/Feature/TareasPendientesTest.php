@@ -150,3 +150,36 @@ it('reconoce las tareas del horario de verdad por su comando', function () {
 
     expect($nombres)->toContain('latido', 'alojaflow:copia --programada', 'alojaflow:mejora-continua', 'soporte-vencer');
 });
+
+it('antes de las tareas pone la base al día si el código cambió sin que nadie abriera la instalación', function () {
+    // Como en una instancia a la que AlojaFlow App cambió de versión: la marca dice otra versión que la de los archivos.
+    Illuminate\Support\Facades\File::ensureDirectoryExists(storage_path('app/private'));
+    Illuminate\Support\Facades\File::put(storage_path(App\Instalacion\Instalador::MARCA), '{}');
+    Illuminate\Support\Facades\File::put(storage_path('app/private/esquema-version.txt'), '1.0.0');
+    $this->travelTo(CarbonImmutable::parse('2026-11-10 03:11:30', 'America/Mexico_City'));
+
+    [$codigo, $respuesta] = comandoJson('alojaflow:tareas-pendientes', []);
+
+    expect($codigo)->toBe(0)
+        ->and($respuesta['tareas'][0])->toMatchArray(['tarea' => 'esquema', 'estado' => 'correcta'])
+        ->and(corridasYLimpiar())->toBe(['copia', 'cada-minuto'])
+        ->and(app(App\Actualizacion\EsquemaAlDia::class)->hayQueRevisar())->toBeFalse();
+});
+
+it('una tarea que no se puede revisar no detiene a las que siguen, y la zona puede venir como DateTimeZone', function () {
+    $corridas = $this->corridas;
+    $horario = new Schedule('America/Mexico_City');
+    $horario->call(fn () => null)->name('rota')->everyMinute()->when(function (): bool {
+        throw new RuntimeException('la base no responde');
+    });
+    $horario->call(function () use ($corridas): void {
+        $corridas->append('con-zona');
+    })->name('con-zona')->everyMinute()->timezone(new DateTimeZone('America/Mexico_City'));
+    $this->app->instance(Schedule::class, $horario);
+
+    [$codigo, $respuesta] = comandoJson('alojaflow:tareas-pendientes', []);
+
+    expect($codigo)->toBe(1)
+        ->and($respuesta['tareas'][0])->toMatchArray(['tarea' => 'rota', 'estado' => 'fallida', 'error' => 'RuntimeException'])
+        ->and(corridasYLimpiar())->toBe(['con-zona']);
+});
