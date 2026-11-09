@@ -84,6 +84,19 @@ final class EsquemaAlDia
     }
 
     /**
+     * Lo primero que corre schedule:run (D-171), como hace cada petición: si el código cambió sin pasar por el
+     * navegador, las tareas que siguen ya encuentran la base al día. Si este proceso arrancó con las cachés de la
+     * versión anterior, solo las quita: la ronda siguiente migra.
+     */
+    public function antesDeLasTareas(): void
+    {
+        if (! $this->hayQueRevisar() || $this->quitarCachesViejas()) {
+            return;
+        }
+        $this->ponerAlDia();
+    }
+
+    /**
      * Otra petición al mismo tiempo espera aquí: no se migra dos veces.
      */
     public function ponerAlDia(): void

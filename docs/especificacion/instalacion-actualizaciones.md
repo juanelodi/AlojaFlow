@@ -126,7 +126,8 @@ saber qué archivos obsoletos puede borrar. Al primer arranque Laravel genera
 Las tareas programadas corren con el cron (`schedule:run`). Si no hay cron, o el hosting no lo
 permite, corren por turnos al terminar de atender una visita, como mucho una vez por minuto y con un
 tiempo máximo (`App\Programador\TareasPorVisita`, D-039). Cuando el cron da señales de vida, esto se
-apaga solo. **Sistema → Estado del sistema** dice cuál de los dos está funcionando.
+apaga solo. **Sistema → Estado del sistema** dice cuál de los dos está funcionando. La primera tarea del horario,
+`esquema`, pone la base al día si los archivos cambiaron sin pasar por el navegador (D-171), como cada petición.
 
 **Con un cron que no corre cada minuto** (DreamHost: cada 10), o cuando no se sabe en qué minuto arranca, se usa
 `php artisan alojaflow:tareas-pendientes` en lugar de `schedule:run` (D-169). Toma el mismo horario

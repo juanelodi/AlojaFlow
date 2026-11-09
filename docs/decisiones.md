@@ -1132,7 +1132,12 @@ Se quedan:
 - la condición «solo si el huésped habla…», que sirve igual para los correos.
 
 Para mandar mensajes por otro servicio, los webhooks de Integraciones llevan el teléfono, el correo y el idioma del
-huésped en cada evento. Las versiones 1.0.40 y 1.0.41 se publicaron con la API, y la AGPL deja usar ese código a
+huésped en cada evento.
+
+De la revisión: `schedule:run` también pone la base al día antes de las demás tareas, con una tarea `esquema` que
+va primero y solo corre si hace falta, igual que `tareas-pendientes` (D-169). Así, con los archivos subidos a mano,
+ninguna tarea encuentra la acción quitada antes de la migración. El filtro de envíos solo ofrece el canal retirado
+donde hay historial con él. Las versiones 1.0.40 y 1.0.41 se publicaron con la API, y la AGPL deja usar ese código a
 quien ya lo tiene.
 
 ## Pendientes

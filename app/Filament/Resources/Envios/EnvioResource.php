@@ -112,7 +112,9 @@ class EnvioResource extends RecursoDeCualquierPropiedad
             ])
             ->filters([
                 SelectFilter::make('estado')->label(__('mensajes.envios.estado'))->options(EstadoEnvio::opciones()),
-                SelectFilter::make('canal')->label(__('mensajes.envios.canal'))->options(CanalEnvio::opciones()),
+                // WhatsApp por la API de Meta solo queda en el historial (D-171): se ofrece donde lo hubo.
+                SelectFilter::make('canal')->label(__('mensajes.envios.canal'))->options(fn (): array => Envio::query()->where('canal', CanalEnvio::WhatsappApi)->exists()
+                    ? CanalEnvio::opciones() : array_diff_key(CanalEnvio::opciones(), [CanalEnvio::WhatsappApi->value => true])),
             ])
             ->emptyStateHeading(__('mensajes.envios.vacio'))
             ->recordActions([

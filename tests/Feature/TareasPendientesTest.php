@@ -183,3 +183,19 @@ it('una tarea que no se puede revisar no detiene a las que siguen, y la zona pue
         ->and($respuesta['tareas'][0])->toMatchArray(['tarea' => 'rota', 'estado' => 'fallida', 'error' => 'RuntimeException'])
         ->and(corridasYLimpiar())->toBe(['con-zona']);
 });
+
+it('schedule:run también pone la base al día antes de las demás tareas (D-171)', function () {
+    $esquema = collect($this->horarioReal->events())->first(fn ($evento) => $evento->description === 'esquema');
+    expect($esquema)->not->toBeNull()
+        ->and($this->horarioReal->events()[0]->description)->toBe('esquema')
+        ->and($esquema->filtersPass($this->app))->toBeFalse();
+
+    Illuminate\Support\Facades\File::ensureDirectoryExists(storage_path('app/private'));
+    Illuminate\Support\Facades\File::put(storage_path(App\Instalacion\Instalador::MARCA), '{}');
+    Illuminate\Support\Facades\File::put(storage_path('app/private/esquema-version.txt'), '1.0.0');
+    expect($esquema->filtersPass($this->app))->toBeTrue();
+
+    $esquema->run($this->app);
+
+    expect(app(App\Actualizacion\EsquemaAlDia::class)->hayQueRevisar())->toBeFalse();
+});

@@ -8,6 +8,7 @@
 
 declare(strict_types=1);
 
+use App\Actualizacion\EsquemaAlDia;
 use App\Demo\ModoDemo;
 use App\Instalacion\Instancia;
 use App\Modulos\Modulo;
@@ -18,6 +19,9 @@ use Illuminate\Support\Facades\Schedule;
 
 // Un solo cron lanza el programador (hosting compartido; CLAUDE.md). Si no hay cron, las mismas
 // tareas corren al usar el sistema: App\Programador\TareasPorVisita.
+// Primero, la base al día si el código cambió sin pasar por el navegador (D-171); tareas-pendientes ya lo hace antes.
+Schedule::call(fn () => app(EsquemaAlDia::class)->antesDeLasTareas())->name('esquema')->everyMinute()
+    ->when(fn (): bool => app(EsquemaAlDia::class)->hayQueRevisar());
 Schedule::call(fn () => TareasPorVisita::anotarLatido())->name('latido')->everyMinute()->evenInMaintenanceMode();
 Schedule::command('alojaflow:sincronizar')->everyMinute()->withoutOverlapping(60)->when(fn (): bool => Modulos::activo(Modulo::Subordinacion));
 // El soporte de AlojaFlow sale al vencer su plazo (D-166); al entrar ya se revisa, esto lo deja desactivado.

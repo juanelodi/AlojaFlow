@@ -341,7 +341,7 @@ it('quitar la API de WhatsApp borra sus ajustes y automatizaciones y deja el his
     $regla = Illuminate\Support\Facades\DB::table('automatizaciones')->insertGetId(['propiedad_id' => $this->propiedad->id, 'nombre' => 'Acceso',
         'disparador' => DisparadorAutomatizacion::AntesLlegada->value, 'dias' => 1, 'accion' => 'whatsapp_huesped', 'activa' => true, 'creado_en' => now(), 'actualizado_en' => now()]);
     $comun = ['propiedad_id' => $this->propiedad->id, 'automatizacion_id' => $regla, 'canal' => CanalEnvio::WhatsappApi, 'destino' => '+525555500101', 'cuerpo' => 'llegada_manana'];
-    $pendiente = Envio::query()->create($comun + ['estado' => EstadoEnvio::Pendiente]);
+    $pendiente = Envio::query()->create($comun + ['estado' => EstadoEnvio::Pendiente, 'idioma' => 'en']);
     $enviado = Envio::query()->create($comun + ['estado' => EstadoEnvio::Enviado]);
 
     (require database_path('migrations/2026_11_09_180000_quitar_whatsapp_api.php'))->up();
@@ -352,6 +352,7 @@ it('quitar la API de WhatsApp borra sus ajustes y automatizaciones y deja el his
         ->and(Ajustes::obtener('correo.host'))->toBe('smtp.example.com')
         ->and(Automatizacion::query()->whereKey($regla)->exists())->toBeFalse()
         ->and($pendiente->refresh()->estado)->toBe(EstadoEnvio::Omitido)
+        ->and($pendiente->ultimo_error)->toBe(__('mensajes.whatsapp_api_retirada', [], 'en'))
         ->and($enviado->refresh()->estado)->toBe(EstadoEnvio::Enviado)
         ->and($enviado->automatizacion_id)->toBeNull();
 });

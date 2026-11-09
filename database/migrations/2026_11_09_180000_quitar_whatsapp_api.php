@@ -24,8 +24,13 @@ return new class () extends Migration {
         DB::table('ajustes')->where('clave', 'like', 'whatsapp.%')->delete();
         // Sus envíos se quedan: la llave foránea los deja sin automatización.
         DB::table('automatizaciones')->where('accion', 'whatsapp_huesped')->delete();
-        DB::table('envios')->where('canal', 'whatsapp_api')->whereIn('estado', ['pendiente', 'fallido'])
-            ->update(['estado' => 'omitido', 'ultimo_error' => __('mensajes.whatsapp_api_retirada')]);
+        // La razón en el idioma de cada envío, como las demás de la lista.
+        $porMandar = fn () => DB::table('envios')->where('canal', 'whatsapp_api')->whereIn('estado', ['pendiente', 'fallido']);
+        foreach ($porMandar()->distinct()->pluck('idioma') as $idioma) {
+            $texto = __('mensajes.whatsapp_api_retirada', [], in_array($idioma, (array) config('alojaflow.idiomas'), true) ? $idioma : null);
+            $porMandar()->where(fn ($query) => $idioma === null ? $query->whereNull('idioma') : $query->where('idioma', $idioma))
+                ->update(['estado' => 'omitido', 'ultimo_error' => $texto]);
+        }
 
         if (Schema::hasColumn('automatizaciones', 'whatsapp')) {
             Schema::table('automatizaciones', fn (Blueprint $table) => $table->dropColumn('whatsapp'));
