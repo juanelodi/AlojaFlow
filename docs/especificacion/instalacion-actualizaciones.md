@@ -128,6 +128,23 @@ permite, corren por turnos al terminar de atender una visita, como mucho una vez
 tiempo máximo (`App\Programador\TareasPorVisita`, D-039). Cuando el cron da señales de vida, esto se
 apaga solo. **Sistema → Estado del sistema** dice cuál de los dos está funcionando.
 
+**Con un cron que no corre cada minuto** (DreamHost: cada 10), o cuando no se sabe en qué minuto arranca, se usa
+`php artisan alojaflow:tareas-pendientes` en lugar de `schedule:run` (D-169). Toma el mismo horario
+(`routes/console.php`) y corre cada tarea que **tocó desde su última vez**, una sola vez aunque le haya tocado
+varias: la copia de las 3:10 corre en la primera ronda después de las 3:10, empiece a la hora que empiece.
+
+- La última vez de cada tarea se guarda en `ajustes` (`programador.ultima.*`); `schedule:run` también la anota, así
+  que los dos no repiten lo de hora fija. Una tarea que nunca ha corrido cuenta solo lo que le tocó en los últimos
+  15 minutos (`--ventana=`).
+- Se marca antes de correr, bajo un candado: dos rondas encimadas no corren la misma tarea. Las que llevan
+  `withoutOverlapping` siguen respetando su candado.
+- Una tarea que falla no detiene a las demás y no se repite hasta que le vuelva a tocar.
+- `--json` responde `{"inicio", "duracion_ms", "corridas", "fallidas", "tareas": [{"tarea", "estado", "debia",
+  "duracion_ms", "error"?}]}`, con `estado` `correcta`, `fallida` u `ocupada` (la corre otro proceso) y `error`
+  solo la clase de la excepción o `exit N`. Sale con **0** si nada falló, **1** si falló alguna y **2** si la
+  ventana no es válida.
+- Anota el latido del programador como `schedule:run`: con él las tareas por visita (arriba) se apagan solas.
+
 ### 2.4 Como instancia del servicio alojado (D-162)
 
 AlojaFlow App corre una instancia por cliente sobre un código compartido. Una instancia es una carpeta:
@@ -145,8 +162,9 @@ instancias/casamexica/
 - Si la carpeta no es de una instancia, o el entorno trae otra `APP_KEY` u otra base, **no arranca**.
 - El código de la versión es de solo lectura y lo comparten todas: `packages.php`, `services.php` y los
   componentes de Filament se generan al instalar la versión; una instancia no los toca.
-- No hay actualizaciones propias ni tareas por visita (§2.3): las actualizaciones y el `schedule:run` los lanza
-  AlojaFlow App.
+- No hay actualizaciones propias ni tareas por visita (§2.3): las actualizaciones las lanza AlojaFlow App, y las
+  tareas, con `alojaflow:tareas-pendientes` (§2.3): sus instancias arrancan una tras otra, no todas en el minuto
+  exacto.
 - Alta sin navegador: `php artisan alojaflow:instalar --nombre= --correo= --idioma= --json` (si ya estaba
   instalada no toca nada) y `php artisan alojaflow:enlace-entrada --json` (enlace de un solo uso, 30 minutos).
 - **Cada instancia vive en una ruta** del mismo dominio, `app.alojaflow.com/<cliente>` (D-163): el servidor web
@@ -337,6 +355,7 @@ Si alguna vez hace falta cambiarlo, la versión nueva tiene que aceptar las dos 
 | `alojaflow:empaquetar [--permitir-cambios] [--clave=] [--composer=] [--salida=]` | Construye y revisa el zip firmado de la versión de `config/alojaflow.php` (§1.1) |
 | `alojaflow:actualizar {zip} [--reinstalar] [--force]` | Actualiza desde la consola (§3.2) |
 | `alojaflow:buscar-version` | Pregunta cuál es la última versión para avisar (§3.1.1). No instala nada. Una vez al día, si no se apagó. |
+| `alojaflow:tareas-pendientes [--ventana=15] [--json]` | Corre las tareas programadas que tocaron desde su última vez, sin depender del minuto (§2.3, D-169). |
 | `alojaflow:finalizar-actualizacion [--actualizacion=ID] [--pendientes]` | Termina una actualización con los archivos puestos o deshace una que se cortó. El programador la lanza cada minuto con `--pendientes`, también en mantenimiento. |
 
 ## 7. Seguridad

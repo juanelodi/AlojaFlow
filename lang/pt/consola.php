@@ -43,4 +43,10 @@ return [
         'sin_super' => 'Não há nenhum super administrador ativo com esse e-mail.',
         'dos_pasos' => 'Esse super administrador usa a verificação em dois passos: a ligação não lhe serve, entra com a sua palavra-passe.',
     ],
+    'tareas_pendientes' => [
+        'nada' => 'Nada pendente.',
+        'tarea' => 'Tarefa',
+        'estado' => 'Estado',
+        'ventana' => 'A janela vai de 1 a 1440 minutos.',
+    ],
 ];

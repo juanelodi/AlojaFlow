@@ -1075,6 +1075,30 @@ los errores y a los reportes. Sin datos de huéspedes, como siempre; el latido l
 decidir, y la pantalla lo explica sin interruptor ni «Olvidar mi instalación». En una instalación propia, todo sigue
 como en D-150. La especificación está en `docs/especificacion/mejora-continua.md`.
 
+### D-169 · 2026-11-09 · Tareas pendientes, sin depender del minuto
+
+Lo pidió el servicio alojado (AFAPP, `cambios-en-alojaflow.md` §12) y lo aprobó el usuario. En DreamHost el cron
+corre cada 10 minutos y AlojaFlow App lanza las instancias una tras otra; `schedule:run` solo corre lo que toca en
+el minuto en que arranca, así que una instancia que empieza a las 3:11 se saltaba la copia de las 3:10 y lo de
+«a los :40».
+
+`alojaflow:tareas-pendientes [--ventana=15] [--json]` (`App\Programador\TareasPendientes`) lee el mismo horario
+de `routes/console.php` —sin repetirlo— y corre cada tarea cuya última hora debida (según su expresión cron y su
+zona) es posterior a la última vez que corrió. Así:
+
+- **Lo de hora fija corre una vez**, en la primera ronda después de su hora; lo de intervalos, una vez por ronda
+  aunque le hayan tocado varias.
+- **Dos rondas encimadas no corren la misma tarea:** se marca antes de correr, bajo un candado, y se vuelve a leer.
+- **Una que falla no detiene a las demás;** sale con 1 y el JSON dice cuál y por qué (solo la clase o `exit N`).
+- **Convive con `schedule:run`**, que también anota cada tarea al empezar (`ScheduledTaskStarting`), y con las
+  tareas por visita, que se apagan con el latido. Respeta los filtros, el modo de mantenimiento y
+  `withoutOverlapping` de cada tarea.
+- La primera vez, una tarea solo cuenta lo que le tocó en los últimos 15 minutos: la copia de anoche no sale a
+  mediodía.
+
+Se usa en una instancia y en cualquier hosting con un cron que no es de cada minuto. La especificación está en
+`instalacion-actualizaciones.md` §2.3.
+
 ## Pendientes
 
 - Precios y modelo de venta.

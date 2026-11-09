@@ -43,4 +43,10 @@ return [
         'sin_super' => 'Nessun super amministratore attivo con questa email.',
         'dos_pasos' => 'Questo super amministratore usa la verifica in due passaggi: il link non funziona, accede con la sua password.',
     ],
+    'tareas_pendientes' => [
+        'nada' => 'Niente in sospeso.',
+        'tarea' => 'Attività',
+        'estado' => 'Stato',
+        'ventana' => 'La finestra va da 1 a 1440 minuti.',
+    ],
 ];

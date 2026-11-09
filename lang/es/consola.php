@@ -44,4 +44,10 @@ return [
         'sin_super' => 'No hay ningún super administrador activo con ese correo.',
         'dos_pasos' => 'Ese super administrador usa la verificación en dos pasos: el enlace no le sirve, entra con su contraseña.',
     ],
+    'tareas_pendientes' => [
+        'nada' => 'Nada pendiente.',
+        'tarea' => 'Tarea',
+        'estado' => 'Estado',
+        'ventana' => 'La ventana va de 1 a 1440 minutos.',
+    ],
 ];

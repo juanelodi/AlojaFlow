@@ -43,4 +43,10 @@ return [
         'sin_super' => 'Aucun super administrateur actif avec cette adresse.',
         'dos_pasos' => 'Ce super administrateur utilise la vérification en deux étapes : le lien ne fonctionne pas pour lui, il se connecte avec son mot de passe.',
     ],
+    'tareas_pendientes' => [
+        'nada' => 'Rien en attente.',
+        'tarea' => 'Tâche',
+        'estado' => 'État',
+        'ventana' => 'La fenêtre va de 1 à 1440 minutes.',
+    ],
 ];

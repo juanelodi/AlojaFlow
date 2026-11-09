@@ -15,6 +15,7 @@ use App\Filament\RecursosDelPanel;
 use App\Filament\Tablas\OrdenAutomatico;
 use App\MejoraContinua\RegistroErrores;
 use App\Models\User;
+use App\Programador\TareasPendientes;
 use App\Seguridad\AuditoriaModelos;
 use App\Seguridad\Dispositivos;
 use App\Seguridad\MemoriaAcceso;
@@ -27,6 +28,7 @@ use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Console\Events\ScheduledTaskStarting;
 use Illuminate\Http\Request;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\Auth;
@@ -64,6 +66,9 @@ class AppServiceProvider extends ServiceProvider
                 RegistroErrores::anotarProblema($registro->level, $registro->message);
             }
         });
+
+        // Lo que corre schedule:run queda anotado: alojaflow:tareas-pendientes no lo repite (D-169).
+        Event::listen(ScheduledTaskStarting::class, fn (ScheduledTaskStarting $evento) => TareasPendientes::anotar($evento->task));
 
         // «Mantener la sesión» usa dispositivos propios (D-076), en lugar del token único de Laravel, que no caduca.
         Event::listen(Login::class, function (Login $evento): void {

@@ -235,7 +235,7 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   (al primer ingreso pide crear la contraseña, D-164). En una instancia, el correo del `.env` es el de la plataforma (`AjustesCorreo`, D-165)
   y `App\Seguridad\AccesoSoporte` deja entrar al soporte con el permiso del cliente (`alojaflow:acceso-soporte`, D-166).
 - `app/Copias/GestorCopias.php` — copias de seguridad (D-038); `CopiaExterna`, `CifradoCopia` y `FirmaS3`, la copia cifrada fuera del servidor (D-152).
-  `app/Programador/`, tareas sin cron (D-039).
+  `app/Programador/`, tareas sin cron (D-039) y `TareasPendientes`, lo que tocó con un cron que no es de cada minuto (`alojaflow:tareas-pendientes`, D-169).
 - `app/Demo/` — `GeneradorDemo`, la propiedad de demostración con datos inventados (D-037), y `ModoDemo`,
   la demostración pública (D-044).
 - `app/Models/` — modelos en español sobre `ModeloBase` (`creado_en`/`actualizado_en`). Las

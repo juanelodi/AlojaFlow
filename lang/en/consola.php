@@ -43,4 +43,10 @@ return [
         'sin_super' => 'There is no active super administrator with that email.',
         'dos_pasos' => 'That super administrator uses two-step verification: the link does not work for them, they sign in with their password.',
     ],
+    'tareas_pendientes' => [
+        'nada' => 'Nothing pending.',
+        'tarea' => 'Task',
+        'estado' => 'Status',
+        'ventana' => 'The window must be between 1 and 1440 minutes.',
+    ],
 ];

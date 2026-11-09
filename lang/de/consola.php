@@ -43,4 +43,10 @@ return [
         'sin_super' => 'Es gibt keinen aktiven Super-Administrator mit dieser E-Mail-Adresse.',
         'dos_pasos' => 'Dieser Super-Administrator nutzt die Zwei-Faktor-Verifizierung: Der Link funktioniert für ihn nicht, er meldet sich mit seinem Passwort an.',
     ],
+    'tareas_pendientes' => [
+        'nada' => 'Nichts ausstehend.',
+        'tarea' => 'Aufgabe',
+        'estado' => 'Status',
+        'ventana' => 'Das Fenster liegt zwischen 1 und 1440 Minuten.',
+    ],
 ];
