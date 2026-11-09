@@ -673,6 +673,7 @@ return [
         'copias_ninguna' => 'Todavía no hay copias',
         'copias_vieja' => 'Crea una en Sistema → Copias de seguridad y descárgala.',
         'correo' => 'Correo saliente',
+        'correo_plataforma' => 'El de AlojaFlow',
         'correo_no' => 'Sin configurar',
         'correo_ayuda' => 'Sin correo no se envían confirmaciones ni códigos. Se configura en Configuración → Correo.',
         'depuracion' => 'Modo de depuración',

@@ -673,6 +673,7 @@ return [
         'copias_ninguna' => 'No backups yet',
         'copias_vieja' => 'Create one under System → Backups and download it.',
         'correo' => 'Outgoing email',
+        'correo_plataforma' => 'AlojaFlow\'s',
         'correo_no' => 'Not configured',
         'correo_ayuda' => 'Without email, confirmations and codes are not sent. Set it up under Settings → Email.',
         'depuracion' => 'Debug mode',

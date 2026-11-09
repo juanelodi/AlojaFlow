@@ -82,6 +82,26 @@ class ValidadorDestino
     }
 
     /**
+     * Un servidor que escribió un usuario sin dirección completa, como el SMTP de un alojamiento en el servicio
+     * alojado (D-165): solo si todas sus direcciones son públicas. Devuelve la IP para fijarla en la conexión.
+     */
+    public function validarServidor(string $host): string
+    {
+        $host = trim($host);
+        $direcciones = $host === '' ? [] : $this->resolver(trim($host, '[]'));
+        if ($direcciones === []) {
+            throw new ErrorSincronizacion(CodigoError::Conexion, 'validar', __('sincronizacion.destino.sin_resolver', ['host' => $host]));
+        }
+        foreach ($direcciones as $ip) {
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE) === false) {
+                throw $this->error(__('sincronizacion.destino.red_local', ['host' => $host]));
+            }
+        }
+
+        return $direcciones[0];
+    }
+
+    /**
      * @return list<string>
      */
     protected function resolver(string $host): array

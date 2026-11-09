@@ -648,6 +648,7 @@ return [
         'copias_ninguna' => 'Aucune sauvegarde pour l’instant',
         'copias_vieja' => 'Créez-en une dans Système → Sauvegardes et téléchargez-la.',
         'correo' => 'E-mail sortant',
+        'correo_plataforma' => 'Celui d\'AlojaFlow',
         'correo_no' => 'Non configuré',
         'correo_ayuda' => 'Sans e-mail, ni confirmations ni codes ne sont envoyés. Cela se configure dans Configuration → E-mail.',
         'depuracion' => 'Mode débogage',

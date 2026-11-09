@@ -192,6 +192,8 @@ return [
     'correo' => [
         'titulo' => 'E-mail',
         'ayuda' => 'Estes dados são fornecidos pelo seu fornecedor de e-mail ou pelo seu hosting. Enquanto não o configurar, as mensagens ficam prontas para copiar ou enviar por WhatsApp.',
+        'plataforma' => 'Os e-mails já saem pelo serviço do AlojaFlow, a partir de :remitente, e as respostas dos hóspedes chegam ao e-mail de cada propriedade. Configure seu próprio servidor só se quiser que saiam do seu domínio.',
+        'red_publica' => 'O servidor :host não está em uma rede pública. Digite o que seu provedor de e-mail informa.',
         'host' => 'Servidor SMTP',
         'puerto' => 'Porta',
         'cifrado' => 'Cifragem',

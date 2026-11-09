@@ -31,7 +31,7 @@ beforeEach(function () {
         'mail.from' => ['address' => 'avisos@avisos.alojaflow.com', 'name' => 'AlojaFlow'],
     ]);
     // Sin red de verdad: lo que diga cada prueba.
-    $this->ips = ['smtp.posada.example' => ['203.0.113.10'], 'interno.posada.example' => ['10.0.0.5'], 'mixto.posada.example' => ['203.0.113.10', '127.0.0.1']];
+    $this->ips = ['smtp.posada.example' => ['93.184.216.34'], 'interno.posada.example' => ['10.0.0.5'], 'mixto.posada.example' => ['93.184.216.34', '127.0.0.1']];
     $ips = &$this->ips;
     $this->app->instance(ValidadorDestino::class, new class ($ips) extends ValidadorDestino {
         /** @param array<string, list<string>> $ips */
@@ -114,7 +114,7 @@ it('en una instancia, se conecta a la IP ya revisada y comprueba el certificado 
 
     expect($correo->prepararMailer())->toBe(AjustesCorreo::MAILER)
         ->and($correo->remitente())->toBe('hola@posada.example')
-        ->and(config('mail.mailers.'.AjustesCorreo::MAILER.'.host'))->toBe('203.0.113.10');
+        ->and(config('mail.mailers.'.AjustesCorreo::MAILER.'.host'))->toBe('93.184.216.34');
     $transporte = Mail::mailer(AjustesCorreo::MAILER)->getSymfonyTransport();
     expect($transporte)->toBeInstanceOf(EsmtpTransport::class);
     /** @var EsmtpTransport $transporte */

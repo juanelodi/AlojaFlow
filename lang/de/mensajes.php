@@ -192,6 +192,8 @@ return [
     'correo' => [
         'titulo' => 'E-Mail',
         'ayuda' => 'Diese Daten erhalten Sie von Ihrem E-Mail-Anbieter oder Ihrem Hosting. Solange sie nicht konfiguriert ist, bleiben die Nachrichten zum Kopieren oder zum Senden per WhatsApp bereit.',
+        'plataforma' => 'E-Mails werden bereits über den AlojaFlow-Dienst von :remitente versendet, und Antworten der Gäste gehen an die E-Mail-Adresse der jeweiligen Unterkunft. Richten Sie einen eigenen Server nur ein, wenn sie von Ihrer Domain kommen sollen.',
+        'red_publica' => 'Der Server :host ist nicht in einem öffentlichen Netz. Geben Sie den Server Ihres E-Mail-Anbieters ein.',
         'host' => 'SMTP-Server',
         'puerto' => 'Port',
         'cifrado' => 'Verschlüsselung',

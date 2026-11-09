@@ -648,6 +648,7 @@ return [
         'copias_ninguna' => 'Noch keine Sicherungen',
         'copias_vieja' => 'Erstellen Sie eine unter System → Sicherungen und laden Sie sie herunter.',
         'correo' => 'Ausgehende E-Mail',
+        'correo_plataforma' => 'Der von AlojaFlow',
         'correo_no' => 'Nicht konfiguriert',
         'correo_ayuda' => 'Ohne E-Mail werden weder Bestätigungen noch Codes versendet. Wird unter Konfiguration → E-Mail eingerichtet.',
         'depuracion' => 'Debug-Modus',

@@ -37,11 +37,11 @@ class PedirRecuperacion extends RequestPasswordReset
 
     public function request(): void
     {
-        // El correo se configura desde el panel: la notificación sale con esa cuenta, no con la de .env.
+        // El correo se configura desde el panel: la notificación sale con esa cuenta, no con la de .env (en el servicio
+        // alojado, con la de la plataforma si el alojamiento no puso la suya).
         $correo = app(AjustesCorreo::class);
-        $correo->mailer();
         config([
-            'mail.default' => AjustesCorreo::MAILER,
+            'mail.default' => $correo->prepararMailer(),
             'mail.from' => ['address' => $correo->remitente(), 'name' => $correo->nombreRemitente()],
         ]);
 

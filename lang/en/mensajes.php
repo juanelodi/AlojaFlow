@@ -192,6 +192,8 @@ return [
     'correo' => [
         'titulo' => 'Email',
         'ayuda' => 'Your email provider or hosting gives you these details. Until you configure them, messages stay ready to copy or send by WhatsApp.',
+        'plataforma' => 'Emails already go out through the AlojaFlow service, from :remitente, and guest replies reach each property\'s email. Set up your own server only if you want them sent from your domain.',
+        'red_publica' => 'The server :host is not on a public network. Enter the one your email provider gives you.',
         'host' => 'SMTP server',
         'puerto' => 'Port',
         'cifrado' => 'Encryption',

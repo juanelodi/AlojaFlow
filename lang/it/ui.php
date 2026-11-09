@@ -648,6 +648,7 @@ return [
         'copias_ninguna' => 'Non ci sono ancora backup',
         'copias_vieja' => 'Creane uno in Sistema → Backup e scaricalo.',
         'correo' => 'E-mail in uscita',
+        'correo_plataforma' => 'Quello di AlojaFlow',
         'correo_no' => 'Non configurata',
         'correo_ayuda' => 'Senza e-mail non si inviano conferme né codici. Si configura in Configurazione → E-mail.',
         'depuracion' => 'Modalità debug',

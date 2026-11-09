@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Modulos;
 
+use App\Comunicacion\AjustesCorreo;
 use App\Demo\ModoDemo;
 use App\Enums\ModoPropiedad;
 use App\Filament\Pages\CopiasSeguridad;
@@ -54,7 +55,7 @@ final class PrimerosPasos
             $abierto = Propiedad::query()->whereIn('id', $independientes)->get()->contains(fn (Propiedad $p): bool => (new AjustesMotor($p))->activo());
             $pasos[] = self::paso('motor', $abierto, MotorDeReservas::getUrl());
         }
-        $pasos[] = self::paso('correo', filled(Ajustes::obtener('correo.host')), Correo::getUrl());
+        $pasos[] = self::paso('correo', app(AjustesCorreo::class)->configurado(), Correo::getUrl());
         $pasos[] = self::paso('dos_pasos', filled($usuario->getAppAuthenticationSecret()), filament()->getProfileUrl());
         $pasos[] = self::paso('cron', TareasPorVisita::cronActivo(), null, TareasPorVisita::comandoCron());
         $pasos[] = self::paso('copia', Ajustes::obtener('copias.ultima') !== null, CopiasSeguridad::getUrl());

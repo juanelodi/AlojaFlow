@@ -13,8 +13,11 @@ namespace App\Filament\Pages;
 use App\Comunicacion\AjustesCorreo;
 use App\Comunicacion\MensajeTexto;
 use App\Demo\ModoDemo;
+use App\Instalacion\Instancia;
 use App\Models\RegistroAuditoria;
 use App\Seguridad\Acceso;
+use App\Sincronizacion\HotelDruid\ErrorSincronizacion;
+use App\Sincronizacion\HotelDruid\ValidadorDestino;
 use App\Support\Ajustes;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -26,6 +29,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 /**
@@ -82,7 +86,9 @@ class Correo extends Page
     public function form(Schema $schema): Schema
     {
         return $schema->statePath('datos')->components([
-            Section::make()->description(__('mensajes.correo.ayuda'))->columns(['default' => 1, 'md' => 2])->schema([
+            Section::make()->description(fn (AjustesCorreo $correo): string => $correo->dePlataforma()
+                ? __('mensajes.correo.plataforma', ['remitente' => $correo->remitente()])
+                : __('mensajes.correo.ayuda'))->columns(['default' => 1, 'md' => 2])->schema([
                 TextInput::make('host')->label(__('mensajes.correo.host'))->maxLength(255)->required(),
                 TextInput::make('puerto')->label(__('mensajes.correo.puerto'))->integer()->minValue(1)->maxValue(65535)->required(),
                 Select::make('cifrado')->label(__('mensajes.correo.cifrado'))->helperText(__('mensajes.correo.cifrado_ayuda'))->native(false)->required()
@@ -99,6 +105,14 @@ class Correo extends Page
     public function guardar(): void
     {
         $datos = $this->form->getState();
+        // En el servicio alojado (D-165), solo un servidor en una red pública: el de la red interna sería de otro.
+        if (Instancia::activa()) {
+            try {
+                app(ValidadorDestino::class)->validarServidor((string) $datos['host']);
+            } catch (ErrorSincronizacion) {
+                throw ValidationException::withMessages(['datos.host' => __('mensajes.correo.red_publica', ['host' => (string) $datos['host']])]);
+            }
+        }
         foreach (['host', 'puerto', 'cifrado', 'usuario', 'remitente_correo', 'remitente_nombre'] as $campo) {
             Ajustes::guardar('correo.'.$campo, $datos[$campo] ?? null);
         }

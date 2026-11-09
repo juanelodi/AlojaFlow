@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Comunicacion\AjustesCorreo;
 use App\Demo\ModoDemo;
 use App\Instalacion\VersionPhp;
 use App\Models\User;
@@ -104,9 +105,11 @@ class EstadoSistema extends Page
         }
 
         $correo = Ajustes::obtener('correo.host');
-        $filas[] = filled($correo)
-            ? $this->fila('correo', (string) $correo, 'ok')
-            : $this->fila('correo', __('ui.estado.correo_no'), 'aviso', __('ui.estado.correo_ayuda'));
+        $filas[] = match (true) {
+            filled($correo) => $this->fila('correo', (string) $correo, 'ok'),
+            app(AjustesCorreo::class)->dePlataforma() => $this->fila('correo', __('ui.estado.correo_plataforma'), 'ok'),
+            default => $this->fila('correo', __('ui.estado.correo_no'), 'aviso', __('ui.estado.correo_ayuda')),
+        };
 
         $filas[] = config('app.debug')
             ? $this->fila('depuracion', __('ui.estado.depuracion_si'), 'error', __('ui.estado.depuracion_ayuda'))

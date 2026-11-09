@@ -1014,6 +1014,22 @@ salir y la verificación en dos pasos que exija el panel siguen disponibles. Que
 - Cambiar la contraseña por cualquier otro camino (recuperarla por correo) quita la marca.
 - Si el dueño cierra sin crearla, AlojaFlow App le pide otro enlace con `alojaflow:enlace-entrada` y se le vuelve a pedir.
 
+### D-165 · 2026-11-09 · El correo de la plataforma en el servicio alojado
+
+En una instancia (D-162), el correo del `.env` es el del proveedor de la plataforma (`avisos.alojaflow.com`) y
+**cuenta como configurado**: los mensajes a huéspedes, los avisos, el código de la llegada y «¿Olvidaste tu
+contraseña?» funcionan desde el primer día. Sale con el remitente de la plataforma —el proveedor no deja pasar
+el de otro dominio— y con el nombre de la propiedad; las respuestas van al correo de la propiedad (Responder a).
+Comunicación → Correo lo explica, y Estado del sistema y los primeros pasos lo dan por hecho. Con `MAIL_MAILER`
+`log` o `array` la plataforma no tiene correo. En una instalación propia el `.env` sigue sin contar.
+
+- El servidor SMTP del alojamiento sigue siendo opcional y, si lo pone, se usa ese con su remitente.
+- **En una instancia, ese servidor debe estar en una red pública** (`ValidadorDestino::validarServidor`, como
+  `ClienteExterno`): al guardarlo, y otra vez en cada envío, que se hace **a la IP ya revisada** con el
+  certificado comprobado por el nombre. Así nadie usa el correo para tocar la red interna del servidor
+  compartido, ni cambia el nombre a otra IP después de la revisión. En una instalación propia puede seguir en la
+  red local.
+
 ## Pendientes
 
 - Precios y modelo de venta.

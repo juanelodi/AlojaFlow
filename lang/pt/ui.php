@@ -648,6 +648,7 @@ return [
         'copias_ninguna' => 'Ainda não há cópias',
         'copias_vieja' => 'Crie uma em Sistema → Cópias de segurança e descarregue-a.',
         'correo' => 'E-mail de saída',
+        'correo_plataforma' => 'O do AlojaFlow',
         'correo_no' => 'Não configurado',
         'correo_ayuda' => 'Sem e-mail não são enviadas confirmações nem códigos. Configura-se em Configuração → E-mail.',
         'depuracion' => 'Modo de depuração',

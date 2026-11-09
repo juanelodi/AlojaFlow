@@ -192,6 +192,8 @@ return [
     'correo' => [
         'titulo' => 'E-mail',
         'ayuda' => 'Ces données sont fournies par votre fournisseur de messagerie ou votre hébergeur. Tant que ce n’est pas configuré, les messages restent prêts à être copiés ou envoyés par WhatsApp.',
+        'plataforma' => 'Les e-mails partent déjà par le service AlojaFlow, depuis :remitente, et les réponses des clients arrivent à l\'adresse de chaque établissement. Configurez votre propre serveur uniquement si vous voulez qu\'ils partent de votre domaine.',
+        'red_publica' => 'Le serveur :host n\'est pas sur un réseau public. Saisissez celui que vous donne votre fournisseur de messagerie.',
         'host' => 'Serveur SMTP',
         'puerto' => 'Port',
         'cifrado' => 'Chiffrement',
