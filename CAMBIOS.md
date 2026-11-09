@@ -2,6 +2,21 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.41 — 2026-11-09
+
+**Lista para el servicio alojado.** Esta versión trae lo que necesita AlojaFlow App, el servicio en `app.alojaflow.com/<tu-alojamiento>`:
+
+- cada cliente en su propia carpeta y con su propia base;
+- la primera vez que el dueño entra, crea su contraseña;
+- los avisos salen con el correo de la plataforma;
+- el equipo de soporte de AlojaFlow solo entra con tu permiso, que das por 24 horas en Sistema → Soporte de AlojaFlow, y todo lo que hace queda en la auditoría con su nombre.
+
+En tu propia instalación nada de esto cambia.
+
+**Tareas con un cron cada 10 minutos.** Si tu hosting no deja programar la tarea cada minuto (DreamHost, por ejemplo), cambia `schedule:run` por `alojaflow:tareas-pendientes` en el cron. Así corre todo lo que tocó desde la última vez, aunque arranque en otro minuto, como la copia de las 3:10. Si subiste los archivos a mano, antes de las tareas pone la base al día.
+
+**Instalar sin navegador.** `php artisan alojaflow:instalar` instala desde la consola cuando el `.env` ya está escrito.
+
 ## 1.0.40 — 2026-11-08
 
 **Copias fuera del servidor.** En Copias de seguridad puedes mandar cada copia programada a un almacenamiento aparte (DreamObjects, Backblaze, Wasabi, Cloudflare R2 o WebDAV), cifrada con una clave que solo tú conoces. Se guardan siete diarias y doce mensuales. **Anota la clave en un lugar seguro:** sin ella no se pueden abrir.
