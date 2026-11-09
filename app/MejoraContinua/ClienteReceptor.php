@@ -41,6 +41,18 @@ final class ClienteReceptor
     }
 
     /**
+     * Lo que va en cada envío de una instancia alojada (D-168).
+     *
+     * @return array<string, array{codigo: string}>
+     */
+    private function marca(): array
+    {
+        $alojada = Permiso::alojada();
+
+        return $alojada === null ? [] : ['alojada' => $alojada];
+    }
+
+    /**
      * @throws ErrorReceptor
      */
     public function asegurarRegistro(): void
@@ -51,7 +63,7 @@ final class ClienteReceptor
         // Si el UUID ya existe allá (una copia de esta instalación se registró antes), se prueba con otro.
         for ($intento = 0; $intento < 2; $intento++) {
             $uuid = (string) Str::uuid();
-            $respuesta = $this->enviar(fn (PendingRequest $http): Response => $http->post('instalaciones', ['uuid' => $uuid, 'version' => (string) config('alojaflow.version')]));
+            $respuesta = $this->enviar(fn (PendingRequest $http): Response => $http->post('instalaciones', ['uuid' => $uuid, 'version' => (string) config('alojaflow.version')] + $this->marca()));
             if ($respuesta->status() === 409) {
                 continue;
             }
@@ -85,7 +97,7 @@ final class ClienteReceptor
      */
     public function errores(array $errores): void
     {
-        $this->datos($this->autenticada(fn (PendingRequest $http): Response => $http->post('errores', ['errores' => $errores])));
+        $this->datos($this->autenticada(fn (PendingRequest $http): Response => $http->post('errores', ['errores' => $errores] + $this->marca())));
     }
 
     /**
@@ -96,7 +108,7 @@ final class ClienteReceptor
      */
     public function crearReporte(array $reporte): array
     {
-        return $this->datos($this->autenticada(fn (PendingRequest $http): Response => $http->post('reportes', $reporte)));
+        return $this->datos($this->autenticada(fn (PendingRequest $http): Response => $http->post('reportes', $reporte + $this->marca())));
     }
 
     /**

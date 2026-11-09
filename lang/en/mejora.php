@@ -11,6 +11,7 @@ declare(strict_types=1);
 return [
     'nav' => 'Continuous improvement',
     'nav_ajustes' => 'What is sent',
+    'por_contrato' => 'Your system is on the AlojaFlow hosted service: this diagnostic and usage data is sent under your contract, with your system\'s code and nothing about your guests. Above you can see exactly what is sent.',
     'titulo' => 'Continuous improvement',
     'intro' => 'Help improve AlojaFlow by sending the AlojaFlow team, once a day, diagnostic and usage data from this installation. It is optional and you can turn it off at any time.',
     'que_se_manda' => 'What is sent',

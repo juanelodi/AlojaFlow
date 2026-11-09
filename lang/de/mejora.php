@@ -11,6 +11,7 @@ declare(strict_types=1);
 return [
     'nav' => 'Kontinuierliche Verbesserung',
     'nav_ajustes' => 'Was gesendet wird',
+    'por_contrato' => 'Ihr System läuft im gehosteten AlojaFlow-Dienst: Diese Diagnose- und Nutzungsdaten werden gemäß Ihrem Vertrag gesendet, mit dem Code Ihres Systems und ohne Daten Ihrer Gäste. Oben sehen Sie genau, was gesendet wird.',
     'titulo' => 'Kontinuierliche Verbesserung',
     'intro' => 'Helfen Sie, AlojaFlow zu verbessern, indem Sie dem AlojaFlow-Team einmal täglich Diagnose- und Nutzungsdaten dieser Installation senden. Es ist freiwillig und lässt sich jederzeit ausschalten.',
     'que_se_manda' => 'Was gesendet wird',

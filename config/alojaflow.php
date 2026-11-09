@@ -67,9 +67,16 @@ return [
 
     // Mejora continua (D-150; docs/especificacion/mejora-continua.md): datos de diagnóstico y uso, sin
     // huéspedes, solo con permiso de quien administra la instalación. Los reportes los manda quien los escribe.
+    // El servicio alojado (D-162): el código del cliente, que AlojaFlow App escribe en el .env de su instancia.
+    'instancia' => [
+        'codigo' => env('ALOJAFLOW_CODIGO_INSTANCIA'),
+    ],
+
     'mejora_continua' => [
         // Quien distribuya su propia versión de AlojaFlow pone aquí su receptor, o lo deja vacío para no mandar nada.
         'url' => env('ALOJAFLOW_MEJORA_URL', 'https://dev.alojaflow.com/api/v1'),
+        // En el servicio alojado lo decide el contrato, no una casilla (D-168): por omisión, sí.
+        'alojada' => (bool) env('ALOJAFLOW_MEJORA_CONTINUA', true),
         'tiempo_conexion' => 5,
         'tiempo_peticion' => 20,
         'agente' => 'AlojaFlow/%s (mejora continua; +https://alojaflow.com)',

@@ -81,6 +81,20 @@ final class Instancia
     }
 
     /**
+     * El código del cliente (el de su ruta, app.alojaflow.com/<codigo>): el que escribió AlojaFlow App en el .env o,
+     * si falta, el nombre de la carpeta.
+     */
+    public static function codigo(): ?string
+    {
+        if (self::$carpeta === null) {
+            return null;
+        }
+        $codigo = config('alojaflow.instancia.codigo');
+
+        return is_string($codigo) && $codigo !== '' ? $codigo : basename(self::$carpeta);
+    }
+
+    /**
      * Una variable ajena solo se acepta si dice lo mismo que el .env de la instancia (la heredó un proceso de la
      * misma instancia).
      */

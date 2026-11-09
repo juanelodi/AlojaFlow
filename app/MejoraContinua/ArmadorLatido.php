@@ -63,6 +63,10 @@ final class ArmadorLatido
             'uso' => $this->seccion(fn (): array => $this->uso()),
             'salud' => $this->seccion(fn (): array => $this->salud()),
         ];
+        $alojada = Permiso::alojada();
+        if ($alojada !== null) {
+            $latido['alojada'] = $alojada;
+        }
         $identificacion = Permiso::identificacion();
         if ($identificacion !== null) {
             $latido['identificacion'] = $identificacion;

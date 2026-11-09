@@ -11,6 +11,7 @@ declare(strict_types=1);
 return [
     'nav' => 'Amélioration continue',
     'nav_ajustes' => 'Ce qui est envoyé',
+    'por_contrato' => 'Votre système est sur le service hébergé d\'AlojaFlow : ces données de diagnostic et d\'utilisation sont envoyées selon votre contrat, avec le code de votre système et rien sur vos clients. Ci-dessus, vous voyez exactement ce qui est envoyé.',
     'titulo' => 'Amélioration continue',
     'intro' => 'Aidez à améliorer AlojaFlow en envoyant à l\'équipe AlojaFlow, une fois par jour, des données de diagnostic et d\'utilisation de cette installation. Ce n\'est pas obligatoire et vous pouvez le désactiver à tout moment.',
     'que_se_manda' => 'Ce qui est envoyé',

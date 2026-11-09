@@ -13,6 +13,9 @@ es `https://dev.alojaflow.com/api/v1` (`ALOJAFLOW_MEJORA_URL`; vacío, no se man
   exactamente lo que se manda y «Olvidar mi instalación», que borra en el receptor todo lo suyo.
 - Sin permiso no se junta nada: ni errores ni visitas. Lo que hubiera quedado se borra.
 - En la demostración pública (`ModoDemo`) nunca se manda nada.
+- **En el servicio alojado** (una instancia, D-162) no hay casilla ni aviso: lo decide el contrato
+  (D-168). `ALOJAFLOW_MEJORA_CONTINUA` en el `.env` de la instancia (por omisión, sí) lo apaga. La pantalla lo
+  explica y sigue enseñando lo que se manda; no tiene «Olvidar mi instalación».
 
 ## 2. Qué se manda
 
@@ -25,6 +28,7 @@ contraseñas, claves, el contenido de `.env` ni nombres del personal.
 | Errores | Cada hora, si hubo | Lo que reporta Laravel: clase, mensaje **saneado**, archivo y línea relativos, traza sin argumentos, ruta, método, rol (no el usuario) e idioma. De una consulta, el SQL con `?`, nunca sus valores. El mismo error el mismo día va una vez, con cuántas veces pasó. También (D-161) los errores de JavaScript del panel —tipo, mensaje saneado, archivo, línea, pila y pantalla con los números cambiados por `{n}`, como mucho cinco por página— y los avisos del registro de nivel *warning* o más sin excepción. |
 | Visitas | En el latido | Por nombre de pantalla y día; una escritura por página abierta (`ContarPantallas`). |
 | Identificación | En el latido, solo si se eligió | Nombre del alojamiento, dominio y correo de contacto. Al quitarla, el receptor la borra. |
+| Marca de alojada | En el registro, el latido, los errores y los reportes, solo de una instancia | `alojada: {codigo}`: el código del cliente en el servicio alojado (`ALOJAFLOW_CODIGO_INSTANCIA`, o el nombre de su carpeta). Todas comparten `app.alojaflow.com`: el receptor las distingue por él. |
 
 `App\MejoraContinua\Saneador` quita del mensaje de error correos, números de 6 o más cifras, lo que va
 entre comillas (salvo nombres de código, como `key "tarifa"`) y las rutas del servidor. El receptor
@@ -57,6 +61,9 @@ agregan solos la pantalla de donde se abrió, el idioma, el rol, el navegador y 
 | `POST reportes/{folio}/imagenes` | Una imagen por petición (`imagen`, `orden` 1–10). |
 | `GET reportes[?desde=]` | Estado y respuesta de los reportes de la instalación. |
 | `DELETE instalaciones/yo` | «Olvidar mi instalación». |
+
+Una instancia alojada agrega `alojada: {codigo}` al cuerpo de `POST instalaciones`, `POST latidos`,
+`POST errores` y `POST reportes` (D-168).
 
 Cabeceras: `X-AlojaFlow-Instalacion: <uuid>` y `Authorization: Bearer <ficha>`. Solo HTTPS (salvo
 `localhost`). Con un 401 la instalación olvida su ficha y se registra de nuevo la siguiente vez.

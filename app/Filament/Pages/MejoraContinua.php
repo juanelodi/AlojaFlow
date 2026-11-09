@@ -90,7 +90,7 @@ class MejoraContinua extends Page
     public function form(Schema $schema): Schema
     {
         return $schema->statePath('datos')->components([
-            Section::make()->schema([
+            Section::make()->visible(fn (): bool => ! Permiso::porContrato())->schema([
                 Toggle::make('permiso')->label(__('mejora.permiso'))
                     ->helperText(fn (): string => __('mejora.permiso_ayuda', ['receptor' => (string) parse_url((string) config('alojaflow.mejora_continua.url'), PHP_URL_HOST)]))
                     ->live(),
@@ -108,6 +108,7 @@ class MejoraContinua extends Page
 
     public function guardar(): void
     {
+        abort_if(Permiso::porContrato(), 403);
         $datos = $this->form->getState();
         $permiso = (bool) ($datos['permiso'] ?? false);
         Permiso::guardar($permiso);
@@ -188,7 +189,7 @@ class MejoraContinua extends Page
                 ->outlined()
                 ->requiresConfirmation()
                 ->modalDescription(__('mejora.olvidar_ayuda'))
-                ->visible(fn (): bool => app(ClienteReceptor::class)->registrado())
+                ->visible(fn (): bool => app(ClienteReceptor::class)->registrado() && ! Permiso::porContrato())
                 ->action(function (ClienteReceptor $cliente): void {
                     try {
                         $cliente->olvidar();

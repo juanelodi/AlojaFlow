@@ -11,6 +11,7 @@ declare(strict_types=1);
 return [
     'nav' => 'Miglioramento continuo',
     'nav_ajustes' => 'Cosa viene inviato',
+    'por_contrato' => 'Il tuo sistema è nel servizio ospitato di AlojaFlow: questi dati di diagnostica e di utilizzo vengono inviati secondo il tuo contratto, con il codice del tuo sistema e nulla dei tuoi ospiti. Qui sopra vedi esattamente cosa viene inviato.',
     'titulo' => 'Miglioramento continuo',
     'intro' => 'Aiuta a migliorare AlojaFlow inviando al team di AlojaFlow, una volta al giorno, dati di diagnostica e di utilizzo di questa installazione. Non è obbligatorio e puoi disattivarlo quando vuoi.',
     'que_se_manda' => 'Cosa viene inviato',

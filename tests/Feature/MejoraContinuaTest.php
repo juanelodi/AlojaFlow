@@ -401,3 +401,60 @@ it('guarda los errores de JavaScript del panel y los problemas del registro, san
     auth()->guard()->logout();
     $this->post(route('mejora-continua.error-navegador'), $error)->assertRedirect();
 });
+
+describe('servicio alojado', function () {
+    it('el latido, los errores y el registro llevan la marca de alojada y el código de la instancia', function () {
+        comoInstancia('/celda/instancias/casamexica');
+        config(['alojaflow.instancia.codigo' => 'casamexica']);
+        // Lo que dejó alojaflow:instalar no cuenta: en el servicio alojado lo decide el contrato.
+        Permiso::guardar(false);
+        receptorFalso();
+        RegistroErrores::anotar(new RuntimeException('Algo falló'));
+
+        $this->artisan('alojaflow:mejora-continua')->assertSuccessful();
+
+        expect(rutasPedidas())->toBe(['POST instalaciones', 'POST errores', 'POST latidos']);
+        foreach (['instalaciones', 'errores', 'latidos'] as $ruta) {
+            $cuerpo = json_decode((string) collect($this->peticiones)->firstWhere('ruta', $ruta)['cuerpo'], true);
+            expect($cuerpo['alojada'] ?? null)->toBe(['codigo' => 'casamexica']);
+        }
+        $latido = json_decode((string) collect($this->peticiones)->firstWhere('ruta', 'latidos')['cuerpo'], true);
+        expect((string) json_encode($latido))->not->toContain('anastasia')->not->toContain('Posada');
+    });
+
+    it('sin código en el .env, usa el nombre de la carpeta de la instancia', function () {
+        comoInstancia('/celda/instancias/casamexica');
+        config(['alojaflow.instancia.codigo' => null]);
+
+        expect(app(ArmadorLatido::class)->armar()['alojada'])->toBe(['codigo' => 'casamexica']);
+    });
+
+    it('una instalación propia no lleva la marca', function () {
+        Permiso::guardar(true);
+
+        expect(app(ArmadorLatido::class)->armar())->not->toHaveKey('alojada');
+    });
+
+    it('el contrato puede apagarlo con ALOJAFLOW_MEJORA_CONTINUA', function () {
+        comoInstancia();
+        config(['alojaflow.mejora_continua.alojada' => false]);
+        Permiso::guardar(true);
+
+        expect(Permiso::activa())->toBeFalse();
+    });
+
+    it('en una instancia la pantalla explica que lo decide el contrato, sin casilla ni «olvidar»', function () {
+        comoInstancia();
+        $this->actingAs($this->admin);
+
+        Livewire::test(MejoraContinua::class)
+            ->assertSee(__('mejora.por_contrato'))
+            ->assertDontSee(__('mejora.permiso'))
+            ->assertActionHidden('olvidar')
+            ->assertActionVisible('ver');
+        // Ni el aviso para decidir.
+        expect((string) App\Providers\Filament\PanelAplicacionProvider::avisoMejoraContinua())->toBe('');
+
+        $this->actingAs($this->recepcion)->get(MejoraContinua::getUrl())->assertForbidden();
+    });
+});

@@ -1063,6 +1063,18 @@ En el servicio alojado, el servidor, el `.env` y las tareas los lleva AlojaFlow 
 
 «Código fuente» y «Acerca de» se quedan: la AGPL pide que cada cliente pueda bajar el código exacto con que corre.
 
+### D-168 · 2026-11-09 · La mejora continua de una instancia alojada
+
+En el servicio alojado todas las instancias comparten `app.alojaflow.com`, así que `dev.alojaflow.com` no las
+distingue por el dominio. Una instancia agrega **`alojada: {codigo}`** —el código del cliente
+(`ALOJAFLOW_CODIGO_INSTANCIA`, que ya escribe AlojaFlow App, o el nombre de su carpeta)— al registro, al latido, a
+los errores y a los reportes. Sin datos de huéspedes, como siempre; el latido lo enseña en «Ver lo que se envía».
+
+**El permiso lo decide el contrato, no una casilla:** en una instancia se manda salvo que el `.env` diga
+`ALOJAFLOW_MEJORA_CONTINUA=false`. Lo que dejó `alojaflow:instalar` en el ajuste no cuenta, no aparece el aviso para
+decidir, y la pantalla lo explica sin interruptor ni «Olvidar mi instalación». En una instalación propia, todo sigue
+como en D-150. La especificación está en `docs/especificacion/mejora-continua.md`.
+
 ## Pendientes
 
 - Precios y modelo de venta.

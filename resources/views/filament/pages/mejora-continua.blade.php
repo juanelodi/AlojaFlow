@@ -17,10 +17,16 @@
             </div>
         </x-filament::section>
 
-        <form wire:submit="guardar" class="af-pila">
-            {{ $this->form }}
-            <div><x-filament::button type="submit">{{ __('filament-panels::resources/pages/edit-record.form.actions.save.label') }}</x-filament::button></div>
-        </form>
+        @if (\App\MejoraContinua\Permiso::porContrato())
+            <x-filament::section>
+                <p class="af-prosa">{{ __('mejora.por_contrato') }}</p>
+            </x-filament::section>
+        @else
+            <form wire:submit="guardar" class="af-pila">
+                {{ $this->form }}
+                <div><x-filament::button type="submit">{{ __('filament-panels::resources/pages/edit-record.form.actions.save.label') }}</x-filament::button></div>
+            </form>
+        @endif
 
         <x-filament::section :heading="__('mejora.estado.titulo')">
             <div class="af-prosa">

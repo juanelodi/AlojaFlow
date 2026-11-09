@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\MejoraContinua;
 
 use App\Demo\ModoDemo;
+use App\Instalacion\Instancia;
 use App\Support\Ajustes;
 
 /**
@@ -28,12 +29,36 @@ final class Permiso
 
     public static function decidido(): bool
     {
-        return is_bool(Ajustes::obtener(self::AJUSTE));
+        return self::porContrato() || is_bool(Ajustes::obtener(self::AJUSTE));
     }
 
     public static function concedido(): bool
     {
+        if (self::porContrato()) {
+            return (bool) config('alojaflow.mejora_continua.alojada');
+        }
+
         return Ajustes::obtener(self::AJUSTE) === true;
+    }
+
+    /**
+     * En el servicio alojado (D-168) no hay casilla: lo decide el contrato, con ALOJAFLOW_MEJORA_CONTINUA en el .env.
+     */
+    public static function porContrato(): bool
+    {
+        return Instancia::activa();
+    }
+
+    /**
+     * La marca que distingue a una instancia alojada en el receptor: todas comparten dominio, así que va su código.
+     *
+     * @return array{codigo: string}|null
+     */
+    public static function alojada(): ?array
+    {
+        $codigo = Instancia::codigo();
+
+        return $codigo === null ? null : ['codigo' => $codigo];
     }
 
     public static function guardar(bool $concedido): void

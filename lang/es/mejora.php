@@ -12,6 +12,7 @@ declare(strict_types=1);
 return [
     'nav' => 'Mejora continua',
     'nav_ajustes' => 'Qué se envía',
+    'por_contrato' => 'Tu sistema está en el servicio alojado de AlojaFlow: estos datos de diagnóstico y de uso se mandan según tu contrato, con el código de tu sistema y sin nada de tus huéspedes. Arriba ves exactamente lo que se manda.',
     'titulo' => 'Mejora continua',
     'intro' => 'Ayuda a mejorar AlojaFlow mandando, una vez al día, datos de diagnóstico y de uso de esta instalación al equipo de AlojaFlow. No es obligatorio y lo puedes apagar cuando quieras.',
     'que_se_manda' => 'Qué se manda',
