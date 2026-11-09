@@ -323,7 +323,8 @@
     }
     window.alojaFlowCalendario = true;
 
-    const llave = 'alojaflow.calendario.opciones';
+    // Con la ruta de la instalación (componentes/cabeza-panel.blade.php): fuera del panel, la de siempre.
+    const llave = (window.alojaFlowLlave ?? ((nombre) => `alojaflow.${nombre}`))('calendario.opciones');
     let opciones = {};
     try {
         const guardadas = JSON.parse(localStorage.getItem(llave) ?? '{}');

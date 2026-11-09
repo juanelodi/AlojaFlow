@@ -149,6 +149,10 @@ instancias/casamexica/
   AlojaFlow App.
 - Alta sin navegador: `php artisan alojaflow:instalar --nombre= --correo= --idioma= --json` (si ya estaba
   instalada no toca nada) y `php artisan alojaflow:enlace-entrada --json` (enlace de un solo uso, 30 minutos).
+- **Cada instancia vive en una ruta** del mismo dominio, `app.alojaflow.com/<cliente>` (D-163): el servidor web
+  pasa `SCRIPT_NAME=/<cliente>/index.php`, `APP_URL` lleva la ruta y `SESSION_PATH=/<cliente>` deja las
+  galletas solo ahí. Como todas comparten el origen del navegador, nada de lo que escribe un alojamiento se
+  ejecuta en él.
 
 ## 3. Actualizar
 

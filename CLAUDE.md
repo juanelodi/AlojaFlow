@@ -329,6 +329,10 @@ npx license-checker --summary             # licencias npm
 - Eloquent guarda un `datetime` en la zona que traiga la instancia, sin convertirla: a las columnas en UTC, `->utc()`.
 - El PHP de Wamp no trae certificados: toda petición https da «cURL error 60», y Actualizaciones dice que GitHub no respondió. En este equipo hace falta `curl.cainfo` y `openssl.cafile` en su `php.ini` o con `-d` (sirve el `ca-bundle.crt` de Git, en `usr/ssl/certs`).
 - Livewire no acepta más de 1 MB por petición y cuenta su snapshot: un texto largo en una propiedad pública viaja dos veces, y al pasarse truena sin explicar nada. Se queda en Alpine y va como argumento (`ImportarDatos`).
+- En el servicio alojado los clientes comparten origen (`app.alojaflow.com/<cliente>`, D-163): nada de lo que escribe
+  un alojamiento se imprime con `{!! !!}` sin `Str::sanitizeHtml`, no hay HTML libre ni «código de seguimiento», un
+  archivo subido solo se abre en el navegador si es JPG, PNG, WebP o PDF, y lo que se guarda en `localStorage` va con
+  `alojaFlowLlave()`. Ninguna dirección fija desde la raíz (`href="/…"`, `fetch('/…')`): lo vigila `RutaBaseTest`.
 - Un CSV con comas se abre en una sola columna donde Excel separa la lista con «;», y uno con «;», donde la separa con comas: lo que se abre en Excel va con `Csv::descargaParaExcel` (D-128), y lo que se suma, con `Csv::numero`. Y al guardar, las fechas quedan como en su país: se leen con `Pais::fechaConMesPrimero`.
 
 ## Referencias locales (solo lectura)

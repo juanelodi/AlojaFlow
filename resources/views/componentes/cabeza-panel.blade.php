@@ -7,6 +7,12 @@
     <meta name="af-errores-url" content="{{ route('mejora-continua.error-navegador') }}">
 @endif
 <link rel="apple-touch-icon" href="{{ asset('img/icono-apple-180.png') }}">
+{{-- Lo que se guarda en este navegador lleva la ruta de la instalación: en el servicio alojado, los clientes comparten
+     la dirección (app.alojaflow.com/<cliente>, D-163) y no deben leer ni pisar lo de otro. Sin ruta, «alojaflow.<nombre>». --}}
+@php($prefijoLlaves = 'alojaflow'.rtrim((string) parse_url(url('/'), PHP_URL_PATH), '/').'.')
+<script>
+    window.alojaFlowLlave = (nombre) => @js($prefijoLlaves) + nombre;
+</script>
 {{-- Al imprimir, siempre claro. --}}
 <script>
     window.addEventListener('beforeprint', () => {

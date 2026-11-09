@@ -151,7 +151,7 @@
             init() {
                 // Solo para no volver a escribirlo: se queda en este navegador.
                 try {
-                    this.destino = localStorage.getItem('alojaflow.aviso.telefono') ?? '';
+                    this.destino = localStorage.getItem(window.alojaFlowLlave('aviso.telefono')) ?? '';
                 } catch (error) {
                     this.destino = '';
                 }
@@ -159,7 +159,7 @@
 
             recordar() {
                 try {
-                    localStorage.setItem('alojaflow.aviso.telefono', this.destino);
+                    localStorage.setItem(window.alojaFlowLlave('aviso.telefono'), this.destino);
                 } catch (error) {
                     // Sin almacenamiento, solo hay que volver a escribirlo.
                 }

@@ -983,6 +983,25 @@ Por qué así y no una base compartida con un identificador de cliente: lo pide 
 un olvido en una consulta no puede mostrar los datos de otro; exportar, restaurar o borrar a un cliente es una
 base y una carpeta; y es el mismo AlojaFlow que se instala en un hosting.
 
+### D-163 · 2026-11-09 · En el servicio alojado, cada cliente en una ruta del mismo dominio
+
+El usuario decidió que cada cliente del servicio alojado viva en `app.alojaflow.com/<cliente>` (se estudiaron
+también los subdominios, que separan mejor a los clientes en el navegador). AlojaFlow corre ahí como en una
+carpeta del hosting: el servidor web le dice su ruta con `SCRIPT_NAME`, y `APP_URL` la lleva.
+
+- **Todas las direcciones con la ruta.** AlojaFlow ya las armaba así (con `route()`, `url()` y `APP_URL`);
+  `RutaBaseTest` comprueba que ninguna salga sin ella. Nada de direcciones fijas desde la raíz del dominio.
+- **Galletas por ruta.** Las pone el `.env` de la instancia (`SESSION_PATH=/<cliente>`); la sesión,
+  `XSRF-TOKEN` y «recordarme» la respetan sin cambios.
+- **Lo que se guarda en el navegador lleva la ruta:** `alojaFlowLlave('calendario.vista')` da
+  `alojaflow/<cliente>.calendario.vista`. Sin ruta, la llave de siempre (`alojaflow.calendario.vista`).
+- **Nada de lo que escribe un alojamiento se ejecuta en el navegador.** Todos los clientes comparten el origen,
+  y la política de contenido permite scripts en línea (Livewire y Alpine): un XSS en la página de uno
+  alcanzaría a quien tenga sesión en otro. Revisado: Blade escapa todo; lo que va sin escapar es código propio
+  (colores validados, JSON-LD con `JSON_HEX_TAG`, QR) o HTML limpiado con `Str::sanitizeHtml` (documentos
+  propios); no hay HTML libre ni «código de seguimiento»; un archivo subido solo se abre en el navegador si es
+  JPG, PNG, WebP o PDF. Queda como regla para lo que se agregue.
+
 ## Pendientes
 
 - Precios y modelo de venta.

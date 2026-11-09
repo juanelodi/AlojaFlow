@@ -28,8 +28,8 @@
     {{-- Abre por habitaciones. Quien eligió el día lo sigue viendo, porque lo recuerda este navegador (D-143). --}}
     <div class="af-pila af-cal-vistas af-cal-vistas--{{ $vista ?? 'mes' }}"
          x-data="{
-             recordar(vista) { try { localStorage.setItem('alojaflow.calendario.vista', vista) } catch (error) {} },
-             recordada() { try { return localStorage.getItem('alojaflow.calendario.vista') } catch (error) { return null } },
+             recordar(vista) { try { localStorage.setItem(window.alojaFlowLlave('calendario.vista'), vista) } catch (error) {} },
+             recordada() { try { return localStorage.getItem(window.alojaFlowLlave('calendario.vista')) } catch (error) { return null } },
          }"
          x-init="if (! $wire.vista && recordada() === 'dia') { $wire.cambiarVista('dia') }">
         <div class="af-barra-herramientas">
