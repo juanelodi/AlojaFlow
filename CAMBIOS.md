@@ -2,6 +2,24 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.42 — 2026-11-09
+
+**Sin WhatsApp por la API de Meta.** AlojaFlow ya no manda plantillas de WhatsApp por la API de Meta. Se quitaron la pantalla Comunicación → WhatsApp y la acción «Plantilla de WhatsApp al huésped».
+
+Al actualizar:
+- se borran el identificador del número y el token que hayas guardado;
+- se borran las automatizaciones de ese tipo;
+- lo que faltaba por mandar queda omitido, con la razón;
+- lo ya mandado sigue en el historial de envíos.
+
+Si usabas esa función, crea de nuevo tus avisos como correos o usa los webhooks de Integraciones.
+
+Siguen igual:
+- el botón para escribir por WhatsApp con un enlace;
+- la condición «solo si el huésped habla…» en las automatizaciones.
+
+**La base, al día también con el cron.** Si subes los archivos a mano, la primera tarea programada pone la base al día antes de las demás, sin esperar a que alguien abra el sistema.
+
 ## 1.0.41 — 2026-11-09
 
 **Lista para el servicio alojado.** Esta versión trae lo que necesita AlojaFlow App, el servicio en `app.alojaflow.com/<tu-alojamiento>`:
