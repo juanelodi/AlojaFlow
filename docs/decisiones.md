@@ -1030,6 +1030,26 @@ Comunicación → Correo lo explica, y Estado del sistema y los primeros pasos l
   compartido, ni cambia el nombre a otra IP después de la revisión. En una instalación propia puede seguir en la
   red local.
 
+### D-166 · 2026-11-09 · El soporte de AlojaFlow dentro de una instancia
+
+Del diseño del servicio alojado (AFAPP, `seguridad.md` §4). **Por omisión nadie del equipo entra.** Solo en una
+instancia:
+
+- **El permiso lo da el cliente:** Sistema → Soporte de AlojaFlow (administradores) tiene «Permitir que el soporte
+  de AlojaFlow entre durante 24 horas», extenderlo, retirarlo (saca en ese momento a quien esté dentro) y la lista
+  de entradas de los últimos 90 días.
+- **`alojaflow:acceso-soporte --nombre= --minutos= [--emergencia=] [--json]`**, que pide AlojaFlow App, crea o
+  reactiva al usuario «Soporte AlojaFlow — nombre» y responde un **enlace de un solo uso que caduca en 5 minutos**,
+  en su propio lugar (pedirlo no gasta el del dueño). Lo anota en la auditoría; todo lo que haga queda ahí a ese
+  nombre. Con permiso, nunca dura más que el permiso; sin él, la instancia lo rechaza aunque lo pida la consola.
+- **Emergencia:** con `--emergencia="motivo"` entra sin permiso, el motivo queda en la auditoría y los super
+  administradores reciben un correo en ese momento (si no hay correo, solo la auditoría).
+- **Al vencer** (`users.soporte_hasta`) ya no entra aunque la tarea no haya corrido (`User::puedeEntrar`), y la tarea
+  de cada minuto lo desactiva (lo que cierra sus sesiones).
+- **Qué puede hacer:** administrador, no super administrador (no cambia módulos ni nombra administradores). Ve al
+  equipo pero **no crea ni cambia usuarios**: no debe quedarle un acceso propio al vencer el suyo. Tampoco da
+  permiso al soporte.
+
 ## Pendientes
 
 - Precios y modelo de venta.

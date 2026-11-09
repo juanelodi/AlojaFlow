@@ -21,17 +21,21 @@ use Illuminate\Support\Str;
  */
 final class EnlaceEntrada
 {
-    private const AJUSTE = 'instalacion.enlace_entrada';
+    /** El de quien instaló (D-071, D-162). */
+    public const USO_INSTALACION = 'instalacion';
+
+    /** El del soporte de AlojaFlow (D-166): cada uno tiene su lugar, y pedir uno no gasta el otro. */
+    public const USO_SOPORTE = 'soporte';
 
     private const MINUTOS = 30;
 
-    public static function crear(User $usuario): string
+    public static function crear(User $usuario, int $minutos = self::MINUTOS, string $uso = self::USO_INSTALACION): string
     {
         $token = Str::lower(Str::random(64));
-        Ajustes::guardar(self::AJUSTE, [
+        Ajustes::guardar(self::ajuste($uso), [
             'huella' => hash('sha256', $token),
             'usuario' => $usuario->id,
-            'expira' => now('UTC')->addMinutes(self::MINUTOS)->toIso8601String(),
+            'expira' => now('UTC')->addMinutes($minutos)->toIso8601String(),
         ]);
 
         return rtrim((string) config('app.url'), '/').route('entrada-instalacion', ['token' => $token], false);
@@ -43,16 +47,25 @@ final class EnlaceEntrada
      */
     public static function usar(string $token): ?User
     {
-        $datos = Ajustes::obtener(self::AJUSTE);
-        if (! is_array($datos) || ! hash_equals((string) ($datos['huella'] ?? ''), hash('sha256', $token))) {
-            return null;
-        }
-        Ajustes::borrar(self::AJUSTE);
-        if (CarbonImmutable::parse((string) $datos['expira'])->isPast()) {
-            return null;
-        }
-        $usuario = User::query()->find((int) $datos['usuario']);
+        foreach ([self::USO_INSTALACION, self::USO_SOPORTE] as $uso) {
+            $datos = Ajustes::obtener(self::ajuste($uso));
+            if (! is_array($datos) || ! hash_equals((string) ($datos['huella'] ?? ''), hash('sha256', $token))) {
+                continue;
+            }
+            Ajustes::borrar(self::ajuste($uso));
+            if (CarbonImmutable::parse((string) $datos['expira'])->isPast()) {
+                return null;
+            }
+            $usuario = User::query()->find((int) $datos['usuario']);
 
-        return $usuario !== null && $usuario->activo && blank($usuario->getAppAuthenticationSecret()) ? $usuario : null;
+            return $usuario !== null && $usuario->puedeEntrar() && blank($usuario->getAppAuthenticationSecret()) ? $usuario : null;
+        }
+
+        return null;
+    }
+
+    private static function ajuste(string $uso): string
+    {
+        return $uso.'.enlace_entrada';
     }
 }

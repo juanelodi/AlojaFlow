@@ -24,7 +24,7 @@ class UsuarioActivo
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (Acceso::usuarioActual()?->activo !== true) {
+        if (Acceso::usuarioActual()?->puedeEntrar() !== true) {
             Auth::logout();
             abort(403);
         }

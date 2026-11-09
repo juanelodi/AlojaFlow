@@ -183,6 +183,12 @@ return [
             'codigo_acceso' => 'Zugangscode der Einheit geändert',
             'partes' => 'Teile der Einheit geändert',
         ],
+        'soporte' => [
+            'permitir' => 'AlojaFlow-Support erlaubt',
+            'retirar' => 'Support-Erlaubnis zurückgezogen',
+            'acceso' => 'Support-Zugang geöffnet',
+            'vencido' => 'Support-Zugang abgelaufen',
+        ],
         'turno' => [
             'abrir' => 'Kassenschicht geöffnet',
             'cerrar' => 'Kassenschicht geschlossen',

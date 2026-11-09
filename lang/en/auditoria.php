@@ -183,6 +183,12 @@ return [
             'codigo_acceso' => 'Unit access code changed',
             'partes' => 'Unit parts changed',
         ],
+        'soporte' => [
+            'permitir' => 'AlojaFlow support allowed',
+            'retirar' => 'Support permission withdrawn',
+            'acceso' => 'Support access opened',
+            'vencido' => 'Support access expired',
+        ],
         'turno' => [
             'abrir' => 'Cash shift opened',
             'cerrar' => 'Cash shift closed',

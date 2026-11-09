@@ -13,12 +13,15 @@ use App\Instalacion\Instancia;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
 use App\Programador\TareasPorVisita;
+use App\Seguridad\AccesoSoporte;
 use Illuminate\Support\Facades\Schedule;
 
 // Un solo cron lanza el programador (hosting compartido; CLAUDE.md). Si no hay cron, las mismas
 // tareas corren al usar el sistema: App\Programador\TareasPorVisita.
 Schedule::call(fn () => TareasPorVisita::anotarLatido())->name('latido')->everyMinute()->evenInMaintenanceMode();
 Schedule::command('alojaflow:sincronizar')->everyMinute()->withoutOverlapping(60)->when(fn (): bool => Modulos::activo(Modulo::Subordinacion));
+// El soporte de AlojaFlow sale al vencer su plazo (D-166); al entrar ya se revisa, esto lo deja desactivado.
+Schedule::call(fn () => app(AccesoSoporte::class)->vencer())->name('soporte-vencer')->everyMinute()->when(fn (): bool => Instancia::activa());
 Schedule::command('alojaflow:reservas-vencidas')->everyFiveMinutes()->withoutOverlapping(10);
 Schedule::command('alojaflow:limpieza')->everyFifteenMinutes()->withoutOverlapping(30)->when(fn (): bool => Modulos::activo(Modulo::Limpieza));
 Schedule::command('alojaflow:mensajes')->everyFiveMinutes()->withoutOverlapping(15);

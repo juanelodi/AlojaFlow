@@ -67,9 +67,18 @@ class UsuarioResource extends Resource
         return self::esAdministrador();
     }
 
+    /**
+     * El soporte de AlojaFlow ve al equipo pero no crea ni cambia a nadie (D-166): no debe quedarle un acceso propio
+     * cuando vence el suyo.
+     */
+    private static function puedeAdministrar(): bool
+    {
+        return self::esAdministrador() && ! Acceso::usuarioActual()?->es_soporte;
+    }
+
     public static function canCreate(): bool
     {
-        return self::esAdministrador();
+        return self::puedeAdministrar();
     }
 
     /**
@@ -82,13 +91,13 @@ class UsuarioResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
-        return self::esAdministrador() && self::puedeTocar($record);
+        return self::puedeAdministrar() && self::puedeTocar($record);
     }
 
     public static function canDelete(Model $record): bool
     {
         // Nadie se borra a sí mismo; mejor desactivar que borrar.
-        return self::esAdministrador() && self::puedeTocar($record) && $record->getKey() !== auth()->id();
+        return self::puedeAdministrar() && self::puedeTocar($record) && $record->getKey() !== auth()->id();
     }
 
     public static function form(Schema $schema): Schema

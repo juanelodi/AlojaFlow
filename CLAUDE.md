@@ -231,7 +231,9 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 - `instalador/instalar.php` — plantilla del instalador de un solo archivo (D-040, D-071); sin sintaxis
   moderna a propósito: **Pint no se corre sobre él**, y `pint.json` lo excluye. `app/Instalacion/Instalador.php`, lo que hace dentro de la aplicación.
 - `app/Instalacion/Instancia.php` — modo instancia del servicio alojado (D-162): con `ALOJAFLOW_INSTANCIA`, el `.env`, el `storage` y las
-  cachés salen de la carpeta del cliente y el código es compartido; sin actualizaciones propias. `alojaflow:instalar` y `alojaflow:enlace-entrada`.
+  cachés salen de la carpeta del cliente y el código es compartido; sin actualizaciones propias. `alojaflow:instalar` y `alojaflow:enlace-entrada`
+  (al primer ingreso pide crear la contraseña, D-164). En una instancia, el correo del `.env` es el de la plataforma (`AjustesCorreo`, D-165)
+  y `App\Seguridad\AccesoSoporte` deja entrar al soporte con el permiso del cliente (`alojaflow:acceso-soporte`, D-166).
 - `app/Copias/GestorCopias.php` — copias de seguridad (D-038); `CopiaExterna`, `CifradoCopia` y `FirmaS3`, la copia cifrada fuera del servidor (D-152).
   `app/Programador/`, tareas sin cron (D-039).
 - `app/Demo/` — `GeneradorDemo`, la propiedad de demostración con datos inventados (D-037), y `ModoDemo`,

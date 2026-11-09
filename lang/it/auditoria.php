@@ -183,6 +183,12 @@ return [
             'codigo_acceso' => 'Codice di accesso dell’unità cambiato',
             'partes' => 'Parti dell’unità cambiate',
         ],
+        'soporte' => [
+            'permitir' => 'Supporto AlojaFlow autorizzato',
+            'retirar' => 'Permesso al supporto ritirato',
+            'acceso' => 'Accesso del supporto aperto',
+            'vencido' => 'Accesso del supporto scaduto',
+        ],
         'turno' => [
             'abrir' => 'Turno di cassa aperto',
             'cerrar' => 'Turno di cassa chiuso',

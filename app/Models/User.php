@@ -37,6 +37,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property bool $es_administrador
  * @property bool $es_superadministrador
  * @property bool $debe_crear_contrasena
+ * @property bool $es_soporte
+ * @property \Illuminate\Support\Carbon|null $soporte_hasta
  * @property string|null $app_authentication_secret
  * @property array<string>|null $app_authentication_recovery_codes
  * @property \Illuminate\Support\Carbon|null $ultimo_acceso_en
@@ -89,6 +91,8 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'es_administrador' => 'boolean',
             'es_superadministrador' => 'boolean',
             'debe_crear_contrasena' => 'boolean',
+            'es_soporte' => 'boolean',
+            'soporte_hasta' => 'datetime',
             'colores_estado' => 'array',
             'ultimo_acceso_en' => 'datetime',
         ];
@@ -96,7 +100,16 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->activo;
+        return $this->puedeEntrar();
+    }
+
+    /**
+     * Activo y, si es del soporte de AlojaFlow (D-166), dentro de su plazo: aunque la tarea que lo desactiva no
+     * haya corrido, al vencer ya no entra.
+     */
+    public function puedeEntrar(): bool
+    {
+        return $this->activo && (! $this->es_soporte || $this->soporte_hasta?->isFuture() === true);
     }
 
     public function getAppAuthenticationSecret(): ?string
