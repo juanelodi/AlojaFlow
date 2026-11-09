@@ -15,6 +15,7 @@ use App\Copias\CopiaExterna;
 use App\Copias\ErrorCopia;
 use App\Copias\GestorCopias;
 use App\Demo\ModoDemo;
+use App\Instalacion\Instancia;
 use App\Models\RegistroAuditoria;
 use App\Seguridad\Acceso;
 use App\Support\Ajustes;
@@ -219,12 +220,15 @@ class CopiasSeguridad extends Page
                 ->label(__('copias.descargar_env'))
                 ->icon(Heroicon::OutlinedKey)
                 ->color('gray')
+                // En el servicio alojado el .env lo administra AlojaFlow App y guarda los secretos de la plataforma (D-167).
+                ->visible(fn (): bool => ! Instancia::activa())
                 ->modalHeading(__('copias.descargar_env'))
                 ->modalDescription(__('copias.descargar_env_ayuda'))
                 ->schema([
                     TextInput::make('contrasena')->label(__('copias.contrasena'))->password()->required()->currentPassword(),
                 ])
                 ->action(function (): BinaryFileResponse {
+                    abort_if(Instancia::activa(), 403);
                     RegistroAuditoria::anotar('copia.descargar_env');
 
                     return response()->download(base_path('.env'), 'alojaflow.env', ['Content-Type' => 'text/plain']);

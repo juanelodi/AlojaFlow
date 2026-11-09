@@ -12,6 +12,7 @@ namespace App\Filament\Pages;
 
 use App\Comunicacion\AjustesCorreo;
 use App\Demo\ModoDemo;
+use App\Instalacion\Instancia;
 use App\Instalacion\VersionPhp;
 use App\Models\User;
 use App\Programador\TareasPorVisita;
@@ -66,6 +67,14 @@ class EstadoSistema extends Page
         return TareasPorVisita::comandoCron();
     }
 
+    /**
+     * En el servicio alojado (D-167), el programador, el cron y el PHP de consola los lleva AlojaFlow App.
+     */
+    public function muestraServidor(): bool
+    {
+        return ! Instancia::activa();
+    }
+
     public function cronActivo(): bool
     {
         return TareasPorVisita::cronActivo();
@@ -91,10 +100,12 @@ class EstadoSistema extends Page
         }
         $filas[] = $this->fila('base', $base, 'ok');
 
-        $latido = TareasPorVisita::ultimoLatido();
-        $filas[] = $this->cronActivo()
-            ? $this->fila('programador', __('ui.estado.programador_ok', ['cuando' => $latido?->locale(app()->getLocale())->diffForHumans() ?? '—']), 'ok')
-            : $this->fila('programador', __('ui.estado.programador_no'), 'aviso', __('ui.estado.programador_ayuda'));
+        if ($this->muestraServidor()) {
+            $latido = TareasPorVisita::ultimoLatido();
+            $filas[] = $this->cronActivo()
+                ? $this->fila('programador', __('ui.estado.programador_ok', ['cuando' => $latido?->locale(app()->getLocale())->diffForHumans() ?? '—']), 'ok')
+                : $this->fila('programador', __('ui.estado.programador_no'), 'aviso', __('ui.estado.programador_ayuda'));
+        }
 
         $ultima = (array) Ajustes::obtener('copias.ultima', []);
         if (isset($ultima['en'])) {

@@ -34,10 +34,12 @@
             </div>
         </x-filament::section>
 
-        <x-filament::section :heading="__('ui.estado.cron_titulo')">
-            <p class="af-prosa">{{ __('ui.estado.cron_texto') }}</p>
-            <pre class="af-comando"><code>{{ $this->comandoCron() }}</code></pre>
-            <p class="af-nota">{{ __('ui.estado.cron_nota') }}</p>
-        </x-filament::section>
+        @if ($this->muestraServidor())
+            <x-filament::section :heading="__('ui.estado.cron_titulo')">
+                <p class="af-prosa">{{ __('ui.estado.cron_texto') }}</p>
+                <pre class="af-comando"><code>{{ $this->comandoCron() }}</code></pre>
+                <p class="af-nota">{{ __('ui.estado.cron_nota') }}</p>
+            </x-filament::section>
+        @endif
     </div>
 </x-filament-panels::page>

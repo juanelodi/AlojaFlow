@@ -1050,6 +1050,19 @@ instancia:
   equipo pero **no crea ni cambia usuarios**: no debe quedarle un acceso propio al vencer el suyo. Tampoco da
   permiso al soporte.
 
+### D-167 · 2026-11-09 · En una instancia no se enseña lo que administra AlojaFlow App
+
+En el servicio alojado, el servidor, el `.env` y las tareas los lleva AlojaFlow App. Al cliente no se le enseña:
+
+- **la descarga del `.env`** en Copias de seguridad (guarda los secretos de la plataforma, como el correo; la acción
+  tampoco responde si se llama a mano);
+- **el programador, el cron y el PHP de consola** en Estado del sistema, ni el paso «cron» de los primeros pasos;
+- **el instalador:** revisado, el panel no lo ofrece en ningún lado (solo existe `instalar.php`, que se sube al
+  hosting, y el `App\Instalacion\Instalador` que usa), y la portada de una instancia no lo sirve (AFAPP). Las
+  actualizaciones ya estaban apagadas (D-162).
+
+«Código fuente» y «Acerca de» se quedan: la AGPL pide que cada cliente pueda bajar el código exacto con que corre.
+
 ## Pendientes
 
 - Precios y modelo de venta.

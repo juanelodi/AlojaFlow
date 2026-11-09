@@ -20,6 +20,7 @@ use App\Filament\Resources\Propiedades\PropiedadResource;
 use App\Filament\Resources\Tarifas\TarifaResource;
 use App\Filament\Resources\Unidades\UnidadResource;
 use App\Filament\Resources\Usuarios\UsuarioResource;
+use App\Instalacion\Instancia;
 use App\Models\Propiedad;
 use App\Models\Tarifa;
 use App\Models\Unidad;
@@ -57,7 +58,10 @@ final class PrimerosPasos
         }
         $pasos[] = self::paso('correo', app(AjustesCorreo::class)->configurado(), Correo::getUrl());
         $pasos[] = self::paso('dos_pasos', filled($usuario->getAppAuthenticationSecret()), filament()->getProfileUrl());
-        $pasos[] = self::paso('cron', TareasPorVisita::cronActivo(), null, TareasPorVisita::comandoCron());
+        // En el servicio alojado el cron lo pone AlojaFlow App (D-167).
+        if (! Instancia::activa()) {
+            $pasos[] = self::paso('cron', TareasPorVisita::cronActivo(), null, TareasPorVisita::comandoCron());
+        }
         $pasos[] = self::paso('copia', Ajustes::obtener('copias.ultima') !== null, CopiasSeguridad::getUrl());
         $pasos[] = self::paso('equipo', User::query()->count() > 1, UsuarioResource::getUrl('create'));
 
