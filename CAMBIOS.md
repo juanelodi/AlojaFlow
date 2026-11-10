@@ -2,6 +2,10 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.43 — 2026-11-09
+
+**Ninguna tarea arranca a media actualización.** Si el cron estaba corriendo cuando empezaste a actualizar, las tareas que le faltaban podían arrancar mientras se cambiaban los archivos, y alguna fallaba una vez. Ahora cada tarea revisa justo antes de empezar si hay una actualización en curso, y espera a la siguiente ronda. Lo mismo pasa sin cron, con las tareas que corren con las visitas.
+
 ## 1.0.42 — 2026-11-09
 
 **Sin WhatsApp por la API de Meta.** AlojaFlow ya no manda plantillas de WhatsApp por la API de Meta. Se quitaron la pantalla Comunicación → WhatsApp y la acción «Plantilla de WhatsApp al huésped».
