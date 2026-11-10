@@ -8,6 +8,7 @@
 
 declare(strict_types=1);
 
+use App\Programador\MantenimientoEnCadaTarea;
 use App\Programador\TareasPendientes;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Events\ScheduledTaskStarting;
@@ -198,4 +199,42 @@ it('schedule:run también pone la base al día antes de las demás tareas (D-171
     $esquema->run($this->app);
 
     expect(app(App\Actualizacion\EsquemaAlDia::class)->hayQueRevisar())->toBeFalse();
+});
+
+it('una actualización que empieza a media ronda de schedule:run no deja arrancar las tareas que siguen (D-172)', function () {
+    // La ronda ya eligió sus tareas cuando la primera entra en mantenimiento, como una actualización que empieza
+    // mientras el cron sigue corriendo.
+    $corridas = $this->corridas;
+    $horario = new Schedule('America/Mexico_City');
+    $horario->call(function () use ($corridas): void {
+        $corridas->append('actualizacion');
+        app()->maintenanceMode()->activate([]);
+    })->name('actualizacion')->everyMinute();
+    $horario->call(function () use ($corridas): void {
+        $corridas->append('normal');
+    })->name('normal')->everyMinute();
+    $horario->call(function () use ($corridas): void {
+        $corridas->append('en-mantenimiento');
+    })->name('en-mantenimiento')->everyMinute()->evenInMaintenanceMode();
+    MantenimientoEnCadaTarea::aplicar($horario->events());
+    $this->app->instance(Schedule::class, $horario);
+
+    $this->artisan('schedule:run')->assertSuccessful();
+
+    expect(corridasYLimpiar())->toBe(['actualizacion', 'en-mantenimiento']);
+});
+
+it('en el horario de verdad, durante una actualización solo arranca lo que corre en mantenimiento', function () {
+    $tareas = collect($this->horarioReal->events());
+    $autoridades = $tareas->first(fn ($evento): bool => TareasPendientes::nombre($evento) === 'alojaflow:autoridades');
+    expect($autoridades->filtersPass($this->app))->toBeTrue();
+
+    app()->maintenanceMode()->activate([]);
+
+    $enMantenimiento = $tareas->filter->runsInMaintenanceMode();
+    expect($autoridades->filtersPass($this->app))->toBeFalse()
+        ->and($tareas->reject->runsInMaintenanceMode()->filter->filtersPass($this->app))->toBeEmpty()
+        ->and($enMantenimiento->map(fn ($evento): string => TareasPendientes::nombre($evento))->values()->all())
+        ->toBe(['latido', 'alojaflow:finalizar-actualizacion --pendientes'])
+        ->and($enMantenimiento->every->filtersPass($this->app))->toBeTrue();
 });

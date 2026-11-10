@@ -156,7 +156,9 @@ final class TareasPorVisita
         $ejecutados = [];
 
         foreach (self::tareas() as $comando => $minutos) {
-            if (microtime(true) - $inicio > self::SEGUNDOS_MAXIMOS) {
+            // Una actualización que empieza a media ronda: no arranca ninguna más (D-172). En mantenimiento ninguna
+            // visita corre tareas.
+            if (microtime(true) - $inicio > self::SEGUNDOS_MAXIMOS || app()->isDownForMaintenance()) {
                 break;
             }
             $ultima = isset($ultimas[$comando]) ? Carbon::parse((string) $ultimas[$comando]) : null;

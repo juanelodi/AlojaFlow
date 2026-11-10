@@ -13,6 +13,7 @@ use App\Demo\ModoDemo;
 use App\Instalacion\Instancia;
 use App\Modulos\Modulo;
 use App\Modulos\Modulos;
+use App\Programador\MantenimientoEnCadaTarea;
 use App\Programador\TareasPorVisita;
 use App\Seguridad\AccesoSoporte;
 use Illuminate\Support\Facades\Schedule;
@@ -46,3 +47,7 @@ Schedule::command('alojaflow:demo-reiniciar')->dailyAt('04:00')->when(fn (): boo
 // Una actualización que se quedó sin terminar (se cerró el navegador entre las dos fases) o que
 // se cortó a medias: se termina o se deshace aquí, también en mantenimiento.
 Schedule::command('alojaflow:finalizar-actualizacion --pendientes')->everyMinute()->evenInMaintenanceMode()->withoutOverlapping(60)->skip(fn (): bool => Instancia::activa());
+
+// Al final, para todas: schedule:run revisa el mantenimiento solo al empezar la ronda, y una actualización que empieza
+// a media ronda no debe encontrarse con tareas que arrancan mientras cambia los archivos (D-172).
+MantenimientoEnCadaTarea::aplicar(Schedule::events());

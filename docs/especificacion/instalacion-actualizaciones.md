@@ -128,6 +128,8 @@ permite, corren por turnos al terminar de atender una visita, como mucho una vez
 tiempo máximo (`App\Programador\TareasPorVisita`, D-039). Cuando el cron da señales de vida, esto se
 apaga solo. **Sistema → Estado del sistema** dice cuál de los dos está funcionando. La primera tarea del horario,
 `esquema`, pone la base al día si los archivos cambiaron sin pasar por el navegador (D-171), como cada petición.
+Durante una actualización solo arrancan las tareas que corren en mantenimiento, aunque la ronda haya empezado antes
+(D-172).
 
 **Con un cron que no corre cada minuto** (DreamHost: cada 10), o cuando no se sabe en qué minuto arranca, se usa
 `php artisan alojaflow:tareas-pendientes` en lugar de `schedule:run` (D-169). Toma el mismo horario

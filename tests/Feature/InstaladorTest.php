@@ -17,6 +17,7 @@ use App\Programador\TareasPorVisita;
 use App\Support\Ajustes;
 use Database\Seeders\RolesYPermisosSeeder;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Foundation\Console\ClosureCommand;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Session;
@@ -144,4 +145,14 @@ it('sin cron, las tareas corren por turnos y no se repiten; con cron, no corren'
     $this->travel(31)->minutes();
     expect(TareasPorVisita::cronActivo())->toBeFalse();
     expect(TareasPorVisita::comandoCron())->toContain('artisan schedule:run');
+});
+
+it('sin cron, una actualización que empieza a media ronda no deja arrancar las tareas que siguen (D-172)', function () {
+    Http::fake();
+    // Mientras corre la primera tarea, alguien empieza a actualizar.
+    app(Kernel::class)->registerCommand(new ClosureCommand('alojaflow:finalizar-actualizacion {--pendientes}', function (): void {
+        app()->maintenanceMode()->activate([]);
+    }));
+
+    expect(TareasPorVisita::ejecutarPendientes())->toBe(['alojaflow:finalizar-actualizacion --pendientes']);
 });

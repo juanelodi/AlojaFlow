@@ -1140,6 +1140,20 @@ ninguna tarea encuentra la acción quitada antes de la migración. El filtro de 
 donde hay historial con él. Las versiones 1.0.40 y 1.0.41 se publicaron con la API, y la AGPL deja usar ese código a
 quien ya lo tiene.
 
+### D-172 · 2026-11-09 · Ninguna tarea arranca a media actualización
+
+`schedule:run` elige las tareas al empezar la ronda, y solo entonces revisa el mantenimiento. Si una actualización
+entra en mantenimiento mientras la ronda sigue, las tareas que faltan arrancan con los archivos y las cachés a medio
+cambiar. Pasó en una instalación de prueba al actualizar a la 1.0.42: el cron ya estaba corriendo y
+`alojaflow:autoridades` arrancó justo cuando se rehacían las cachés. Falló porque no encontró la de rutas. Con un cron
+de cada minuto puede pasar en cualquier actualización desde el navegador.
+
+`App\Programador\MantenimientoEnCadaTarea` pone en cada tarea que no corre en mantenimiento un filtro que lo revisa
+justo antes de empezar, como ya hacía `tareas-pendientes` (D-169). Va al final de `routes/console.php`, así que
+alcanza también a las tareas nuevas. Lo que corre en mantenimiento sigue igual: el latido y
+`finalizar-actualizacion --pendientes`. Sin cron, `TareasPorVisita` deja de arrancar tareas en cuanto entra el
+mantenimiento. Una tarea que ya iba corriendo cuando empezó la actualización no se detiene.
+
 ## Pendientes
 
 - Precios y modelo de venta.
