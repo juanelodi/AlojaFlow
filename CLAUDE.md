@@ -1,8 +1,11 @@
 # AlojaFlow — guía para Claude
 
 AlojaFlow es un sistema de gestión de alojamientos (PMS) para alojamientos pequeños, escrito
-**desde cero** en Laravel, con licencia **AGPL v3 o posterior**. Del proyecto anterior
-(AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo y los colores.
+**desde cero** en Laravel, con licencia **FSL-1.1-ALv2** desde la 1.0.45 (Functional Source
+License 1.1, que pasa a Apache 2.0 a los dos años; D-174). Hasta la 1.0.44 fue AGPL v3 o posterior, y
+esas versiones lo siguen siendo. No se dice «software libre» ni «código abierto»: es código visible.
+Del proyecto anterior (AlojaFlow 1.2.x, derivado de HotelDruid) solo se conservan el nombre, el logo
+y los colores.
 
 - **Estado (2026-11-08): versión de prueba 1.0.40**, a la espera de que el usuario la pruebe
   (`docs/guia-pruebas.md`). Cada propiedad es independiente o subordinada (D-035). Producto
@@ -38,18 +41,22 @@ de la copia no cambia mientras se construye la fase 1.
 
 ## Reglas
 
-1. **Licencia AGPL-3.0-or-later.** Archivo `LICENSE` en la raíz y cabecera breve en cada archivo
-   fuente (ver «Cabecera de licencia»).
+1. **Licencia FSL-1.1-ALv2** (D-174). Archivo `LICENSE` en la raíz, con el texto oficial de
+   <https://fsl.software> sin cambios, y cabecera breve en cada archivo fuente (ver «Cabecera de
+   licencia»). El licenciante es Juan Galeana Durán.
 2. **Todo nuevo.** Arquitectura, nombres y estructura nuevos sobre Laravel. Los nombres
    italianos de HotelDruid (`prenota`, `clienti`, `appartamenti`…) solo existen dentro del
    módulo de sincronización.
-3. **Dependencias solo con licencia compatible con la AGPL v3:** MIT, BSD, Apache 2.0,
-   LGPL v2.1+/v3, GPL v3, AGPL v3. **Prohibidas:** GPL v2 «solo» (sin «o posterior»), OSL
-   (p. ej. QloApps), licencias propietarias o de pago y código sin licencia. Comprobar la
+3. **Dependencias solo con licencia permisiva:** MIT, BSD, Apache 2.0, ISC, LGPL v2.1+/v3 usada
+   como biblioteca y OFL para fuentes. **Prohibidas:** GPL de cualquier versión, AGPL, SSPL, OSL
+   (p. ej. QloApps), licencias propietarias o de pago y código sin licencia. De un paquete con
+   licencia doble se elige la permitida y se anota (los `nette`, BSD-3-Clause). Comprobar la
    licencia antes de añadir cualquier dependencia; antes de cada versión, revisarlas todas
    (`composer licenses` y `npx license-checker --summary`).
-4. **La lógica sí, el código viejo no.** De HotelDruid, AlojaFlow 1.2.x u otro proyecto con
-   licencia compatible se aprovecha la lógica, reescrita. Ningún archivo viejo entra tal cual.
+4. **La lógica sí, el código viejo no.** De un proyecto con licencia permitida por la regla 3 se
+   aprovecha la lógica, reescrita. Ningún archivo viejo entra tal cual. **De HotelDruid, de AlojaFlow
+   1.2.x y de cualquier otro proyecto GPL o AGPL no entra código ni lógica** (D-173, D-174): solo lo
+   que se sabe del oficio y los hechos para interoperar que están en la especificación.
    Mínimos de todo lo que entra:
    - PHP 8.3 con `declare(strict_types=1)`, tipos en parámetros, propiedades y retornos, enums;
      clases con una sola responsabilidad; sin funciones ni variables globales.
@@ -64,8 +71,10 @@ de la copia no cambia mientras se construye la fase 1.
    Si un fragmento no puede cumplirlo sin reescribirse entero, se reescribe entero. Cuando la
    lógica venga de otro proyecto, conservar su aviso de copyright y anotarlo en
    `THIRD-PARTY-NOTICES.md` (origen, licencia, archivos afectados).
-5. **Contribuciones** bajo la misma AGPL, con DCO: cada commit lleva `Signed-off-by`
-   (`git commit -s`). No hace falta CLA.
+5. **Contribuciones externas** con el acuerdo de `CONTRIBUTING.md` (CLA, borrador por revisar con
+   un abogado): quien contribuye deja al licenciante publicar su aporte con cualquier licencia,
+   también la comercial. Sin esa aceptación no se integra nada de terceros. Los commits siguen
+   con `Signed-off-by` (`git commit -s`).
 6. **Cada cambio** con pruebas (Pest) y análisis estático (Larastan) en verde.
 7. **Español primero, en varios idiomas.** Ningún texto visible escrito directamente en el
    código: todo pasa por los archivos de traducción (`lang/<idioma>/…`). El español es la
@@ -73,11 +82,11 @@ de la copia no cambia mientras se construye la fase 1.
    texto nuevo va en los seis: `tests/Unit/TraduccionesTest.php` falla si falta alguno (D-052). Cada
    usuario y cada huésped ven su idioma. Fechas, números, monedas y zonas horarias según la
    propiedad y el idioma, nunca con formatos fijos en el código.
-8. **Enlace «Código fuente»** visible en la aplicación (obligación de la AGPL por uso en red),
-   que descarga el código exacto de la versión instalada.
-9. **Créditos.** Mientras haya lógica derivada de HotelDruid, mencionar a Marco M. F. De Santis
-   en `THIRD-PARTY-NOTICES.md` y en la pantalla «Acerca de». Se puede decir «compatible con
-   HotelDruid»; no usar su logo ni sugerir que es un producto oficial.
+8. **Enlace «Código fuente»** visible en la aplicación, que descarga el código exacto de la versión
+   instalada. Se queda por decisión, ya no por obligación de la licencia.
+9. **Créditos.** AlojaFlow ya no tiene lógica derivada de HotelDruid (D-173). Se dice «compatible con
+   HotelDruid, de Marco M. F. De Santis» en `THIRD-PARTY-NOTICES.md` y en «Acerca de»; no usar su
+   logo ni sugerir que es un producto oficial.
 10. **Subordinación** documentada en
     [docs/especificacion/subordinacion.md](docs/especificacion/subordinacion.md): las llamadas
     HTTP a `crea_backup.php` (crear, descargar —comprimida o no— y borrar la copia) con sus
@@ -157,8 +166,8 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
   ```php
   /*
    * AlojaFlow — sistema de gestión de alojamientos
-   * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
-   * SPDX-License-Identifier: AGPL-3.0-or-later
+   * Copyright (C) 2026 Juan Galeana Durán
+   * SPDX-License-Identifier: FSL-1.1-ALv2
    */
   ```
 
@@ -341,8 +350,9 @@ npx license-checker --summary             # licencias npm
 
 ## Referencias locales (solo lectura)
 
-- `E:\HotelDruid\` — repositorio local de AlojaFlow 1.2.3 (derivado de HotelDruid 3.0.8).
-  Sirve para **entender la lógica**, nunca para copiar código (regla 4):
+- `E:\HotelDruid\` — repositorio local de AlojaFlow 1.2.3 (derivado de HotelDruid 3.0.8), AGPL.
+  **Ya no se consulta para programar** (regla 4, D-173, D-174); queda como referencia de lo que
+  hace el sistema anterior y por sus copias de prueba:
   - `alojaflow/crea_backup.php` (genera la copia), `alojaflow/interconnessioni.php` (cliente de
     subordinación original), `alojaflow/plugins/multipropiedad/` (descarga copias de varias
     principales), `alojaflow/creadb.php` (esquema), `alojaflow/includes/funzioni_aggiorna.php`

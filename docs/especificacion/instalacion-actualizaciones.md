@@ -52,7 +52,7 @@ Tarda unos dos minutos.
 
 - La **clave pública** va en `config/alojaflow.php` (`actualizaciones.clave_publica`). Se puede
   cambiar con `ALOJAFLOW_CLAVE_PUBLICA_ACTUALIZACIONES`. Quien distribuya su propia versión de
-  AlojaFlow (AGPL) genera su pareja de claves y pone aquí la suya.
+  AlojaFlow, dentro de lo que permite la FSL, genera su pareja de claves y pone aquí la suya.
 - La **clave secreta** vive solo en `.herramientas/clave-actualizaciones.secreta` (fuera de git)
   y **debe** tener una copia de seguridad fuera del equipo. El empaquetador comprueba que es la
   pareja de la pública.

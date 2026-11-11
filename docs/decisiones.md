@@ -1183,9 +1183,72 @@ cambie su huella.
 **Dónde está el registro.** [sala-limpia/README.md](sala-limpia/README.md): qué se leyó y qué no, las huellas y sus
 diferencias. Lo que la especificación no alcanzó a decidir está en [sala-limpia/preguntas.md](sala-limpia/preguntas.md).
 
+### D-174 · 2026-11-10 · De la AGPL a la FSL-1.1-ALv2
+
+**Qué.** Desde la versión 1.0.45, AlojaFlow se publica bajo la Functional Source License 1.1 con Apache 2.0 como
+licencia futura (FSL-1.1-ALv2), con el texto oficial de <https://fsl.software> sin cambios. El licenciante es Juan
+Galeana Durán, único autor de todos los commits. Sustituye a D-001 en lo de la licencia y a D-002 en las dependencias.
+
+**Por qué.** Dos cosas que la AGPL no da:
+- que nadie pueda ofrecer, con este código, un servicio alojado que compita con app.alojaflow.com;
+- poder vender licencias comerciales para ese uso.
+
+La FSL permite todo lo demás: usarlo en el alojamiento propio o en los que uno administra, estudiarlo, modificarlo,
+compartirlo y cobrar por servicios profesionales a quien lo usa. Para quien instala AlojaFlow en su alojamiento, nada
+cambia.
+
+**La variante.** ALv2 y no MIT: a los dos años queda bajo Apache 2.0, que trae una concesión expresa de patentes.
+
+**Cuándo pasa a Apache cada versión.** Cada versión, a los dos años del día en que se publicó. La 1.0.45, dos años
+después de su publicación; cada una de las siguientes, dos años después de la suya. La fecha de cada una es la de su
+entrada en `CAMBIOS.md` y la de su etiqueta `v1.0.x`.
+
+**Las versiones anteriores.** La 1.0.44 y las anteriores se publicaron bajo la AGPL-3.0-or-later y lo siguen estando
+para siempre: quien las recibió así conserva esos derechos sobre ellas, y eso no se esconde (lo dicen `README.md`,
+`CAMBIOS.md` y `THIRD-PARTY-NOTICES.md`). Lo que no reciben es lo que se escriba después.
+
+**Por qué se puede.** Dos condiciones, y las dos se cumplen:
+- todo el código es de un solo autor, que puede publicarlo con otra licencia;
+- no queda código de HotelDruid, que es AGPL, y el módulo que copia sus datos se reescribió en sala limpia (D-173) y
+  salió en la 1.0.44. Por eso este cambio va después de esa versión y no antes.
+
+**Lo que venía de la 1.2.x.** Fuera del módulo de sincronización, siete clases dicen en sus comentarios que su lógica
+viene de la 1.2.x, reescrita: `Actualizacion/Revisor`, `Grupos/CalculadorPrecio`, `Grupos/ListaHuespedes`,
+`Limpieza/AvisoEquipo`, `Reservas/ImportadorPrecios`, `Seguridad/Dispositivos` y `Servicios/Indicadores`. Salen de
+complementos que el propio autor escribió para la 1.2.x: esa lógica es suya. Los grupos de pago y elegir dos fechas
+del calendario (D-154) se volvieron a escribir en sala limpia el 2026-11-11
+([sala-limpia/d-154.md](sala-limpia/d-154.md)).
+
+**No se dice «software libre» ni «código abierto».** La FSL no lo es en el sentido de la FSF ni de la OSI. Se dice
+«código visible» o *Fair Source*, en la aplicación, la documentación y el sitio.
+
+**Dependencias (regla 3).** Permitidas: MIT, BSD, Apache 2.0, ISC, LGPL v2.1+/v3 usada como biblioteca y OFL para
+fuentes. Prohibidas: GPL de cualquier versión, AGPL, SSPL, OSL, propietarias y código sin licencia. Revisión del
+2026-11-11 con `composer licenses`, 174 paquetes: 133 MIT, 33 BSD-3-Clause, 1 Apache-2.0, 1 «MIT o Apache-2.0»,
+3 LGPL (dompdf y sus dos bibliotecas, sin modificar) y los 3 `nette`, de licencia doble (BSD-3-Clause, GPL-2.0-only
+o GPL-3.0-only), de los que se elige BSD-3-Clause. Nada solo GPL ni AGPL. Las de npm son cinco herramientas de
+desarrollo (Vite y Tailwind) que no van en el paquete; en este equipo no están instaladas y `license-checker` no
+tuvo qué revisar: se corre cuando se instalen.
+
+**Contribuciones (regla 5).** Un CLA en lugar del DCO solo: `CONTRIBUTING.md`, que deja al licenciante publicar los
+aportes con cualquier licencia, incluida la comercial. Es un borrador por revisar con un abogado. Los commits siguen
+con `Signed-off-by`.
+
+**El enlace «Código fuente» (regla 8)** se queda. Ya no lo exige la licencia; el código sigue a la vista.
+
+**Las cinco partes.**
+- **AlojaFlow** (este repositorio, público): es lo que cambia de licencia.
+- **La demo**: mismo código que AlojaFlow, así que enseña la licencia nueva al actualizarse. El modo demo se salta la
+  actualización automática: se actualiza a mano.
+- **El servicio alojado** (repositorio privado aparte): su código no cambia de licencia. Lo que necesite dentro de
+  AlojaFlow va aquí bajo la FSL, y ya no rige la obligación de la AGPL §13. Lo exclusivo sigue sin entrar en
+  AlojaFlow, ahora por otra razón: este código está a la vista y a los dos años es Apache. Quien lo opere tiene que
+  ser el licenciante o tener una licencia suya por escrito, porque la FSL solo deja sin límite al licenciante.
+- **El receptor de mejora continua** (repositorio privado aparte): no cambia. No tiene licencia ni código de AlojaFlow.
+- **El sitio**: deja de decir software libre, código abierto y AGPL; dice código visible.
+
 ## Pendientes
 
 - Precios y modelo de venta.
-- Titular del copyright en las cabeceras de licencia.
 - Proveedor de correo y canal del OTP.
 - Inventario, almacenes y punto de venta: fase 2 o posterior.

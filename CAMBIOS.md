@@ -2,6 +2,21 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.45 — 2026-11-11
+
+**AlojaFlow cambia de licencia: de la AGPL a la FSL.** Desde esta versión, AlojaFlow se publica bajo la Functional Source License 1.1 con Apache 2.0 como licencia futura (FSL-1.1-ALv2), en lugar de la AGPL v3 o posterior (D-174).
+
+**Si usas AlojaFlow en tu propio alojamiento, o en los que administras, nada cambia.** Lo sigues instalando, usando, modificando y actualizando igual y sin pagar licencia, y el código de tu versión se sigue descargando desde «Código fuente».
+
+Lo que cambia:
+
+- **Lo que ya no se permite.** Ofrecer con el código de AlojaFlow un producto o servicio comercial que compita con AlojaFlow, como un servicio alojado para terceros. Para eso hace falta una licencia comercial del titular.
+- **Lo que sigue permitido.** Usarlo, estudiarlo, modificarlo y compartirlo para cualquier otro fin, y cobrar por instalarlo, adaptarlo o darle soporte a quien lo usa.
+- **A los dos años, Apache 2.0.** Cada versión queda además bajo la licencia Apache 2.0 al cumplir dos años de publicada.
+- **Las versiones anteriores no cambian.** La 1.0.44 y las anteriores se publicaron bajo la AGPL v3 o posterior y lo siguen estando.
+- **Ya no decimos «software libre» ni «código abierto».** La FSL no lo es en el sentido de la FSF ni de la OSI: AlojaFlow es de código visible. El pie y «Acerca de» lo explican en los seis idiomas.
+- **Para contribuir** hace falta aceptar el acuerdo de `CONTRIBUTING.md`.
+
 ## 1.0.44 — 2026-11-11
 
 **La copia desde HotelDruid, escrita de nuevo.** El módulo que copia los datos de HotelDruid 3.0.8 o de AlojaFlow 1.2.x se volvió a escribir a partir de la especificación de su protocolo y de su archivo de copia (D-173). Hace lo mismo que antes: con una copia de demostración y con una real dejó las mismas unidades, huéspedes, reservas, cobros y movimientos que el anterior.

@@ -94,7 +94,7 @@ Incluye además el **mapa de navegación** por rol y los **tokens de diseño** d
   detección de choques con la principal, frecuencias, qué hacer si un portal no responde.
 - **10 Instalación y actualizaciones:** contenido del paquete, instalador web, requisitos,
   cron, actualizaciones con copia previa y vuelta atrás, descarga del código de la versión
-  instalada (AGPL).
+  instalada (regla 8).
 - **11 Pruebas:** Pest contra MySQL/MariaDB, copias sintéticas versionadas, ruta de las copias
   reales por variable de entorno, pruebas de la lectura de la copia y de la proyección, CI en
   GitHub Actions.

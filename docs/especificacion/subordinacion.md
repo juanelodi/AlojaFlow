@@ -667,7 +667,8 @@ copia ficticia de la demo, sin inicio de sesión):
 HotelDruid es obra de Marco Maria Francesco De Santis (<https://www.hoteldruid.com>). Se distribuye
 bajo la AGPL v3 «o cualquier versión posterior **aceptada por Marco Maria Francesco De Santis**,
 que actúa como apoderado según la sección 14», que no es exactamente «AGPL v3 o posterior»
-(D-016).
+(D-016). AlojaFlow se publica bajo la FSL-1.1-ALv2 desde la 1.0.45 (D-174), y puede hacerlo porque
+no contiene nada de HotelDruid, como se explica abajo.
 
 Este documento describe **hechos** sobre cómo interoperar con una instalación de HotelDruid o de
 AlojaFlow 1.2.x: qué peticiones acepta, cómo es el archivo que entrega y qué significan sus

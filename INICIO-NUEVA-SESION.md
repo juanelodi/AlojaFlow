@@ -8,21 +8,23 @@ lo investigado y cómo trabajar. Fecha: 2026-11-03.
 ## 1. Qué es y qué se decidió
 
 - **AlojaFlow nuevo** es un sistema de gestión de alojamientos (PMS) escrito **desde cero**,
-  con licencia **AGPL v3 o posterior** (código abierto).
+  con licencia **FSL-1.1-ALv2** (código visible; cada versión pasa a Apache 2.0 a los dos
+  años). Hasta la 1.0.44 fue AGPL v3 o posterior, y esas versiones lo siguen siendo (D-174).
   - Se comercializa con servicio alojado (SaaS), instalación, migración de datos, soporte,
-    formación y personalizaciones. La AGPL lo permite.
-  - Quien use AlojaFlow (también por internet) tiene derecho a su código fuente: la
-    aplicación ofrece un enlace de descarga del código de la versión instalada.
-  - Sin licencia comercial ni módulos cerrados: todo el código es AGPL.
+    formación y personalizaciones, y con licencias comerciales para quien quiera ofrecer
+    con este código un servicio que compita, que la FSL no permite.
+  - El código sigue a la vista: la aplicación ofrece un enlace de descarga del código de
+    la versión instalada, por decisión y ya no por obligación de la licencia.
+  - Sin módulos cerrados dentro de AlojaFlow: todo su código se publica bajo la FSL.
 - **Motivo de empezar desde cero**: una base técnica, visual y de experiencia de uso
   nueva y actual, no un cambio de licencia.
 - Del proyecto anterior se conservan el **nombre** y el **logo** (y los colores de marca).
-- **Sin código viejo.** Se puede aprovechar la lógica de HotelDruid, del AlojaFlow 1.2.x
-  y de otros proyectos compatibles (tarifas, disponibilidad, formato de copia…), pero
-  siempre **reescrita en código moderno** que cumpla la regla 4. Ningún archivo viejo
-  entra tal cual.
+- **Sin código viejo ni lógica ajena.** Al principio se permitió aprovechar la lógica de
+  HotelDruid y del AlojaFlow 1.2.x, reescrita. Desde la sala limpia (D-173) y el cambio de
+  licencia (D-174) ya no: de un proyecto AGPL o GPL no entra código ni lógica, solo lo que
+  se sabe del oficio y los hechos necesarios para interoperar.
 - **No se compra ninguna licencia por ahora.** Solo se usan librerías gratuitas con
-  licencia compatible con la AGPL (regla 3). Lo que en otros sistemas es de pago se
+  licencia permisiva (regla 3). Lo que en otros sistemas es de pago se
   construye aquí (calendario por habitaciones, sincronización, motor de reservas).
 
 ### Fases
@@ -39,17 +41,18 @@ lo investigado y cómo trabajar. Fecha: 2026-11-03.
 
 ## 2. Reglas del proyecto (van al CLAUDE.md del repositorio nuevo)
 
-1. Licencia del proyecto: **AGPL v3 o posterior**. Archivo `LICENSE` en la raíz y
-   cabecera breve de licencia en cada archivo fuente.
+1. Licencia del proyecto: **FSL-1.1-ALv2** desde la 1.0.45 (D-174; antes, AGPL v3 o
+   posterior). Archivo `LICENSE` en la raíz y cabecera breve de licencia en cada archivo fuente.
 2. Arquitectura, nombres y estructura nuevos (Laravel). Nombres en español o inglés; los
    italianos de HotelDruid solo dentro del módulo de sincronización.
-3. Dependencias: solo licencias **compatibles con la AGPL v3**: MIT, BSD, Apache 2.0,
-   LGPL v2.1+/v3, GPL v3, AGPL v3. **No**: GPL v2 "solo" (sin "o posterior"), OSL
+3. Dependencias: solo licencias **permisivas**: MIT, BSD, Apache 2.0, ISC, LGPL v2.1+/v3
+   usada como biblioteca y OFL para fuentes. **No**: GPL de cualquier versión, AGPL, SSPL, OSL
    (QloApps), licencias propietarias o de pago, ni código sin licencia.
    Revisar con `composer licenses` y el equivalente de npm antes de cada versión.
-4. **Código de otros repositorios** (HotelDruid, AlojaFlow 1.2.x y cualquier otro con
-   licencia que cumpla la regla 3): se aprovecha **la lógica, no el código viejo**. Todo
-   lo que entre debe cumplir estos mínimos de código moderno:
+4. **Código de otros repositorios** con licencia que cumpla la regla 3: se aprovecha **la
+   lógica, no el código viejo**. De HotelDruid y de AlojaFlow 1.2.x, que son AGPL, ya no
+   entra ni la lógica (D-173, D-174). Todo lo que entre debe cumplir estos mínimos de código
+   moderno:
    - PHP 8.3 con `declare(strict_types=1)`, tipos en parámetros y retornos, enums,
      clases con una responsabilidad clara (nada de funciones globales ni variables
      globales);
@@ -63,15 +66,15 @@ lo investigado y cómo trabajar. Fecha: 2026-11-03.
    Si un fragmento no puede cumplirlo sin reescribirse entero, se reescribe entero.
    Cuando la lógica venga de otro proyecto, conservar su aviso de copyright y anotarlo en
    `THIRD-PARTY-NOTICES.md` (origen, licencia, archivos afectados).
-5. **Contribuciones externas**: bajo la misma AGPL, con aceptación DCO (*Signed-off-by*
-   en cada commit). No hace falta CLA.
+5. **Contribuciones externas**: con el acuerdo de `CONTRIBUTING.md` (CLA), que deja al
+   titular publicarlas con cualquier licencia. El *Signed-off-by* en cada commit sigue.
 6. Cada cambio con pruebas (Pest) y análisis estático (Larastan) en verde.
 7. Mensajes, interfaz y documentación en español; preparado para más idiomas.
-8. Enlace "Código fuente" visible en la aplicación (obligación de la AGPL para uso por
-   red), que descarga el código de la versión instalada.
-9. Créditos: mientras haya lógica derivada de HotelDruid, mencionarlo (Marco M. F. De
-   Santis) en `THIRD-PARTY-NOTICES.md` y en la pantalla "Acerca de". Se puede decir
-   "compatible con HotelDruid", sin usar su logo ni sugerir que es un producto oficial.
+8. Enlace "Código fuente" visible en la aplicación, que descarga el código de la versión
+   instalada. Se queda por decisión: la FSL no lo exige.
+9. Créditos: AlojaFlow ya no tiene lógica derivada de HotelDruid (D-173). Se dice
+   "compatible con HotelDruid, de Marco M. F. De Santis" en `THIRD-PARTY-NOTICES.md` y en
+   "Acerca de", sin usar su logo ni sugerir que es un producto oficial.
 10. **Subordinación**: se documenta en `docs/especificacion/subordinacion.md`:
     - las llamadas HTTP que hace la subordinada a la principal (`crea_backup.php` con
       sus parámetros: crear, descargar —comprimida o no— y borrar la copia), sus
@@ -131,6 +134,9 @@ De proyectos con licencia compatible (regla 3) se puede adaptar código siguiend
 regla 4. De los incompatibles (OSL, propietarios) solo ideas y funciones.
 
 ### Proyectos de código abierto revisados
+
+> Nota de 2026-11-11 (D-174): esta tabla es de cuando AlojaFlow iba a ser AGPL. Con la FSL, de
+> los proyectos AGPL, GPL u OSL solo se toman ideas generales; no entra su código ni su lógica.
 
 | Proyecto | Qué es | Licencia | Uso para nosotros |
 |---|---|---|---|
@@ -265,7 +271,7 @@ Para revisar cambios importantes antes de integrarlos: `/code-review high`.
 Antes: copiar este archivo al repositorio nuevo como `docs/INICIO.md`.
 
 > Vamos a crear AlojaFlow, un sistema de gestión de alojamientos, desde cero y con
-> licencia AGPL v3 de código abierto. Lee `docs/INICIO.md` (este documento).
+> licencia FSL-1.1-ALv2 de código visible. Lee `docs/INICIO.md` (este documento).
 > Trabaja en modo plan: todavía no escribas código. Primero crea el `CLAUDE.md` con las
 > reglas y la tecnología, y
 > después propón el documento de producto y el índice de la especificación (protocolo de

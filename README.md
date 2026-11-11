@@ -1,7 +1,8 @@
 # AlojaFlow
 
-Sistema de gestión de alojamientos (PMS) de código abierto, para alojamientos pequeños y
-propietarios con varias propiedades. Licencia **AGPL-3.0-or-later**.
+Sistema de gestión de alojamientos (PMS) de código visible, para alojamientos pequeños y
+propietarios con varias propiedades. Licencia **FSL-1.1-ALv2** (Functional Source License 1.1, que
+pasa a Apache 2.0 a los dos años).
 
 > **Estado:** versión de prueba 1.0.10. Cada propiedad puede trabajar de dos formas:
 > - **Independiente:** AlojaFlow es su sistema: tarifas, cargos, impuestos, huéspedes, reservas, pagos, caja,
@@ -40,11 +41,23 @@ compilación para usarlo. Pruebas con Pest, análisis con Larastan y formato con
 
 ## Licencia y créditos
 
-Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow. Software libre bajo la
-[GNU Affero General Public License v3 o posterior](LICENSE): quien usa AlojaFlow, también por
-internet, puede descargar su código fuente desde la propia aplicación.
+Copyright (C) 2026 Juan Galeana Durán. AlojaFlow se publica bajo la
+[Functional Source License 1.1, con Apache 2.0 como licencia futura](LICENSE) (FSL-1.1-ALv2):
+
+- **Puedes** usarlo en tu alojamiento o en los que administras, estudiarlo, modificarlo y
+  compartirlo, y cobrar por instalarlo, adaptarlo o darle soporte a quien lo usa.
+- **No puedes** ofrecer con él un producto o servicio comercial que compita con AlojaFlow, como un
+  servicio alojado para terceros. Para eso hace falta una licencia comercial: escribe al titular.
+- **A los dos años** de publicada, cada versión queda además bajo la licencia Apache 2.0.
+
+La FSL no es una licencia de «código abierto» ni de «software libre» en el sentido de la OSI o de
+la FSF: es código visible (*Fair Source*). Las versiones **1.0.44 y anteriores** se publicaron bajo
+la AGPL-3.0-or-later y lo siguen estando: quien las recibió así conserva esos derechos sobre ellas.
+El cambio rige desde la 1.0.45 ([D-174](docs/decisiones.md)).
+
+El código de la versión instalada se sigue pudiendo descargar desde la propia aplicación.
 
 AlojaFlow es compatible con HotelDruid, de Marco M. F. De Santis, y no es un producto oficial de
 HotelDruid. Avisos de terceros: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
-Las contribuciones se aceptan bajo la misma licencia, con `Signed-off-by` en cada commit (DCO).
+Para contribuir hace falta aceptar el acuerdo de [CONTRIBUTING.md](CONTRIBUTING.md) (CLA).

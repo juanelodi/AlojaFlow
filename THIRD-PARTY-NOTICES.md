@@ -1,7 +1,8 @@
 # Avisos de terceros
 
-AlojaFlow se distribuye bajo la licencia **AGPL-3.0-or-later** (ver `LICENSE`). Usa o se basa en
-estos trabajos de terceros, cada uno con su licencia.
+AlojaFlow se distribuye bajo la licencia **FSL-1.1-ALv2** (ver `LICENSE`) desde la versión 1.0.45;
+las versiones anteriores, bajo la AGPL-3.0-or-later (D-174). Usa estos trabajos de terceros, cada
+uno con su licencia, que no cambia.
 
 ## Compatibilidad con HotelDruid
 
@@ -49,7 +50,8 @@ aplicación. Sus versiones exactas están en `composer.lock` y `package.json`.
 | chillerlan/php-qrcode (a través de Filament) | MIT o Apache-2.0 |
 
 Antes de cada versión se revisan todas las licencias con `composer licenses` y
-`npx license-checker --summary` (regla 3 del `CLAUDE.md`).
+`npx license-checker --summary` (regla 3 del `CLAUDE.md`). Ninguna dependencia es GPL ni AGPL: las
+LGPL (dompdf) se usan como bibliotecas, sin modificar, y se pueden sustituir en `vendor/`.
 
 ## Generación de PDF
 

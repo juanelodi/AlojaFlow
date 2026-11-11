@@ -8,8 +8,8 @@ Decisiones citadas como D-NNN: [decisiones.md](decisiones.md). Especificación:
 
 ## 1. Resumen
 
-AlojaFlow es un sistema de gestión de alojamientos (PMS) web, de código abierto (AGPL v3 o
-posterior), para alojamientos pequeños —casas de huéspedes, hoteles pequeños, cabañas,
+AlojaFlow es un sistema de gestión de alojamientos (PMS) web, de código visible (FSL-1.1-ALv2,
+D-174), para alojamientos pequeños —casas de huéspedes, hoteles pequeños, cabañas,
 campings, departamentos de renta vacacional— y para propietarios con varias propiedades.
 Se instala en un hosting propio o se contrata como servicio alojado, sin cuota por habitación.
 Funciona en cualquier país mediante **paquetes de país**; el idioma base es el español.
@@ -49,8 +49,8 @@ Uso repartido entre PC y móvil, más o menos a partes iguales.
 
 ## 4. Propuesta de valor y posicionamiento
 
-- **Libre y sin cuota por habitación.** Todo el código es AGPL; se cobra por servicios, no por
-  licencias.
+- **Código a la vista y sin cuota por habitación.** Todo el código se publica bajo la FSL y pasa a
+  Apache 2.0 a los dos años; quien lo instala en su alojamiento no paga licencia.
 - **Los datos son del alojamiento.** Autoalojable en hosting compartido, exportable, y todo
   —también lo de cada módulo— dentro de la base de datos y de la copia de seguridad.
 - **Se adopta sin migrar.** Quien ya usa HotelDruid instala AlojaFlow al lado y lo aprovecha
@@ -63,8 +63,9 @@ es un motor de reservas y no procesa pagos.
 
 ## 5. Modelo de negocio
 
-AGPL más servicios: servicio alojado (una instalación por cliente, D-005), instalación,
-migración de datos, soporte, formación y personalizaciones. **Precios: pendiente.**
+FSL más servicios: servicio alojado (una instalación por cliente, D-005), instalación,
+migración de datos, soporte, formación y personalizaciones, y licencias comerciales para quien
+quiera ofrecer un servicio que compita (D-174). **Precios: pendiente.**
 
 Costos de terceros que paga el alojamiento cuando los usa: envío de
 correo, dominio y hosting; más adelante, channel manager y pasarela de pagos.
@@ -199,7 +200,7 @@ Cada entrega sale en varias versiones 1.0.x (D-030).
 
 ## 11. Restricciones
 
-- AGPL v3 o posterior; solo dependencias compatibles; nada que exija comprar licencias.
+- FSL-1.1-ALv2 (D-174); solo dependencias permisivas (regla 3); nada que exija comprar licencias.
 - Hosting compartido: PHP 8.3, MySQL 8.4 / MariaDB 11.4, un solo cron, sin Redis ni procesos
   permanentes, límites de memoria y de tiempo. La copia de una principal real pesa unos 10 MB
   y debe leerse por partes.
