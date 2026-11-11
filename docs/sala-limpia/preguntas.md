@@ -80,5 +80,7 @@ Coinciden con la huella del código anterior, y la especificación no los dice:
 - **Créditos que siguen diciendo «lógica de HotelDruid»:** el texto de «Acerca de» (`ui.acerca.hoteldruid`, en los seis
   idiomas), las reglas 4 y 9 del `CLAUDE.md` y `docs/INICIO.md`. No se tocaron: se revisan aparte.
 - **El usuario sin años y sin formulario**. La principal simulada siempre enseña el formulario y no
-  imita esa página; la prueba de aceptación sí la cubre con una respuesta fingida. Hay que probarlo contra una
-  principal real antes de publicar, y de paso ver qué contesta al borrar (pregunta 3).
+  imita esa página; la prueba de aceptación la cubre con una respuesta fingida. El 2026-11-11 el usuario sincronizó
+  con ese usuario contra la principal real, desde una instancia desechable: correcta, y el borrado de la copia se dio
+  por bueno (ver el [registro](README.md)). Sigue abierto qué contesta la principal cuando el borrado falla
+  (pregunta 3).

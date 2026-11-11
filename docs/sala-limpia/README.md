@@ -218,10 +218,38 @@ simulada sirviendo la demo: «Probar conexión» respondió «La principal respo
 «Sincronizar ahora», «Sincronización correcta: 1122 reservas, 0 cambios». La huella de esa base es la misma, el
 calendario pinta las reservas y en el `storage` de la instancia no quedó la copia descargada.
 
+### Contra una principal real (2026-11-11)
+
+Después de cerrar la reescritura, el usuario la probó contra su HotelDruid 3.0.8 real, desde este equipo y sin tocar
+su instalación en línea. Se montó otra instancia desechable (`ALOJAFLOW_INSTANCIA`, su base, su `storage` fuera del
+repositorio y los certificados de Git para https); en una instancia las visitas no disparan tareas, así que a la
+principal solo se le pidió una copia cuando él pulsó el botón. La propiedad se creó desde el panel con el usuario que
+no es administrador —privilegio de copia y todos los años inhabilitados, el de la página sin formulario— y la
+contraseña la escribió él. De esa base solo se leyeron conteos.
+
+| | Resultado |
+|---|---|
+| «Sincronizar ahora» | Correcta en 10 s, sin código de error ni aviso de que la copia no se pudo borrar |
+| Principal | Esquema 3.08, con inicio de sesión activado; copia comprimida por POST |
+| Copia | 615 523 bytes al bajar, 9 769 984 al descomprimir |
+| Unidades / huéspedes / reservas | 6 / 1652 / 1837 (77 canceladas) |
+| Cobros / movimientos | 2661 / 7 |
+| Incidencias | `reservas_sin_fechas`: 32, las mismas que en la copia del 26 de octubre |
+| Eventos | 0: es una primera carga |
+
+Cuadra con la huella de la copia del 26 de octubre (6 / 1645 / 1831, 2643 cobros y 7 movimientos) más dos semanas
+de operación. En la misma instancia, la demo servida por la principal simulada volvió a dar 17 unidades, 974
+huéspedes, 1122 reservas y 1628 cobros.
+
+Lo que esta prueba no dice: es una primera carga, no una actualización (eso lo cubre «Una instalación que se
+actualiza», con la copia real); «Probar conexión» no deja rastro, así que su respuesta solo consta si el usuario la
+confirma; y que el borrado se diera por bueno no enseña qué contesta la principal cuando falla (pregunta 3).
+
 ### Lo que no se pudo comprobar aquí
 
-- **El usuario sin años y sin formulario**: la principal simulada no lo imita. Lo cubre una prueba con
-  una respuesta fingida, pero falta verlo contra la principal real, junto con lo que contesta al borrar la copia.
+- **El usuario sin años y sin formulario**: la principal simulada no lo imita, y lo cubre una prueba
+  con una respuesta fingida. Contra la principal real ya sincronizó bien (sección anterior); sigue sin verse qué
+  contesta cuando el borrado de la copia falla.
 - **Bloqueos de calendario, grupos, cierres, cajas con nombre y parentescos**: ninguna de las dos copias los trae. Los
   cubren las pruebas, no la huella.
 - Las preguntas de [preguntas.md](preguntas.md).
@@ -256,3 +284,6 @@ Después de la revisión se repitieron las dos huellas y la prueba de actualizac
 Al terminar se borraron las bases desechables (`alojaflow_sala_limpia_*`), la instancia de prueba y el volcado de
 la demo. Las huellas, que solo tienen conteos y sumas, quedaron fuera del repositorio, en la carpeta temporal de la
 sesión; lo que importa de ellas está en las tablas de arriba.
+
+La instancia de la prueba contra una principal real (su carpeta fuera del repositorio y la base
+`alojaflow_sala_limpia_prueba`, que tiene datos reales) se borra cuando el usuario termine de revisarla.
