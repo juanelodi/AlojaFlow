@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\DB;
  */
 final class UnidadesPrincipal
 {
+    /** @var array<string, int> quién tiene cada código en la propiedad, por su forma comparable */
+    private array $codigos = [];
+
     public function __construct(private readonly Contexto $contexto)
     {
     }
@@ -26,53 +29,58 @@ final class UnidadesPrincipal
     /**
      * Deja las unidades como en la copia y devuelve cómo encontrarlas.
      *
-     * @return array<string, int> clave de origen => unidad_id
+     * @return array<string, int> nombre de la unidad en su forma comparable (Contexto::comparable) => unidad_id
      */
     public function proyectar(): array
     {
-        $guardadas = DB::table('unidades')->where('principal_id', $this->contexto->principal->id)->whereNotNull('clave_origen')->get()->keyBy('clave_origen');
+        // Los índices únicos no distinguen mayúsculas ni acentos: aquí se busca igual, o un nombre que solo cambió en eso chocaría.
+        $guardadas = DB::table('unidades')->where('principal_id', $this->contexto->principal->id)->whereNotNull('clave_origen')->get()
+            ->keyBy(fn (object $unidad): string => Contexto::comparable((string) $unidad->clave_origen));
+        $this->codigos = DB::table('unidades')->where('propiedad_id', $this->contexto->propiedadId())->pluck('id', 'codigo')
+            ->mapWithKeys(fn (mixed $id, mixed $codigo): array => [Contexto::comparable((string) $codigo) => (int) $id])->all();
         $ids = [];
-        $yaVistas = [];
 
         foreach ($this->contexto->espejo->filas('appartamenti') as $fila) {
             $clave = $this->contexto->conversor->texto($fila['idappartamenti'] ?? null, 100);
-            // El índice único no distingue mayúsculas: dos nombres que solo cambian en eso chocarían.
-            if ($clave === null || isset($yaVistas[mb_strtolower($clave)])) {
+            $llave = $clave === null ? null : Contexto::comparable($clave);
+            if ($clave === null || $llave === null || isset($ids[$llave])) {
                 $this->contexto->resultado->incidencia('unidades_descartadas');
 
                 continue;
             }
-            $yaVistas[mb_strtolower($clave)] = true;
             $datos = $this->datos($clave, $fila);
             $huella = Huellas::datos($datos);
-            $guardada = $guardadas->get($clave);
-            $this->apartarCodigo($clave, $guardada === null ? null : (int) $guardada->id);
+            $identidad = hash('sha256', $clave);
+            $guardada = $guardadas->get($llave);
+            $this->apartarCodigo($clave, $llave, $guardada === null ? null : (int) $guardada->id);
 
             if ($guardada === null) {
-                $ids[$clave] = (int) DB::table('unidades')->insertGetId(
-                    $datos + $this->contexto->columnasOrigen($clave, hash('sha256', $clave), $huella) + ['propiedad_id' => $this->contexto->propiedadId(), 'activa' => true]
+                $ids[$llave] = (int) DB::table('unidades')->insertGetId(
+                    $datos + $this->contexto->columnasOrigen($clave, $identidad, $huella) + ['propiedad_id' => $this->contexto->propiedadId(), 'activa' => true]
                 );
+                $this->codigos[$llave] = $ids[$llave];
                 $this->contexto->resultado->contar('unidades_nuevas');
 
                 continue;
             }
 
-            $ids[$clave] = (int) $guardada->id;
-            $identidad = hash('sha256', $clave);
+            $ids[$llave] = (int) $guardada->id;
+            $this->codigos[$llave] = $ids[$llave];
             if ($guardada->huella_datos === $huella && $guardada->huella_identidad === $identidad && (bool) $guardada->activa) {
                 continue;
             }
             // Si lo único distinto son las huellas (las guardó otra generación del proyector), la unidad no se toca.
             $cambios = ['huella_identidad' => $identidad, 'huella_datos' => $huella, 'ejecucion_id' => $this->contexto->ejecucion->id];
-            if (Contexto::diferencias($guardada, $datos + ['activa' => true]) !== []) {
-                $cambios += $datos + ['activa' => true, 'actualizado_en' => $this->contexto->ahora];
+            if (Contexto::diferencias($guardada, $datos + ['activa' => true, 'clave_origen' => $clave]) !== []) {
+                $cambios += $datos + ['activa' => true, 'clave_origen' => $clave, 'actualizado_en' => $this->contexto->ahora];
                 $this->contexto->resultado->contar('unidades_actualizadas');
             }
             DB::table('unidades')->where('id', $guardada->id)->update($cambios);
         }
 
         // La que ya no viene se desactiva: sus reservas pasadas, su plano y sus tareas siguen ahí.
-        $ausentes = $guardadas->filter(fn (object $unidad): bool => ! isset($ids[(string) $unidad->clave_origen]) && (bool) $unidad->activa)->pluck('id')->all();
+        $presentes = array_flip($ids);
+        $ausentes = $guardadas->filter(fn (object $unidad): bool => ! isset($presentes[(int) $unidad->id]) && (bool) $unidad->activa)->pluck('id')->all();
         if ($ausentes !== []) {
             DB::table('unidades')->whereIn('id', $ausentes)->update(['activa' => false, 'actualizado_en' => $this->contexto->ahora]);
             $this->contexto->resultado->contar('unidades_desactivadas', count($ausentes));
@@ -104,11 +112,10 @@ final class UnidadesPrincipal
      * El código es único en la propiedad. Si lo tiene otra unidad (una que se renombró a mano y aún no se pone al
      * día), se le aparta para que la copia no se detenga; si sigue en la principal, recibe el suyo al llegar su turno.
      */
-    private function apartarCodigo(string $codigo, ?int $unidadId): void
+    private function apartarCodigo(string $codigo, string $llave, ?int $unidadId): void
     {
-        $ocupante = DB::table('unidades')->where('propiedad_id', $this->contexto->propiedadId())->where('codigo', $codigo)
-            ->when($unidadId !== null, fn ($consulta) => $consulta->where('id', '!=', $unidadId))->value('id');
-        if ($ocupante !== null) {
+        $ocupante = $this->codigos[$llave] ?? null;
+        if ($ocupante !== null && $ocupante !== $unidadId) {
             DB::table('unidades')->where('id', $ocupante)->update(['codigo' => mb_substr($codigo, 0, 80).'~'.$ocupante, 'huella_datos' => null]);
         }
     }

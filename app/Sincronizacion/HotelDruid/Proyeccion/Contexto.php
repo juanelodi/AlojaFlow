@@ -16,6 +16,7 @@ use App\Models\Principal;
 use App\Sincronizacion\HotelDruid\Conversor;
 use App\Sincronizacion\HotelDruid\Espejo;
 use App\Sincronizacion\HotelDruid\ResultadoProyeccion;
+use Normalizer;
 
 /**
  * Lo que comparten las piezas de una proyección: de qué principal y qué ejecución, de dónde se lee y dónde se anota.
@@ -85,6 +86,18 @@ final class Contexto
         }
 
         return $distintas;
+    }
+
+    /**
+     * Un nombre como lo comparan los índices únicos de la base, que no distinguen mayúsculas ni acentos: «CABAÑA 1» y
+     * «cabana 1» son el mismo. Sirve para buscar por nombre lo que la principal casa así.
+     */
+    public static function comparable(string $texto): string
+    {
+        $descompuesto = Normalizer::normalize(trim($texto), Normalizer::FORM_KD);
+        $sinAcentos = preg_replace('/\p{Mn}+/u', '', $descompuesto === false ? trim($texto) : $descompuesto);
+
+        return mb_strtolower($sinAcentos ?? trim($texto));
     }
 
     private static function comoTexto(mixed $valor): string

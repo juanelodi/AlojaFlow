@@ -13,6 +13,7 @@ namespace App\Sincronizacion\HotelDruid\Proyeccion;
 use App\Enums\MetodoPago;
 use App\Enums\TipoMovimiento;
 use App\Sincronizacion\ProyeccionCaja;
+use Illuminate\Support\Facades\DB;
 
 /**
  * La caja de la principal (subordinacion.md C6, D-078): sus cajas, los cobros de cada reserva (`soldi`) y el libro de
@@ -54,7 +55,7 @@ final class CajaPrincipal
     }
 
     /**
-     * @return array<string, int> nombre de la caja en minúsculas => caja_id
+     * @return array<string, int> nombre de la caja en su forma comparable => caja_id
      */
     private function cajas(ProyeccionCaja $destino): array
     {
@@ -64,15 +65,33 @@ final class CajaPrincipal
             $nombre = $this->contexto->conversor->texto($fila['nome_cassa'] ?? null, 100);
             $numero = (string) ($fila['idcasse'] ?? '');
             // Sin nombre no hay qué enseñar, y dos con el mismo chocarían: el nombre es único en la propiedad.
-            if ($nombre === null || ! ctype_digit($numero) || isset($nombres[mb_strtolower($nombre)])) {
+            if ($nombre === null || ! ctype_digit($numero) || isset($nombres[Contexto::comparable($nombre)])) {
                 continue;
             }
-            $nombres[mb_strtolower($nombre)] = 'casse:'.$numero;
+            $nombres[Contexto::comparable($nombre)] = 'casse:'.$numero;
             $cajas['casse:'.$numero] = ['nombre' => $nombre, 'activa' => true];
         }
+        $this->soltarNombres($cajas);
         $ids = $destino->cajas($cajas);
 
         return array_map(fn (string $clave): int => $ids[$clave], $nombres);
+    }
+
+    /**
+     * El nombre de una caja es único en la propiedad. Si en la principal dos cajas intercambian el suyo, ponerlos uno
+     * por uno chocaría: la que va a cambiar de nombre suelta antes el que tenía.
+     *
+     * @param  array<string, array<string, mixed>>  $cajas  clave de origen => nombre y activa
+     */
+    private function soltarNombres(array $cajas): void
+    {
+        $guardadas = DB::table('cajas')->where('principal_id', $this->contexto->principal->id)->whereNotNull('clave_origen')->get(['id', 'clave_origen', 'nombre']);
+        foreach ($guardadas as $guardada) {
+            $nuevo = $cajas[(string) $guardada->clave_origen]['nombre'] ?? null;
+            if (is_string($nuevo) && Contexto::comparable($nuevo) !== Contexto::comparable((string) $guardada->nombre)) {
+                DB::table('cajas')->where('id', $guardada->id)->update(['nombre' => mb_substr('~'.$guardada->id.'~'.$guardada->nombre, 0, 100)]);
+            }
+        }
     }
 
     /**
@@ -130,7 +149,7 @@ final class CajaPrincipal
             $sinCaja[$cobro['numero'].'|'.$cobro['importe'].'|'.$cobro['fecha']][] = $clave;
         }
         foreach ($this->contexto->espejo->filas('costi', $anio) as $fila) {
-            $cajaId = $cajas[mb_strtolower((string) $conversor->texto($fila['nome_cassa'] ?? null, 100))] ?? null;
+            $cajaId = $cajas[Contexto::comparable((string) ($fila['nome_cassa'] ?? ''))] ?? null;
             $fecha = $this->dia($fila['data_transazione'] ?? null);
             $importe = $conversor->importe($fila['val_costo'] ?? null);
 

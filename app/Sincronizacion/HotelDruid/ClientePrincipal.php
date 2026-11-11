@@ -18,6 +18,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Response;
 use LogicException;
+use Throwable;
 
 /**
  * Habla con la principal por el protocolo de subordinacion.md A3: pide que cree su copia, la descarga y pide que la
@@ -82,11 +83,14 @@ class ClientePrincipal
     public function probarConexion(): void
     {
         $respuesta = $this->pagina(self::PROBAR);
+        if ($respuesta->ofreceCrearCopia()) {
+            return;
+        }
         // Sin el privilegio de copia la principal no escribe nada.
-        if ($respuesta->vacia()) {
+        if ($respuesta->pideCredenciales() || $respuesta->vacia()) {
             throw new ErrorSincronizacion(CodigoError::Credenciales, self::PROBAR);
         }
-        if (! $respuesta->ofreceCrearCopia() && ! $respuesta->soloCabecera()) {
+        if (! $respuesta->soloCabecera()) {
             throw $this->noReconocida($respuesta, self::PROBAR);
         }
     }
@@ -102,6 +106,8 @@ class ClientePrincipal
         }
 
         throw match (true) {
+            // Tras un rechazo no se reintenta: siete contraseñas erróneas bloquean la cuenta en la principal.
+            $respuesta->pideCredenciales() => new ErrorSincronizacion(CodigoError::Credenciales, self::CREAR),
             $respuesta->alcanzoLimiteDiario() => new ErrorSincronizacion(CodigoError::LimiteDiario, self::CREAR),
             $respuesta->noPudoEscribir() => new ErrorSincronizacion(CodigoError::EscrituraPrincipal, self::CREAR),
             default => $this->noReconocida($respuesta, self::CREAR),
@@ -143,16 +149,18 @@ class ClientePrincipal
     {
         try {
             $respuesta = $this->enviar(self::BORRAR, self::BYTES_MAXIMOS_PAGINA);
-        } catch (ErrorSincronizacion) {
+            $pagina = new RespuestaPrincipal($respuesta->status(), $respuesta->body());
+
+            return $respuesta->successful() && ! $pagina->pideCredenciales() && ! $pagina->noPudoBorrar();
+        } catch (Throwable) {
+            // Pase lo que pase aquí, no debe tapar lo que haya pasado al descargar.
             return false;
         }
-        $pagina = new RespuestaPrincipal($respuesta->status(), $respuesta->body());
-
-        return $respuesta->successful() && ! $pagina->pideCredenciales() && ! $pagina->noPudoBorrar();
     }
 
     /**
-     * Una página de la principal ya revisada: ni redirección ni formulario de acceso.
+     * Lo que contestó la principal, ya sin redirecciones. Cada paso busca primero su señal de éxito y después el
+     * formulario de acceso: una página correcta también puede llevar ese campo.
      */
     private function pagina(string $paso): RespuestaPrincipal
     {
@@ -172,13 +180,7 @@ class ClientePrincipal
             throw $this->redireccion($respuesta, $paso);
         }
 
-        $pagina = new RespuestaPrincipal($respuesta->status(), $respuesta->body());
-        // Tras un rechazo no se reintenta: siete contraseñas erróneas bloquean la cuenta en la principal.
-        if ($pagina->pideCredenciales()) {
-            throw new ErrorSincronizacion(CodigoError::Credenciales, $paso);
-        }
-
-        return $pagina;
+        return new RespuestaPrincipal($respuesta->status(), $respuesta->body());
     }
 
     private function enviar(string $paso, int $bytesMaximos, ?string $archivo = null): Response

@@ -103,10 +103,11 @@ final class RespuestaPrincipal
     public function extracto(): string
     {
         $texto = mb_scrub($this->cuerpo, 'UTF-8');
-        $texto = (string) preg_replace('#<(script|style)\b[^>]*>.*?</\1\s*>#is', ' ', $texto);
-        $texto = (string) preg_replace('/<!--.*?-->/s', ' ', $texto);
+        // Si una expresión no puede con la página, se sigue con lo que hay: mejor un extracto con ruido que ninguno.
+        $texto = preg_replace('#<(script|style)\b[^>]*>.*?</\1\s*>#is', ' ', $texto) ?? $texto;
+        $texto = preg_replace('/<!--.*?-->/s', ' ', $texto) ?? $texto;
         $texto = html_entity_decode(strip_tags($texto), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $texto = trim((string) preg_replace('/[\s\x{00A0}]+/u', ' ', $texto));
+        $texto = trim(preg_replace('/[\s\x{00A0}]+/u', ' ', $texto) ?? $texto);
         $prefijo = $this->estado >= 400 ? 'HTTP '.$this->estado.($texto === '' ? '' : ': ') : '';
 
         return $prefijo.mb_substr($texto, 0, self::EXTRACTO_MAXIMO - mb_strlen($prefijo));

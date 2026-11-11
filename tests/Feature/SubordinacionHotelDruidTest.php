@@ -157,6 +157,12 @@ describe('el protocolo', function () {
         expect(File::allFiles(storage_path('app/private/subordinacion')))->toBe([]);
     });
 
+    it('la señal de que la copia se creó vale aunque la página traiga también el campo de la contraseña', function () {
+        ($this->servir)(($this->copia)(), ['crear' => Http::response('<html><!-- Backup_created --><form><input type="hidden" name="password_phpr" value=""></form></html>')]);
+
+        expect(($this->sincronizar)()->estado)->toBe(EstadoEjecucion::Correcta);
+    });
+
     it('reconoce la respuesta aunque la contraseña sea una palabra de la página', function () {
         $this->principal->update(['contrasena' => 'crea_backup']);
 
@@ -194,6 +200,37 @@ describe('la proyección', function () {
             ->and(Reserva::query()->where('clave_origen', '2026:3')->sole()->tipo)->toBe(TipoReserva::Reserva);
         // El día del cobro es el que anotó la principal, en su hora.
         expect(Pago::query()->sole()->clave_origen)->toBe('soldi:2026:3')->and(Pago::query()->sole()->fecha->format('Y-m-d'))->toBe('2026-10-02');
+    });
+
+    it('una unidad que en la principal solo cambia de mayúsculas o acentos sigue siendo la misma, y sus reservas la encuentran', function () {
+        ($this->servir)(($this->copia)());
+        ($this->sincronizar)();
+        $id = DB::table('unidades')->where('clave_origen', 'Cabaña 1')->value('id');
+
+        $copia = ConstructorCopia::nueva()->unidad('CABANA 1', 4, 1)->unidad('Cabaña 2', 2, 2)
+            ->cliente(1, 'Pérez', 'Ana')->cliente(2, 'Smith', 'John')
+            ->reserva(2026, 1, 'cabaña 1', 1, '2026-11-10', '2026-11-13', ['tariffa_tot' => '3000.00'])
+            ->reserva(2026, 2, 'Cabaña 2', 2, '2026-11-12', '2026-11-14');
+        ($this->servir)($copia);
+
+        expect(($this->sincronizar)()->estado)->toBe(EstadoEjecucion::Correcta)
+            ->and(DB::table('unidades')->count())->toBe(2)
+            ->and(DB::table('unidades')->where('id', $id)->value('codigo'))->toBe('CABANA 1')
+            ->and(Reserva::query()->where('clave_origen', '2026:1')->sole()->unidad_id)->toBe($id)
+            ->and(EventoReserva::query()->count())->toBe(0);
+    });
+
+    it('un comentario muy largo con acentos no detiene la copia, y dos cajas pueden intercambiar su nombre', function () {
+        $con = fn (string $primera, string $segunda): ConstructorCopia => ($this->copia)()
+            ->fila('casse', ['idcasse' => 1, 'nome_cassa' => $primera])->fila('casse', ['idcasse' => 2, 'nome_cassa' => $segunda])
+            ->reserva(2026, 3, 'Cabaña 2', 2, '2026-12-01', '2026-12-03', ['commento' => str_repeat('ñandú ', 12000)]);
+        ($this->servir)($con('Recepción', 'Banco'));
+        expect(($this->sincronizar)()->estado)->toBe(EstadoEjecucion::Correcta)
+            ->and(strlen((string) Reserva::query()->where('clave_origen', '2026:3')->sole()->comentario))->toBeLessThanOrEqual(65535);
+
+        ($this->servir)($con('Banco', 'Recepción'));
+        expect(($this->sincronizar)()->estado)->toBe(EstadoEjecucion::Correcta)
+            ->and(DB::table('cajas')->orderBy('clave_origen')->pluck('nombre', 'clave_origen')->all())->toBe(['casse:1' => 'Banco', 'casse:2' => 'Recepción']);
     });
 
     it('una estancia que está en las tablas de dos años se proyecta una vez, con la clave del año en que empieza', function () {

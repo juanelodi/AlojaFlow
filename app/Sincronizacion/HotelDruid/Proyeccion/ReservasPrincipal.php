@@ -52,7 +52,7 @@ final class ReservasPrincipal
     private array $eventos = [];
 
     /**
-     * @param  array<string, int>  $unidades  clave de origen => unidad_id
+     * @param  array<string, int>  $unidades  nombre de la unidad en su forma comparable => unidad_id
      * @param  array<string, int>  $huespedes  `idclienti` => huesped_id
      */
     public function __construct(
@@ -109,7 +109,7 @@ final class ReservasPrincipal
 
             return;
         }
-        $unidadId = $this->unidades[(string) $conversor->texto($fila['idappartamenti'] ?? null, 100)] ?? null;
+        $unidadId = $this->unidades[Contexto::comparable((string) ($fila['idappartamenti'] ?? ''))] ?? null;
         if ($unidadId === null) {
             $this->contexto->resultado->incidencia('reservas_sin_unidad');
 
@@ -203,7 +203,7 @@ final class ReservasPrincipal
         $conversor = $this->contexto->conversor;
         $numero = (string) ($fila['idregole'] ?? '');
         $estancia = $periodos->estancia($fila['iddatainizio'] ?? null, $fila['iddatafine'] ?? null);
-        $unidadId = $this->unidades[(string) $conversor->texto($fila['app_agenzia'] ?? null, 100)] ?? null;
+        $unidadId = $this->unidades[Contexto::comparable((string) ($fila['app_agenzia'] ?? ''))] ?? null;
         if (! ctype_digit($numero) || $estancia === null || $unidadId === null) {
             $this->contexto->resultado->incidencia('cierres_descartados');
 

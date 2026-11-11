@@ -26,14 +26,22 @@ final class Conversor
     ) {
     }
 
+    /** Lo que cabe en una columna TEXT, que se mide en bytes y no en caracteres. */
+    private const BYTES_DE_UN_TEXTO = 65535;
+
     /**
      * Sin espacios alrededor, nulo si queda vacío y recortado a lo que cabe en la columna.
      */
     public function texto(?string $valor, int $maximo): ?string
     {
         $texto = trim((string) $valor);
+        if ($texto === '') {
+            return null;
+        }
+        $texto = mb_substr($texto, 0, $maximo);
 
-        return $texto === '' ? null : mb_substr($texto, 0, $maximo);
+        // Un texto largo con acentos pasa de los bytes de la columna antes que de sus caracteres, y detendría toda la copia.
+        return strlen($texto) > self::BYTES_DE_UN_TEXTO ? mb_strcut($texto, 0, self::BYTES_DE_UN_TEXTO, 'UTF-8') : $texto;
     }
 
     /**
