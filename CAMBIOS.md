@@ -2,6 +2,16 @@
 
 Numeración: 1.0.1, 1.0.2 … 1.0.99, y después 1.2 (ver `docs/decisiones.md`, D-030).
 
+## 1.0.44 — 2026-11-11
+
+**La copia desde HotelDruid, escrita de nuevo.** El módulo que copia los datos de HotelDruid 3.0.8 o de AlojaFlow 1.2.x se volvió a escribir a partir de la especificación de su protocolo y de su archivo de copia (D-173). Hace lo mismo que antes: con una copia de demostración y con una real dejó las mismas unidades, huéspedes, reservas, cobros y movimientos que el anterior.
+
+Lo único que vas a notar:
+
+- **La primera sincronización después de actualizar no anuncia cambios.** Pone al día sus marcas internas sin tocar tus reservas. Lo que haya cambiado en la principal desde la sincronización anterior se aplica igual, pero no aparece en «Cambios detectados» ni dispara avisos. Desde la segunda, todo como siempre.
+
+Si tu propiedad es independiente o copia de otra instalación de AlojaFlow, nada cambia.
+
 ## 1.0.43 — 2026-11-09
 
 **Ninguna tarea arranca a media actualización.** Si el cron estaba corriendo cuando empezaste a actualizar, las tareas que le faltaban podían arrancar mientras se cambiaban los archivos, y alguna fallaba una vez. Ahora cada tarea revisa justo antes de empezar si hay una actualización en curso, y espera a la siguiente ronda. Lo mismo pasa sin cron, con las tareas que corren con las visitas.

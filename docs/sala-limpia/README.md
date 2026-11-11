@@ -125,10 +125,15 @@ Con el código anterior, en `25fbc1e`: **1614 pruebas en verde** (50 592 asercio
 | `09bc0ab` | `ConstructorCopia`, escrito de nuevo desde la parte B |
 | `5fa0677` | Pruebas de la parte D |
 | `e4f9400` | La respuesta de la principal se reconoce tal como llegó |
-| `b803eb3` | Avisos, D-173 y este registro |
-| `9b6120d` | Lo que salió de la revisión |
+| `eda6ca0` | Avisos, D-173 y este registro |
+| `e267999` | Lo que salió de la revisión |
 
-El último commit de la rama cierra este registro.
+Los commits que siguen cierran este registro, anotan la prueba contra una principal real y preparan la versión
+1.0.44.
+
+Antes de publicarse, los commits posteriores a `e4f9400` se reescribieron una vez, solo para quitar de estos
+documentos y de los mensajes de commit el nombre de un alojamiento real y una frase que no era del registro. No
+cambió ningún archivo de código: `b3c938d` y los commits de la reescritura conservan su hash y sus fechas.
 
 ## Cómo quedó organizado
 
