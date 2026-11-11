@@ -2,8 +2,8 @@
 
 /*
  * AlojaFlow — sistema de gestión de alojamientos
- * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
- * SPDX-License-Identifier: AGPL-3.0-or-later
+ * Copyright (C) 2026 Juan Galeana Durán
+ * SPDX-License-Identifier: FSL-1.1-ALv2
  */
 
 declare(strict_types=1);
@@ -11,7 +11,7 @@ declare(strict_types=1);
 return [
 
     // Versión instalada; la usa el enlace «Código fuente» (regla 8).
-    'version' => '1.0.44',
+    'version' => '1.0.45',
 
     // Idiomas de la interfaz (regla 7). El español es la fuente.
     'idiomas' => ['es', 'en', 'fr', 'it', 'pt', 'de'],
