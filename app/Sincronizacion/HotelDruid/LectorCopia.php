@@ -48,6 +48,8 @@ class LectorCopia
 
     private LineasCopia $lineas;
 
+    private int $bytesMaximosPorFila;
+
     /** @var array<string, int> */
     private array $filas;
 
@@ -66,7 +68,8 @@ class LectorCopia
     public function leer(string $ruta, callable $alFila): ResumenCopia
     {
         $this->filas = $this->tablasVistas = $this->anios = $this->incidencias = [];
-        $this->lineas = new LineasCopia($ruta, (int) config('alojaflow.subordinacion.tamano_maximo_linea'));
+        $this->bytesMaximosPorFila = (int) config('alojaflow.subordinacion.tamano_maximo_linea');
+        $this->lineas = new LineasCopia($ruta, $this->bytesMaximosPorFila);
 
         try {
             $fecha = $this->cabecera();
@@ -269,11 +272,10 @@ class LectorCopia
             throw $this->invalida();
         }
         $texto = $linea;
-        $tope = (int) config('alojaflow.subordinacion.tamano_maximo_linea');
         while (! str_ends_with($linea, '</riga>')) {
             $linea = $this->linea();
             $texto .= "\n".$linea;
-            if (strlen($texto) > $tope) {
+            if (strlen($texto) > $this->bytesMaximosPorFila) {
                 throw $this->invalida();
             }
         }

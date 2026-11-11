@@ -157,6 +157,14 @@ describe('el protocolo', function () {
         expect(File::allFiles(storage_path('app/private/subordinacion')))->toBe([]);
     });
 
+    it('reconoce la respuesta aunque la contraseña sea una palabra de la página', function () {
+        $this->principal->update(['contrasena' => 'crea_backup']);
+
+        app(Sincronizador::class)->probar($this->principal->refresh());
+
+        Http::assertSentCount(1);
+    });
+
     it('una copia que llega dañada a la hora programada se vuelve a pedir pronto, una sola vez', function () {
         ($this->servir)('<html>otra copia pisó esta</html>');
 

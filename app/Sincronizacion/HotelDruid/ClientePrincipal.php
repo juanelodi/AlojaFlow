@@ -130,10 +130,10 @@ class ClientePrincipal
         }
 
         // En vez de la copia llegó una página: la de acceso, o cualquier otra.
-        $pagina = new RespuestaPrincipal($respuesta->status(), $this->sinCredenciales($muestra));
+        $pagina = new RespuestaPrincipal($respuesta->status(), $muestra);
         throw $pagina->pideCredenciales()
             ? new ErrorSincronizacion(CodigoError::Credenciales, self::DESCARGAR)
-            : new ErrorSincronizacion(CodigoError::FormatoInvalido, self::DESCARGAR, $pagina->extracto());
+            : new ErrorSincronizacion(CodigoError::FormatoInvalido, self::DESCARGAR, $this->sinContrasena($pagina->extracto()));
     }
 
     /**
@@ -172,7 +172,7 @@ class ClientePrincipal
             throw $this->redireccion($respuesta, $paso);
         }
 
-        $pagina = new RespuestaPrincipal($respuesta->status(), $this->sinCredenciales($respuesta->body()));
+        $pagina = new RespuestaPrincipal($respuesta->status(), $respuesta->body());
         // Tras un rechazo no se reintenta: siete contraseñas erróneas bloquean la cuenta en la principal.
         if ($pagina->pideCredenciales()) {
             throw new ErrorSincronizacion(CodigoError::Credenciales, $paso);
@@ -270,18 +270,19 @@ class ClientePrincipal
     {
         $pagina = new RespuestaPrincipal($respuesta->status(), '', $respuesta->header('Location'));
 
-        return new ErrorSincronizacion(CodigoError::RespuestaDesconocida, $paso, __('sincronizacion.redireccion', ['destino' => $this->sinCredenciales($pagina->destinoRedireccion())]));
+        return new ErrorSincronizacion(CodigoError::RespuestaDesconocida, $paso, __('sincronizacion.redireccion', ['destino' => $this->sinContrasena($pagina->destinoRedireccion())]));
     }
 
     private function noReconocida(RespuestaPrincipal $respuesta, string $paso): ErrorSincronizacion
     {
-        return new ErrorSincronizacion(CodigoError::RespuestaDesconocida, $paso, $respuesta->extracto());
+        return new ErrorSincronizacion(CodigoError::RespuestaDesconocida, $paso, $this->sinContrasena($respuesta->extracto()));
     }
 
     /**
-     * Si la principal repitiera la contraseña en su respuesta, no debe llegar a un aviso ni al registro (regla 13).
+     * Si la principal repitiera la contraseña en su respuesta, no debe llegar a un aviso ni al registro (regla 13). Se quita
+     * solo de lo que se va a enseñar: para reconocer la respuesta se mira tal como llegó.
      */
-    private function sinCredenciales(string $texto): string
+    private function sinContrasena(string $texto): string
     {
         $contrasena = (string) $this->principal->contrasena;
 
