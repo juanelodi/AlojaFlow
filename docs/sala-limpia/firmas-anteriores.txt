@@ -1,0 +1,135 @@
+app/Sincronizacion/HotelDruid/CargadorEspejo.php:19:final class CargadorEspejo
+app/Sincronizacion/HotelDruid/CargadorEspejo.php:24:    public function __construct(
+app/Sincronizacion/HotelDruid/CargadorEspejo.php:34:    public function agregar(string $tabla, ?int $anio, array $fila): void
+app/Sincronizacion/HotelDruid/CargadorEspejo.php:54:    public function vaciar(): void
+app/Sincronizacion/HotelDruid/ClientePrincipal.php:27:class ClientePrincipal
+app/Sincronizacion/HotelDruid/ClientePrincipal.php:33:    public const PARAMETROS_PERMITIDOS = [
+app/Sincronizacion/HotelDruid/ClientePrincipal.php:38:    public const ARCHIVO = 'crea_backup.php';
+app/Sincronizacion/HotelDruid/ClientePrincipal.php:59:    public function __construct(
+app/Sincronizacion/HotelDruid/ClientePrincipal.php:70:    public function probarConexion(): void
+app/Sincronizacion/HotelDruid/ClientePrincipal.php:88:    public function crearCopia(): void
+app/Sincronizacion/HotelDruid/ClientePrincipal.php:111:    public function descargarCopia(string $destino): int
+app/Sincronizacion/HotelDruid/ClientePrincipal.php:146:    public function borrarCopia(): bool
+app/Sincronizacion/HotelDruid/CodigoError.php:16:enum CodigoError: string
+app/Sincronizacion/HotelDruid/CodigoError.php:18:    case Conexion = 'SUB-001';
+app/Sincronizacion/HotelDruid/CodigoError.php:19:    case Tls = 'SUB-002';
+app/Sincronizacion/HotelDruid/CodigoError.php:20:    case Credenciales = 'SUB-003';
+app/Sincronizacion/HotelDruid/CodigoError.php:21:    case LimiteDiario = 'SUB-005';
+app/Sincronizacion/HotelDruid/CodigoError.php:22:    case AnioInexistente = 'SUB-006';
+app/Sincronizacion/HotelDruid/CodigoError.php:23:    case EscrituraPrincipal = 'SUB-007';
+app/Sincronizacion/HotelDruid/CodigoError.php:24:    case TamanoExcedido = 'SUB-008';
+app/Sincronizacion/HotelDruid/CodigoError.php:25:    case GzipDanado = 'SUB-009';
+app/Sincronizacion/HotelDruid/CodigoError.php:26:    case FormatoInvalido = 'SUB-010';
+app/Sincronizacion/HotelDruid/CodigoError.php:27:    case VersionNoAdmitida = 'SUB-011';
+app/Sincronizacion/HotelDruid/CodigoError.php:28:    case CopiaIncompleta = 'SUB-012';
+app/Sincronizacion/HotelDruid/CodigoError.php:29:    case BorradoFallido = 'SUB-013';
+app/Sincronizacion/HotelDruid/CodigoError.php:30:    case EnCurso = 'SUB-014';
+app/Sincronizacion/HotelDruid/CodigoError.php:31:    case TiempoAgotado = 'SUB-015';
+app/Sincronizacion/HotelDruid/CodigoError.php:32:    case DestinoNoPermitido = 'SUB-016';
+app/Sincronizacion/HotelDruid/CodigoError.php:33:    case PrincipalSinCompartir = 'SUB-017';
+app/Sincronizacion/HotelDruid/CodigoError.php:34:    case ConexionRechazada = 'SUB-018';
+app/Sincronizacion/HotelDruid/CodigoError.php:35:    case ErrorInterno = 'SUB-098';
+app/Sincronizacion/HotelDruid/CodigoError.php:36:    case RespuestaDesconocida = 'SUB-099';
+app/Sincronizacion/HotelDruid/CodigoError.php:42:    public function pausaLaPrincipal(): bool
+app/Sincronizacion/HotelDruid/CodigoError.php:47:    public function etiqueta(): string
+app/Sincronizacion/HotelDruid/Conversor.php:20:final class Conversor
+app/Sincronizacion/HotelDruid/Conversor.php:22:    public function __construct(
+app/Sincronizacion/HotelDruid/Conversor.php:28:    public function texto(?string $valor, int $maximo): ?string
+app/Sincronizacion/HotelDruid/Conversor.php:38:    public function fecha(?string $valor): ?string
+app/Sincronizacion/HotelDruid/Conversor.php:50:    public function fechaHora(?string $valor): ?string
+app/Sincronizacion/HotelDruid/Conversor.php:66:    public function importe(?string $valor): int
+app/Sincronizacion/HotelDruid/Conversor.php:71:    public function porcentaje(?string $valor): ?string
+app/Sincronizacion/HotelDruid/Descompresor.php:16:class Descompresor
+app/Sincronizacion/HotelDruid/Descompresor.php:21:    public function descomprimirSiHaceFalta(string $origen, string $destino, int $limite): bool
+app/Sincronizacion/HotelDruid/ErrorSincronizacion.php:19:final class ErrorSincronizacion extends RuntimeException
+app/Sincronizacion/HotelDruid/ErrorSincronizacion.php:21:    public function __construct(
+app/Sincronizacion/HotelDruid/ErrorSincronizacion.php:22:        public readonly CodigoError $codigo,
+app/Sincronizacion/HotelDruid/ErrorSincronizacion.php:23:        public readonly string $paso,
+app/Sincronizacion/HotelDruid/Esquema.php:17:final class Esquema
+app/Sincronizacion/HotelDruid/Esquema.php:19:    public const VERSIONES_ADMITIDAS = ['3.08', '3.081'];
+app/Sincronizacion/HotelDruid/Esquema.php:22:    public const TABLAS_GLOBALES = [
+app/Sincronizacion/HotelDruid/Esquema.php:29:    public const TABLAS_ANUALES = [
+app/Sincronizacion/HotelDruid/Esquema.php:34:    public const TABLAS_GLOBALES_OBLIGATORIAS = ['anni', 'versioni', 'appartamenti', 'clienti', 'personalizza'];
+app/Sincronizacion/HotelDruid/Esquema.php:41:    public static function separar(string $tabla): array
+app/Sincronizacion/HotelDruid/Esquema.php:50:    public static function seConserva(string $base, ?int $anio): bool
+app/Sincronizacion/HotelDruid/LectorCopia.php:20:class LectorCopia
+app/Sincronizacion/HotelDruid/LectorCopia.php:31:    public function leer(string $ruta, callable $alFila): ResumenCopia
+app/Sincronizacion/HotelDruid/LectorCopia.php:77:                    case 'cabecera':
+app/Sincronizacion/HotelDruid/LectorCopia.php:85:                    case 'backup':
+app/Sincronizacion/HotelDruid/LectorCopia.php:105:                    case 'archivo':
+app/Sincronizacion/HotelDruid/LectorCopia.php:119:                    case 'contenido':
+app/Sincronizacion/HotelDruid/LectorCopia.php:133:                    case 'database':
+app/Sincronizacion/HotelDruid/LectorCopia.php:144:                    case 'tabla':
+app/Sincronizacion/HotelDruid/LectorCopia.php:167:                    case 'filas':
+app/Sincronizacion/HotelDruid/LectorCopia.php:200:                    case 'fin_tabla':
+app/Sincronizacion/HotelDruid/Proyector.php:37:class Proyector
+app/Sincronizacion/HotelDruid/Proyector.php:56:    public function proyectar(Principal $principal, EjecucionSincronizacion $ejecucion, bool $generarEventos): ResultadoProyeccion
+app/Sincronizacion/HotelDruid/ResultadoProyeccion.php:16:final class ResultadoProyeccion
+app/Sincronizacion/HotelDruid/ResultadoProyeccion.php:19:    public array $cuentas = [];
+app/Sincronizacion/HotelDruid/ResultadoProyeccion.php:22:    public array $incidencias = [];
+app/Sincronizacion/HotelDruid/ResultadoProyeccion.php:24:    public int $eventos = 0;
+app/Sincronizacion/HotelDruid/ResultadoProyeccion.php:26:    public function contar(string $clave, int $cuantos = 1): void
+app/Sincronizacion/HotelDruid/ResultadoProyeccion.php:31:    public function incidencia(string $clave): void
+app/Sincronizacion/HotelDruid/ResumenCopia.php:16:final class ResumenCopia
+app/Sincronizacion/HotelDruid/ResumenCopia.php:23:    public function __construct(
+app/Sincronizacion/HotelDruid/ResumenCopia.php:24:        public readonly string $version,
+app/Sincronizacion/HotelDruid/ResumenCopia.php:25:        public readonly ?string $fechaCopia,
+app/Sincronizacion/HotelDruid/ResumenCopia.php:26:        public readonly ?string $idioma,
+app/Sincronizacion/HotelDruid/ResumenCopia.php:27:        public readonly bool $inicioSesionActivado,
+app/Sincronizacion/HotelDruid/ResumenCopia.php:28:        public readonly array $filas,
+app/Sincronizacion/HotelDruid/ResumenCopia.php:29:        public readonly array $anios,
+app/Sincronizacion/HotelDruid/ResumenCopia.php:30:        public readonly array $incidencias,
+app/Sincronizacion/HotelDruid/Sincronizador.php:32:class Sincronizador implements Subordinador
+app/Sincronizacion/HotelDruid/Sincronizador.php:36:    public const AVISO_FALLO = 'sincronizacion_fallida';
+app/Sincronizacion/HotelDruid/Sincronizador.php:38:    public const AVISO_SIN_INICIO_SESION = 'principal_sin_inicio_sesion';
+app/Sincronizacion/HotelDruid/Sincronizador.php:40:    public const AVISO_BORRADO = 'copia_no_borrada';
+app/Sincronizacion/HotelDruid/Sincronizador.php:42:    public function __construct(
+app/Sincronizacion/HotelDruid/Sincronizador.php:51:    public function cliente(Principal $principal): ClientePrincipal
+app/Sincronizacion/HotelDruid/Sincronizador.php:56:    public function probar(Principal $principal): void
+app/Sincronizacion/HotelDruid/Sincronizador.php:61:    public function sincronizar(Principal $principal, OrigenEjecucion $origen): EjecucionSincronizacion
+app/Sincronizacion/HotelDruid/ValidadorDestino.php:17:class ValidadorDestino
+app/Sincronizacion/HotelDruid/ValidadorDestino.php:22:    public function validar(string $urlBase, bool $permitirRedLocal): array
+app/Sincronizacion/HotelDruid/ValidadorDestino.php:60:    public function validarEnlace(string $url, bool $permitirHttp = false): array
+app/Sincronizacion/HotelDruid/ValidadorDestino.php:88:    public function validarServidor(string $host): string
+tests/Support/ConstructorCopia.php:19:final class ConstructorCopia
+tests/Support/ConstructorCopia.php:60:    public static function nueva(): self
+tests/Support/ConstructorCopia.php:69:    public function version(string $version): self
+tests/Support/ConstructorCopia.php:76:    public function sinInicioSesion(): self
+tests/Support/ConstructorCopia.php:83:    public function cortada(): self
+tests/Support/ConstructorCopia.php:90:    public function anios(int ...$anios): self
+tests/Support/ConstructorCopia.php:97:    public function omitirTabla(string $tabla): self
+tests/Support/ConstructorCopia.php:104:    public function unidad(string $codigo, int $capacidad = 2, int $prioridad = 1): self
+tests/Support/ConstructorCopia.php:112:    public function cliente(int $id, string $apellido, ?string $nombre = null, array $extra = []): self
+tests/Support/ConstructorCopia.php:123:    public function reserva(int $anio, int $id, string $unidad, int $cliente, string $llegada, string $salida, array $extra = [], bool $cancelada = false): self
+tests/Support/ConstructorCopia.php:136:    public function fila(string $tabla, array $fila): self
+tests/Support/ConstructorCopia.php:143:    public function texto(): string
+tests/Support/ConstructorCopia.php:175:    public function gzip(): string
+tests/Support/ConstructorCopia.php:180:    public function guardar(string $ruta): string
+tests/Support/ConstructorCopia.php:190:    public function idPeriodo(int $anio, string $fecha): int
+
+# ---------------------------------------------------------------------------------------------
+# Hasta aquí, la salida exacta del comando. Lo que sigue se añadió a mano, sin abrir los archivos:
+# los parámetros de las firmas que ocupan varias líneas, por cómo las llaman el resto del código y
+# las pruebas, y lo que no se pudo saber.
+#
+# CargadorEspejo::__construct(int $principalId, int $ejecucionId, int $lote)
+#     tests/Feature/SeguridadDatosTest.php: new CargadorEspejo($principal->id, $ejecucion->id, 10)
+# ErrorSincronizacion::__construct(CodigoError $codigo, string $paso, ?string $detalle = null)
+#     app/Sincronizacion/AlojaFlow/ClienteRemoto.php y Sincronizador.php; getMessage() devuelve el
+#     detalle y, si no hay, la etiqueta del código (ConFallosDeEjecucion::explicar y
+#     SincronizacionTest «otra página no vale»).
+# ResumenCopia::__construct(string $version, ?string $fechaCopia, ?string $idioma,
+#     bool $inicioSesionActivado, array $filas, array $anios, array $incidencias)
+#     las siete propiedades salen en el comando; tests/Unit/LectorCopiaTest.php lee las seis primeras.
+# ValidadorDestino: además de lo público, las pruebas sustituyen
+#     protected function resolver(string $host): array   (lista de IP)
+#     validar() devuelve ['host' => string, 'puerto' => int, 'ip' => string] (ValidadorDestinoTest);
+#     validarEnlace() devuelve lo mismo (ClienteExterno); validarServidor() devuelve la IP (AjustesCorreo).
+# ClientePrincipal::PARAMETROS_PERMITIDOS: la lista blanca de subordinacion.md A3.
+# Esquema::TABLAS_GLOBALES y TABLAS_ANUALES: las tablas de subordinacion.md C1 y B1.
+# LectorCopia::leer(string $ruta, callable $alFila): $alFila(string $tabla, ?int $anio, array $fila)
+#     (tests/Unit/LectorCopiaTest.php).
+#
+# Sin llamadas fuera del módulo (sus parámetros quedan libres):
+#     ClientePrincipal::__construct, Conversor::__construct y Sincronizador::__construct
+#     (este último lo arma el contenedor: las pruebas sustituyen Proyector y ValidadorDestino).
