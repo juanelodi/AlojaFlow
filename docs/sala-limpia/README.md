@@ -124,8 +124,11 @@ Con el código anterior, en `25fbc1e`: **1614 pruebas en verde** (50 592 asercio
 | `1aa2786` | El módulo, escrito de nuevo desde la especificación |
 | `09bc0ab` | `ConstructorCopia`, escrito de nuevo desde la parte B |
 | `5fa0677` | Pruebas de la parte D |
+| `e4f9400` | La respuesta de la principal se reconoce tal como llegó |
+| `b803eb3` | Avisos, D-173 y este registro |
+| `9b6120d` | Lo que salió de la revisión |
 
-Lo que vino después (avisos, D-173 y este registro) está en los commits siguientes de la rama.
+El último commit de la rama cierra este registro.
 
 ## Cómo quedó organizado
 
@@ -223,9 +226,30 @@ calendario pinta las reservas y en el `storage` de la instancia no quedó la cop
   cubren las pruebas, no la huella.
 - Las preguntas de [preguntas.md](preguntas.md).
 
+### Revisión
+
+`/code-review high` sobre lo añadido desde `b3c938d`. Diez hallazgos; se corrigieron ocho, con su prueba:
+
+- la señal de éxito de cada paso se busca antes que el formulario de acceso;
+- unidades, reservas y cajas se casan por nombre sin distinguir mayúsculas ni acentos, como los índices de la base;
+- los textos se recortan también a los bytes de una columna TEXT;
+- dos cajas pueden intercambiar su nombre;
+- lo que pase al pedir el borrado no tapa el error de la descarga;
+- el extracto de una página no se queda vacío si una expresión regular falla;
+- una sola consulta para saber quién tiene cada código de unidad.
+
+Quedaron sin tocar, a decidir: la generación del proyector va entre las cuentas de la ejecución y no en una columna
+propia (pediría una migración), y el cifrado del documento y la forma de un evento están escritos igual en los dos
+proyectores (unificarlos toca `App\Sincronizacion\AlojaFlow\Proyector`, que no era parte de esto).
+
+Después de la revisión se repitieron las dos huellas y la prueba de actualización: mismos resultados.
+
 ### Resultado final
 
-*(se completa al terminar)*
+- **Pest:** **1642 pruebas en verde** (50 675 aserciones), en 21 min 38 s: las 1614 de antes y 28 nuevas.
+- **Pint:** limpio en los archivos del módulo y sus pruebas.
+- **Larastan:** sin errores en todo el proyecto.
+- Sin `push`, sin etiqueta, sin paquete y sin versión nueva: queda en la rama `sala-limpia-hoteldruid` para revisarse.
 
 ### Limpieza
 

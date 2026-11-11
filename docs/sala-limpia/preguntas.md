@@ -68,6 +68,13 @@ Coinciden con la huella del código anterior, y la especificación no los dice:
     que se actualiza sola; a cambio, lo que cambie en la principal en esa ventana se aplica sin anunciarse. La otra
     opción era callar solo los «modificada».
 
+11. **Dónde se guarda la generación del proyector.** *Hoy* va como una cuenta más (`generacion_proyector`) en
+    `ejecuciones_sincronizacion.filas`, para no añadir una migración a un cambio que debía ser solo del módulo. Una
+    columna en `principales` sería más clara. ¿Se cambia?
+12. **Una caja propia con el nombre de una caja de la principal.** El nombre de una caja es único en la propiedad. Si
+    en una subordinada alguien creara a mano una caja que se llama igual que una de la principal, la proyección
+    chocaría. No se resolvió porque haría falta decidir cuál de las dos cambia de nombre.
+
 ## Fuera de esta sesión
 
 - **Créditos que siguen diciendo «lógica de HotelDruid»:** el texto de «Acerca de» (`ui.acerca.hoteldruid`, en los seis
