@@ -6,9 +6,6 @@ contact_links:
   - name: Reportar desde AlojaFlow
     url: https://alojaflow.com/wiki/mejora-continua/
     about: Si usas AlojaFlow, «Reportar o sugerir» (menú de usuario) manda el reporte con la pantalla, la versión y, si lo permites, el diagnóstico. Te responden en la misma pantalla.
-  - name: Fallo de seguridad
-    url: https://github.com/juanelodi/AlojaFlow/security/advisories/new
-    about: Nunca en un issue público. Avísalo en privado.
   - name: Licencia y contribuciones
     url: https://alojaflow.com/wiki/licencia-y-contribuir/
     about: Qué permite la FSL, cómo pedir una licencia comercial y el acuerdo para contribuir.
