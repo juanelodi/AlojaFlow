@@ -238,7 +238,8 @@ contraseña la escribió él. De esa base solo se leyeron conteos.
 | Eventos | 0: es una primera carga |
 
 Cuadra con la huella de la copia del 26 de octubre (6 / 1645 / 1831, 2643 cobros y 7 movimientos) más dos semanas
-de operación. En la misma instancia, la demo servida por la principal simulada volvió a dar 17 unidades, 974
+de operación. El usuario comparó el total de reservas con el de su instalación en línea, que copia de la misma
+principal con el código anterior: coincide. En la misma instancia, la demo servida por la principal simulada volvió a dar 17 unidades, 974
 huéspedes, 1122 reservas y 1628 cobros.
 
 Lo que esta prueba no dice: es una primera carga, no una actualización (eso lo cubre «Una instalación que se

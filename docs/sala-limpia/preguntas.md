@@ -81,6 +81,6 @@ Coinciden con la huella del código anterior, y la especificación no los dice:
   idiomas), las reglas 4 y 9 del `CLAUDE.md` y `docs/INICIO.md`. No se tocaron: se revisan aparte.
 - **El usuario sin años y sin formulario**. La principal simulada siempre enseña el formulario y no
   imita esa página; la prueba de aceptación la cubre con una respuesta fingida. El 2026-11-11 el usuario sincronizó
-  con ese usuario contra la principal real, desde una instancia desechable: correcta, y el borrado de la copia se dio
-  por bueno (ver el [registro](README.md)). Sigue abierto qué contesta la principal cuando el borrado falla
+  con ese usuario contra la principal real, desde una instancia desechable: correcta, con el mismo total de reservas
+  que su instalación en línea, y el borrado de la copia se dio por bueno (ver el [registro](README.md)). Sigue abierto qué contesta la principal cuando el borrado falla
   (pregunta 3).
