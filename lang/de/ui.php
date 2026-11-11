@@ -608,11 +608,11 @@ return [
     'acerca' => [
         'titulo' => 'Über',
         'version' => 'Version :version',
-        'licencia' => 'AlojaFlow ist freie Software: Sie dürfen sie gemäß der GNU Affero General Public License, Version 3 oder später (AGPL-3.0-or-later), nutzen, untersuchen, ändern und weitergeben. Sie wird ohne jede Gewährleistung bereitgestellt.',
+        'licencia' => 'AlojaFlow ist Software mit einsehbarem Quellcode unter der Functional Source License 1.1 (FSL-1.1-ALv2): Sie dürfen sie für jeden Zweck nutzen, untersuchen, ändern und weitergeben, außer um ein kommerzielles Produkt oder einen Dienst anzubieten, der mit AlojaFlow konkurriert. Die Nutzung für Ihre eigene Unterkunft ist erlaubt. Jede Version geht zwei Jahre nach ihrer Veröffentlichung in die Apache-2.0-Lizenz über. Sie wird ohne jede Gewährleistung bereitgestellt.',
         'codigo_fuente' => 'Quellcode dieser Version herunterladen',
-        'codigo_fuente_ayuda' => 'Wer AlojaFlow nutzt, auch über das Internet, hat Anspruch auf den Quellcode.',
+        'codigo_fuente_ayuda' => 'Der Code von AlojaFlow ist einsehbar: Laden Sie hier den der genau installierten Version herunter.',
         'creditos' => 'Mitwirkende',
-        'hoteldruid' => 'Kompatibel mit HotelDruid. Ein Teil der Synchronisierungslogik basiert auf HotelDruid von Marco M. F. De Santis (AGPL v3). AlojaFlow ist kein offizielles Produkt von HotelDruid.',
+        'hoteldruid' => 'Kompatibel mit HotelDruid von Marco M. F. De Santis. AlojaFlow enthält keinen Code von HotelDruid und ist kein offizielles Produkt von HotelDruid.',
         'terceros' => 'Komponenten von Drittanbietern',
     ],
     'mantenimiento' => [
@@ -621,7 +621,7 @@ return [
         'recarga' => 'Diese Seite lädt sich von selbst neu; wenn es länger als einige Minuten dauert, benachrichtigen Sie den Administrator.',
     ],
     'pie' => [
-        'licencia' => 'Freie Software AGPL v3',
+        'licencia' => 'Quellcode einsehbar · FSL-1.1-Lizenz',
         'codigo_fuente' => 'Quellcode',
         'acerca' => 'Über',
     ],

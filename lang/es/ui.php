@@ -629,11 +629,11 @@ return [
     'acerca' => [
         'titulo' => 'Acerca de',
         'version' => 'Versión :version',
-        'licencia' => 'AlojaFlow es software libre: puedes usarlo, estudiarlo, modificarlo y compartirlo según la Licencia Pública General Affero de GNU, versión 3 o posterior (AGPL-3.0-or-later). Se distribuye sin ninguna garantía.',
+        'licencia' => 'AlojaFlow es software de código visible, bajo la Functional Source License 1.1 (FSL-1.1-ALv2): puedes usarlo, estudiarlo, modificarlo y compartirlo para cualquier fin, salvo ofrecer con él un producto o servicio comercial que compita con AlojaFlow. Usarlo en tu propio alojamiento está permitido. Cada versión pasa a la licencia Apache 2.0 a los dos años de publicarse. Se distribuye sin ninguna garantía.',
         'codigo_fuente' => 'Descargar el código fuente de esta versión',
-        'codigo_fuente_ayuda' => 'Quien usa AlojaFlow, también por internet, tiene derecho a su código fuente.',
+        'codigo_fuente_ayuda' => 'El código de AlojaFlow está a la vista: aquí descargas el de la versión exacta que tienes instalada.',
         'creditos' => 'Créditos',
-        'hoteldruid' => 'Compatible con HotelDruid. Parte de la lógica de sincronización se basa en HotelDruid, de Marco M. F. De Santis (AGPL v3). AlojaFlow no es un producto oficial de HotelDruid.',
+        'hoteldruid' => 'Compatible con HotelDruid, de Marco M. F. De Santis. AlojaFlow no contiene código de HotelDruid ni es un producto oficial de HotelDruid.',
         'terceros' => 'Componentes de terceros',
     ],
 
@@ -644,7 +644,7 @@ return [
     ],
 
     'pie' => [
-        'licencia' => 'Software libre AGPL v3',
+        'licencia' => 'Código visible · licencia FSL-1.1',
         'codigo_fuente' => 'Código fuente',
         'acerca' => 'Acerca de',
     ],

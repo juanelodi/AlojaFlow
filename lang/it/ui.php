@@ -608,11 +608,11 @@ return [
     'acerca' => [
         'titulo' => 'Informazioni',
         'version' => 'Versione :version',
-        'licencia' => 'AlojaFlow è software libero: puoi usarlo, studiarlo, modificarlo e condividerlo secondo la GNU Affero General Public License, versione 3 o successiva (AGPL-3.0-or-later). È distribuito senza alcuna garanzia.',
+        'licencia' => 'AlojaFlow è software a codice visibile, sotto la Functional Source License 1.1 (FSL-1.1-ALv2): puoi usarlo, studiarlo, modificarlo e condividerlo per qualsiasi scopo, tranne offrire un prodotto o servizio commerciale in concorrenza con AlojaFlow. Usarlo nella tua struttura è consentito. Ogni versione passa alla licenza Apache 2.0 due anni dopo la pubblicazione. È distribuito senza alcuna garanzia.',
         'codigo_fuente' => 'Scarica il codice sorgente di questa versione',
-        'codigo_fuente_ayuda' => 'Chi usa AlojaFlow, anche via internet, ha diritto al suo codice sorgente.',
+        'codigo_fuente_ayuda' => 'Il codice di AlojaFlow è consultabile: scarica qui quello della versione esatta che hai installato.',
         'creditos' => 'Riconoscimenti',
-        'hoteldruid' => 'Compatibile con HotelDruid. Parte della logica di sincronizzazione si basa su HotelDruid, di Marco M. F. De Santis (AGPL v3). AlojaFlow non è un prodotto ufficiale di HotelDruid.',
+        'hoteldruid' => 'Compatibile con HotelDruid, di Marco M. F. De Santis. AlojaFlow non contiene codice di HotelDruid e non è un prodotto ufficiale di HotelDruid.',
         'terceros' => 'Componenti di terze parti',
     ],
     'mantenimiento' => [
@@ -621,7 +621,7 @@ return [
         'recarga' => 'Questa pagina si ricarica da sola; se ci vuole più di qualche minuto, avvisa l’amministratore.',
     ],
     'pie' => [
-        'licencia' => 'Software libero AGPL v3',
+        'licencia' => 'Codice visibile · licenza FSL-1.1',
         'codigo_fuente' => 'Codice sorgente',
         'acerca' => 'Informazioni',
     ],
