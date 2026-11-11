@@ -368,6 +368,145 @@
 })();
 
 /*
+ * Elegir la llegada y la última noche con dos clics en el mes del calendario (D-154). Sin este bloque, cada día libre sigue siendo
+ * un enlace a una reserva nueva de una noche. Las escuchas van en document porque Livewire vuelve a pintar las celdas: si el día
+ * elegido desaparece o pierde su marca, es como si no se hubiera elegido nada.
+ */
+(() => {
+    if (window.alojaFlowDosFechas) {
+        return;
+    }
+    window.alojaFlowDosFechas = true;
+
+    const LIBRE = 'af-cal-dia--libre';
+    const ELEGIDO = 'af-cal-dia--elegido';
+    const RANGO = 'af-cal-dia--rango';
+    const AVISO_ACTIVO = 'af-cal-aviso--activo';
+
+    let llegada = null;
+
+    const hayLlegada = () => llegada !== null && llegada.isConnected && llegada.classList.contains(ELEGIDO);
+
+    const diaDe = (evento) => (evento.target instanceof Element ? evento.target.closest('.af-cal-dia[data-fecha]') : null);
+
+    const avisoDe = (dia) => (dia.closest('.af-cal-vistas') ?? document).querySelector('[data-af-cal-aviso]');
+
+    const quitarRango = () => document.querySelectorAll(`.${RANGO}`).forEach((dia) => dia.classList.remove(RANGO));
+
+    const soltar = () => {
+        quitarRango();
+        document.querySelectorAll(`.${ELEGIDO}`).forEach((dia) => dia.classList.remove(ELEGIDO));
+        document.querySelectorAll(`[data-af-cal-aviso].${AVISO_ACTIVO}`).forEach((aviso) => {
+            aviso.classList.remove(AVISO_ACTIVO);
+            aviso.textContent = aviso.dataset.inicial ?? '';
+        });
+        llegada = null;
+    };
+
+    // Lo que Livewire haya dejado a medias al repintar se limpia antes de atender nada.
+    const comprobar = () => {
+        if (llegada !== null && !hayLlegada()) {
+            soltar();
+        }
+
+        return llegada !== null;
+    };
+
+    // La fecha de la celda se lee en UTC y se escribe en UTC: así no se corre un día en ningún huso.
+    const fechaEscrita = (fecha) => {
+        const [anio, mes, dia] = fecha.split('-').map(Number);
+        const opciones = { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' };
+        const momento = new Date(Date.UTC(anio, mes - 1, dia));
+        try {
+            return new Intl.DateTimeFormat(document.documentElement.lang || undefined, opciones).format(momento);
+        } catch (error) {
+            return new Intl.DateTimeFormat(undefined, opciones).format(momento);
+        }
+    };
+
+    // El nombre es el texto suelto de la primera celda del renglón; lo demás (la capacidad) va en sus propios elementos.
+    const unidadDe = (dia) => {
+        const celda = dia.parentElement?.querySelector('.af-cal-unidad') ?? null;
+        if (celda === null) {
+            return '';
+        }
+
+        return [...celda.childNodes].filter((nodo) => nodo.nodeType === Node.TEXT_NODE).map((nodo) => nodo.textContent).join(' ').replace(/\s+/g, ' ').trim();
+    };
+
+    // De la llegada hacia adelante en su renglón, mientras los días sean libres: el primero ocupado corta.
+    const alcance = () => {
+        const dias = [...llegada.parentElement.querySelectorAll('.af-cal-dia[data-fecha]')];
+        const libres = [];
+        for (const dia of dias.slice(dias.indexOf(llegada))) {
+            if (!dia.classList.contains(LIBRE)) {
+                break;
+            }
+            libres.push(dia);
+        }
+
+        return libres;
+    };
+
+    const elegir = (dia) => {
+        soltar();
+        llegada = dia;
+        dia.classList.add(ELEGIDO);
+        const aviso = avisoDe(dia);
+        if (aviso !== null && aviso.dataset.texto !== undefined) {
+            const valores = { fecha: fechaEscrita(dia.dataset.fecha), unidad: unidadDe(dia) };
+            aviso.textContent = aviso.dataset.texto.replace(/:(fecha|unidad)/g, (todo, nombre) => valores[nombre]);
+            aviso.classList.add(AVISO_ACTIVO);
+        }
+    };
+
+    const resaltar = (evento) => {
+        if (!comprobar()) {
+            return;
+        }
+        quitarRango();
+        const dia = diaDe(evento);
+        const dentro = dia === null ? [] : alcance();
+        const hasta = dentro.indexOf(dia);
+        dentro.slice(0, hasta + 1).forEach((otro) => otro.classList.add(RANGO));
+    };
+
+    document.addEventListener('click', (evento) => {
+        // Otro botón o con una tecla: lo de siempre, por ejemplo abrir en otra pestaña.
+        if (evento.button !== 0 || evento.ctrlKey || evento.metaKey || evento.shiftKey || evento.altKey) {
+            return;
+        }
+        const dia = diaDe(evento);
+        if (dia === null || !dia.classList.contains(LIBRE) || !dia.hasAttribute('href')) {
+            return;
+        }
+        evento.preventDefault();
+        if (!comprobar() || !alcance().includes(dia)) {
+            elegir(dia);
+
+            return;
+        }
+        // La reserva nueva de la llegada, con la salida que trae el enlace del día pulsado.
+        const destino = new URL(llegada.href, document.baseURI);
+        const salida = new URL(dia.href, document.baseURI).searchParams.get('salida');
+        if (salida !== null) {
+            destino.searchParams.set('salida', salida);
+        }
+        soltar();
+        window.location.assign(destino.href);
+    });
+
+    document.addEventListener('mouseover', resaltar);
+    document.addEventListener('focusin', resaltar);
+
+    document.addEventListener('keydown', (evento) => {
+        if (evento.key === 'Escape' && llegada !== null) {
+            soltar();
+        }
+    });
+})();
+
+/*
  * Errores de JavaScript para la mejora continua (D-150): solo si hay permiso (la cabecera trae la dirección),
  * pocos por página y sin repetir. Se manda el mensaje, el archivo, la línea y la pila; nada de lo escrito.
  */

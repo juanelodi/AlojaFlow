@@ -249,6 +249,26 @@ final class Calendario
         return null;
     }
 
+    /**
+     * El grupo de pago de una reserva, para colorear el calendario por lo que se ha cobrado (D-154). Lo que no es de un huésped,
+     * como un bloqueo, no tiene pago que mostrar.
+     */
+    public static function pago(Reserva $reserva): ?string
+    {
+        if ($reserva->tipo !== TipoReserva::Reserva) {
+            return null;
+        }
+        if ($reserva->estado === EstadoReserva::SinConfirmar) {
+            return 'sin-confirmar';
+        }
+        if ($reserva->pagado >= $reserva->total) {
+            return 'total';
+        }
+
+        // Sin anticipo pedido, cualquier pago lo cubre; sin pago, nada lo cubre.
+        return $reserva->pagado > 0 && $reserva->pagado >= $reserva->deposito ? 'anticipo' : 'sin-anticipo';
+    }
+
     private static function clase(Reserva $reserva): string
     {
         return match (true) {
