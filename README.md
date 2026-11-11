@@ -47,7 +47,7 @@ Copyright (C) 2026 Juan Galeana Durán. AlojaFlow se publica bajo la
 - **Puedes** usarlo en tu alojamiento o en los que administras, estudiarlo, modificarlo y
   compartirlo, y cobrar por instalarlo, adaptarlo o darle soporte a quien lo usa.
 - **No puedes** ofrecer con él un producto o servicio comercial que compita con AlojaFlow, como un
-  servicio alojado para terceros. Para eso hace falta una licencia comercial: escribe al titular.
+  servicio alojado para terceros. Para eso hace falta una licencia comercial: escribe a <hola@alojaflow.com>.
 - **A los dos años** de publicada, cada versión queda además bajo la licencia Apache 2.0.
 
 La FSL no es una licencia de «código abierto» ni de «software libre» en el sentido de la OSI o de
