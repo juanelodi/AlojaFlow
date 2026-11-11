@@ -387,7 +387,7 @@ Si alguna vez hace falta cambiarlo, la versión nueva tiene que aceptar las dos 
   - `tests/Unit/PaqueteActualizacionTest.php`: rutas, manifiesto y firma;
   - los paquetes de prueba se firman con una clave de prueba (`tests/Support/ConstructorPaquete.php`).
 - **Instalación de prueba en Windows** (la copia de desarrollo no se actualiza, D-034):
-  - descomprimir el zip en `E:\AlojaFlow-prueba` con su propia base `alojaflow_prueba`;
+  - descomprimir el zip en `E:\AlojaFlow-Proyecto\AF-PRUEBAS\alojaflow-prueba` con su propia base `alojaflow_prueba`;
   - servirla con `desarrollo/servidor-instalacion.php`, que sube los límites de subida
     (configuración `alojaflow-prueba` de `.claude/launch.json`, http://localhost:8001).
 - **Comprobado el 2026-11-06** contra GitHub de verdad, con una instalación local que simulaba la 1.0.32: preguntó, avisó de la 1.0.33 y bajó su zip de

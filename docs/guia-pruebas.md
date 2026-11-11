@@ -121,7 +121,7 @@ está en el archivo `.env`.
 
 ## 2. Arrancar AlojaFlow
 
-En PowerShell, dentro de `E:\AlojaFlow`:
+En PowerShell, dentro de `E:\AlojaFlow-Proyecto\ALOJAFLOW`:
 
 ```powershell
 C:\wamp64\bin\php\php8.3.28\php.exe -d xdebug.mode=off artisan serve
@@ -168,7 +168,7 @@ En un hosting compartido, esto lo hace un único cron por minuto.
 La principal simulada sirve cualquier copia de HotelDruid; por ejemplo, la ficticia de la demo:
 
 ```powershell
-$env:COPIA_HOTELDRUID = "E:\HotelDruid\respaldos\demo-alojaflow-2026-respaldo-original.php"
+$env:COPIA_HOTELDRUID = "E:\AlojaFlow-Proyecto\AF-PRIVADO\respaldos-reales\demo-alojaflow-2026-respaldo-original.php"
 C:\wamp64\bin\php\php8.3.28\php.exe -S 127.0.0.1:8090 -t desarrollo\principal-simulada
 ```
 
@@ -177,8 +177,10 @@ En AlojaFlow, la principal es `http://127.0.0.1:8090/`, con «Permitir red local
 **Sobre la copia de la demo:**
 - Es la del hotel **ficticio de Zihuatanejo**: 17 unidades y 974 huéspedes con correos
   `@example.com`.
-- Es idéntica a la que trae `dist/AlojaFlow-1.1.4-demo.zip` y la genera `tools/demo_genera.py`.
-- **No uses `respaldos/demo/`:** aunque se llame así, contiene los datos reales del alojamiento.
+- Es idéntica a la que trae `dist/AlojaFlow-1.1.4-demo.zip` de `E:\HotelDruid`, y la genera
+  `tools/demo_genera.py`, también de ahí.
+- **No uses `respaldos-reales\demo\`:** aunque se llame así, contiene los datos reales del
+  alojamiento.
 
 ## 4. Qué conviene probar
 
@@ -206,9 +208,10 @@ versión nueva (`alojaflow-x.y.z.zip`), se revisa y se instala con tu contraseñ
 nada se comprueban la firma del paquete y cada archivo, y se copia la base de datos. Si algo
 falla, todo vuelve a como estaba. Detalles: `docs/especificacion/instalacion-actualizaciones.md`.
 
-Tu copia `E:\AlojaFlow` es la de desarrollo (tiene git): ahí la pantalla avisa de que se actualiza
-con git y no instala nada. Las actualizaciones se prueban en una **instalación hecha desde el
-zip**, `E:\AlojaFlow-prueba`, con su propia base de datos `alojaflow_prueba`.
+Tu copia `E:\AlojaFlow-Proyecto\ALOJAFLOW` es la de desarrollo (tiene git): ahí la pantalla avisa
+de que se actualiza con git y no instala nada. Las actualizaciones se prueban en una **instalación
+hecha desde el zip**, `E:\AlojaFlow-Proyecto\AF-PRUEBAS\alojaflow-prueba`, con su propia base de
+datos `alojaflow_prueba`.
 
 **Una sola vez:** crea esa base con el usuario `root` de MySQL. Puedes hacerlo en phpMyAdmin
 (http://localhost/phpmyadmin) o en la consola de MySQL del menú de WampServer:
@@ -220,18 +223,18 @@ GRANT ALL PRIVILEGES ON alojaflow_prueba.* TO 'alojaflow'@'127.0.0.1';
 
 **Para probar:**
 
-1. Arranca la instalación de prueba en PowerShell, dentro de `E:\AlojaFlow`, y deja la ventana
-   abierta:
+1. Arranca la instalación de prueba en PowerShell, dentro de `E:\AlojaFlow-Proyecto\ALOJAFLOW`,
+   y deja la ventana abierta:
 
    ```powershell
-   C:\wamp64\bin\php\php8.3.28\php.exe -d xdebug.mode=off -d upload_max_filesize=512M -d post_max_size=512M -S 127.0.0.1:8001 -t E:\AlojaFlow-prueba\public desarrollo\servidor-instalacion.php
+   C:\wamp64\bin\php\php8.3.28\php.exe -d xdebug.mode=off -d upload_max_filesize=512M -d post_max_size=512M -S 127.0.0.1:8001 -t E:\AlojaFlow-Proyecto\AF-PRUEBAS\alojaflow-prueba\public desarrollo\servidor-instalacion.php
    ```
 
 2. Abre **http://localhost:8001** y entra con los mismos usuarios que en tu copia: su base es una
    copia de la de desarrollo.
 3. En **Sistema → Actualizaciones**, sube el zip (o cópialo a
-   `E:\AlojaFlow-prueba\storage\app\private\actualizaciones\entrada\`). Pulsa **Revisar** y
-   después **Actualizar a la …**.
+   `E:\AlojaFlow-Proyecto\AF-PRUEBAS\alojaflow-prueba\storage\app\private\actualizaciones\entrada\`).
+   Pulsa **Revisar** y después **Actualizar a la …**.
 4. Para repetir la prueba con la misma versión, marca **Reinstalar si es la misma versión**.
 
 **Qué conviene probar:**
@@ -240,7 +243,7 @@ GRANT ALL PRIVILEGES ON alojaflow_prueba.* TO 'alojaflow'@'127.0.0.1';
   actualización»;
 - descargar la copia de la base de datos desde el historial.
 
-El zip de cada versión lo genera `artisan alojaflow:empaquetar` en `E:\AlojaFlow\dist\`.
+El zip de cada versión lo genera `artisan alojaflow:empaquetar` en `E:\AlojaFlow-Proyecto\ALOJAFLOW\dist\`.
 
 ## 6. Comprobaciones de calidad
 

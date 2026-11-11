@@ -14,7 +14,8 @@ declare(strict_types=1);
  * para desarrollo; no va en los paquetes. Uso (desde la raíz del repositorio):
  *
  *   C:\wamp64\bin\php\php8.3.28\php.exe -d upload_max_filesize=512M -d post_max_size=512M ^
- *     -S 127.0.0.1:8001 -t E:\AlojaFlow-prueba\public desarrollo\servidor-instalacion.php
+ *     -S 127.0.0.1:8001 -t E:\AlojaFlow-Proyecto\AF-PRUEBAS\alojaflow-prueba\public ^
+ *     desarrollo\servidor-instalacion.php
  *
  * `php artisan serve` no sirve para esto: su servidor no hereda los -d de los límites.
  */

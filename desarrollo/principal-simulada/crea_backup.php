@@ -13,7 +13,7 @@ declare(strict_types=1);
  * de HotelDruid 1.2.3 (subordinacion.md A3) y sirve la copia indicada en COPIA_HOTELDRUID, sin
  * credenciales. No forma parte de AlojaFlow ni se instala en producción. Uso (PowerShell):
  *
- *   $env:COPIA_HOTELDRUID = "E:\HotelDruid\respaldos\demo-alojaflow-2026-respaldo-original.php"
+ *   $env:COPIA_HOTELDRUID = "E:\AlojaFlow-Proyecto\AF-PRIVADO\respaldos-reales\demo-alojaflow-2026-respaldo-original.php"
  *   C:\wamp64\bin\php\php8.3.28\php.exe -S 127.0.0.1:8090 -t desarrollo\principal-simulada
  *
  * y en AlojaFlow, la principal en http://127.0.0.1:8090/ con «Permitir red local».

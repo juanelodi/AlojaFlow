@@ -101,9 +101,9 @@ de la copia no cambia mientras se construye la fase 1.
     como texto con un analizador propio. Sus bloques `<file>` traen código PHP de configuración
     de la principal: se extraen solo los valores conocidos, sin ejecutar nada.
 12. **Los datos personales reales no entran al repositorio.** Las copias reales (p. ej. las de
-    `E:\HotelDruid\respaldos\`) se leen desde su ubicación, indicada por variable de entorno;
-    nunca se copian al repositorio, a `docs/`, a las pruebas versionadas ni a los mensajes. Las
-    pruebas versionadas usan copias sintéticas o anonimizadas.
+    `E:\AlojaFlow-Proyecto\AF-PRIVADO\respaldos-reales\`) se leen desde su ubicación, indicada por
+    variable de entorno; nunca se copian al repositorio, a `docs/`, a las pruebas versionadas ni a
+    los mensajes. Las pruebas versionadas usan copias sintéticas o anonimizadas.
 13. **Las credenciales de la principal** se guardan cifradas (cast `encrypted`), nunca aparecen
     en registros ni en mensajes de error, y solo viajan por HTTPS (salvo `localhost` en
     desarrollo).
@@ -350,9 +350,12 @@ npx license-checker --summary             # licencias npm
 
 ## Referencias locales (solo lectura)
 
+El repositorio va en `E:\AlojaFlow-Proyecto\ALOJAFLOW`; el mapa de las demás partes, en
+`E:\AlojaFlow-Proyecto\CLAUDE.md` (fuera del repositorio).
+
 - `E:\HotelDruid\` — repositorio local de AlojaFlow 1.2.3 (derivado de HotelDruid 3.0.8), AGPL.
   **Ya no se consulta para programar** (regla 4, D-173, D-174); queda como referencia de lo que
-  hace el sistema anterior y por sus copias de prueba:
+  hace el sistema anterior:
   - `alojaflow/crea_backup.php` (genera la copia), `alojaflow/interconnessioni.php` (cliente de
     subordinación original), `alojaflow/plugins/multipropiedad/` (descarga copias de varias
     principales), `alojaflow/creadb.php` (esquema), `alojaflow/includes/funzioni_aggiorna.php`
@@ -360,13 +363,13 @@ npx license-checker --summary             # licencias npm
   - `upstream/` — HotelDruid 3.0.8 original y su documentación oficial.
   - `docs/`, `PRODUCT.md`, `DESIGN.md` — wiki, análisis (seguridad, foro, proyectos similares)
     y sistema visual del tema anterior.
-  - `respaldos/` — copias **reales** con datos personales (también `respaldos/demo/`, aunque se
-    llame así): aplica la regla 12.
+- `E:\AlojaFlow-Proyecto\AF-PRIVADO\respaldos-reales\` — copias **reales** con datos personales,
+  fuera de todo repositorio (también `demo\`, aunque se llame así): aplica la regla 12.
   - **Demo ficticia de Zihuatanejo** para probar y enseñar:
-    - `respaldos/demo-alojaflow-2026-respaldo-original.php` (copia 3.081: 17 unidades, 974
+    - `demo-alojaflow-2026-respaldo-original.php` (copia 3.081: 17 unidades, 974
       huéspedes `@example.com`, 1040 reservas y 82 canceladas de 2026);
-    - es idéntica al `dati/hoteld_backup.php` de `dist/AlojaFlow-1.1.4-demo.zip`;
-    - la genera `tools/demo_genera.py`.
+    - es idéntica al `dati/hoteld_backup.php` de `dist/AlojaFlow-1.1.4-demo.zip` de `E:\HotelDruid\`;
+    - la genera `tools/demo_genera.py`, también de `E:\HotelDruid\`.
 - `branding/` — logos SVG finales.
 
 ## Versiones
@@ -380,7 +383,8 @@ npx license-checker --summary             # licencias npm
   1. subir `version` y escribir su entrada en `CAMBIOS.md`;
   2. commit y etiqueta `v1.0.x`;
   3. `PHP artisan alojaflow:empaquetar`: deja `dist/alojaflow-1.0.x.zip` firmado y revisado;
-  4. probarlo en la instalación de prueba `E:\AlojaFlow-prueba` (Sistema → Actualizaciones).
+  4. probarlo en la instalación de prueba `E:\AlojaFlow-Proyecto\AF-PRUEBAS\alojaflow-prueba`
+     (Sistema → Actualizaciones).
 - La **clave secreta de firma** (`.herramientas/clave-actualizaciones.secreta`) nunca se sube y
   necesita una copia de seguridad fuera del equipo: sin ella, las instalaciones no aceptan
   versiones nuevas.
