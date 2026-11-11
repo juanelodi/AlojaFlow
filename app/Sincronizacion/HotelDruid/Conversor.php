@@ -1,0 +1,91 @@
+<?php
+
+/*
+ * AlojaFlow — sistema de gestión de alojamientos
+ * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+declare(strict_types=1);
+
+namespace App\Sincronizacion\HotelDruid;
+
+use App\Support\Dinero;
+use Carbon\CarbonImmutable;
+use Throwable;
+
+/**
+ * Convierte los valores de la copia, que llegan todos como texto, a los tipos del modelo propio (subordinacion.md
+ * C2): textos recortados, fechas, horas en UTC e importes en la unidad menor de la moneda.
+ */
+final class Conversor
+{
+    public function __construct(
+        private readonly string $zonaHoraria,
+        private readonly string $moneda,
+    ) {
+    }
+
+    /**
+     * Sin espacios alrededor, nulo si queda vacío y recortado a lo que cabe en la columna.
+     */
+    public function texto(?string $valor, int $maximo): ?string
+    {
+        $texto = trim((string) $valor);
+
+        return $texto === '' ? null : mb_substr($texto, 0, $maximo);
+    }
+
+    /**
+     * Una fecha `AAAA-MM-DD` que exista en el calendario; lo demás es nulo.
+     */
+    public function fecha(?string $valor): ?string
+    {
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})/', trim((string) $valor), $partes) !== 1 || ! checkdate((int) $partes[2], (int) $partes[3], (int) $partes[1])) {
+            return null;
+        }
+
+        return $partes[0];
+    }
+
+    /**
+     * Las fechas con hora de la principal están en su hora local y no dicen la zona: se leen con la de la propiedad y se
+     * devuelven en UTC.
+     */
+    public function fechaHora(?string $valor): ?string
+    {
+        $texto = trim((string) $valor);
+        if ($this->fecha($texto) === null || preg_match('/^\d{4}-\d{2}-\d{2}(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/', $texto, $partes) !== 1) {
+            return null;
+        }
+        $hora = sprintf('%02d:%02d:%02d', (int) ($partes[1] ?? 0), (int) ($partes[2] ?? 0), (int) ($partes[3] ?? 0));
+        try {
+            $local = CarbonImmutable::createFromFormat('Y-m-d H:i:s', substr($texto, 0, 10).' '.$hora, $this->zonaHoraria);
+        } catch (Throwable) {
+            return null;
+        }
+
+        return $local === null ? null : $local->utc()->format('Y-m-d H:i:s');
+    }
+
+    /**
+     * Un decimal de la principal («1234.5») en la unidad menor de la moneda, mitad hacia arriba. Lo que no es un número es cero.
+     */
+    public function importe(?string $valor): int
+    {
+        return Dinero::aUnidadMenor(trim((string) $valor), $this->moneda);
+    }
+
+    /**
+     * Un porcentaje con cuatro decimales, como se guarda; nulo si la principal no trae ninguno.
+     */
+    public function porcentaje(?string $valor): ?string
+    {
+        $texto = trim((string) $valor);
+        if (! is_numeric($texto)) {
+            return null;
+        }
+
+        return number_format(min(999.9999, max(0.0, (float) $texto)), 4, '.', '');
+    }
+}
