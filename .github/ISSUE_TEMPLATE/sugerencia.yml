@@ -1,0 +1,40 @@
+# AlojaFlow — sistema de gestión de alojamientos
+# Copyright (C) 2026 Juan Galeana Durán
+# SPDX-License-Identifier: FSL-1.1-ALv2
+name: Sugerencia
+description: Una función nueva o un cambio en algo que ya existe.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de escribir, busca si ya hay una sugerencia igual; si la hay, súmate ahí. Lo que ya hace AlojaFlow está en el [wiki](https://alojaflow.com/wiki/).
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qué te hace falta
+      description: Cuéntalo como lo vives en tu alojamiento. Qué haces hoy y qué te cuesta trabajo.
+    validations:
+      required: true
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Qué propones
+      description: Cómo te imaginas que funcione. Si no lo sabes, déjalo en blanco.
+  - type: input
+    id: pais
+    attributes:
+      label: País del alojamiento
+      description: Importa si tiene que ver con impuestos, comprobantes o registros de viajeros.
+  - type: dropdown
+    id: tipo
+    attributes:
+      label: Tipo de alojamiento
+      options:
+        - Hotel o posada
+        - Cabañas o casas
+        - Departamentos
+        - Hostal
+        - Camping
+        - Varias propiedades
+        - Otro
