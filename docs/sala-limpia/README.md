@@ -229,6 +229,7 @@ contraseña la escribió él. De esa base solo se leyeron conteos.
 
 | | Resultado |
 |---|---|
+| «Probar conexión» | Respondió bien, según confirmó el usuario (no deja rastro en la base) |
 | «Sincronizar ahora» | Correcta en 10 s, sin código de error ni aviso de que la copia no se pudo borrar |
 | Principal | Esquema 3.08, con inicio de sesión activado; copia comprimida por POST |
 | Copia | 615 523 bytes al bajar, 9 769 984 al descomprimir |
@@ -243,8 +244,8 @@ principal con el código anterior: coincide. En la misma instancia, la demo serv
 huéspedes, 1122 reservas y 1628 cobros.
 
 Lo que esta prueba no dice: es una primera carga, no una actualización (eso lo cubre «Una instalación que se
-actualiza», con la copia real); «Probar conexión» no deja rastro, así que su respuesta solo consta si el usuario la
-confirma; y que el borrado se diera por bueno no enseña qué contesta la principal cuando falla (pregunta 3).
+actualiza», con la copia real), y que el borrado se diera por bueno no enseña qué contesta la principal cuando
+falla (pregunta 3).
 
 ### Lo que no se pudo comprobar aquí
 
