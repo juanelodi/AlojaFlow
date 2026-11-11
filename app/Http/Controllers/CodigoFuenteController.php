@@ -32,7 +32,7 @@ class CodigoFuenteController extends Controller
         'app', 'bootstrap/app.php', 'bootstrap/providers.php', 'config', 'database', 'docs', 'instalador', 'lang', 'resources', 'routes', 'tests', '.htaccess',
         'public/index.php', 'public/.htaccess', 'public/img', 'public/robots.txt', 'public/favicon.ico', 'branding',
         'artisan', 'composer.json', 'composer.lock', 'package.json', 'phpunit.xml', 'phpstan.neon', 'pint.json', 'vite.config.js',
-        'LICENSE', 'THIRD-PARTY-NOTICES.md', 'README.md', 'CAMBIOS.md', 'CLAUDE.md', '.env.example', '.editorconfig', '.gitattributes', '.gitignore',
+        'LICENSE', 'THIRD-PARTY-NOTICES.md', 'README.md', 'CONTRIBUTING.md', 'CAMBIOS.md', 'CLAUDE.md', '.env.example', '.editorconfig', '.gitattributes', '.gitignore',
     ];
 
     public function __invoke(): BinaryFileResponse
