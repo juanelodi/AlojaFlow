@@ -37,7 +37,7 @@ beforeEach(function () {
     ]);
 });
 
-it('colorea por pago con la lógica de la tabla de HotelDruid', function () {
+it('pone cada reserva en su grupo de pago', function () {
     $pago = fn (array $datos): ?string => ServicioCalendario::pago(($this->reserva)($datos));
 
     expect($pago(['pagado' => 100000]))->toBe('total')

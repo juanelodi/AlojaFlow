@@ -150,7 +150,7 @@
 .af-leyenda i { display: inline-block; width: 1.25rem; height: .75rem; border-radius: .25rem; }
 
 /*
- * Opciones del calendario (D-154). Las aplica alojaflow.js en <html>: colorear por pago, como la tabla de HotelDruid, y soltar la
+ * Opciones del calendario (D-154). Las aplica alojaflow.js en <html>: colorear por pago y soltar la
  * columna de las unidades o la fila de los días. Fijas de entrada; la fila, con el calendario a la altura de la pantalla.
  */
 .af-calendario { max-height: max(22rem, calc(100vh - 11rem)); max-height: max(22rem, calc(100dvh - 11rem)); }

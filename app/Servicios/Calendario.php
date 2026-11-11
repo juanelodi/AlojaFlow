@@ -249,21 +249,6 @@ final class Calendario
         return null;
     }
 
-    /**
-     * Cuánto se ha pagado, para colorear por pago (D-154). La lógica de la tabla de HotelDruid: sin confirmar va primero; luego,
-     * pagada por completo, con el anticipo cubierto o sin él. Una reserva sin anticipo pedido que no ha pagado nada va sin anticipo.
-     */
-    public static function pago(Reserva $reserva): ?string
-    {
-        return match (true) {
-            $reserva->tipo !== TipoReserva::Reserva => null,
-            $reserva->estado === EstadoReserva::SinConfirmar => 'sin-confirmar',
-            $reserva->pagado >= $reserva->total => 'total',
-            $reserva->pagado > 0 && $reserva->pagado >= $reserva->deposito => 'anticipo',
-            default => 'sin-anticipo',
-        };
-    }
-
     private static function clase(Reserva $reserva): string
     {
         return match (true) {
