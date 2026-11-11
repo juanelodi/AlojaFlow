@@ -10,7 +10,7 @@
     "rules": {
         "declare_strict_types": true,
         "header_comment": {
-            "header": "AlojaFlow — sistema de gestión de alojamientos\nCopyright (C) 2026 juanelodi y colaboradores de AlojaFlow\nSPDX-License-Identifier: AGPL-3.0-or-later",
+            "header": "AlojaFlow — sistema de gestión de alojamientos\nCopyright (C) 2026 Juan Galeana Durán\nSPDX-License-Identifier: FSL-1.1-ALv2",
             "comment_type": "comment",
             "location": "after_open",
             "separate": "both"

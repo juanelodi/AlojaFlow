@@ -1,4 +1,4 @@
-{{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
+{{-- AlojaFlow · Copyright (C) 2026 Juan Galeana Durán · SPDX-License-Identifier: FSL-1.1-ALv2 --}}
 {{-- Quien actualizó desde una versión anterior decide aquí (D-150). Mientras no decida, no se manda nada. --}}
 {{-- Sin <form>: dentro del contenido, un formulario lo oculta en el teléfono hasta que arranca Alpine (D-067). --}}
 <div class="af-aviso-global" x-data="{

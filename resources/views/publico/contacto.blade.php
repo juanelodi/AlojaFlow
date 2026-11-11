@@ -1,4 +1,4 @@
-{{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
+{{-- AlojaFlow · Copyright (C) 2026 Juan Galeana Durán · SPDX-License-Identifier: FSL-1.1-ALv2 --}}
 {{-- Cómo hablar con el alojamiento y dónde está. --}}
 @if ($pagina->whatsapp() || $propiedad->telefono || $propiedad->correo || $pagina->mapaUrl())
     <p style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0">

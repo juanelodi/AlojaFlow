@@ -1,4 +1,4 @@
-{{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
+{{-- AlojaFlow · Copyright (C) 2026 Juan Galeana Durán · SPDX-License-Identifier: FSL-1.1-ALv2 --}}
 {{-- Sin recursos de la aplicación: esta página tiene que verse aunque algo más haya fallado. --}}
 @php
     $preferido = request()->getPreferredLanguage((array) config('alojaflow.idiomas'));

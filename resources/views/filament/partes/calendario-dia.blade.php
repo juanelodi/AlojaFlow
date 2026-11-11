@@ -1,4 +1,4 @@
-{{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
+{{-- AlojaFlow · Copyright (C) 2026 Juan Galeana Durán · SPDX-License-Identifier: FSL-1.1-ALv2 --}}
 {{-- Un día del calendario, unidad por unidad: en el teléfono no hay barras que atinar ni arrastre que choque con desplazar. --}}
 @use('App\Enums\TipoReserva')
 @use('App\Seguridad\Acceso')

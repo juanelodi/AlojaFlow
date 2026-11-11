@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later
+# AlojaFlow · Copyright (C) 2026 Juan Galeana Durán · SPDX-License-Identifier: FSL-1.1-ALv2
 #
 # Arranca el Apache de Wamp sobre una carpeta, en primer plano, para probar el instalador:
 #   desarrollo/apache-prueba/arrancar.sh E:/carpeta-de-prueba 8004

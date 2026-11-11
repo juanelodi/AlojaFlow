@@ -1,4 +1,4 @@
-# AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later
+# AlojaFlow · Copyright (C) 2026 Juan Galeana Durán · SPDX-License-Identifier: FSL-1.1-ALv2
 #
 # Apache de Wamp con PHP 8.3 para probar el instalador como en un hosting real: lee .htaccess, el
 # dominio apunta a la carpeta de la instalación y están los módulos con los que public/.htaccess

@@ -1,4 +1,4 @@
-{{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
+{{-- AlojaFlow · Copyright (C) 2026 Juan Galeana Durán · SPDX-License-Identifier: FSL-1.1-ALv2 --}}
 {{-- La fila de una reserva en el teléfono: lo que se busca de un vistazo. Las demás columnas se ven desde tableta. --}}
 @use('App\Enums\EstadoReserva')
 @use('App\Enums\TipoReserva')

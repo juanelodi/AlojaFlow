@@ -1,4 +1,4 @@
-{{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
+{{-- AlojaFlow · Copyright (C) 2026 Juan Galeana Durán · SPDX-License-Identifier: FSL-1.1-ALv2 --}}
 {{-- Para instalarla en el teléfono (D-090): sin service worker, porque datos viejos en una recepción son peores que no abrir sin conexión. --}}
 <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
 <meta name="theme-color" content="#0f766e">

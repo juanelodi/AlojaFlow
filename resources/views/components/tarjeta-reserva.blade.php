@@ -1,4 +1,4 @@
-{{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
+{{-- AlojaFlow · Copyright (C) 2026 Juan Galeana Durán · SPDX-License-Identifier: FSL-1.1-ALv2 --}}
 {{--
     Una reserva en el teléfono: lo esencial de un vistazo y los botones al alcance. La usan «Hoy» y la vista de día del calendario.
     «verDatos» abre la ficha, el saldo y el teléfono; «gestionable», registrar la entrada y la salida (solo donde la página las atiende);

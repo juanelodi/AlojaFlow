@@ -2,8 +2,8 @@
 
 /*
  * AlojaFlow — sistema de gestión de alojamientos
- * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
- * SPDX-License-Identifier: AGPL-3.0-or-later
+ * Copyright (C) 2026 Juan Galeana Durán
+ * SPDX-License-Identifier: FSL-1.1-ALv2
  */
 
 declare(strict_types=1);
@@ -20,9 +20,10 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use ZipArchive;
 
 /**
- * Descarga del código fuente de la versión instalada (AGPL §13; regla 8). Las dependencias
- * (vendor/, node_modules/) son programas libres disponibles por separado: composer.lock y
- * package.json dicen sus versiones exactas. Nunca incluye .env, storage/ ni datos.
+ * Descarga del código fuente de la versión instalada (regla 8). La licencia ya no lo exige, pero
+ * el código sigue a la vista. Las dependencias (vendor/, node_modules/) son programas de terceros
+ * disponibles por separado: composer.lock y package.json dicen sus versiones exactas. Nunca
+ * incluye .env, storage/ ni datos.
  */
 class CodigoFuenteController extends Controller
 {

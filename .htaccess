@@ -1,4 +1,4 @@
-# AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later
+# AlojaFlow · Copyright (C) 2026 Juan Galeana Durán · SPDX-License-Identifier: FSL-1.1-ALv2
 #
 # Solo cuenta si la raíz web del dominio es esta carpeta (la instalación sencilla). Todo se envía a
 # public/, así que la configuración, el código y los datos de aquí nunca salen a internet. Si el

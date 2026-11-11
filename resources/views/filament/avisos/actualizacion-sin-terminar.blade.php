@@ -1,4 +1,4 @@
-{{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
+{{-- AlojaFlow · Copyright (C) 2026 Juan Galeana Durán · SPDX-License-Identifier: FSL-1.1-ALv2 --}}
 {{-- Aviso en todas las pantallas, solo para el administrador que sigue dentro durante el mantenimiento. --}}
 <div class="af-aviso-global">
     <x-filament::callout color="warning" icon="heroicon-o-exclamation-triangle" :heading="__('actualizaciones.pendiente_finalizar')">

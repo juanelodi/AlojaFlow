@@ -1,7 +1,7 @@
 /*
  * AlojaFlow — sistema de gestión de alojamientos
- * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
- * SPDX-License-Identifier: AGPL-3.0-or-later
+ * Copyright (C) 2026 Juan Galeana Durán
+ * SPDX-License-Identifier: FSL-1.1-ALv2
  */
 
 // Mide pantallas del panel con Lighthouse varias veces y resume la mediana, para comparar antes y después

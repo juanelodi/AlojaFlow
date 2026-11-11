@@ -1,4 +1,4 @@
-{{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
+{{-- AlojaFlow · Copyright (C) 2026 Juan Galeana Durán · SPDX-License-Identifier: FSL-1.1-ALv2 --}}
 {{-- Los contactos de un huésped, con llamar, WhatsApp y correo a un toque: ficha del huésped y ficha de la reserva. --}}
 @use('App\Enums\TipoContacto')
 <ul class="af-contactos">

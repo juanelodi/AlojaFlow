@@ -1,4 +1,4 @@
-{{-- AlojaFlow · SPDX-License-Identifier: AGPL-3.0-or-later --}}
+{{-- AlojaFlow · Copyright (C) 2026 Juan Galeana Durán · SPDX-License-Identifier: FSL-1.1-ALv2 --}}
 {{-- Enlace «Código fuente» visible en toda la aplicación, también antes de iniciar sesión (regla 8). --}}
 <footer class="af-pie">
     <span>AlojaFlow {{ config('alojaflow.version') }}</span>

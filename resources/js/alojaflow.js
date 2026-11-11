@@ -1,7 +1,7 @@
 /*
  * AlojaFlow — sistema de gestión de alojamientos
- * Copyright (C) 2026 juanelodi y colaboradores de AlojaFlow
- * SPDX-License-Identifier: AGPL-3.0-or-later
+ * Copyright (C) 2026 Juan Galeana Durán
+ * SPDX-License-Identifier: FSL-1.1-ALv2
  *
  * Lo que mejora la pantalla sin hacer falta: sin este archivo todo sigue funcionando, y el servidor
  * valida igual. Se carga en el panel y en las páginas públicas; no usa Livewire ni Alpine a propósito.
