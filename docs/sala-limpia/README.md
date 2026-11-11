@@ -286,5 +286,6 @@ Al terminar se borraron las bases desechables (`alojaflow_sala_limpia_*`), la in
 la demo. Las huellas, que solo tienen conteos y sumas, quedaron fuera del repositorio, en la carpeta temporal de la
 sesión; lo que importa de ellas está en las tablas de arriba.
 
-La instancia de la prueba contra una principal real (su carpeta fuera del repositorio y la base
-`alojaflow_sala_limpia_prueba`, que tiene datos reales) se borra cuando el usuario termine de revisarla.
+Tras la prueba contra una principal real, y con el visto bueno del usuario, se borró la base de esa instancia
+(`alojaflow_sala_limpia_prueba`, la única parte con datos reales) y se detuvieron sus servidores. En el `storage` de la
+instancia no había quedado la copia descargada ni ningún registro de errores.
