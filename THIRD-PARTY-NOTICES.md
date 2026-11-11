@@ -3,22 +3,27 @@
 AlojaFlow se distribuye bajo la licencia **AGPL-3.0-or-later** (ver `LICENSE`). Usa o se basa en
 estos trabajos de terceros, cada uno con su licencia.
 
-## Lógica derivada
+## Compatibilidad con HotelDruid
 
-### HotelDruid
+AlojaFlow es compatible con HotelDruid, de Marco Maria Francesco De Santis
+(<https://www.hoteldruid.com>): puede copiar, solo para leerlos, los datos de una instalación de
+HotelDruid 3.0.8 o de AlojaFlow 1.2.x. Para eso interopera con su protocolo de copias
+(`crea_backup.php`) y con el formato de su archivo de copia, que están documentados como hechos
+en `docs/especificacion/subordinacion.md`.
 
-- **Autor:** Marco Maria Francesco De Santis — <https://www.hoteldruid.com>
-- **Licencia:** GNU Affero General Public License, versión 3, «o cualquier versión posterior
-  aceptada por Marco Maria Francesco De Santis, que actúa como apoderado según la sección 14 de
-  la versión 3 de la licencia».
-- **Qué se aprovecha:** solo la lógica, reescrita sin copiar código (regla 4 del `CLAUDE.md`):
-  - el protocolo de `crea_backup.php`;
-  - el formato del archivo de copia, con sus escapes;
-  - el significado de sus tablas: periodos, reservas, costos de limpieza…
-- **Archivos afectados:** `app/Sincronizacion/HotelDruid/` (sobre todo `ClientePrincipal.php`,
-  `LectorCopia.php` y `Proyector.php`) y `tests/Support/ConstructorCopia.php`.
-- AlojaFlow es compatible con HotelDruid, pero **no es un producto oficial de HotelDruid** ni usa
-  su logo.
+- **Sin código ni lógica derivados de HotelDruid** desde el commit `b3c938d` («Sala limpia: se
+  retira el módulo de HotelDruid para reescribirlo»). `app/Sincronizacion/HotelDruid/` y
+  `tests/Support/ConstructorCopia.php` se escribieron de nuevo a partir de esa especificación, sin
+  ver el código de HotelDruid ni el del módulo anterior. El procedimiento y su registro están en
+  `docs/sala-limpia/README.md` (decisión D-173).
+- Hasta ese commit, esos archivos contenían lógica de HotelDruid reescrita sin copiar código.
+  HotelDruid se distribuye bajo la GNU Affero General Public License, versión 3, «o cualquier
+  versión posterior aceptada por Marco Maria Francesco De Santis, que actúa como apoderado según
+  la sección 14 de la versión 3 de la licencia».
+- AlojaFlow **no es un producto oficial de HotelDruid** ni usa su logo. «HotelDruid» se menciona
+  solo para decir con qué es compatible.
+
+## Estructura de partida
 
 ### Esqueleto de Laravel
 

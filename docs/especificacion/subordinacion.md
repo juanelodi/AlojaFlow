@@ -664,8 +664,20 @@ copia ficticia de la demo, sin inicio de sesión):
 
 # Licencia y créditos
 
-La cabecera de HotelDruid dice AGPL v3 «o cualquier versión posterior **aceptada por Marco Maria
-Francesco De Santis**, que actúa como apoderado según la sección 14»
-**[visto: `crea_backup.php:3-20`]**. No es exactamente «AGPL v3 o posterior». AlojaFlow reescribe
-la lógica sin copiar código (regla 4), así que sigue siendo AGPL-3.0-or-later. En
-`THIRD-PARTY-NOTICES.md` se cita la licencia de HotelDruid con esa redacción exacta (D-016).
+HotelDruid es obra de Marco Maria Francesco De Santis (<https://www.hoteldruid.com>). Se distribuye
+bajo la AGPL v3 «o cualquier versión posterior **aceptada por Marco Maria Francesco De Santis**,
+que actúa como apoderado según la sección 14», que no es exactamente «AGPL v3 o posterior»
+(D-016).
+
+Este documento describe **hechos** sobre cómo interoperar con una instalación de HotelDruid o de
+AlojaFlow 1.2.x: qué peticiones acepta, cómo es el archivo que entrega y qué significan sus
+tablas. No contiene código de HotelDruid.
+
+El módulo que lo implementa (`app/Sincronizacion/HotelDruid/`) y el generador de copias de prueba
+(`tests/Support/ConstructorCopia.php`) se reescribieron en sala limpia a partir de este documento,
+sin ver el código de HotelDruid ni el del módulo anterior (D-173; el procedimiento y su registro
+están en [../sala-limpia/README.md](../sala-limpia/README.md)). Desde el commit `b3c938d`,
+AlojaFlow no contiene código ni lógica derivados de HotelDruid: es compatible con HotelDruid e
+interopera con su protocolo y con su formato. Así lo dice `THIRD-PARTY-NOTICES.md`.
+
+AlojaFlow no es un producto oficial de HotelDruid ni usa su logo.

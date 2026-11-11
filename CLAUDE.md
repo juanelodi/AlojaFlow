@@ -184,10 +184,12 @@ implementación por país (`Mexico`, `Espana`, `EstadosUnidos`, `Generico`). Nad
 
 - `app/Sincronizacion/HotelDruid/` — módulo de subordinación: el único lugar con nombres
   italianos. Contiene:
-  - `ValidadorDestino` (SSRF), `ClientePrincipal` (protocolo, con lista blanca), `Descompresor`
-    y `LectorCopia` (formato);
-  - `CargadorEspejo` (`hd_filas`), `Proyector` (modelo propio y eventos) y `Sincronizador`
-    (ciclo completo).
+  - `ValidadorDestino` (SSRF), `ClientePrincipal` (protocolo, con lista blanca) y `RespuestaPrincipal` (qué contestó),
+    `Descompresor` y `LectorCopia` sobre `LineasCopia` (formato);
+  - `CargadorEspejo` y `Espejo` (`hd_filas`), `Proyector` (modelo propio y eventos: reparte en `Proyeccion/` unidades,
+    huéspedes, reservas y caja, y lleva `GENERACION`) y `Sincronizador` (ciclo completo);
+  - reescrito en sala limpia desde la especificación (D-173, `docs/sala-limpia/`): se cambia con `subordinacion.md`
+    delante, no con el código de `E:\HotelDruid\`.
 - `app/Sincronizacion/AlojaFlow/` — copiar de otra instalación de AlojaFlow (D-073): `Exportador` y `GestorConexiones` del lado de la principal; `ClienteRemoto`, `Sincronizador` y `Proyector` del de
   la subordinada. `Subordinadores::de($principal)` elige con cuál se copia. Contrato en `docs/especificacion/subordinacion-alojaflow.md`.
 - `app/Actualizacion/EsquemaAlDia.php` y `app/Http/Middleware/EsquemaActualizado.php` — la base se pone al día si subieron los archivos a mano (D-089).

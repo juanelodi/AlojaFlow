@@ -1154,6 +1154,35 @@ alcanza también a las tareas nuevas. Lo que corre en mantenimiento sigue igual:
 `finalizar-actualizacion --pendientes`. Sin cron, `TareasPorVisita` deja de arrancar tareas en cuanto entra el
 mantenimiento. Una tarea que ya iba corriendo cuando empezó la actualización no se detiene.
 
+### D-173 · 2026-11-10 · El módulo de HotelDruid, reescrito en sala limpia
+
+**Qué.** `app/Sincronizacion/HotelDruid/` (13 archivos) y `tests/Support/ConstructorCopia.php` se borraron en el commit
+`b3c938d` y se escribieron de nuevo. Hacen lo mismo y conservan sus firmas públicas; por dentro están organizados de
+otra forma.
+
+**Por qué.** El módulo anterior se escribió con la lógica de HotelDruid a la vista (AGPL, © Marco M. F. De Santis;
+regla 4). Para que AlojaFlow no dependa de esa lógica, ese código se volvió a escribir a partir de la especificación:
+desde `b3c938d` AlojaFlow interopera con el protocolo y el formato de HotelDruid, sin código ni lógica
+derivados. Esta decisión no cambia la licencia de nada.
+
+**Cómo.** Lo hizo una sesión de Claude Code que no abrió `E:\HotelDruid\` ni leyó el cuerpo de los 14 archivos ni sus
+versiones en git. Trabajó con `subordinacion.md`, `modelo-datos.md`, las decisiones, la lista de firmas públicas, el
+código propio que usa el módulo y las pruebas existentes, que son las de aceptación. Antes de borrar se tomó una
+huella de caja negra (conteos y sumas por columna) de lo que el código anterior dejaba con la demo ficticia y con una
+copia real; el código nuevo deja lo mismo, salvo las huellas de datos de huéspedes y reservas, que se calculan de otra
+forma.
+
+**Lo que cambia para una instalación.** Nada a la vista. Como las huellas guardadas son de otra fórmula, el
+proyector lleva una generación (`Proyector::GENERACION`, anotada en las cuentas de cada ejecución): la primera
+proyección de una generación nueva repone las huellas sin tocar las filas, no genera eventos y no da ningún número
+por reutilizado, igual que una primera carga (D-028). Si no, la actualización se leería como un cambio en cada
+reserva. A cambio, lo que cambie en la principal justo antes de esa primera sincronización se aplica sin anunciarse.
+Además, una reserva solo se anuncia como modificada si cambió alguna de sus columnas o sus acompañantes, no porque
+cambie su huella.
+
+**Dónde está el registro.** [sala-limpia/README.md](sala-limpia/README.md): qué se leyó y qué no, las huellas y sus
+diferencias. Lo que la especificación no alcanzó a decidir está en [sala-limpia/preguntas.md](sala-limpia/preguntas.md).
+
 ## Pendientes
 
 - Precios y modelo de venta.
